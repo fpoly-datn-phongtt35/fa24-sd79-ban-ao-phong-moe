@@ -1,19 +1,20 @@
-version: '3.9'
-service:
+version: '3.1'
+
+services:
   mysql:
-    image: mysql_moe_image
-    container: mysql_moe_container
+    image: mysql:9.0.0
+    container_name: mysql_moe_container
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      ports:
-        - '3307:3306'
-      volumes:
-        - mysql-data:/var/lib/mysql
-        - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
   redis:
     image: redis:6.2-alpine
-    container_name: redis
+    container_name: redis_moe_container
     hostname: redis
     ports:
       - '6379:6379'
