@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: BE-MOE
+  profiles:
+    active: @spring.profiles.active@

@@ -1,0 +1,29 @@
+version: '3.9'
+service:
+  mysql:
+    image: mysql_moe_image
+    container: mysql_moe_container
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      ports:
+        - '3307:3306'
+      volumes:
+        - mysql-data:/var/lib/mysql
+        - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - '6379:6379'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB;FLUSHALL
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+volumes:
+  mysql-data:
