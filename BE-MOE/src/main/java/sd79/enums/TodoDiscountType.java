@@ -1,4 +1,4 @@
-package com.example.utils;
+package sd79.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

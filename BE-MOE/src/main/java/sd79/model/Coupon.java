@@ -1,13 +1,13 @@
 package sd79.model;
 
-import com.example.utils.TodoDiscountType;
+import sd79.enums.TodoDiscountType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import sd79.utils.TodoType;
+import sd79.enums.TodoType;
 
 import java.math.BigDecimal;
 import java.util.Date;

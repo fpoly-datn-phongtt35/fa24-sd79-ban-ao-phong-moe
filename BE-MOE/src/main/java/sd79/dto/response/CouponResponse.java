@@ -1,9 +1,9 @@
 package sd79.dto.response;
 
-import com.example.utils.TodoDiscountType;
+import sd79.enums.TodoDiscountType;
 import lombok.Builder;
 import lombok.Getter;
-import sd79.utils.TodoType;
+import sd79.enums.TodoType;
 
 import java.util.Date;
 

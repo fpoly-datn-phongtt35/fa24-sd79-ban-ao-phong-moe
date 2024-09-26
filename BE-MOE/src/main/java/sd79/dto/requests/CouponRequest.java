@@ -1,10 +1,10 @@
 package sd79.dto.requests;
 
-import com.example.utils.TodoDiscountType;
+import sd79.enums.TodoDiscountType;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
-import sd79.utils.TodoType;
+import sd79.enums.TodoType;
 
 import java.math.BigDecimal;
 import java.util.Date;
