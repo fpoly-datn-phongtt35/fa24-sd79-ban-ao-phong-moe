@@ -1,5 +1,7 @@
 server:
   port: 2004
+api:
+  version: v2
 spring:
   datasource:
     url: jdbc:mysql://localhost:3307/sd79_db_moe
@@ -12,6 +14,10 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: none
+  data:
+    redis:
+      host: localhost
+      port: 6379
   config:
     activate:
       on-profile: tvd
@@ -21,3 +27,13 @@ jwt:
   secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
   refreshKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980
   resetKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980s
+openapi:
+  service:
+    api-docs: api-moe-shop
+    title: MOE-SHOP-API
+    version: ${api.version}
+    description: description
+    server: http://localhost:2004
+    serverName: JavaTech
+    license: Apache 2.0
+    license-url: https://facebook.com/NongHoangVu04
