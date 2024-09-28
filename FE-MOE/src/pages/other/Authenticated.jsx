@@ -9,7 +9,6 @@ function Authenticated() {
   const navigate = useNavigate();
   useEffect(() => {
     const res = authorizedAxiosInstance.get(`${API_ROOT}/product`);
-    console.log(res);
     setUser(localStorage.getItem("username"));
   }, [user]);
 
