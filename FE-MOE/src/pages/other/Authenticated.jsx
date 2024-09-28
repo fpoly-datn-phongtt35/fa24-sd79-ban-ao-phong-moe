@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { API_ROOT } from "~/utils/constants";
 import { useNavigate } from "react-router-dom";
+import { handleLogoutAPI } from "~/apis";
+
 function Authenticated() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -9,14 +11,10 @@ function Authenticated() {
     const res = authorizedAxiosInstance.get(`${API_ROOT}/product`);
     console.log(res);
     setUser(localStorage.getItem("username"));
-  }, []);
+  }, [user]);
 
   const handleLogout = async () => {
-    await authorizedAxiosInstance.post(`${API_ROOT}/auth/remove`, null);
-    localStorage.removeItem("userId");
-    localStorage.removeItem("username");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    await handleLogoutAPI();
     navigate("/");
     setUser(null);
   };

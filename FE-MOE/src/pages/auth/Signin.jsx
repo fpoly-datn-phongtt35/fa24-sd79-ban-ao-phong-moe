@@ -17,7 +17,7 @@ function Login() {
         platform: "web",
       };
       const res = await authorizedAxiosInstance.post(`${API_ROOT}/auth/access`, data);
-      console.log(res.data);
+      // console.log(res.data);
       
       localStorage.setItem('userId', res.data.userId)
       localStorage.setItem('username', username)
@@ -30,6 +30,7 @@ function Login() {
     <div className="vh-100 d-flex align-items-center justify-content-center bg-light">
       <div className="card shadow-lg p-4" style={{ width: '400px' }}>
         <div className="text-center mb-4">
+          {/* Logo MOE */}
           <img 
             src="https://static.vecteezy.com/system/resources/previews/010/166/568/original/moe-letter-technology-logo-design-on-white-background-moe-creative-initials-letter-it-logo-concept-moe-letter-design-vector.jpg"
             alt="MOE Logo" 
