@@ -4,16 +4,31 @@ CREATE TABLE promotions(
   promotion_type VARCHAR(50),
   promotion_value DECIMAL(10,2),
   start_date DATE,
-  end_date DATE,
+  end_date DATE,	
   description TEXT
 );
 
 CREATE TABLE product_promotion(
-  id INT PRIMARY KEY,
-  product_id INT,
-  promotion_id INT,
-  applied_date DATE,
-  promotion_price DECIMAL(10,2)
+    id              INT PRIMARY KEY,
+    product_id      INT,
+    promotion_id    INT,
+    applied_date    DATE,
+    promotion_price DECIMAL(10, 2)
+);
+
+CREATE TABLE products(
+   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+   name VARCHAR(200),
+   description VARCHAR(255),
+   status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'),
+   category_id INT,
+   brand_id INT,
+   origin VARCHAR(30),
+   created_by BIGINT,
+   updated_by BIGINT,
+   create_at DATETIME,
+   update_at DATETIME,
+   is_deleted BIT DEFAULT 0
 );
 
 ALTER TABLE product_promotion 
