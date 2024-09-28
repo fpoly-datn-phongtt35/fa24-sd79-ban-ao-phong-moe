@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import Signin from "~/pages/auth/Signin";
+import { Header } from "./components/layout/Header";
+import { Sidebar_ } from "./components/layout/Sidebar_";
+import { Product } from "./pages/products/Product";
+import { Dashboard } from "./pages/other/Dashboard";
+import { Categories } from "./pages/products/categories/Categories";
 
-function App() {
-  const [count, setCount] = useState(0)
+const ProtectedRoutes = () => {
+  
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) {
+    return <Navigate to="/login" replace={true} />;
+  }
+  return (
+    <div className="layout">
+      <Header />
+      <div className="content-area">
+        <Sidebar_ />
+        <div className="main-content">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
+};
 
+const UnauthorizedRoutes = () => {
+  const accessToken = localStorage.getItem("accessToken");
+  if (accessToken) {
+    return <Navigate to="/dashboard" replace={true} />;
+  }
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Outlet />
     </>
-  )
+  );
+};
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace={true} />} />
+
+      <Route element={<UnauthorizedRoutes />}>
+        <Route path="/login" element={<Signin />} />
+      </Route>
+
+      <Route element={<ProtectedRoutes />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/product" element={<Product />} />
+        <Route path="/categories" element={<Categories />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;

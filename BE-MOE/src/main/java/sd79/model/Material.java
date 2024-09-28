@@ -6,36 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "materials")
-public class Material {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
-
+public class Material  extends AbstractEntity<Integer> implements Serializable {
     @Size(max = 50)
     @Column(name = "name", length = 50)
     private String name;
-
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Column(name = "updated_by")
-    private Long updatedBy;
-
-    @Column(name = "create_at")
-    private Instant createAt;
-
-    @Column(name = "update_at")
-    private Instant updateAt;
-
-    @ColumnDefault("b'0'")
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
-
 }
