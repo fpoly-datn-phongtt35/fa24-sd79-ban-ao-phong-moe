@@ -4,6 +4,7 @@ import { Header } from "./components/layout/Header";
 import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
+import { Categories } from "./pages/products/categories/Categories";
 
 const ProtectedRoutes = () => {
   
@@ -48,6 +49,7 @@ function App() {
       <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/categories" element={<Categories />} />
       </Route>
     </Routes>
   );
