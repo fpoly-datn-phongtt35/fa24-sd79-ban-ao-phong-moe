@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse handleValidException(Exception ex, WebRequest request){
+    public ExceptionResponse handleValidException(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse();
         response.setTimestamp(new Date());
         response.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
             int end = message.lastIndexOf("]");
             message = message.substring(start + 1, end - 1);
             response.setError("Payload invalid");
-        }else if (ex instanceof ConstraintViolationException) {
+        } else if (ex instanceof ConstraintViolationException) {
             message = message.substring(message.indexOf(" ") + 1);
             response.setError("PathVariable invalid");
         } else if (ex instanceof HttpMessageNotReadableException) {
@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
                 int errorEnd = detailedMessage.indexOf("'", errorStart + "Failed to parse Date value '".length());
                 message = detailedMessage.substring(errorStart, errorEnd);
                 response.setError("Invalid payload format");
+
             }
         }
         response.setMessage(message);

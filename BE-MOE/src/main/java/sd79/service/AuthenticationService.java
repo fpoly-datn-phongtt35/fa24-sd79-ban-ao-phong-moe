@@ -54,7 +54,7 @@ public class AuthenticationService {
     }
 
     public TokenResponse refresh(HttpServletRequest request) {
-        String refresh_token = request.getHeader(AUTHORIZATION);
+            String refresh_token = request.getHeader("AUTHORIZATION_REFRESH_TOKEN");
         if (StringUtils.isBlank(refresh_token)) {
             throw new InvalidDataException("Token must be not blank!");
         }
@@ -78,9 +78,10 @@ public class AuthenticationService {
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
         }
-        final String token = authorization.substring("Bearer ".length());
-        String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        this.tokenService.deleteToken(username);
+
+//        final String token = authorization.substring("Bearer ".length());
+//        String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
+//        this.tokenService.deleteToken(username);
         log.info("========== logout successfully ==========");
     }
 }
