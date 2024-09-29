@@ -15,15 +15,15 @@ export const Sidebar_ = () => {
   return (
     <Sidebar backgroundColor="fff">
       <Menu>
-        <MenuItem icon={<i className="fa-solid fa-house"></i>} component={<Link to="/"/>}> Dashboard </MenuItem>
-        <SubMenu label="Selling" icon={<i className="fa-solid fa-cart-shopping"></i>}>
+        <MenuItem icon={<i className="fa-solid fa-house"></i>} component={<Link to="/"/>}> Trang chủ </MenuItem>
+        <SubMenu label="Bán hàng" icon={<i className="fa-solid fa-cart-shopping"></i>}>
           <MenuItem component={<Link to="/dashboard?offline"/>}> Offline </MenuItem>
           <MenuItem> Onlince </MenuItem>
         </SubMenu>
-        <SubMenu label="Product manager" icon={<i className="fa-solid fa-shirt"></i>}>
-          <MenuItem component={<Link to="/product"/>}> Products </MenuItem>
-          <MenuItem> Categories </MenuItem>
-          <MenuItem> Brands </MenuItem>
+        <SubMenu label="Sản phẩm" icon={<i className="fa-solid fa-shirt"></i>}>
+          <MenuItem component={<Link to="/product"/>}> Quản lý sản phẩm </MenuItem>
+          <MenuItem component={<Link to="categories"/>}> Quản lý mục </MenuItem>
+          <MenuItem> Quản lý thương hiệu </MenuItem>
         </SubMenu>
         <SubMenu label="Cusomer" icon={<i className="fa-solid fa-users"></i>}>
           <MenuItem> ABC </MenuItem>
