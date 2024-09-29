@@ -15,7 +15,7 @@ public class PromotionController {
     private final PromotionServiceImpl service;
 
     @GetMapping()
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<?> getAllPromotion() {
         return ResponseEntity.ok(this.service.getAllPromotions());
     }
 
