@@ -1,15 +1,16 @@
-package sd79.dto.requests;
+package sd79.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-import java.time.LocalDate;
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeRequests {
+public class EmployeeResponse {
 
     private Integer id;
 
@@ -21,7 +22,7 @@ public class EmployeeRequests {
 
     private String gender;
 
-    private LocalDate date_of_birth;
+    private Date date_of_birth;
 
     private String avatar;
 

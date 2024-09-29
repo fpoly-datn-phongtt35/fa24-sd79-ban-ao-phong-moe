@@ -45,8 +45,9 @@ public class Employee {
     @Column(name = "updated_at")
     private Instant updateAt;
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    private Salary salaries;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "salary_id")
+    private Salary salaries;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")

@@ -19,9 +19,9 @@ public class Salary {
     @Column(name = "amount")
     private Integer amount;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     private Instant createAt;
 
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     private Instant updateAt;
 }
