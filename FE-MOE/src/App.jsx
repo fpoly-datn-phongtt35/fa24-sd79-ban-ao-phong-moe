@@ -4,6 +4,11 @@ import { Header } from "./components/layout/Header";
 import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
+import { Customer } from "./pages/customer/Customer";
+import { AddCustomer } from "./pages/customer/AddCustomer";
+import CustomerDetailPage from './pages/customer/CustomerDetailPage';
+
+
 
 const ProtectedRoutes = () => {
   
@@ -48,6 +53,9 @@ function App() {
       <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/customer" element={<Customer />} />
+        <Route path="/customer/add" element={<AddCustomer />} />
+         <Route path="/customer/:id" element={<CustomerDetailPage />} />
       </Route>
     </Routes>
   );
