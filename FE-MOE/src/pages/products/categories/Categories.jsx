@@ -1,17 +1,30 @@
 import { useEffect, useState } from "react";
-import { Container } from "react-bootstrap";
-import { fetchAllCategories, postCategory, deleteCategory } from "~/apis/categoriesApi";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import Container from "@mui/material/Container";
+import {
+  fetchAllCategories,
+  postCategory,
+  putCategory,
+  deleteCategory,
+} from "~/apis/categoriesApi";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { Grid, TextField, Box, Typography } from "@mui/material";
+import { DialogModify } from "~/components/categories/DialogModify";
+import { DialogModifyIconButton } from "~/components/categories/DialogModifyIconButton";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm()
 
   useEffect(() => {
     handleSetCategories();
@@ -22,86 +35,127 @@ export const Categories = () => {
     setCategories(res.data);
   };
 
-  const onSubmit = async (data) => {
-    console.log(data);
-    await postCategory({
-        name: data.name,
-        userId: localStorage.getItem('userId')
-    });
+  const handlePostCategory = async (data) => {
+    await postCategory(data);
     handleSetCategories();
   };
 
-  const ondelete = async (id) => {
+  const handleEditCategory = async (data, id) => {
+    await putCategory(data, id);
+    handleSetCategories();
+  };
+
+  const handleDelete = async (id) => {
     await deleteCategory(id);
     handleSetCategories();
-  }
+  };
+  const ondelete = async (id) => {
+    swal({
+      title: "Xác nhận xóa",
+      text: "Bạn có chắc chắn xóa danh mục này?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((confirm) => {
+      if (confirm) {
+        handleDelete(id);
+      }
+    });
+  };
 
   return (
-    <Container className="bg-white" style={{ height: "100%" }}>
-      <div className="fs-5">
-        <span className="fw-bold">Quản lý danh mục</span>
-      </div>
-      <hr />
-      <div className="mb-5 row">
-        <div className="col-6">
-          <input
-            type="search"
-            className="form-control"
-            placeholder="Nhập tên danh mục..."
-          />
-        </div>
-        <div className="col text-end ">
-          <form onSubmit={handleSubmit(onSubmit)} className="row">
-            <input
-              type="text"
-              className="form-control col me-2"
-              placeholder="Nhập tên danh mục mới..."
-              defaultValue=""
-              {...register("name", { required: true })}
-            />
-            <button type="submit" className="btn btn-outline-secondary col-4">
-              Thêm danh mục mới <i className="fa-solid fa-plus"></i>
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div>
-        <table className="table">
-          <thead>
-            <tr className="text-center">
-              <th scope="col">#</th>
-              <th scope="col">Tên danh mục</th>
-              <th scope="col">Sản phẩm</th>
-              <th scope="col">Ngày tạo</th>
-              <th scope="col">Ngày sửa</th>
-              <th scope="col">Người tạo</th>
-              <th scope="col">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories &&
-              categories.map((category, index) => (
-                <tr key={index} className="text-center">
-                  <th scope="row">{index + 1}</th>
-                  <td>{category.name}</td>
-                  <td>{category.productCount}</td>
-                  <td>{category.createdAt}</td>
-                  <td>{category.updatedAt}</td>
-                  <td>{category.createdBy}</td>
-                  <td className="text-center">
-                    <button className="btn">
-                      <i className="fa-solid fa-square-pen text-warning"></i>
-                    </button>
-                    <button className="btn"  onClick={() => ondelete(category.id)}>
-                      <i className="fa-solid fa-trash text-danger"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+    <Container
+      maxWidth="max-width"
+      className="bg-white"
+      style={{ height: "100%", marginTop: "15px" }}
+    >
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        bgcolor={"#1976d2"}
+        height={"50px"}
+      >
+        <Typography
+          xs={4}
+          margin={"4px"}
+          variant="h6"
+          gutterBottom
+          color="#fff"
+        >
+          Quản lý danh mục
+        </Typography>
+      </Grid>
+      <Box className="mb-5 mt-5">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={3}>
+            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+          </Grid>
+          <Grid item xs={9}>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <DialogModify
+                buttonTitle="Thêm mới danh mục"
+                icon={<AddIcon />}
+                title="Thêm mới danh mục"
+                handleSubmit={handlePostCategory}
+              />
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+      <Box>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>STT</TableCell>
+                <TableCell>Tên danh mục</TableCell>
+                <TableCell>Sản phẩm</TableCell>
+                <TableCell>Ngày tạo</TableCell>
+                <TableCell>Ngày sửa</TableCell>
+                <TableCell>Người tạo</TableCell>
+                <TableCell>Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories &&
+                categories.map((category, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{category.name}</TableCell>
+                    <TableCell>{category.productCount}</TableCell>
+                    <TableCell>{category.createdAt}</TableCell>
+                    <TableCell>{category.updatedAt}</TableCell>
+                    <TableCell>{category.createdBy}</TableCell>
+                    <TableCell>
+                      <DialogModifyIconButton
+                        icon={<EditIcon />}
+                        title="Chỉnh sửa danh mục"
+                        value={category.name}
+                        id={category.id}
+                        handleSubmit={handleEditCategory}
+                      />
+                      <IconButton
+                        color="error"
+                        onClick={() => ondelete(category.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Stack
+          marginTop={3}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Pagination count={10} variant="outlined" shape="rounded" />
+        </Stack>
+      </Box>
     </Container>
   );
 };

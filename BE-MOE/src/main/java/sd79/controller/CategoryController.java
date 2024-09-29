@@ -2,6 +2,7 @@ package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -30,10 +31,24 @@ public class CategoryController {
             description = "New categories into database"
     )
     @PostMapping
-    public ResponseData<?> storeCategory(@RequestBody CategoryRequest request){
+    public ResponseData<?> storeCategory(@Valid @RequestBody CategoryRequest request){
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công", categoryService.storeCategory(request));
     }
 
+    @Operation(
+            summary = "Update Category",
+            description = "Update category into database"
+    )
+    @PutMapping("/edit/{id}")
+    public ResponseData<?> updateCategory(@Valid @RequestBody CategoryRequest request, @PathVariable int id){
+        this.categoryService.updateCategory(request, id);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Cập nhật thành công");
+    }
+
+    @Operation(
+            summary = "Delete Category",
+            description = "Set is delete of category to true and hidde from from"
+    )
     @PatchMapping("/is-delete/{id}")
     public ResponseData<?> deleteCategory(@PathVariable Integer id){
         this.categoryService.isDeleteCategory(id);

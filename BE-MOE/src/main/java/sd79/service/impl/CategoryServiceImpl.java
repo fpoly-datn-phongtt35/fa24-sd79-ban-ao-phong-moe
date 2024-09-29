@@ -40,6 +40,15 @@ public class CategoryServiceImpl implements CategoryService {
         return this.categoryRepository.save(category).getId();
     }
 
+    @Transactional
+    @Override
+    public void updateCategory(CategoryRequest req, Integer id) {
+        Category category = this.getCategoryById(id);
+        category.setName(req.getName());
+        category.setUpdatedBy(this.getUserById(req.getUserId()));
+        this.categoryRepository.save(category);
+    }
+
     @Override
     public void isDeleteCategory(Integer id) {
         Category category = this.getCategoryById(id);
@@ -49,6 +58,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category getCategoryById(Integer id) {
         return this.categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found"));
+    }
+
+    private User getUserById(Long id) {
+        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     private CategoryResponse convertToCategoryResponse(Category category) {

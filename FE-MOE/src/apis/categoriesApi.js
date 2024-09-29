@@ -16,6 +16,14 @@ export const postCategory = async (data) => {
     });
 };
 
+export const putCategory = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/categories/edit/${id}`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
 export const deleteCategory = async (id) => {
   await authorizedAxiosInstance
     .patch(`${API_ROOT}/categories/is-delete/${id}`)

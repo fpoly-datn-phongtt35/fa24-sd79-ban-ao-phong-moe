@@ -10,5 +10,7 @@ public interface CategoryService {
 
     Integer storeCategory(CategoryRequest req);
 
+    void updateCategory(CategoryRequest req, Integer id);
+
     void isDeleteCategory(Integer id);
 }
