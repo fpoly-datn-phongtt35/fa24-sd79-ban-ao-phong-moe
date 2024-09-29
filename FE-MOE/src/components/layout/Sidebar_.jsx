@@ -33,6 +33,10 @@ export const Sidebar_ = () => {
           <MenuItem> ABC </MenuItem>
           <MenuItem> ABC </MenuItem>
         </SubMenu>
+        <SubMenu label="Đợt giảm giá" icon={<i className="fa-solid fa-link"></i>}>
+        <MenuItem component={<Link to="promotion"/>}> Quản lý giảm giá </MenuItem>
+          <MenuItem> ABC </MenuItem>
+        </SubMenu>
       </Menu>
       <Menu>
         <MenuItem icon={<i className="fa-solid fa-user-circle"></i>}> Profile </MenuItem>
