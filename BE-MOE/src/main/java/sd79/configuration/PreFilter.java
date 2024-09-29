@@ -66,12 +66,12 @@ public class PreFilter extends OncePerRequestFilter {
             log.error("Token expired");
             ExceptionResponse exceptionResponse = new ExceptionResponse();
             exceptionResponse.setTimestamp(new Date());
-            exceptionResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            exceptionResponse.setStatus(HttpServletResponse.SC_GONE);
             exceptionResponse.setPath(request.getRequestURI());
             exceptionResponse.setError("Token expired");
             exceptionResponse.setMessage(e.getMessage());
 
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_GONE);
             response.setContentType("application/json");
             ObjectMapper objectMapper = new ObjectMapper();
             response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
