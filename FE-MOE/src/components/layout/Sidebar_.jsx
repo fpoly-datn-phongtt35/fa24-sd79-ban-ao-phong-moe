@@ -25,8 +25,8 @@ export const Sidebar_ = () => {
           <MenuItem> Categories </MenuItem>
           <MenuItem> Brands </MenuItem>
         </SubMenu>
-        <SubMenu label="Cusomer" icon={<i className="fa-solid fa-users" ></i>}>
-          <MenuItem component={<Link to="/customer"/>}> Customer</MenuItem>
+        <SubMenu label="Khách hàng" icon={<i className="fa-solid fa-users" ></i>}>
+          <MenuItem component={<Link to="/customer"/>}> Khách hàng</MenuItem>
           <MenuItem component={<Link to="/customer/add"/>} > CreateCustomer </MenuItem>
         </SubMenu>
         <SubMenu label="Other" icon={<i className="fa-solid fa-link"></i>}>

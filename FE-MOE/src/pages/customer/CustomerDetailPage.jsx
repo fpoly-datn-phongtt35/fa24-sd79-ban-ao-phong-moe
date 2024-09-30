@@ -139,6 +139,8 @@ const CustomerDetailPage = () => {
         <Button variant="primary" type="submit">
           Update Customer
         </Button>
+        &nbsp;
+        &nbsp;
         <Button variant="secondary" onClick={() => navigate('/customer')}>
           Cancel
         </Button>
