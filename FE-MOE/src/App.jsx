@@ -9,6 +9,9 @@ import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
 import { Color } from "./pages/products/colors/Color";
+import Coupon from "./pages/coupon/Coupon";
+import CreateCoupon from "./pages/coupon/create_coupon";
+import UpdateCoupon from "./pages/coupon/update_coupon";
 
 const ProtectedRoutes = () => {
   
@@ -53,6 +56,9 @@ function App() {
       <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/coupon" element={<Coupon />} />
+        <Route path="/coupon/create" element={<CreateCoupon />} />
+        <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/material" element={<Material />} />
