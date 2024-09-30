@@ -251,7 +251,7 @@ const Coupon = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <IconButton component={Link} to={`/coupon/edit/${coupon.id}`}>
+                    <IconButton component={Link} to={`/coupon/detail/${coupon.id}`}>
                       <EditIcon />
                     </IconButton>
                     <IconButton onClick={() => onDelete(coupon.id)}>

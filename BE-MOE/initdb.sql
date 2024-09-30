@@ -216,7 +216,7 @@ VALUES ('Adidas', 1, 1, NOW(), NOW()), ('Nike', 1, 1, NOW(), NOW()), ('Fila', 1,
 INSERT INTO materials (name, created_by, updated_by, create_at, update_at)
 VALUES ('Fine cotton', 2, 1, NOW(), NOW()), ('Fine cotton', 1, 1, NOW(), NOW()), ('Twill', 2, 1, NOW(), NOW());
 
-INSERT INTO sizes (name, length, withd, sleeve, created_by, updated_by, create_at, update_at)
+INSERT INTO sizes (name, length, width, sleeve, created_by, updated_by, create_at, update_at)
 VALUES ('S', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW()), ('L', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW());
 
 INSERT INTO colors (name, hex_color_code, created_by, updated_by, create_at, update_at)
@@ -257,7 +257,7 @@ VALUES
 
 -- coupons
 -- Insert 5 sample records
-INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `condition`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `created_at`, `updated_at`, `is_deleted`)
+INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
 VALUES
 ('SAVE10', '10% off above 5000', 'PERCENTAGE', 10, NULL, 5000, 1, 'PUBLIC', '2024-01-01 00:00:00', '2024-12-31 23:59:59', '10% off on orders above 5000', 1, 1, NOW(), NOW(), 0),
 ('FLAT500', 'Flat 500 off above 3000', 'FIXED_AMOUNT', 500, NULL, 3000, 2, 'PERSONAL', '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'Flat 500 off on orders above 3000', 2, 2, NOW(), NOW(), 0),
