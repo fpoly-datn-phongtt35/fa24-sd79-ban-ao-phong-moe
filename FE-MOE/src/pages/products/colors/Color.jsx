@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import {
-  fetchAllCategories,
-  postCategory,
-  putCategory,
-  deleteCategory,
-} from "~/apis/categoriesApi";
+import { fetchAllColors, postColor, putColor, deleteColor } from "~/apis/colorApi";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { Grid, TextField, Box, Typography } from "@mui/material";
-import { DialogModify } from "~/components/common/DialogModify";
-import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
+import { DialogStore } from "~/components/colors/DialogStore";
+import { DialogIconUpdate } from "~/components/colors/DialogIconUpdate";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -23,36 +18,36 @@ import IconButton from "@mui/material/IconButton";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 
-export const Categories = () => {
-  const [categories, setCategories] = useState(null);
+export const Color = () => {
+  const [colors, setColors] = useState(null);
 
   useEffect(() => {
-    handleSetCategories();
+    handleSetColors();
   }, []);
 
-  const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
-    setCategories(res.data);
+  const handleSetColors = async () => {
+    const res = await fetchAllColors();
+    setColors(res.data);
   };
 
-  const handlePostCategory = async (data) => {
-    await postCategory(data);
-    handleSetCategories();
+  const handlePostColor = async (data) => {
+    await postColor(data);
+    handleSetColors();
   };
 
-  const handleEditCategory = async (data, id) => {
-    await putCategory(data, id);
-    handleSetCategories();
+  const handleEditColor = async (data, id) => {
+    await putColor(data, id);
+    handleSetColors();
   };
 
   const handleDelete = async (id) => {
-    await deleteCategory(id);
-    handleSetCategories();
+    await deleteColor(id);
+    handleSetColors();
   };
   const ondelete = async (id) => {
     swal({
       title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
+      text: "Bạn có chắc chắn xóa color này?",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -83,22 +78,21 @@ export const Categories = () => {
           gutterBottom
           color="#fff"
         >
-          Quản lý danh mục
+          Quản lý color
         </Typography>
       </Grid>
       <Box className="mb-5 mt-5">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+            <TextField variant="standard" label="Tìm kiếm color" fullWidth />
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
-              <DialogModify
-                buttonTitle="Thêm mới danh mục"
+              <DialogStore
+                buttonTitle="Thêm mới color"
                 icon={<AddIcon />}
-                title="Thêm mới danh mục"
-                label="Nhập tên danh mục"
-                handleSubmit={handlePostCategory}
+                title="Thêm mới color"
+                handleSubmit={handlePostColor}
               />
             </Box>
           </Grid>
@@ -110,8 +104,8 @@ export const Categories = () => {
             <TableHead>
               <TableRow>
                 <TableCell>STT</TableCell>
-                <TableCell>Tên danh mục</TableCell>
-                <TableCell>Sản phẩm</TableCell>
+                <TableCell>Tên màu</TableCell>
+                <TableCell>Hex code</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Ngày sửa</TableCell>
                 <TableCell>Người tạo</TableCell>
@@ -119,28 +113,28 @@ export const Categories = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories &&
-                categories.map((category, index) => (
+              {colors &&
+                colors.map((color, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.productCount}</TableCell>
-                    <TableCell>{category.createdAt}</TableCell>
-                    <TableCell>{category.updatedAt}</TableCell>
-                    <TableCell>{category.createdBy}</TableCell>
+                    <TableCell>{color.name}</TableCell>
+                    <TableCell>{color.hex_code}</TableCell>
+                    <TableCell>{color.createdAt}</TableCell>
+                    <TableCell>{color.updatedAt}</TableCell>
+                    <TableCell>{color.createdBy}</TableCell>
                     <TableCell>
-                      <DialogModifyIconButton
+                      <DialogIconUpdate
                         icon={<EditIcon />}
-                        title="Chỉnh sửa danh mục"
-                        label="Nhập tên danh mục"
+                        title="Chỉnh sửa color"
+                        label="Nhập tên color"
                         color="warning"
-                        value={category.name}
-                        id={category.id}
-                        handleSubmit={handleEditCategory}
+                        value={color}
+                        id={color.id}
+                        handleSubmit={handleEditColor}
                       />
                       <IconButton
                         color="error"
-                        onClick={() => ondelete(category.id)}
+                        onClick={() => ondelete(color.id)}
                       >
                         <DeleteIcon />
                       </IconButton>

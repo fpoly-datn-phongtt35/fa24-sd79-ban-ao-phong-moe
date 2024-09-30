@@ -21,7 +21,7 @@ export const DialogModifyIconButton = (props) => {
 
   return (
     <React.Fragment>
-      <IconButton color="warning" onClick={handleClickOpen}>
+      <IconButton color={props.color} onClick={handleClickOpen}>
         {props.icon}
       </IconButton>
       <Dialog
@@ -34,7 +34,7 @@ export const DialogModifyIconButton = (props) => {
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
             const value = formJson.value;
-            console.log(value);
+            // console.log(value);
             const data = {
               name: value,
               userId: localStorage.getItem("userId"),
@@ -52,7 +52,7 @@ export const DialogModifyIconButton = (props) => {
             margin="dense"
             id="value"
             name="value"
-            label="Nhập tên danh mục"
+            label={props.label}
             type="text"
             fullWidth
             variant="standard"

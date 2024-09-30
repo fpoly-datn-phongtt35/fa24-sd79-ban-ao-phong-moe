@@ -18,12 +18,17 @@ export const Sidebar_ = () => {
         <MenuItem icon={<i className="fa-solid fa-house"></i>} component={<Link to="/"/>}> Trang chủ </MenuItem>
         <SubMenu label="Bán hàng" icon={<i className="fa-solid fa-cart-shopping"></i>}>
           <MenuItem component={<Link to="/dashboard?offline"/>}> Offline </MenuItem>
-          <MenuItem> Onlince </MenuItem>
+          <MenuItem> Online </MenuItem>
         </SubMenu>
         <SubMenu label="Sản phẩm" icon={<i className="fa-solid fa-shirt"></i>}>
           <MenuItem component={<Link to="/product"/>}> Quản lý sản phẩm </MenuItem>
-          <MenuItem component={<Link to="categories"/>}> Quản lý mục </MenuItem>
-          <MenuItem> Quản lý thương hiệu </MenuItem>
+          <MenuItem component={<Link to="categories"/>}> Quản lý danh mục </MenuItem>
+          <MenuItem component={<Link to="/brand"/>}> Quản lý thương hiệu </MenuItem>
+          <MenuItem component={<Link to="/material"/>}> Quản lý chất liệu </MenuItem>
+          <SubMenu label="Thuộc tính sản phẩm">
+            <MenuItem component={<Link to="/size"/>}> Quản lý size </MenuItem>
+            <MenuItem component={<Link to="/color"/>}> Quản lý color </MenuItem>
+          </SubMenu>
         </SubMenu>
         <SubMenu label="Cusomer" icon={<i className="fa-solid fa-users"></i>}>
           <MenuItem> ABC </MenuItem>

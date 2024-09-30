@@ -15,7 +15,7 @@ export const Header = () => {
     <header className="header">
       <div className="logo">
         <img
-          src="https://www.logolynx.com/images/logolynx/42/4240b79d919cfa02c483d8936894d63d.png"
+          src="https://www.moe.co.nz/wp-content/uploads/2021/12/Moe_Logo_Alpha.png"
           alt="MOE Logo"
           className="img-fluid"
           style={{ width: "100px", cursor: "pointer" }}

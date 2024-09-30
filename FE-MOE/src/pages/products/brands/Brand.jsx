@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import {
-  fetchAllCategories,
-  postCategory,
-  putCategory,
-  deleteCategory,
-} from "~/apis/categoriesApi";
+import { fetchAllBrands, postBrand, putBrand, deleteBrand } from "~/apis/brandsApi";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -23,36 +18,36 @@ import IconButton from "@mui/material/IconButton";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 
-export const Categories = () => {
-  const [categories, setCategories] = useState(null);
+export const Brand = () => {
+  const [brands, setBrands] = useState(null);
 
   useEffect(() => {
-    handleSetCategories();
+    handleSetBrands();
   }, []);
 
-  const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
-    setCategories(res.data);
+  const handleSetBrands = async () => {
+    const res = await fetchAllBrands();
+    setBrands(res.data);
   };
 
-  const handlePostCategory = async (data) => {
-    await postCategory(data);
-    handleSetCategories();
+  const handlePostBrand = async (data) => {
+    await postBrand(data);
+    handleSetBrands();
   };
 
-  const handleEditCategory = async (data, id) => {
-    await putCategory(data, id);
-    handleSetCategories();
+  const handleEditBrand = async (data, id) => {
+    await putBrand(data, id);
+    handleSetBrands();
   };
 
   const handleDelete = async (id) => {
-    await deleteCategory(id);
-    handleSetCategories();
+    await deleteBrand(id);
+    handleSetBrands();
   };
   const ondelete = async (id) => {
     swal({
       title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
+      text: "Bạn có chắc chắn xóa thương hiệu này?",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -83,22 +78,22 @@ export const Categories = () => {
           gutterBottom
           color="#fff"
         >
-          Quản lý danh mục
+          Quản lý thương hiệu
         </Typography>
       </Grid>
       <Box className="mb-5 mt-5">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+            <TextField variant="standard" label="Tìm kiếm thương hiệu" fullWidth />
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               <DialogModify
-                buttonTitle="Thêm mới danh mục"
+                buttonTitle="Thêm mới thương hiệu"
                 icon={<AddIcon />}
-                title="Thêm mới danh mục"
-                label="Nhập tên danh mục"
-                handleSubmit={handlePostCategory}
+                title="Thêm mới thương hiệu"
+                label="Nhập tên thương hiệu"
+                handleSubmit={handlePostBrand}
               />
             </Box>
           </Grid>
@@ -110,7 +105,7 @@ export const Categories = () => {
             <TableHead>
               <TableRow>
                 <TableCell>STT</TableCell>
-                <TableCell>Tên danh mục</TableCell>
+                <TableCell>Tên thương hiệu</TableCell>
                 <TableCell>Sản phẩm</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Ngày sửa</TableCell>
@@ -119,28 +114,28 @@ export const Categories = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories &&
-                categories.map((category, index) => (
+              {brands &&
+                brands.map((brands, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.productCount}</TableCell>
-                    <TableCell>{category.createdAt}</TableCell>
-                    <TableCell>{category.updatedAt}</TableCell>
-                    <TableCell>{category.createdBy}</TableCell>
+                    <TableCell>{brands.name}</TableCell>
+                    <TableCell>{brands.productCount}</TableCell>
+                    <TableCell>{brands.createdAt}</TableCell>
+                    <TableCell>{brands.updatedAt}</TableCell>
+                    <TableCell>{brands.createdBy}</TableCell>
                     <TableCell>
                       <DialogModifyIconButton
                         icon={<EditIcon />}
-                        title="Chỉnh sửa danh mục"
-                        label="Nhập tên danh mục"
+                        title="Chỉnh sửa thương hiệu"
+                        label="Nhập tên thương hiệu"
                         color="warning"
-                        value={category.name}
-                        id={category.id}
-                        handleSubmit={handleEditCategory}
+                        value={brands.name}
+                        id={brands.id}
+                        handleSubmit={handleEditBrand}
                       />
                       <IconButton
                         color="error"
-                        onClick={() => ondelete(category.id)}
+                        onClick={() => ondelete(brands.id)}
                       >
                         <DeleteIcon />
                       </IconButton>

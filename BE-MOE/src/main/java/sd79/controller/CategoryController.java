@@ -12,14 +12,14 @@ import sd79.service.CategoryService;
 
 @RestController
 @RequestMapping("api/${api.version}/categories")
-@Tag(name = "Category Controller", description = "Manage adding, editing, and deleting product categories")
+@Tag(name = "Category Controller", description = "Manage adding, editing, and deleting product Category")
 @RequiredArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
 
     @Operation(
-            summary = "Get Categories",
-            description = "Get all categories from database"
+            summary = "Get Category",
+            description = "Get all Category from database"
     )
     @GetMapping
     public ResponseData<?> getAllCategories() {
@@ -27,8 +27,8 @@ public class CategoryController {
     }
 
     @Operation(
-            summary = "New Categories",
-            description = "New categories into database"
+            summary = "New Category",
+            description = "New Category into database"
     )
     @PostMapping
     public ResponseData<?> storeCategory(@Valid @RequestBody CategoryRequest request){

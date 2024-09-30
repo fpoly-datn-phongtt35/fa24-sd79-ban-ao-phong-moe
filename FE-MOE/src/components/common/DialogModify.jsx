@@ -50,7 +50,7 @@ export const DialogModify = (props) => {
               margin="dense"
               id="value"
               name="value"
-              label="Nhập tên danh mục"
+              label={props.label}
               type="text"
               fullWidth
               variant="standard"

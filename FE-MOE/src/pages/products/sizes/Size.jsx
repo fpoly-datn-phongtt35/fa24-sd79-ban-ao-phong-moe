@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import {
-  fetchAllCategories,
-  postCategory,
-  putCategory,
-  deleteCategory,
-} from "~/apis/categoriesApi";
+import { fetchAllSizes, postSize, putSize, deleteSize } from "~/apis/sizesApi";
+
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { Grid, TextField, Box, Typography } from "@mui/material";
-import { DialogModify } from "~/components/common/DialogModify";
-import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
+
+import { DialogStore } from "~/components/sizes/DialogStore";
+import { DialogIconUpdate } from "~/components/sizes/DialogIconUpdate";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -23,36 +20,36 @@ import IconButton from "@mui/material/IconButton";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 
-export const Categories = () => {
-  const [categories, setCategories] = useState(null);
+export const Size = () => {
+  const [sizes, setSizes] = useState(null);
 
   useEffect(() => {
-    handleSetCategories();
+    handleSetSizes();
   }, []);
 
-  const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
-    setCategories(res.data);
+  const handleSetSizes = async () => {
+    const res = await fetchAllSizes();
+    setSizes(res.data);
   };
 
-  const handlePostCategory = async (data) => {
-    await postCategory(data);
-    handleSetCategories();
+  const handlePostSize = async (data) => {
+    await postSize(data);
+    handleSetSizes();
   };
 
-  const handleEditCategory = async (data, id) => {
-    await putCategory(data, id);
-    handleSetCategories();
+  const handleEditSize = async (data, id) => {
+    await putSize(data, id);
+    handleSetSizes();
   };
 
   const handleDelete = async (id) => {
-    await deleteCategory(id);
-    handleSetCategories();
+    await deleteSize(id);
+    handleSetSizes();
   };
   const ondelete = async (id) => {
     swal({
       title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
+      text: "Bạn có chắc chắn xóa size này?",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -83,22 +80,21 @@ export const Categories = () => {
           gutterBottom
           color="#fff"
         >
-          Quản lý danh mục
+          Quản lý size
         </Typography>
       </Grid>
       <Box className="mb-5 mt-5">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+            <TextField variant="standard" label="Tìm kiếm size" fullWidth />
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
-              <DialogModify
-                buttonTitle="Thêm mới danh mục"
+              <DialogStore
+                buttonTitle="Thêm mới size"
                 icon={<AddIcon />}
-                title="Thêm mới danh mục"
-                label="Nhập tên danh mục"
-                handleSubmit={handlePostCategory}
+                title="Thêm mới size"
+                handleSubmit={handlePostSize}
               />
             </Box>
           </Grid>
@@ -110,8 +106,10 @@ export const Categories = () => {
             <TableHead>
               <TableRow>
                 <TableCell>STT</TableCell>
-                <TableCell>Tên danh mục</TableCell>
-                <TableCell>Sản phẩm</TableCell>
+                <TableCell>Size</TableCell>
+                <TableCell>Chiều dài</TableCell>
+                <TableCell>Chiều rộng</TableCell>
+                <TableCell>Độ dài tay áo</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Ngày sửa</TableCell>
                 <TableCell>Người tạo</TableCell>
@@ -119,28 +117,30 @@ export const Categories = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories &&
-                categories.map((category, index) => (
+              {sizes &&
+                sizes.map((sizes, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.productCount}</TableCell>
-                    <TableCell>{category.createdAt}</TableCell>
-                    <TableCell>{category.updatedAt}</TableCell>
-                    <TableCell>{category.createdBy}</TableCell>
+                    <TableCell>{sizes.name}</TableCell>
+                    <TableCell>{sizes.length}</TableCell>
+                    <TableCell>{sizes.width}</TableCell>
+                    <TableCell>{sizes.sleeve}</TableCell>
+                    <TableCell>{sizes.createdAt}</TableCell>
+                    <TableCell>{sizes.updatedAt}</TableCell>
+                    <TableCell>{sizes.createdBy}</TableCell>
                     <TableCell>
-                      <DialogModifyIconButton
+                      <DialogIconUpdate
                         icon={<EditIcon />}
-                        title="Chỉnh sửa danh mục"
-                        label="Nhập tên danh mục"
+                        title="Chỉnh sửa size"
+                        label="Nhập tên size"
                         color="warning"
-                        value={category.name}
-                        id={category.id}
-                        handleSubmit={handleEditCategory}
+                        value={sizes}
+                        id={sizes.id}
+                        handleSubmit={handleEditSize}
                       />
                       <IconButton
                         color="error"
-                        onClick={() => ondelete(category.id)}
+                        onClick={() => ondelete(sizes.id)}
                       >
                         <DeleteIcon />
                       </IconButton>

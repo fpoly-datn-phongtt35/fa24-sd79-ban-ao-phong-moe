@@ -34,10 +34,15 @@ public class Product  extends AbstractEntity<Long> implements Serializable {
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id")
+    private Material material;
+
     @Column(name = "origin", length = 30)
     private String origin;
 
     @OneToMany(mappedBy = "product")
     private Set<ProductDetail> productDetails = new LinkedHashSet<>();
+
 
 }

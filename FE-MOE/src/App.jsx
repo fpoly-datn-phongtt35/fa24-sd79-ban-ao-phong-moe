@@ -5,6 +5,10 @@ import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
 import { Categories } from "./pages/products/categories/Categories";
+import { Brand } from "./pages/products/brands/Brand";
+import { Material } from "./pages/products/materials/Material";
+import { Size } from "./pages/products/sizes/Size";
+import { Color } from "./pages/products/colors/Color";
 
 const ProtectedRoutes = () => {
   
@@ -50,6 +54,10 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/brand" element={<Brand />} />
+        <Route path="/material" element={<Material />} />
+        <Route path="/size" element={<Size />} />
+        <Route path="/color" element={<Color />} />
       </Route>
     </Routes>
   );

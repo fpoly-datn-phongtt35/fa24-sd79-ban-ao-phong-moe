@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import {
-  fetchAllCategories,
-  postCategory,
-  putCategory,
-  deleteCategory,
-} from "~/apis/categoriesApi";
+import { fetchAllBrands, postBrand, putBrand, deleteBrand } from "~/apis/brandsApi";
+
+import { fetchAllMaterials, postMaterial, putMaterial, deleteMaterial } from "~/apis/materialApi";
+
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -23,36 +21,36 @@ import IconButton from "@mui/material/IconButton";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 
-export const Categories = () => {
-  const [categories, setCategories] = useState(null);
+export const Material = () => {
+  const [materials, setMaterials] = useState(null);
 
   useEffect(() => {
-    handleSetCategories();
+    handleSetMaterials();
   }, []);
 
-  const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
-    setCategories(res.data);
+  const handleSetMaterials = async () => {
+    const res = await fetchAllMaterials();
+    setMaterials(res.data);
   };
 
-  const handlePostCategory = async (data) => {
-    await postCategory(data);
-    handleSetCategories();
+  const handlePostMaterial= async (data) => {
+    await postMaterial(data);
+    handleSetMaterials();
   };
 
-  const handleEditCategory = async (data, id) => {
-    await putCategory(data, id);
-    handleSetCategories();
+  const handleEditMaterial= async (data, id) => {
+    await putMaterial(data, id);
+    handleSetMaterials();
   };
 
   const handleDelete = async (id) => {
-    await deleteCategory(id);
-    handleSetCategories();
+    await deleteMaterial(id);
+    handleSetMaterials();
   };
   const ondelete = async (id) => {
     swal({
       title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
+      text: "Bạn có chắc chắn xóa chất liệu này?",
       icon: "warning",
       buttons: true,
       dangerMode: true,
@@ -83,22 +81,22 @@ export const Categories = () => {
           gutterBottom
           color="#fff"
         >
-          Quản lý danh mục
+          Quản lý chất liệu
         </Typography>
       </Grid>
       <Box className="mb-5 mt-5">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+            <TextField variant="standard" label="Tìm kiếm chất liệu" fullWidth />
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               <DialogModify
-                buttonTitle="Thêm mới danh mục"
+                buttonTitle="Thêm mới chất liệu"
                 icon={<AddIcon />}
-                title="Thêm mới danh mục"
-                label="Nhập tên danh mục"
-                handleSubmit={handlePostCategory}
+                title="Thêm mới chất liệu"
+                label="Nhập tên chất liệu"
+                handleSubmit={handlePostMaterial}
               />
             </Box>
           </Grid>
@@ -110,7 +108,7 @@ export const Categories = () => {
             <TableHead>
               <TableRow>
                 <TableCell>STT</TableCell>
-                <TableCell>Tên danh mục</TableCell>
+                <TableCell>Tên chất liệu</TableCell>
                 <TableCell>Sản phẩm</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Ngày sửa</TableCell>
@@ -119,28 +117,28 @@ export const Categories = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {categories &&
-                categories.map((category, index) => (
+              {materials &&
+                materials.map((materials, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.productCount}</TableCell>
-                    <TableCell>{category.createdAt}</TableCell>
-                    <TableCell>{category.updatedAt}</TableCell>
-                    <TableCell>{category.createdBy}</TableCell>
+                    <TableCell>{materials.name}</TableCell>
+                    <TableCell>{materials.productCount}</TableCell>
+                    <TableCell>{materials.createdAt}</TableCell>
+                    <TableCell>{materials.updatedAt}</TableCell>
+                    <TableCell>{materials.createdBy}</TableCell>
                     <TableCell>
                       <DialogModifyIconButton
                         icon={<EditIcon />}
-                        title="Chỉnh sửa danh mục"
-                        label="Nhập tên danh mục"
+                        title="Chỉnh sửa chất liệu"
+                        label="Nhập tên chất liệu"
                         color="warning"
-                        value={category.name}
-                        id={category.id}
-                        handleSubmit={handleEditCategory}
+                        value={materials.name}
+                        id={materials.id}
+                        handleSubmit={handleEditMaterial}
                       />
                       <IconButton
                         color="error"
-                        onClick={() => ondelete(category.id)}
+                        onClick={() => ondelete(materials.id)}
                       >
                         <DeleteIcon />
                       </IconButton>

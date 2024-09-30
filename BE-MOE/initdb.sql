@@ -95,6 +95,7 @@ CREATE TABLE products(
 	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'),
 	category_id INT,
 	brand_id INT,
+	material_id INT,
 	origin VARCHAR(30),
 	created_by BIGINT,
 	updated_by BIGINT,
@@ -107,7 +108,7 @@ CREATE TABLE sizes(
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(10),
 	length FLOAT,
-	withd FLOAT,
+	width FLOAT,
 	sleeve FLOAT,
 	created_by BIGINT,
 	updated_by BIGINT,
@@ -124,7 +125,7 @@ CREATE TABLE colors(
 	updated_by BIGINT,
 	create_at DATETIME,
 	update_at DATETIME,
-	is_delete BIT DEFAULT 0
+	is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE product_images(
@@ -162,6 +163,8 @@ ALTER TABLE products ADD CONSTRAINT fk_products_category_id FOREIGN KEY (categor
 
 ALTER TABLE products ADD CONSTRAINT fk_products_brand_id FOREIGN KEY (brand_id) REFERENCES brands(id);
 
+ALTER TABLE products ADD CONSTRAINT fk_products_material_id FOREIGN KEY (material_id) REFERENCES materials(id);
+
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KEY (size_id) REFERENCES sizes(id);
@@ -187,6 +190,9 @@ VALUES ('Áo cộc tay', 1, 1, NOW(), NOW()),('Áo dài tay', 1, 1, NOW(), NOW()
 
 INSERT INTO brands (name, created_by, updated_by, create_at, update_at)
 VALUES ('Adidas', 1, 1, NOW(), NOW()), ('Nike', 1, 1, NOW(), NOW()), ('Fila', 1, 1, NOW(), NOW());
+
+INSERT INTO materials (name, created_by, updated_by, create_at, update_at)
+VALUES ('Fine cotton', 2, 1, NOW(), NOW()), ('Fine cotton', 1, 1, NOW(), NOW()), ('Twill', 2, 1, NOW(), NOW());
 
 INSERT INTO sizes (name, length, withd, sleeve, created_by, updated_by, create_at, update_at)
 VALUES ('S', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW()), ('L', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW());
