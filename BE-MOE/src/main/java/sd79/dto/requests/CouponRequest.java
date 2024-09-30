@@ -1,9 +1,10 @@
 package sd79.dto.requests;
 
-import sd79.enums.TodoDiscountType;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
+import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 
 import java.math.BigDecimal;
@@ -32,23 +33,28 @@ public class CouponRequest {
 
     @NotNull(message = "Minimum order value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Minimum order value must be greater than zero")
-    private BigDecimal minimumOrderValue;
+    private BigDecimal maxValue;
 
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
+    @NotNull(message = "Conditions order value is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Minimum order value must be greater than zero")
+    private BigDecimal conditions;
+
     @NotNull(message = "Type is required")
     private TodoType type;
 
     @NotNull(message = "Start date is required")
-    @FutureOrPresent(message = "Start date must be in the present or future")
     private Date startDate;
 
     @NotNull(message = "End date is required")
-    @Future(message = "End date must be in the future")
     private Date endDate;
 
     @Size(max = 255, message = "Description should not exceed 255 characters")
     private String description;
+
+    @NotNull(message = "User id must be not null!")
+    private Long userId;
 }

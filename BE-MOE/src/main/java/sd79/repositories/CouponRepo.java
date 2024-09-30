@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import sd79.model.Coupon;
 
 import java.util.Date;
+import java.util.List;
 
 @Repository
 public interface CouponRepo extends JpaRepository<Coupon, Long> {
@@ -23,6 +24,12 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
                                @Param("code") String code,
                                Pageable pageable);
 
+    @Query("FROM Coupon c " +
+            "WHERE (c.name LIKE %:keyword% OR c.code LIKE %:keyword%) " +
+            "OR (c.startDate BETWEEN :startDate AND :endDate)")
+    List<Coupon> findByKeywordAndDate(@Param("keyword") String keyword,
+                                      @Param("startDate") Date startDate,
+                                      @Param("endDate") Date endDate);
 
 
 

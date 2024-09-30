@@ -148,6 +148,28 @@ CREATE TABLE product_details(
 	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK')
 );
 
+-- coupons
+CREATE TABLE coupons (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(10) UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  discount_type ENUM('FIXED_AMOUNT', 'PERCENTAGE'),
+  discount_value DECIMAL(15,0),
+  max_value DECIMAL(15,0),
+  conditions DECIMAL(15,0),
+  quantity INT,
+  type ENUM('PUBLIC', 'PERSONAL'),
+  start_date DATETIME,
+  end_date DATETIME,
+  description TEXT,
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted BIT DEFAULT 0
+);
+
+
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
 
@@ -227,5 +249,14 @@ VALUES
 ('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
+-- coupons
+-- Insert 5 sample records
+INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `condition`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `created_at`, `updated_at`, `is_deleted`)
+VALUES
+('SAVE10', '10% off above 5000', 'PERCENTAGE', 10, NULL, 5000, 1, 'PUBLIC', '2024-01-01 00:00:00', '2024-12-31 23:59:59', '10% off on orders above 5000', 1, 1, NOW(), NOW(), 0),
+('FLAT500', 'Flat 500 off above 3000', 'FIXED_AMOUNT', 500, NULL, 3000, 2, 'PERSONAL', '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'Flat 500 off on orders above 3000', 2, 2, NOW(), NOW(), 0),
+('WELCOME', '15% off for new users', 'PERCENTAGE', 15, NULL, 4000, 3, 'PUBLIC', '2024-01-01 00:00:00', '2024-06-30 23:59:59', '15% discount for new users', 3, 3, NOW(), NOW(), 0),
+('FIRSTBUY', '1000 off first purchase', 'FIXED_AMOUNT', 1000, NULL, 6000, 1, 'PERSONAL', '2024-01-01 00:00:00', '2024-06-30 23:59:59', '1000 off on first purchase', 4, 4, NOW(), NOW(), 0),
+('HOLIDAY', '20% holiday season discount', 'PERCENTAGE', 20, NULL, 7000, 1, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', '20% holiday season discount', 5, 5, NOW(), NOW(), 0);
 
 

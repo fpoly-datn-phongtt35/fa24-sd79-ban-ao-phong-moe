@@ -4,8 +4,10 @@ import { Header } from "./components/layout/Header";
 import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
-import { Coupon } from "./pages/coupon/Coupon";
 import { Categories } from "./pages/products/categories/Categories";
+import Coupon from "./pages/coupon/Coupon";
+import CreateCoupon from "./pages/coupon/create_coupon";
+import UpdateCoupon from "./pages/coupon/update_coupon";
 
 const ProtectedRoutes = () => {
   
@@ -51,6 +53,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
         <Route path="/coupon" element={<Coupon />} />
+        <Route path="/coupon/create" element={<CreateCoupon />} />
+        <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/categories" element={<Categories />} />
       </Route>
     </Routes>

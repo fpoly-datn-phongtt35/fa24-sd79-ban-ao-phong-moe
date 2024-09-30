@@ -1,14 +1,15 @@
 package sd79.model;
 
-import sd79.enums.TodoDiscountType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -16,11 +17,7 @@ import java.util.Date;
 @Setter
 @Entity
 @Table(name = "coupons")
-public class Coupon {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+public class Coupon extends AbstractEntity<Long> implements Serializable {
 
     @Size(max = 10)
     @Column(name = "code", length = 10)
@@ -38,11 +35,14 @@ public class Coupon {
     @Column(name = "discount_value", precision = 15)
     private BigDecimal discountValue;
 
-    @Column(name = "minimum_order_value", precision = 15)
-    private BigDecimal minimumOrderValue;
+    @Column(name = "max_value", precision = 15)
+    private BigDecimal maxValue;
 
     @Column(name = "quantity")
     private Integer quantity;
+
+    @Column(name = "conditions", precision = 15)
+    private BigDecimal conditions;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
@@ -56,22 +56,6 @@ public class Coupon {
 
     @Column(name = "description")
     private String description;
-
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Column(name = "updated_by")
-    private Long updatedBy;
-
-    @Column(name = "created_at")
-    private Date createdAt;
-
-    @Column(name = "updated_at")
-    private Date updatedAt;
-
-    @ColumnDefault("b'0'")
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
 
     public String getStatus() {
         Date currentDate = new Date();
