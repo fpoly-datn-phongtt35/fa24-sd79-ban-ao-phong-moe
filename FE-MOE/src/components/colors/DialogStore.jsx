@@ -60,7 +60,6 @@ export const DialogStore = (props) => {
                 type="text"
                 fullWidth
                 variant="standard"
-                onChange={(event) => setValue({...value, name: event.target.value })}
               />
             </Grid2>
             <Grid2 size={6}>
@@ -74,7 +73,6 @@ export const DialogStore = (props) => {
                 type="color"
                 fullWidth
                 variant="standard"
-                onChange={(event) => setValue({...value, hex_code: event.target.value })}
               />
             </Grid2>
           </Grid2>
