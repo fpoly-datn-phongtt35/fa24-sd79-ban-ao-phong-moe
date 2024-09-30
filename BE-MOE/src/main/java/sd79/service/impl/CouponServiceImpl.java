@@ -38,18 +38,44 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     @Override
     public long createCoupon(CouponRequest couponRequest) { //tao phieu giam gia
-        Coupon coupon = new Coupon();
-        populateCouponData(coupon, couponRequest);
+        Coupon coupon = Coupon.builder()
+                .code(couponRequest.getCode())
+                .name(couponRequest.getName())
+                .discountValue(couponRequest.getDiscountValue())
+                .discountType(couponRequest.getDiscountType())
+                .maxValue(couponRequest.getMaxValue())
+                .quantity(couponRequest.getQuantity())
+                .conditions(couponRequest.getConditions())
+                .type(couponRequest.getType())
+                .startDate(couponRequest.getStartDate())
+                .endDate(couponRequest.getEndDate())
+                .description(couponRequest.getDescription())
+                .build();
+        coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
+        coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         return couponRepo.save(coupon).getId();
     }
 
     @Transactional
     @Override
-    public long updateCoupon(Long id, CouponRequest couponRequest) {//sua phieu giam gia
+    public long updateCoupon(Long id, CouponRequest couponRequest) { // sua phieu giam gia
         Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
-        populateCouponData(coupon, couponRequest);
+        coupon.setCode(couponRequest.getCode());
+        coupon.setName(couponRequest.getName());
+        coupon.setDiscountValue(couponRequest.getDiscountValue());
+        coupon.setDiscountType(couponRequest.getDiscountType());
+        coupon.setMaxValue(couponRequest.getMaxValue());
+        coupon.setQuantity(couponRequest.getQuantity());
+        coupon.setConditions(couponRequest.getConditions());
+        coupon.setType(couponRequest.getType());
+        coupon.setStartDate(couponRequest.getStartDate());
+        coupon.setEndDate(couponRequest.getEndDate());
+        coupon.setDescription(couponRequest.getDescription());
+        coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
+
         return couponRepo.save(coupon).getId();
     }
+
 
     @Transactional
     @Override
@@ -67,24 +93,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public List<Coupon> findByKeywordAndDate(String keyword, Date startDate, Date endDate) {
-        return couponRepo.findByKeywordAndDate(keyword,startDate,endDate);
-    }
-
-
-    private void populateCouponData(Coupon coupon, CouponRequest couponRequest) {//lay du lieu phieu giam gia request de them
-        coupon.setCode(couponRequest.getCode());
-        coupon.setName(couponRequest.getName());
-        coupon.setDiscountType(couponRequest.getDiscountType());
-        coupon.setDiscountValue(couponRequest.getDiscountValue());
-        coupon.setMaxValue(couponRequest.getMaxValue());
-        coupon.setQuantity(couponRequest.getQuantity());
-        coupon.setConditions(couponRequest.getConditions());
-        coupon.setType(couponRequest.getType());
-        coupon.setStartDate(couponRequest.getStartDate());
-        coupon.setEndDate(couponRequest.getEndDate());
-        coupon.setDescription(couponRequest.getDescription());
-        coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
-        coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
+        return couponRepo.findByKeywordAndDate(keyword, startDate, endDate);
     }
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach

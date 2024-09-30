@@ -3,8 +3,7 @@ package sd79.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
@@ -16,6 +15,9 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "coupons")
 public class Coupon extends AbstractEntity<Long> implements Serializable {
 
