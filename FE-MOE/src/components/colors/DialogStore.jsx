@@ -1,11 +1,5 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { Grid2 } from "@mui/material";
+import { Grid2, DialogTitle, DialogContent, Dialog, DialogActions, TextField, Button } from "@mui/material";
 
 export const DialogStore = (props) => {
   const [open, setOpen] = React.useState(false);

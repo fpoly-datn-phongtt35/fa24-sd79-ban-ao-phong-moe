@@ -13,7 +13,7 @@ export const Sidebar_ = () => {
   };
   // Icon link https://fontawesome.com/search
   return (
-    <Sidebar backgroundColor="fff">
+    <Sidebar className="sidebar">
       <Menu>
         <MenuItem icon={<i className="fa-solid fa-house"></i>} component={<Link to="/"/>}> Trang chủ </MenuItem>
         <SubMenu label="Bán hàng" icon={<i className="fa-solid fa-cart-shopping"></i>}>

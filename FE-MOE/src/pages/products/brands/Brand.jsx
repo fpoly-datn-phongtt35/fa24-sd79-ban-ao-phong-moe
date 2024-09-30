@@ -1,22 +1,32 @@
 import { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import { fetchAllBrands, postBrand, putBrand, deleteBrand } from "~/apis/brandsApi";
+import {
+  fetchAllBrands,
+  postBrand,
+  putBrand,
+  deleteBrand,
+} from "~/apis/brandsApi";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { Grid, TextField, Box, Typography } from "@mui/material";
 import { DialogModify } from "~/components/common/DialogModify";
 import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import Pagination from "@mui/material/Pagination";
-import Stack from "@mui/material/Stack";
+import {
+  Grid,
+  TextField,
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Pagination,
+  Stack,
+} from "@mui/material";
 
 export const Brand = () => {
   const [brands, setBrands] = useState(null);
@@ -84,7 +94,11 @@ export const Brand = () => {
       <Box className="mb-5 mt-5">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm thương hiệu" fullWidth />
+            <TextField
+              variant="standard"
+              label="Tìm kiếm thương hiệu"
+              fullWidth
+            />
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
