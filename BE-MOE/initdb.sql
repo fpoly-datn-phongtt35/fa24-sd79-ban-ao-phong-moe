@@ -58,6 +58,30 @@ CREATE TABLE salary (
 		updated_at DATETIME
 );
 
+-- Customer
+CREATE TABLE customers (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    first_name varchar(25),
+    last_name varchar(50),
+    phone_number varchar(20),
+    gender enum('MALE', 'FEMALE', 'OTHER'),
+    date_of_birth date,
+    image varchar(200),
+    created_at datetime,
+    updated_at datetime
+);
+
+CREATE TABLE customer_address (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    customer_id bigint UNIQUE,
+    street_name varchar(255),
+    ward varchar(255),
+    district varchar(255),
+    city varchar(255),
+    country varchar(255)
+);
+
+-- Product
 CREATE TABLE categories(
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(50),
@@ -178,6 +202,9 @@ ALTER TABLE employees ADD CONSTRAINT fk_position_id FOREIGN KEY (position_id) RE
 
 ALTER TABLE employees ADD CONSTRAINT fk_salary_id FOREIGN KEY (salary_id) REFERENCES salary(id);
 
+-- Customer
+ALTER TABLE customer_address ADD CONSTRAINT fk_customer_address FOREIGN KEY (customer_id) REFERENCES customers(id);
+
 -- Product
 ALTER TABLE users ADD CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id);
 
@@ -255,8 +282,24 @@ VALUES
 ('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
--- coupons
--- Insert 5 sample records
+-- Customer
+INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `created_at`, `updated_at`)
+VALUES
+    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', NOW(), NOW()),
+    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', NOW(), NOW()),
+    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', NOW(), NOW()),
+    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', NOW(), NOW()),
+    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', NOW(), NOW());
+
+INSERT INTO `customer_address` (`customer_id`, `street_name`, `ward`, `district`, `city`, `country`)
+VALUES
+    (1, '123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
+    (2, '456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
+    (3, '789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
+    (4, '101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
+    (5, '202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
+		
+-- Coupons
 INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
 VALUES
 ('SAVE10', '10% off above 5000', 'PERCENTAGE', 10, NULL, 5000, 1, 'PUBLIC', '2024-01-01 00:00:00', '2024-12-31 23:59:59', '10% off on orders above 5000', 1, 1, NOW(), NOW(), 0),

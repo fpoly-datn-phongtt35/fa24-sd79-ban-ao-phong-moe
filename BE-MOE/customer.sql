@@ -1,26 +1,28 @@
-CREATE TABLE `customers` (
-                             `id` bigint PRIMARY KEY AUTO_INCREMENT,
-                             `first_name` varchar(25),
-                             `last_name` varchar(50),
-                             `phone_number` varchar(20),
-                             `gender` enum('MALE', 'FEMALE', 'OTHER'),
-                             `date_of_birth` date,
-                             `image` varchar(200),
-                             `created_at` datetime,
-                             `updated_at` datetime
+CREATE TABLE customers (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    first_name varchar(25),
+    last_name varchar(50),
+    phone_number varchar(20),
+    gender enum('MALE', 'FEMALE', 'OTHER'),
+    date_of_birth date,
+    image varchar(200),
+    created_at datetime,
+    updated_at datetime
 );
 
-
-CREATE TABLE `customer_address` (
-                                    `id` bigint PRIMARY KEY AUTO_INCREMENT,
-                                    `customer_id` bigint UNIQUE,
-                                    `street_name` varchar(255),
-                                    `ward` varchar(255),
-                                    `district` varchar(255),
-                                    `city` varchar(255),
-                                    `country` varchar(255),
-                                    FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
+CREATE TABLE customer_address (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    customer_id bigint UNIQUE,
+    street_name varchar(255),
+    ward varchar(255),
+    district varchar(255),
+    city varchar(255),
+    country varchar(255)
 );
+
+ALTER TABLE customer_address ADD CONSTRAINT fk_customer_address FOREIGN KEY (customer_id) REFERENCES customers(id);
+
+
 
 INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `created_at`, `updated_at`)
 VALUES
