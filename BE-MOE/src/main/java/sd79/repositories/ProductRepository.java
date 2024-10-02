@@ -10,4 +10,10 @@ import sd79.model.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT count(p) from Product p where p.category.id = :idCategory and p.isDeleted = false ")
     Long countByCategory(@Param("idCategory") Integer idCategory);
+
+    @Query("SELECT count(p) from Product p where p.brand.id = :idBrand and p.isDeleted = false ")
+    Long countByBrand(@Param("idBrand") Integer idBrand);
+
+    @Query("SELECT count(p) from Product p where p.material.id = :idMaterial and p.isDeleted = false ")
+    Long countByMaterial(@Param("idMaterial") Integer idMaterial);
 }
