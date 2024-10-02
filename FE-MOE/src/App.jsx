@@ -9,6 +9,7 @@ import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
 import { Color } from "./pages/products/colors/Color";
+import { ProductFrom } from "./pages/products/details/ProductForm";
 import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/create_coupon";
 import UpdateCoupon from "./pages/coupon/update_coupon";
@@ -64,6 +65,7 @@ function App() {
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
+        <Route path="/product/add" element={<ProductFrom />} />
       </Route>
     </Routes>
   );
