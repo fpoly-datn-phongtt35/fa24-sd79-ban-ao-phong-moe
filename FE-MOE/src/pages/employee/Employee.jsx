@@ -41,13 +41,13 @@ export const Employee = () => {
                 <span className="fw-bold">Quản lý nhân viên</span>
             </div>
             <div className="text-end">
-                <button onClick={addNewEmployee} className="btn btn-primary m-3">Add Employee</button>
+                <button onClick={addNewEmployee} className="btn btn-primary m-3">Thêm nhân viên</button>
             </div>
             <table className="table">
                 <thead>
                     <tr className="text-center">
 
-                        <th scope="col">Id</th>
+                        <th scope="col">STT</th>
                         <th scope="col">Tên</th>
                         <th scope="col">Tên Đệm</th>
                         <th scope="col">Sđt</th>
@@ -63,8 +63,8 @@ export const Employee = () => {
                     {employee &&
                         employee.map((employee, index) => (
                             <tr key={index} className="text-center">
-                                {/* <th scope="row">{index + 1}</th> */}
-                                <td>{employee.id}</td>
+                                <th scope="row">{index + 1}</th>
+                                {/* <td>{employee.id}</td> */}
                                 <td>{employee.first_name}</td>
                                 <td>{employee.last_name}</td>
                                 <td>{employee.phone_number}</td>
@@ -74,8 +74,8 @@ export const Employee = () => {
                                 <td>{employee.employee_address}</td>
                                 <td>{employee.position}</td>
                                 <td>
-                                    <button className="btn btn-danger" onClick={() => removeEmployee(employee.id)}>Delete</button>	&nbsp;
-                                    <button className="btn btn-info" onClick={() => updateEmployee(employee.id)}>Update</button>
+                                    <button className="btn btn-danger" onClick={() => removeEmployee(employee.id)}>Xóa</button>	&nbsp;
+                                    <button className="btn btn-info" onClick={() => updateEmployee(employee.id)}>Sửa</button>
                                 </td>
                             </tr>
                         ))}

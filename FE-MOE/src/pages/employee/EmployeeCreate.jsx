@@ -128,9 +128,9 @@ const EmployeesCreate = () => {
     }
     const pageTitle = () => {
         if (id) {
-            return <h2 className='text-center'>Update Employee</h2>;
+            return <h2 className='text-center'>Sửa nhân viên</h2>;
         } else {
-            return <h2 className='text-center'>Add Employee</h2>;
+            return <h2 className='text-center'>Thêm nhân viên</h2>;
         }
     };
 
@@ -178,7 +178,7 @@ const EmployeesCreate = () => {
                                         checked={gender === 'MALE'} // Kiểm tra xem gender có phải là 'MALE' không
                                         onChange={() => setGender('MALE')} // Cập nhật gender khi chọn 'MALE'
                                     />
-                                    <label className="form-check-label" htmlFor="MALE">MALE</label>
+                                    <label className="form-check-label" htmlFor="MALE">Nam</label>
                                 </div>
 
                                 <div className='form-check form-check-inline'>
@@ -190,7 +190,7 @@ const EmployeesCreate = () => {
                                         checked={gender === 'FEMALE'} // Kiểm tra xem gender có phải là 'FEMALE' không
                                         onChange={() => setGender('FEMALE')} // Cập nhật gender khi chọn 'FEMALE'
                                     />
-                                    <label className="form-check-label" htmlFor="FEMALE">FEMALE</label>
+                                    <label className="form-check-label" htmlFor="FEMALE">Nữ</label>
                                 </div>
 
                                 <div className='form-check form-check-inline'>
@@ -202,7 +202,7 @@ const EmployeesCreate = () => {
                                         checked={gender === 'OTHER'} // Kiểm tra xem gender có phải là 'OTHER' không
                                         onChange={() => setGender('OTHER')} // Cập nhật gender khi chọn 'OTHER'
                                     />
-                                    <label className="form-check-label" htmlFor="OTHER">OTHER</label>
+                                    <label className="form-check-label" htmlFor="OTHER">Khác</label>
                                 </div>
                             </div>
 
@@ -233,7 +233,7 @@ const EmployeesCreate = () => {
                                 </select>
                             </div>
 
-                            <button className='btn btn-primary ' onClick={saveEmployee}>Submit</button>
+                            <button className='btn btn-primary mt-3 ' onClick={saveEmployee}>Submit</button>
                         </form>
                     </div>
                 </div>
