@@ -1,14 +1,22 @@
 package sd79.service;
 
-import org.springframework.http.ResponseEntity;
+
+import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.EmployeeRequest;
 import sd79.dto.response.EmployeeResponse;
-import sd79.model.Employee;
+
 
 import java.util.List;
 
-
 public interface EmployeeService {
-    List<Employee> getAllEmployee();
+    List<EmployeeResponse> getEmployee();
+    EmployeeResponse getEmployeeById(Integer id);
+    long createEmployee(EmployeeRequest employeeRequest);
+    long updateEmployee(Integer id, EmployeeRequest employeeRequest);
+    void deleteEmployee(Integer id);
 
-    ResponseEntity<?> save(EmployeeResponse employeeResponse);
+    int storeEmployee(EmployeeReq req);
+    void updateEmp(EmployeeReq req, Integer id);
+
+
 }

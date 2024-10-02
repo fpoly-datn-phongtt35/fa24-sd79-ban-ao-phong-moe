@@ -1,7 +1,6 @@
-package sd79.dto.response;
+package sd79.dto.requests;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,9 +10,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class EmployeeResponse {
-    private Integer id;
+public class EmployeeRequest {
 
     private String first_name;
 
@@ -29,7 +26,8 @@ public class EmployeeResponse {
 
     private Integer salaries;
 
-    private String employee_address;
+    private String city;
 
     private String position;
 }
+

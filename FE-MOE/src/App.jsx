@@ -5,10 +5,15 @@ import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
 import { Categories } from "./pages/products/categories/Categories";
-import { Employee } from "./pages/employee/Employee";
+import { Employee } from "~/pages/employee/Employee";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import EmployeesCreate from "./pages/employee/EmployeeCreate";
+import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+// import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 const ProtectedRoutes = () => {
-  
+
   const accessToken = localStorage.getItem("accessToken");
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
@@ -52,6 +57,8 @@ function App() {
         <Route path="/product" element={<Product />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/employee" element={<Employee />} />
+        <Route path="/employee/add" element={<EmployeesCreate />} />
+        <Route path="/employee/:id" element={<EmployeesUpdate />} />
       </Route>
     </Routes>
   );

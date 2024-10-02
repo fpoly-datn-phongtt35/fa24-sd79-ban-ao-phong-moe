@@ -1,15 +1,15 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.Instant;
+import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity(name = "positions")
 public class Positions {
     @Id
@@ -20,9 +20,9 @@ public class Positions {
     private String name;
 
     @Column(name = "created_at")
-    private Instant createAt;
+    private Date createAt;
 
     @Column(name = "updated_at")
-    private Instant updateAt;
+    private Date updateAt;
 
 }
