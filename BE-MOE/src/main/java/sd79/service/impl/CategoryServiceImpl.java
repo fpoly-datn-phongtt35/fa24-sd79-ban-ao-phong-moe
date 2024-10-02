@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .id(category.getId())
                 .name(category.getName())
                 .productCount(this.productRepository.countByCategory(category.getId()))
-                .createdBy("Admin")
+                .createdBy(category.getCreatedBy().getUsername())
                 .createdAt(category.getCreateAt())
                 .updatedAt(category.getUpdateAt())
                 .build();

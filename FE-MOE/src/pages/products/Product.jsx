@@ -1,36 +1,30 @@
 import { Container, Grid, Typography, Box } from "@mui/material";
+import { useEffect, useState } from "react";
+import { fetchAllProducts } from "~/apis/productApi";
+import { Filter } from "~/components/products/Filter";
+import { TableData } from "~/components/products/TableData";
+import { HeardForm } from "~/components/other/HeaderForm";
 
 export const Product = () => {
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    handleSetProducts();
+  }, []);
+
+  const handleSetProducts = async () => {
+    const res = await fetchAllProducts();
+    setProducts(res.data);
+  };
+
   return (
     <Container
       maxWidth="max-width"
       className="bg-white"
       style={{ height: "100%", marginTop: "15px" }}
     >
-      <Grid
-        container
-        spacing={2}
-        alignItems="center"
-        bgcolor={"#1976d2"}
-        height={"50px"}
-      >
-        <Typography
-          xs={4}
-          margin={"4px"}
-          variant="h6"
-          gutterBottom
-          color="#fff"
-        >
-          Quản lý sản phẩm
-        </Typography>
-      </Grid>
-      <Grid>
-        <Box className="mb-5 mt-5">
-          <Typography variant="h4" color="text.primary">
-            Danh sách sản phẩm
-          </Typography>
-        </Box>
-      </Grid>
+      <HeardForm title="Quản lý sản phẩm"/>
+      <Filter />
+      <TableData data={products}/>
     </Container>
   );
 };

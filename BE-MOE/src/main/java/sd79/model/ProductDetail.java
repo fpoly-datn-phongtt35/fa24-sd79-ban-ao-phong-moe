@@ -3,6 +3,8 @@ package sd79.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import sd79.enums.ProductStatus;
 
 import java.math.BigDecimal;
 
@@ -27,14 +29,17 @@ public class ProductDetail {
     @JoinColumn(name = "size_id")
     private sd79.model.Size size;
 
-    @Column(name = "color_image_id")
-    private Long colorImageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "color_id")
+    private Color color;
 
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Lob
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'ACTIVE'")
     @Column(name = "status")
-    private String status;
+    private ProductStatus status;
+
 
 }

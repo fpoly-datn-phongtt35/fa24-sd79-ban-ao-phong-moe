@@ -154,13 +154,8 @@ CREATE TABLE colors(
 
 CREATE TABLE product_images(
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	product_id BIGINT,
 	image_url VARCHAR(255)
-);
-
-CREATE TABLE product_color_images(
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	color_id INT,
-	image_id BIGINT
 );
 
 CREATE TABLE product_details(
@@ -168,7 +163,7 @@ CREATE TABLE product_details(
 	product_id BIGINT,
 	retail_price DECIMAL(15, 0),
 	size_id INT,
-	color_image_id BIGINT,
+	color_id INT,
 	quantity INT,
 	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK')
 );
@@ -214,13 +209,14 @@ ALTER TABLE products ADD CONSTRAINT fk_products_brand_id FOREIGN KEY (brand_id) 
 
 ALTER TABLE products ADD CONSTRAINT fk_products_material_id FOREIGN KEY (material_id) REFERENCES materials(id);
 
+ALTER TABLE product_images ADD CONSTRAINT fk_products_id FOREIGN KEY (product_id) REFERENCES products(id);
+
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KEY (size_id) REFERENCES sizes(id);
 
-ALTER TABLE product_color_images ADD CONSTRAINT fk_product_color_images_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
+ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
 
-ALTER TABLE product_color_images ADD CONSTRAINT fk_product_color_images_image_id FOREIGN KEY (image_id) REFERENCES product_images(id);
 
 -- ROLE --
 INSERT INTO roles (name, created_at, updated_at) 
@@ -249,13 +245,14 @@ VALUES ('S', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW()), ('L', 10.0, 5.0, 3.0, 1, 1, NO
 INSERT INTO colors (name, hex_color_code, created_by, updated_by, create_at, update_at)
 VALUES ('Đỏ', '#FF0000', 1, 1, NOW(), NOW()), ('Trắng', '#FFFF', 1, 1, NOW(), NOW());
 
-INSERT INTO product_images (image_url)
-VALUES ('http://example.com/1.jpg'), ('http://example.com/2.jpg');
+INSERT INTO products (name, description, status, category_id, brand_id, material_id, origin, created_by, updated_by, create_at, update_at)
+VALUES ('Áo thun nữ', 'Mềm mại có mùi thơn', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, NOW(), NOW());
 
-INSERT INTO products (name, description, status, category_id, brand_id, origin, created_by, updated_by, create_at, update_at)
-VALUES ('Áo hình con thỏ', 'Mô tả sản phẩm', 'ACTIVE', 1, 1, 'Việt Nam', 1, 1, NOW(), NOW());
+INSERT INTO product_images (product_id, image_url)
+VALUES (1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lwmasa2beaxn93.webp'), 
+(1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lvmtc38j82s18c.webp');
 
-INSERT INTO product_details (product_id, retail_price, size_id, color_image_id, quantity, status)
+INSERT INTO product_details (product_id, retail_price, size_id, color_id, quantity, status)
 VALUES (1, 50000, 1, 1, 100, 'ACTIVE');
 
 INSERT INTO employee_address (street_name, ward, district, city, country)

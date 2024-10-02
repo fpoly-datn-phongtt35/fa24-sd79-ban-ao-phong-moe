@@ -1,5 +1,6 @@
 package sd79.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,5 +19,10 @@ public class ProductImage {
     @Size(max = 255)
     @Column(name = "image_url")
     private String imageUrl;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
 }

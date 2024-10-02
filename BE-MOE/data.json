@@ -1,0 +1,28 @@
+{
+  "name": "San pham demo 1",
+  "description": "Demo lan 1",
+  "status": "ACTIVE",
+  "categoryId": 2,
+  "brandId": 3,
+  "materialId": 1,
+  "origin": "Vietnam",
+  "imageUrl": [
+    "https://pos.nvncdn.com/fa49eb-41931/ps/20240511_TedBXFGoeE.jpeg",
+    "https://i.pinimg.com/736x/24/92/d4/2492d485e85d2e9b6fb99d5876e6f954.jpg"
+  ],
+  "productDetails": [
+    {
+      "retailPrice": 200000,
+      "sizeId": 2,
+      "colorId": 1,
+      "quantity": 10
+    },
+    {
+      "retailPrice": 200000,
+      "sizeId": 2,
+      "colorId": 2,
+      "quantity": 11
+    }
+  ],
+  "userId": 1
+}
