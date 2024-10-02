@@ -1,4 +1,3 @@
-// AddCustomer.jsx
 import React, { useState } from 'react';
 import { Container, Form, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -6,6 +5,15 @@ import { postCustomer } from '~/apis/customerApi'; // Adjust the import path as 
 import { useNavigate } from 'react-router-dom';
 
 export const AddCustomer = () => {
+
+  const formatDate = (dateString, time = "00:00:00") => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year} | ${time}`;
+  };
+
   const [customerData, setCustomerData] = useState({
     firstName: '',
     lastName: '',
@@ -13,6 +21,8 @@ export const AddCustomer = () => {
     gender: '',
     dateOfBirth: '',
     image: '',
+    createdAt: new Date(), 
+    updatedAt: new Date()
   });
 
   const navigate = useNavigate(); // Hook for navigation
@@ -28,14 +38,16 @@ export const AddCustomer = () => {
 
     const customerWithTimestamps = {
       ...customerData,
+      dateOfBirth: formatDate(customerData.dateOfBirth), 
       createdAt: currentDate,
       updatedAt: currentDate,
     };
 
     try {
-      await postCustomer(customerWithTimestamps); // Post the customer data
+      await postCustomer(customerWithTimestamps); 
       toast.success('Customer added successfully!');
-      navigate('/customer'); // Navigate back to the customer list
+      navigate('/customer'); 
+      console.log(customerWithTimestamps)
     } catch (error) {
       toast.error('There was an error adding the customer');
     }

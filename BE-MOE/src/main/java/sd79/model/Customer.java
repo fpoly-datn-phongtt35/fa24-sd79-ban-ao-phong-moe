@@ -1,5 +1,6 @@
 package sd79.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class Customer {
     private String gender;
 
     @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    private Date dateOfBirth;
 
     @Size(max = 200)
     @Column(name = "image", length = 200)
@@ -47,5 +48,6 @@ public class Customer {
 
     @Column(name = "updated_at")
     private Date updatedAt;
+
 
 }

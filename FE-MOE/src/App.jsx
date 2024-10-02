@@ -7,8 +7,7 @@ import { Dashboard } from "./pages/other/Dashboard";
 import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
 import CustomerDetailPage from './pages/customer/CustomerDetailPage';
-
-
+import { Categories } from "./pages/products/categories/Categories";
 
 const ProtectedRoutes = () => {
   
@@ -56,6 +55,7 @@ function App() {
         <Route path="/customer" element={<Customer />} />
         <Route path="/customer/add" element={<AddCustomer />} />
          <Route path="/customer/:id" element={<CustomerDetailPage />} />
+        <Route path="/categories" element={<Categories />} />
       </Route>
     </Routes>
   );

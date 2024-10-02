@@ -11,48 +11,75 @@ import sd79.model.Customer;
 import sd79.model.CustomerAddress;
 import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
+import sd79.service.CustomerService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CustomerServiceImpl {
+public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
 
 
+    @Override
+    public List<CustomerResponse> getAll() {
 
-    public List<?> gettAll(){
-        return customerRepository.findAll();
-    }
-    public Customer findById(Long id){
-        Optional<Customer> customer = customerRepository.findById(Math.toIntExact(id));
-        return customer.orElseGet(Customer::new);
-    }
-    public Customer save(Customer customer){
-        return this.customerRepository.save(customer);
-    }
-    public String deleteById(Long id){
-        try {
-            this.customerRepository.deleteById(Math.toIntExact(id));
-            return "Delete success";
-        }catch (Exception e){
-            return "Delete failed";
-        }
-    }
-    public Customer update(Customer customer, long id) {
-        Optional<Customer> optional = this.customerRepository.findById(Math.toIntExact(id));
-        return optional.map(o ->{
-            o.setFirstName(customer.getFirstName());
-            o.setLastName(customer.getLastName());
-            o.setPhoneNumber(customer.getPhoneNumber());
-            o.setImage(customer.getImage());
-            o.setGender(customer.getGender());
-            o.setDateOfBirth(customer.getDateOfBirth());
-            o.setUpdatedAt(customer.getUpdatedAt());
-            return this.customerRepository.save(o);
-        }).orElse(null);
+        return customerRepository.findAll().stream().map(this::convertCustomerResponse).toList();
     }
 
+    @Override
+    public CustomerResponse getCustomerById(Long id) {
+        Customer customer = customerRepository.findById(Math.toIntExact(id)).orElseThrow(() ->
+                new IllegalArgumentException("Customer not found"));
+        return convertCustomerResponse(customer);
+    }
+
+    @Override
+    public void save(CustomerReq customerReq) {
+        Customer customer = new Customer();
+        populateCustomerData(customer, customerReq);
+        customerRepository.save(customer);
+    }
+
+    @Override
+    public void update(Long id, CustomerReq customerReq) {
+        Customer customer = customerRepository.findById(Math.toIntExact(id)).orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        populateCustomerData(customer, customerReq);
+        customerRepository.save(customer);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Customer customer = customerRepository.findById(Math.toIntExact(id)).orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        customerRepository.delete(customer);
+    }
+
+
+
+    private void populateCustomerData(Customer customer, CustomerReq customerReq) {
+        customer.setFirstName(customerReq.getFirstName());
+        customer.setLastName(customerReq.getLastName());
+        customer.setPhoneNumber(customerReq.getPhoneNumber());
+        customer.setGender(customerReq.getGender());
+        customer.setImage(customerReq.getImage());
+        customer.setDateOfBirth(customerReq.getDateOfBirth());
+        customer.setCreatedAt(new Date());
+    }
+
+    private CustomerResponse convertCustomerResponse(Customer customer) {
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .firstName(customer.getFirstName())
+                .lastName(customer.getLastName())
+                .phoneNumber(customer.getPhoneNumber())
+                .dateOfBirth(customer.getDateOfBirth())
+                .gender(customer.getGender())
+                .image(customer.getImage())
+                .createdAt(customer.getCreatedAt())
+                .updatedAt(customer.getUpdatedAt())
+                .build();
+    }
 
 }

@@ -1,13 +1,13 @@
-// Customer.jsx
-import { Container } from "react-bootstrap";
+import { Container, Button } from "react-bootstrap"; // Import Button từ react-bootstrap
 import React, { useState, useEffect } from 'react';
-import { fetchAllCustomer, deleteCustomer } from "~/apis/customerApi"; 
-import { FaEdit, FaTrashAlt } from 'react-icons/fa'; 
-import { toast } from 'react-toastify'; 
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { fetchAllCustomer, deleteCustomer } from "~/apis/customerApi";
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
+import swal from 'sweetalert';
 
 export const Customer = () => {
-  const [customers, setCustomers] = useState([]); 
+  const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
     handleSetCustomer();
@@ -18,25 +18,44 @@ export const Customer = () => {
     setCustomers(response.data);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB'); 
+  const handleDelete = async (id) => {
+    try {
+      await deleteCustomer(id);
+      setCustomers(customers.filter(customer => customer.id !== id));
+      toast.success("Customer deleted successfully!");
+    } catch (error) {
+      toast.error("There was an error deleting the customer");
+    }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this customer?")) { 
-      try {
-        await deleteCustomer(id); 
-        toast.success("Customer deleted successfully!"); 
-        setCustomers(customers.filter(customer => customer.id !== id));
-      } catch (error) {
-        toast.error("There was an error deleting the customer"); 
+  const onDelete = (id) => {
+    swal({
+      title: "Xác nhận xóa",
+      text: "Bạn có chắc chắn muốn xóa khách hàng này?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((confirm) => {
+      if (confirm) {
+        handleDelete(id);
       }
-    }
+    });
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB');
   };
 
   return (
     <Container>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h1>Customer List</h1>
+        {/* Nút Thêm khách hàng */}
+        <Link to="/customer/add">
+          <Button variant="primary">Thêm khách hàng</Button>
+        </Link>
+      </div>
       <table className="table">
         <thead>
           <tr>
@@ -49,7 +68,7 @@ export const Customer = () => {
             <th>Image</th>
             <th>CreateAt</th>
             <th>UpdateAt</th>
-            <th>Actions</th> 
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -71,9 +90,9 @@ export const Customer = () => {
                   </Link>
                   <FaTrashAlt
                     style={{ cursor: 'pointer', color: 'red' }}
-                    onClick={() => handleDelete(customer.id)} 
+                    onClick={() => onDelete(customer.id)}
                   />
-                </td> 
+                </td>
               </tr>
             ))
           ) : (

@@ -9,8 +9,16 @@ const GENDER_OPTIONS = [
   { value: '', label: 'Select Gender' },
   { value: 'MALE', label: 'Male' },
   { value: 'FEMALE', label: 'Female' },
-  { value: 'ORTHER', label: 'Other' },
+  { value: 'OTHER', label: 'Other' },
 ];
+
+const formatDate = (dateString, time = "00:00:00") => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+  const year = date.getFullYear();
+  return `${year}-${month}-${day} | ${time}`;
+};
 
 const CustomerDetailPage = () => {
   const { id } = useParams();
@@ -26,20 +34,27 @@ const CustomerDetailPage = () => {
 
   useEffect(() => {
     const getCustomer = async () => {
-      const response = await fetchAllCustomer();
-      const foundCustomer = response.data.find(c => c.id === Number(id));
-      if (foundCustomer) {
-        setCustomer(foundCustomer);
+      try {
+        const response = await fetchAllCustomer();
+        const foundCustomer = response.data.find((c) => c.id === Number(id));
+        if (foundCustomer) {
+          setCustomer(foundCustomer);
+        } else {
+          toast.error('Customer not found');
+          navigate('/customer');
+        }
+      } catch (error) {
+        toast.error('Error fetching customer data');
+        console.error(error);
       }
-      console.log(response);
     };
-    
+
     getCustomer();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCustomer(prev => ({
+    setCustomer((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -49,15 +64,17 @@ const CustomerDetailPage = () => {
     e.preventDefault();
     const updatedCustomer = {
       ...customer,
+      dateOfBirth: formatDate(customer.dateOfBirth), // Use the original format for submission
       updatedAt: new Date().toISOString(),
     };
 
     try {
       await putCustomer(updatedCustomer, id);
       toast.success('Customer updated successfully!');
-      navigate('/customer'); // Navigate back to the customer list
+      navigate('/customer');
     } catch (error) {
       toast.error('There was an error updating the customer');
+      console.error(error);
     }
   };
 
@@ -103,11 +120,11 @@ const CustomerDetailPage = () => {
           <Form.Control
             as="select"
             name="gender"
-            value={customer.gender }
+            value={customer.gender}
             onChange={handleChange}
             required
           >
-            {GENDER_OPTIONS.map(option => (
+            {GENDER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -118,9 +135,9 @@ const CustomerDetailPage = () => {
         <Form.Group controlId="dateOfBirth">
           <Form.Label>Date of Birth</Form.Label>
           <Form.Control
-            type="date"
+            type="text"
             name="dateOfBirth"
-            value={customer.dateOfBirth.split('T')[0]} // Format date for input
+            value={formatDate(customer.dateOfBirth)} // Use formatted date for input
             onChange={handleChange}
             required
           />
