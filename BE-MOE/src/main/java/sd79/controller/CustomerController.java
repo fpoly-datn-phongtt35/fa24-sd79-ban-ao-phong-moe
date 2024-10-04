@@ -2,13 +2,19 @@ package sd79.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CustomerReq;
+import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
+import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.CustomerService;
 import sd79.service.impl.CustomerServiceImpl;
+
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -36,5 +42,13 @@ public class CustomerController {
     public ResponseData<?> update(@PathVariable Long id, @Valid @RequestBody CustomerReq customerReq){
         customerService.update(id, customerReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Success");
+    }
+    @GetMapping("/searchName")
+    public ResponseData<?> searchKeywordAndDate(
+            @RequestParam(value = "fistName", required = false) String fistName,
+            @RequestParam(value = "lastName", required = false) String lastName) {
+
+        List<Customer> results = customerService.findByName(fistName, lastName);
+        return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
     }
 }

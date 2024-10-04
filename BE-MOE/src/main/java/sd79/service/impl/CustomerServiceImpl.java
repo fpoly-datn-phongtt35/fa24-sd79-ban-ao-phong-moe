@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sd79.dto.requests.CustomerReq;
 import sd79.dto.response.CustomerResponse;
+import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.model.CustomerAddress;
 import sd79.repositories.CustomerAddressRepository;
@@ -56,6 +57,10 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.delete(customer);
     }
 
+    @Override
+    public List<Customer> findByName(String fistName,String lastName) {
+        return customerRepository.findByName(fistName,lastName);
+    }
 
 
     private void populateCustomerData(Customer customer, CustomerReq customerReq) {
