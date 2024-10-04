@@ -1,15 +1,25 @@
-import axios from "axios";
+// import axios from "axios";
+import authorizedAxiosInstance from "~/utils/authorizedAxios";
+import { API_ROOT } from "~/utils/constants";
 
-const API_URL = "http://localhost:2004/api/v2/promotion"; // Change to your backend URL
+// const API_URL = "http://localhost:2004/api/v2/promotion"; // Change to your backend URL
 
 export const fetchAllDiscounts = async () => {
-  return await axios.get(API_URL);
+  return await authorizedAxiosInstance
+  .get(`${API_ROOT}/promotion`)
+  .then((res) => res.data);
 };
 
-export const postDiscount = async (data) => {
-  return await axios.post(API_URL, data);
+export const postDiscount = async (promotionData) => {
+  return await authorizedAxiosInstance.post(`${API_ROOT}/promotion/store`, promotionData);
+   
 };
 
 export const deleteDiscount = async (id) => {
-  return await axios.delete(`${API_URL}/${id}`);
+  // return await authorizedAxiosInstance.delete(`${`${API_ROOT}/promotion/delete`}/${id}`);
+  return await authorizedAxiosInstance.delete(`${API_ROOT}/promotion/delete/${id}`);
+};
+
+export const putDiscount = async (promotionData, id) => {
+  return await authorizedAxiosInstance.put(`${API_ROOT}/promotion/update/${id}`, promotionData);
 };
