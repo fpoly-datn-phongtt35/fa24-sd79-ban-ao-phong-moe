@@ -16,9 +16,15 @@ import { ProductFrom } from "./pages/products/details/ProductForm";
 import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/create_coupon";
 import UpdateCoupon from "./pages/coupon/update_coupon";
+import { Employee } from "~/pages/employee/Employee";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import EmployeesCreate from "./pages/employee/EmployeeCreate";
+import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+// import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 const ProtectedRoutes = () => {
-  
+
   const accessToken = localStorage.getItem("accessToken");
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
@@ -72,6 +78,9 @@ function App() {
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
         <Route path="/product/add" element={<ProductFrom />} />
+        <Route path="/employee" element={<Employee />} />
+        <Route path="/employee/add" element={<EmployeesCreate />} />
+        <Route path="/employee/:id" element={<EmployeesUpdate />} />
       </Route>
     </Routes>
   );

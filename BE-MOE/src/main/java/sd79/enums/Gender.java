@@ -1,4 +1,4 @@
-package sd79.model;
+package sd79.enums;
 
 public enum Gender {
     MALE,

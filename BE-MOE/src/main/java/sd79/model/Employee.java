@@ -1,19 +1,15 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Date;
-import java.util.Set;
 
-
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity(name = "employees")
 public class Employee {
     @Id
@@ -40,19 +36,20 @@ public class Employee {
     private String avatar;
 
     @Column(name = "created_at")
-    private Instant createAt;
+    private Date createAt;
 
     @Column(name = "updated_at")
-    private Instant updateAt;
+    private Date updateAt;
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    private Salary salaries;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "salary_id")
+    private Salary salaries;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Employee_address employee_address;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "position_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "position_id")
     private Positions position;
 }

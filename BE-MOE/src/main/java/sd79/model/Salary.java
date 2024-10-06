@@ -1,16 +1,17 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
+import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "salary")
+@Builder
 public class Salary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,9 +20,9 @@ public class Salary {
     @Column(name = "amount")
     private Integer amount;
 
-    @Column(name = "create_at")
-    private Instant createAt;
+    @Column(name = "created_at")
+    private Date createAt;
 
-    @Column(name = "update_at")
-    private Instant updateAt;
+    @Column(name = "updated_at")
+    private Date updateAt;
 }
