@@ -31,7 +31,8 @@ public class ProductController {
             description = "Add a product into database"
     )
     @PostMapping
-    public ResponseData<?> storeProduct(@RequestBody ProductRequest request) {
+    public ResponseData<?> storeProduct(@ModelAttribute ProductRequest request) {
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Successfully added product to the database", this.productService.storeProduct(request));
     }
 }
+    
