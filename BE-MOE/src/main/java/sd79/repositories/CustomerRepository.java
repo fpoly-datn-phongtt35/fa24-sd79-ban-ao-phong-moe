@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer,Integer> {
 
-    @Query("SELECT c FROM Customer c WHERE (c.firstName LIKE %:firstName% OR c.lastName LIKE %:lastName%)")
-    List<Customer> findByName(@Param("firstName") String firstName, @Param("lastName") String lastName);
+    @Query("SELECT c FROM Customer c WHERE (c.firstName LIKE %:firstName% OR c.lastName LIKE %:lastName% OR c.phoneNumber LIKE %:phoneNumber%)")
+    List<Customer> findByNameOrPhone(@Param("firstName") String firstName, @Param("lastName") String lastName, @Param("phoneNumber") String phoneNumber);
+
 }

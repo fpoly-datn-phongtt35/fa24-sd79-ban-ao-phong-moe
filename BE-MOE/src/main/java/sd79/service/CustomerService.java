@@ -14,5 +14,6 @@ public interface CustomerService {
     void save(CustomerReq customerReq);
     void update(Long id, CustomerReq customerReq);
     void delete(Long id);
-    List<Customer> findByName(String fistName, String lastName);
-}
+    List<Customer> findByNameOrPhone(String fistName, String lastName, String phoneNumber);
+
+    }

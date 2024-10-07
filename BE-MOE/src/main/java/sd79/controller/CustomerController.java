@@ -46,9 +46,10 @@ public class CustomerController {
     @GetMapping("/searchName")
     public ResponseData<?> searchKeywordAndDate(
             @RequestParam(value = "fistName", required = false) String fistName,
-            @RequestParam(value = "lastName", required = false) String lastName) {
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber){
 
-        List<Customer> results = customerService.findByName(fistName, lastName);
+        List<Customer> results = customerService.findByNameOrPhone(fistName, lastName, phoneNumber);
         return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
     }
 }
