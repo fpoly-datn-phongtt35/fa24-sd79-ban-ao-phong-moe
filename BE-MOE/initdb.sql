@@ -58,6 +58,30 @@ CREATE TABLE salary (
 		updated_at DATETIME
 );
 
+-- Customer
+CREATE TABLE customers (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    first_name varchar(25),
+    last_name varchar(50),
+    phone_number varchar(20),
+    gender enum('MALE', 'FEMALE', 'OTHER'),
+    date_of_birth date,
+    image varchar(200),
+    created_at datetime,
+    updated_at datetime
+);
+
+CREATE TABLE customer_address (
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    customer_id bigint UNIQUE,
+    street_name varchar(255),
+    ward varchar(255),
+    district varchar(255),
+    city varchar(255),
+    country varchar(255)
+);
+
+-- Product
 CREATE TABLE categories(
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(50),
@@ -130,13 +154,8 @@ CREATE TABLE colors(
 
 CREATE TABLE product_images(
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	product_id BIGINT,
 	image_url VARCHAR(255)
-);
-
-CREATE TABLE product_color_images(
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	color_id INT,
-	image_id BIGINT
 );
 
 CREATE TABLE product_details(
@@ -144,7 +163,7 @@ CREATE TABLE product_details(
 	product_id BIGINT,
 	retail_price DECIMAL(15, 0),
 	size_id INT,
-	color_image_id BIGINT,
+	color_id INT,
 	quantity INT,
 	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK')
 );
@@ -179,6 +198,9 @@ ALTER TABLE employees ADD CONSTRAINT fk_position_id FOREIGN KEY (position_id) RE
 
 ALTER TABLE employees ADD CONSTRAINT fk_salary_id FOREIGN KEY (salary_id) REFERENCES salary(id);
 
+-- Customer
+ALTER TABLE customer_address ADD CONSTRAINT fk_customer_address FOREIGN KEY (customer_id) REFERENCES customers(id);
+
 -- Product
 ALTER TABLE users ADD CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id);
 
@@ -188,13 +210,14 @@ ALTER TABLE products ADD CONSTRAINT fk_products_brand_id FOREIGN KEY (brand_id) 
 
 ALTER TABLE products ADD CONSTRAINT fk_products_material_id FOREIGN KEY (material_id) REFERENCES materials(id);
 
+ALTER TABLE product_images ADD CONSTRAINT fk_products_id FOREIGN KEY (product_id) REFERENCES products(id);
+
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KEY (size_id) REFERENCES sizes(id);
 
-ALTER TABLE product_color_images ADD CONSTRAINT fk_product_color_images_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
+ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
 
-ALTER TABLE product_color_images ADD CONSTRAINT fk_product_color_images_image_id FOREIGN KEY (image_id) REFERENCES product_images(id);
 
 -- ROLE --
 INSERT INTO roles (name, created_at, updated_at) 
@@ -223,13 +246,14 @@ VALUES ('S', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW()), ('L', 10.0, 5.0, 3.0, 1, 1, NO
 INSERT INTO colors (name, hex_color_code, created_by, updated_by, create_at, update_at)
 VALUES ('Đỏ', '#FF0000', 1, 1, NOW(), NOW()), ('Trắng', '#FFFF', 1, 1, NOW(), NOW());
 
-INSERT INTO product_images (image_url)
-VALUES ('http://example.com/1.jpg'), ('http://example.com/2.jpg');
+INSERT INTO products (name, description, status, category_id, brand_id, material_id, origin, created_by, updated_by, create_at, update_at)
+VALUES ('Áo thun nữ', 'Mềm mại có mùi thơn', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, NOW(), NOW());
 
-INSERT INTO products (name, description, status, category_id, brand_id, origin, created_by, updated_by, create_at, update_at)
-VALUES ('Áo hình con thỏ', 'Mô tả sản phẩm', 'ACTIVE', 1, 1, 'Việt Nam', 1, 1, NOW(), NOW());
+INSERT INTO product_images (product_id, image_url)
+VALUES (1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lwmasa2beaxn93.webp'), 
+(1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lvmtc38j82s18c.webp');
 
-INSERT INTO product_details (product_id, retail_price, size_id, color_image_id, quantity, status)
+INSERT INTO product_details (product_id, retail_price, size_id, color_id, quantity, status)
 VALUES (1, 50000, 1, 1, 100, 'ACTIVE');
 
 INSERT INTO employee_address (street_name, ward, district, city, country)
@@ -256,8 +280,25 @@ VALUES
 ('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
--- coupons
-INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, image, created_by, updated_by, create_at, update_at, is_deleted)
+-- Customer
+INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `created_at`, `updated_at`)
+VALUES
+    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', NOW(), NOW()),
+    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', NOW(), NOW()),
+    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', NOW(), NOW()),
+    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', NOW(), NOW()),
+    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', NOW(), NOW());
+
+INSERT INTO `customer_address` (`customer_id`, `street_name`, `ward`, `district`, `city`, `country`)
+VALUES
+    (1, '123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
+    (2, '456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
+    (3, '789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
+    (4, '101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
+    (5, '202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
+		
+-- Coupons
+INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
 VALUES
 ('CODE5892', 'Coupon 1', 'FIXED_AMOUNT', 57.95, 489.77, 123.04, 38, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-03 06:42:47', 'This is description for Coupon 1', 'image_1.png', 9, 3, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE7309', 'Coupon 2', 'FIXED_AMOUNT', 85.12, 106.05, 14.56, 24, 'PUBLIC', '2024-10-03 06:42:47', '2025-07-09 06:42:47', 'This is description for Coupon 2', 'image_2.png', 1, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
@@ -269,6 +310,10 @@ VALUES
 ('CODE1771', 'Coupon 8', 'PERCENTAGE', 79.81, 485.91, 168.22, 97, 'PERSONAL', '2024-10-03 06:42:47', '2025-08-16 06:42:47', 'This is description for Coupon 8', 'image_8.png', 1, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE1117', 'Coupon 9', 'FIXED_AMOUNT', 64.88, 331.88, 72.62, 99, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-02 06:42:47', 'This is description for Coupon 9', 'image_9.png', 9, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE5308', 'Coupon 10', 'FIXED_AMOUNT', 53.34, 449.04, 113.73, 56, 'PERSONAL', '2024-10-03 06:42:47', '2025-02-28 06:42:47', 'This is description for Coupon 10', 'image_10.png', 7, 10, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1);
+
+
+
+
 
 
 

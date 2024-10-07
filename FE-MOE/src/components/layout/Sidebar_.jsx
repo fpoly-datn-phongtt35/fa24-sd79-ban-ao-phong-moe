@@ -30,9 +30,9 @@ export const Sidebar_ = () => {
             <MenuItem component={<Link to="/color"/>}> Quản lý color </MenuItem>
           </SubMenu>
         </SubMenu>
-        <SubMenu label="Cusomer" icon={<i className="fa-solid fa-users"></i>}>
-          <MenuItem> ABC </MenuItem>
-          <MenuItem> ABC </MenuItem>
+        <SubMenu label="Khách hàng" icon={<i className="fa-solid fa-users" ></i>}>
+          <MenuItem component={<Link to="/customer"/>}> Khách hàng</MenuItem>
+          <MenuItem component={<Link to="/customer/add"/>} > CreateCustomer </MenuItem>
         </SubMenu>
         <SubMenu label="Other" icon={<i className="fa-solid fa-link"></i>}>
           <MenuItem> ABC </MenuItem>
@@ -42,6 +42,7 @@ export const Sidebar_ = () => {
           <MenuItem component={<Link to="/coupon"/>}> Phiếu giảm giá </MenuItem>
           <MenuItem> Đợt giảm giá </MenuItem>
         </SubMenu>
+        <MenuItem icon={<i className="fa-solid fa-address-card"></i>} component={<Link to="/employee"/>}> Nhân viên</MenuItem>
       </Menu>
       <Menu>
         <MenuItem icon={<i className="fa-solid fa-user-circle"></i>}> Profile </MenuItem>

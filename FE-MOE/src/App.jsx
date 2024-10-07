@@ -4,17 +4,27 @@ import { Header } from "./components/layout/Header";
 import { Sidebar_ } from "./components/layout/Sidebar_";
 import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
+import { Customer } from "./pages/customer/Customer";
+import { AddCustomer } from "./pages/customer/AddCustomer";
+import CustomerDetailPage from './pages/customer/CustomerDetailPage';
 import { Categories } from "./pages/products/categories/Categories";
 import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
 import { Color } from "./pages/products/colors/Color";
+import { ProductFrom } from "./pages/products/details/ProductForm";
 import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/create_coupon";
 import UpdateCoupon from "./pages/coupon/update_coupon";
+import { Employee } from "~/pages/employee/Employee";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import EmployeesCreate from "./pages/employee/EmployeeCreate";
+import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+// import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 const ProtectedRoutes = () => {
-  
+
   const accessToken = localStorage.getItem("accessToken");
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
@@ -56,6 +66,9 @@ function App() {
       <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/customer" element={<Customer />} />
+        <Route path="/customer/add" element={<AddCustomer />} />
+         <Route path="/customer/:id" element={<CustomerDetailPage />} />
         <Route path="/coupon" element={<Coupon />} />
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
@@ -64,6 +77,10 @@ function App() {
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
+        <Route path="/product/add" element={<ProductFrom />} />
+        <Route path="/employee" element={<Employee />} />
+        <Route path="/employee/add" element={<EmployeesCreate />} />
+        <Route path="/employee/:id" element={<EmployeesUpdate />} />
       </Route>
     </Routes>
   );
