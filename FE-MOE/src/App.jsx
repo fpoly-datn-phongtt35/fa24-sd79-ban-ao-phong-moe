@@ -8,6 +8,9 @@ import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
 import CustomerDetailPage from './pages/customer/CustomerDetailPage';
 import { Categories } from "./pages/products/categories/Categories";
+<<<<<<< HEAD
+import { Promotion } from "~/pages/promotions/Promotion"
+=======
 import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
@@ -22,6 +25,7 @@ import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
 // import 'bootstrap/dist/js/bootstrap.bundle.min';
 
+>>>>>>> dbaaae768a84707ccef9ae6aca2395b41b071433
 
 const ProtectedRoutes = () => {
 
@@ -73,6 +77,9 @@ function App() {
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/categories" element={<Categories />} />
+<<<<<<< HEAD
+        <Route path="/promotions" element={<Promotion />} />
+=======
         <Route path="/brand" element={<Brand />} />
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
@@ -81,6 +88,7 @@ function App() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
+>>>>>>> dbaaae768a84707ccef9ae6aca2395b41b071433
       </Route>
     </Routes>
   );
