@@ -163,6 +163,7 @@ CREATE TABLE coupons (
   start_date DATETIME,
   end_date DATETIME,
   description TEXT,
+  image VARCHAR(255) NULL,
   created_by BIGINT,
   updated_by BIGINT,
   create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -256,13 +257,18 @@ VALUES
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
 -- coupons
--- Insert 5 sample records
-INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
+INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, image, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
-('SAVE10', '10% off above 5000', 'PERCENTAGE', 10, NULL, 5000, 1, 'PUBLIC', '2024-01-01 00:00:00', '2024-12-31 23:59:59', '10% off on orders above 5000', 1, 1, NOW(), NOW(), 0),
-('FLAT500', 'Flat 500 off above 3000', 'FIXED_AMOUNT', 500, NULL, 3000, 2, 'PERSONAL', '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'Flat 500 off on orders above 3000', 2, 2, NOW(), NOW(), 0),
-('WELCOME', '15% off for new users', 'PERCENTAGE', 15, NULL, 4000, 3, 'PUBLIC', '2024-01-01 00:00:00', '2024-06-30 23:59:59', '15% discount for new users', 3, 3, NOW(), NOW(), 0),
-('FIRSTBUY', '1000 off first purchase', 'FIXED_AMOUNT', 1000, NULL, 6000, 1, 'PERSONAL', '2024-01-01 00:00:00', '2024-06-30 23:59:59', '1000 off on first purchase', 4, 4, NOW(), NOW(), 0),
-('HOLIDAY', '20% holiday season discount', 'PERCENTAGE', 20, NULL, 7000, 1, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', '20% holiday season discount', 5, 5, NOW(), NOW(), 0);
+('CODE5892', 'Coupon 1', 'FIXED_AMOUNT', 57.95, 489.77, 123.04, 38, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-03 06:42:47', 'This is description for Coupon 1', 'image_1.png', 9, 3, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE7309', 'Coupon 2', 'FIXED_AMOUNT', 85.12, 106.05, 14.56, 24, 'PUBLIC', '2024-10-03 06:42:47', '2025-07-09 06:42:47', 'This is description for Coupon 2', 'image_2.png', 1, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
+('CODE9879', 'Coupon 3', 'PERCENTAGE', 21.37, 69.60, 116.24, 3, 'PERSONAL', '2024-10-03 06:42:47', '2025-01-27 06:42:47', 'This is description for Coupon 3', 'image_3.png', 8, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE6860', 'Coupon 4', 'FIXED_AMOUNT', 58.65, 134.11, 57.17, 66, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-10 06:42:47', 'This is description for Coupon 4', 'image_4.png', 5, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE3542', 'Coupon 5', 'PERCENTAGE', 43.87, 395.30, 197.18, 60, 'PUBLIC', '2024-10-03 06:42:47', '2025-02-04 06:42:47', 'This is description for Coupon 5', 'image_5.png', 9, 2, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE7612', 'Coupon 6', 'PERCENTAGE', 55.79, 370.94, 105.59, 4, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-30 06:42:47', 'This is description for Coupon 6', 'image_6.png', 2, 9, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE3354', 'Coupon 7', 'FIXED_AMOUNT', 68.56, 104.59, 17.24, 74, 'PERSONAL', '2024-10-03 06:42:47', '2025-05-03 06:42:47', 'This is description for Coupon 7', 'image_7.png', 7, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
+('CODE1771', 'Coupon 8', 'PERCENTAGE', 79.81, 485.91, 168.22, 97, 'PERSONAL', '2024-10-03 06:42:47', '2025-08-16 06:42:47', 'This is description for Coupon 8', 'image_8.png', 1, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE1117', 'Coupon 9', 'FIXED_AMOUNT', 64.88, 331.88, 72.62, 99, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-02 06:42:47', 'This is description for Coupon 9', 'image_9.png', 9, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
+('CODE5308', 'Coupon 10', 'FIXED_AMOUNT', 53.34, 449.04, 113.73, 56, 'PERSONAL', '2024-10-03 06:42:47', '2025-02-28 06:42:47', 'This is description for Coupon 10', 'image_10.png', 7, 10, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1);
+
 
 
