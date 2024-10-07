@@ -79,7 +79,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .salaries(salary)
                 .employee_address(address)
                 .build();
-
         return this.employeeRepository.save(employee).getId();
     }
 
@@ -107,6 +106,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmployee_address(address);
 
         this.employeeRepository.save(employee);
+    }
+
+    @Override
+    public List<Employee> findByNameAndPhone(String keyword, String phone_number) {
+        return employeeRepository.findByKeywordAndPhone(keyword, phone_number);
     }
 
     Positions getPositionById(int id){

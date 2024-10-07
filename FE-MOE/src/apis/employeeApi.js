@@ -46,5 +46,37 @@ export const getEmployee = async (id) => {
       throw error;
   }
 };
+// api.js hoặc file tương tự
+export const searchNameAndPhone = async (keyword, phone_number) => {
+    try {
+        const params = {};
+
+        if (!keyword && !phone_number) {
+            const res = await authorizedAxiosInstance.get(`${API_ROOT}/employee`); 
+            return res; // Đảm bảo trả về toàn bộ phản hồi
+        }
+
+        if (keyword) {
+            params.keyword = keyword;
+        }
+
+        if (phone_number) {
+            params.phone_number = phone_number;
+        }
+
+        const res = await authorizedAxiosInstance.get(`${API_ROOT}/employee/searchNameAndPhone`, {
+            params: params
+        });
+
+        return res; // Đảm bảo trả về toàn bộ phản hồi
+    } catch (err) {
+        console.error("Error searching employee:", err);
+        toast.error("Failed to search employee");
+        throw err; // Ném lại lỗi để có thể xử lý ở nơi gọi hàm
+    }
+};
+
+
+
 
 

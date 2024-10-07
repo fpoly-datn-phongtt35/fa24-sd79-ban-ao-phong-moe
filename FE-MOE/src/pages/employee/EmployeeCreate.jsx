@@ -142,7 +142,7 @@ const EmployeesCreate = () => {
                     <div className='card-body'>
                         <form action="">
                             <div className='form-group mb-2'>
-                                <label className='form-label'> First Name</label>
+                                <label className='form-label'> Tên </label>
                                 <input
                                     type="text"
                                     placeholder='Nhập tên'

@@ -30,8 +30,4 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
     List<Coupon> findByKeywordAndDate(@Param("keyword") String keyword,
                                       @Param("startDate") Date startDate,
                                       @Param("endDate") Date endDate);
-
-
-
-
 }

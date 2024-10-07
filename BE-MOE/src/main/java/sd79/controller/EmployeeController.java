@@ -4,15 +4,21 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.EmployeeReq;
 import sd79.dto.response.ResponseData;
+import sd79.model.Coupon;
+import sd79.model.Employee;
 import sd79.repositories.PositionsRepository;
 import sd79.service.EmployeeService;
+
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -88,5 +94,13 @@ public class EmployeeController {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+    }
+    @GetMapping("/searchNameAndPhone")
+    public ResponseData<?> searchNameAndPhone(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "phone_number", required = false) String phone_number) {
+
+        List<Employee> results = employeeService.findByNameAndPhone(keyword,phone_number);
+        return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
     }
 }
