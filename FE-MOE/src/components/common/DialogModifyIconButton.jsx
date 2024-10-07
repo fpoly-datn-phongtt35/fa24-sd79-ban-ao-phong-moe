@@ -1,11 +1,5 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
+import { IconButton, DialogTitle, DialogContent, Dialog, DialogActions, TextField, Button } from "@mui/material";
 
 export const DialogModifyIconButton = (props) => {
   const [value, setValue] = React.useState(props.value);
@@ -21,7 +15,7 @@ export const DialogModifyIconButton = (props) => {
 
   return (
     <React.Fragment>
-      <IconButton color="warning" onClick={handleClickOpen}>
+      <IconButton color={props.color} onClick={handleClickOpen}>
         {props.icon}
       </IconButton>
       <Dialog
@@ -34,7 +28,7 @@ export const DialogModifyIconButton = (props) => {
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
             const value = formJson.value;
-            console.log(value);
+            // console.log(value);
             const data = {
               name: value,
               userId: localStorage.getItem("userId"),
@@ -52,7 +46,7 @@ export const DialogModifyIconButton = (props) => {
             margin="dense"
             id="value"
             name="value"
-            label="Nhập tên danh mục"
+            label={props.label}
             type="text"
             fullWidth
             variant="standard"

@@ -1,5 +1,5 @@
 CREATE TABLE promotions(
-  id INT PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
   promotion_type VARCHAR(50),
   promotion_value DECIMAL(10,2),

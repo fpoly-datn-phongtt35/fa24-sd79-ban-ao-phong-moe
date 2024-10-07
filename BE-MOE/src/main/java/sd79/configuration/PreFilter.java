@@ -76,9 +76,14 @@ public class PreFilter extends OncePerRequestFilter {
             ObjectMapper objectMapper = new ObjectMapper();
             response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
         } catch (Exception e) {
-            log.error("Authentication error");
+            log.error("error={}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Authentication failed");
+<<<<<<< HEAD
+            log.error("error={}", e.getMessage());
+=======
+            log.error("error={}", e.getMessage(), e.getCause());
+>>>>>>> employee
         }
     }
 }

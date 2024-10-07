@@ -9,19 +9,24 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { Grid, TextField, Box, Typography } from "@mui/material";
-import { DialogModify } from "~/components/categories/DialogModify";
-import { DialogModifyIconButton } from "~/components/categories/DialogModifyIconButton";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import Pagination from "@mui/material/Pagination";
-import Stack from "@mui/material/Stack";
+import { DialogModify } from "~/components/common/DialogModify";
+import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
+import {
+  Grid,
+  TextField,
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Pagination,
+  Stack,
+} from "@mui/material";
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
@@ -97,6 +102,7 @@ export const Categories = () => {
                 buttonTitle="Thêm mới danh mục"
                 icon={<AddIcon />}
                 title="Thêm mới danh mục"
+                label="Nhập tên danh mục"
                 handleSubmit={handlePostCategory}
               />
             </Box>
@@ -131,6 +137,8 @@ export const Categories = () => {
                       <DialogModifyIconButton
                         icon={<EditIcon />}
                         title="Chỉnh sửa danh mục"
+                        label="Nhập tên danh mục"
+                        color="warning"
                         value={category.name}
                         id={category.id}
                         handleSubmit={handleEditCategory}

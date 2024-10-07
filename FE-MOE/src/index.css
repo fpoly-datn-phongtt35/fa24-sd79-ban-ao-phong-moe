@@ -1,6 +1,10 @@
 :root {
   font-family: 'Roboto', sans-serif;  
 } 
+body {
+  background-color: #fff ;
+}
+
 .layout {
   display: flex;
   flex-direction: column;
@@ -10,10 +14,22 @@
 .content-area {
   display: flex;
   flex: 1;
+  margin-top: 80px;
+}
+
+.sidebar {
+  width: 260px; 
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  background-color: #fff;
+  position: sticky;
+  top: 0;
 }
 
 .main-content {
   padding: 3px;
   flex: 1;
-  background-color: #eef1f6;
+  height: calc(100vh - 80px); 
+  background-color: #fff;
+  overflow-y: auto;
 }
