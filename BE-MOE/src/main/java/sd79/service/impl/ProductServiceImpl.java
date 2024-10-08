@@ -2,12 +2,18 @@ package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.ProductDetailRequest;
 import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
+import sd79.dto.requests.common.ParamReq;
+import sd79.dto.response.PageableResponse;
 import sd79.dto.response.ProductResponse;
+import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
@@ -43,8 +49,21 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryUpload cloudinaryUpload;
 
     @Override
-    public List<ProductResponse> getAllProducts() {
-        return this.productRepository.findByIsDeletedFalse().stream().map(this::convertToProductResponse).toList();
+    public PageableResponse getAllProducts(int pageNo, int pageSize, String keyword, ProductStatus status) {
+        if(pageNo < 1 || pageSize < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Page<Product> page = this.productRepository.findAllProductActive(pageable, keyword, status);
+        List<ProductResponse> data = page.getContent().stream().map(this::convertToProductResponse).toList();
+        return PageableResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .content(data)
+                .build();
     }
 
     @Override
@@ -66,14 +85,6 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedBy(user);
 
         product = this.productRepository.save(product);
-
-        // Images
-//        for (MultipartFile file : req.getImages()){
-//            ProductImage productImage = new ProductImage();
-//            productImage.setProduct(product);
-//            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
-//            this.productImageRepository.save(productImage);
-//        }
 
         // Product details
         for (ProductDetailRequest prd : req.getProductDetails()){
@@ -100,6 +111,12 @@ public class ProductServiceImpl implements ProductService {
             productImage.setImageUrl(this.cloudinaryUpload.upload(file));
             this.productImageRepository.save(productImage);
         }
+    }
+
+    @Override
+    public void setProductToInactive(long id) {
+        Product product = this.getProductById(id);
+        product.setStatus(ProductStatus.INACTIVE);
     }
 
     private Product getProductById(long id) {

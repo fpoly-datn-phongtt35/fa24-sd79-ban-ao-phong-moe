@@ -8,9 +8,9 @@ import { fetchAllMaterials } from "./materialApi";
 import { fetchAllColors } from "./colorApi";
 import { fetchAllSizes } from "./sizesApi";
 
-export const fetchAllProducts = async () => {
+export const fetchAllProducts = async (pageNo, keyword, status) => {
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}/product`)
+    .get(`${API_ROOT}/product?pageNo=${pageNo}&keyword=${keyword}&status=${status}`)
     .then((res) => res.data);
 };
 
@@ -18,7 +18,6 @@ export const postProduct = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/product`, data)
     .then((res) => {
-      toast.success(res.data.message);
       return res.data.data;
     });
 };

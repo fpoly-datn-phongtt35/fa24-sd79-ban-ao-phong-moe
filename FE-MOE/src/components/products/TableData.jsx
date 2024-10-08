@@ -58,6 +58,15 @@ export const TableData = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
+            {
+              data.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} align="center">
+                    No data found
+                  </TableCell>
+                </TableRow>
+              )
+            }
             {data &&
               data.map((value) => (
                 <TableRow key={value.id}>

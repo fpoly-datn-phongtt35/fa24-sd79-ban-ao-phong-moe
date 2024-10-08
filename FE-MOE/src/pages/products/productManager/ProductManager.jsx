@@ -2,6 +2,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  CircularProgress,
   Container,
   FormControl,
   Grid,
@@ -29,6 +30,7 @@ import {
 import { HeardForm } from "~/components/other/HeaderForm";
 import { useNavigate } from "react-router-dom";
 import StandardImageList from "~/components/common/StandardImageList";
+import { toast } from "react-toastify";
 
 export const ProductManager = () => {
   const [attributes, setAttribute] = useState(null);
@@ -36,6 +38,8 @@ export const ProductManager = () => {
   const [sizeCount, setSizeCount] = useState([]);
   const [details, setDetails] = useState([]);
   const [images, setImages] = useState([]);
+
+  const [isSubmit, setIsSubmit] = useState(false);
 
   const [error, setError] = useState([]);
 
@@ -105,16 +109,18 @@ export const ProductManager = () => {
       productDetails: data.productDetails,
       userId: localStorage.getItem("userId"),
     };
-
-    console.log(product);
+    setIsSubmit(true);
     await postProduct(product).then(async (response) => {
       let formData = new FormData();
       formData.append("productId", response);
       images.forEach((image) => {
         formData.append("images", image);
       });
-      await postProductImage(formData);
-      navigate("/product");
+      await postProductImage(formData).then(() => {
+        toast.success("Thêm thành công");
+        setIsSubmit(false);
+        navigate("/product");
+      });
     });
   };
 
@@ -397,9 +403,15 @@ export const ProductManager = () => {
               <StandardImageList onImagesUpload={handleImagesUpload} />
             </Grid>
             <Grid item xs={12}>
-              <Button variant="contained" type="submit">
-                Submit
-              </Button>
+              {isSubmit ? (
+                <Button disabled>
+                  <CircularProgress />
+                </Button>
+              ) : (
+                <Button variant="contained" type="submit">
+                  Submit
+                </Button>
+              )}
             </Grid>
           </Grid>
         </Box>
