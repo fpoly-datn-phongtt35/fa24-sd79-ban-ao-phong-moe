@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import { faPercent, faDollarSign, faCamera } from '@fortawesome/free-solid-svg-icons';
 
 const UpdateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
@@ -16,6 +16,7 @@ const UpdateCoupon = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const { id } = useParams();
     const [couponType, setCouponType] = useState('public');
+    const [image, setImage] = useState(null);
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -23,6 +24,24 @@ const UpdateCoupon = () => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
+    };
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Check file type and size
+            if (file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024) { // Max 2MB
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Get the base64 string and remove the header
+                    const base64String = reader.result.split(',')[1];
+                    setImage(base64String); // Store only the raw base64 string
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Please upload a valid image file (max 2MB).");
+            }
+        }
     };
 
     // Submit form data
@@ -65,7 +84,7 @@ const UpdateCoupon = () => {
                 setValue('endDate', couponData.endDate.split(' ')[0]);
                 setCouponType(couponData.type);
                 setValue('description', couponData.description);
-                setDiscountType(couponData.discountType);             
+                setDiscountType(couponData.discountType);
             } catch (error) {
                 console.log("Error fetching coupon details", error);
             }
@@ -96,7 +115,21 @@ const UpdateCoupon = () => {
             <Box p={4}>
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <Typography variant="h4" mb={2}>Tạo Phiếu Giảm Giá</Typography>
+                        <Box display="flex" alignItems="center" mb={2}>
+                            <Typography variant="h4" mr={2}>Tạo Phiếu Giảm Giá</Typography>
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="image-upload"
+                                type="file"
+                                onChange={handleImageUpload}
+                            />
+                            <label htmlFor="image-upload">
+                                <IconButton component="span" color="primary">
+                                    <FontAwesomeIcon icon={faCamera} />
+                                </IconButton>
+                            </label>
+                        </Box>
                         <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2}>
                             <TextField
                                 variant="outlined"
@@ -143,10 +176,10 @@ const UpdateCoupon = () => {
                                                     </IconButton>
                                                     <IconButton
                                                         onClick={() => {
-                                                            setDiscountType('pixed_amount');
+                                                            setDiscountType('fixed_amount');
                                                             setValue('discountValue', 500);
                                                         }}
-                                                        color={discountType === 'pixed_amount' ? 'primary' : 'default'}
+                                                        color={discountType === 'fixed_amount' ? 'primary' : 'default'}
                                                     >
                                                         <FontAwesomeIcon icon={faDollarSign} />
                                                     </IconButton>
@@ -223,13 +256,13 @@ const UpdateCoupon = () => {
                                     <Grid item xs={6}>
                                         <FormLabel component="legend">Kiểu</FormLabel>
                                     </Grid>
-                                    <Grid item xs={6}>                                 
+                                    <Grid item xs={6}>
                                         <RadioGroup value={couponType} onChange={(e) => setCouponType(e.target.value)}>
                                             <div className='flex'>
                                                 <FormControlLabel value="public" control={<Radio />} label="Công khai" />
                                                 <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
                                             </div>
-                                        </RadioGroup>                                 
+                                        </RadioGroup>
                                     </Grid>
                                 </Grid>
                             </FormControl>
@@ -245,6 +278,12 @@ const UpdateCoupon = () => {
                                 fullWidth
                                 InputLabelProps={{ shrink: true }}
                             />
+
+                            {image && (
+                                <Box mb={2}>
+                                    <img src={image} alt="Uploaded" style={{ width: '10%', height: 'auto' }} />
+                              </Box>
+                            )}
 
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>

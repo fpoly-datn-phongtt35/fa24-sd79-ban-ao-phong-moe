@@ -5,7 +5,7 @@ import swal from 'sweetalert';
 import { fetchAllCoupon, deleteCoupon, searchKeywordAndDate } from '~/apis/couponApi';
 import {
   Container, Grid, TextField, Box, Typography, IconButton, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Pagination, Stack, Select, MenuItem, Button
+  TableContainer, TableHead, TableRow, Paper, Pagination, Stack, Select, MenuItem, Button, TableSortLabel
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -15,52 +15,106 @@ import PercentIcon from '@mui/icons-material/Percent';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const Coupon = () => {
-  const [coupons, setCoupons] = useState([]);
+  const [coupons, setCoupons] = useState([]); // Initialize as an empty array
   const [page, setPage] = useState(1);
+  const [size, setSize] = useState(5); // Default page size
   const [keyword, setKeyword] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterDiscountType, setFilterDiscountType] = useState('');
-
+  const [discountType, setDiscountType] = useState('');
+  const [type, setType] = useState('');
+  const [status, setStatus] = useState('');
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('');
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   useEffect(() => {
-    handleSetCoupon();
-  }, []);
+    handleSearchKeywordAndDate(page, size);
+  }, [page, size, order, orderBy]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       handleSearchKeywordAndDate();
-    }, 1000); // Add a 1s debounce for search inputs
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [keyword, startDate, endDate]);
+  }, [keyword, startDate, endDate, discountType, type, status]);
+
 
   const handleSetCoupon = async () => {
     const res = await fetchAllCoupon();
-    setCoupons(res.data);
+    setCoupons(res.data.content); // Lấy danh sách coupon từ 'content'
+    setTotalPages(res.data.totalPages); // Đặt giá trị tổng số trang
   };
 
-  const handleSearchKeywordAndDate = async () => {
-    try {
-      const res = await searchKeywordAndDate(keyword || '', startDate || '', endDate || '');
-      setCoupons(res.data);
-    } catch (error) {
-      console.error('Error during search:', error);
-    }
+  const handlePageChange = (event, value) => {
+    setPage(value); // Update current page
+    handleSearchKeywordAndDate(value, size); // Call API with the updated page
   };
+
+  // Cập nhật hàm tìm kiếm, phân trang, và sắp xếp
+  const handleSearchKeywordAndDate = async (currentPage = page, currentSize = size, currentOrderBy = orderBy, currentOrder = order) => {
+    try {
+        const res = await searchKeywordAndDate(
+            keyword || '',
+            startDate || '',
+            endDate || '',
+            discountType || '',
+            type || '',
+            status || '',
+            currentPage,
+            currentSize,
+            currentOrderBy,
+            currentOrder
+        );
+
+        if (res && res.data) {
+            setCoupons(res.data.content || []); // Use empty array if content is undefined
+            setTotalPages(res.data.totalPages || 0);
+            setTotalElements(res.data.totalElements || 0);
+        } else {
+            setCoupons([]); // In case of unexpected response
+        }
+    } catch (error) {
+        console.error('Error during search:', error);
+        setCoupons([]); // Ensure coupons is an array on error
+    }
+};
+
+
+  // Hàm thay đổi kích thước trang
+  const handleSizeChange = (event) => {
+    const newSize = event.target.value;
+    setSize(newSize);  // Cập nhật kích thước trang
+    setPage(1);  // Reset về trang 1
+    handleSearchKeywordAndDate(1, newSize);  // Gọi API với kích thước mới
+  };
+
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    const newOrder = isAsc ? 'desc' : 'asc';
+    setOrder(newOrder);
+    setOrderBy(property);
+    handleSearchKeywordAndDate(page, size, property, newOrder);
+};
+
 
   const handleClear = () => {
-    // Reset all search filters
     setKeyword('');
     setStartDate('');
     setEndDate('');
-    setFilterType('');
-    setFilterStatus('');
-    setFilterDiscountType('');
-    // Re-fetch all coupons
-    handleSetCoupon();
+    setDiscountType('');
+    setType('');
+    setStatus('');
+    setPage(1);
+    setOrder('asc'); // Reset order to ascending
+    setOrderBy('');  // Reset orderBy to no specific sorting
+    handleSearchKeywordAndDate(1, size);
   };
+
+
+
+
 
   const handleDelete = async (id) => {
     try {
@@ -94,183 +148,249 @@ const Coupon = () => {
         </Typography>
       </Grid>
       <Box className="mb-5" style={{ marginTop: '50px' }}>
-  {/* First row of inputs */}
-  <Grid container spacing={2} alignItems="center">
-    <Grid item xs={12} sm={4}>
-      <TextField
-        label="Tìm phiếu giảm giá"
-        variant="standard"
-        fullWidth
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        size="small"
-      />
-    </Grid>
-    <Grid item xs={12} sm={4}>
-      <TextField
-        label="Từ ngày"
-        type="date"
-        variant="standard"
-        InputLabelProps={{ shrink: true }}
-        fullWidth
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        size="small"
-      />
-    </Grid>
-    <Grid item xs={12} sm={4}>
-      <TextField
-        label="Đến ngày"
-        type="date"
-        variant="standard"
-        InputLabelProps={{ shrink: true }}
-        fullWidth
-        value={endDate}
-        onChange={(e) => setEndDate(e.target.value)}
-        size="small"
-      />
-    </Grid>
-  </Grid>
+        {/* First row: Search, Start Date, End Date, Clear */}
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={3}>
+            <TextField
+              label="Tìm phiếu giảm giá"
+              variant="standard"
+              fullWidth
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              size="small"
+              style={{ minHeight: '40px' }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              label="Từ ngày"
+              type="date"
+              variant="standard"
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              size="small"
+              style={{ minHeight: '40px' }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              label="Đến ngày"
+              type="date"
+              variant="standard"
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              size="small"
+              style={{ minHeight: '40px' }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleClear}
+              component={Link}
+              to="/coupon/create"
+              fullWidth
+              size="small"
+              style={{ height: '40px' }}
+            >
+              Thêm mới
+            </Button>
+          </Grid>
+        </Grid>
 
-  {/* Second row of inputs */}
-  <Grid container spacing={2} alignItems="center" style={{ marginTop: '10px' }}>
-    <Grid item xs={12} sm={4}>
-      <Select
-        value={filterType}
-        onChange={(e) => setFilterType(e.target.value)}
-        displayEmpty
-        fullWidth
-        size="small"
-      >
-        <MenuItem value="">Kiểu</MenuItem>
-        <MenuItem value="personal">Cá nhân</MenuItem>
-        <MenuItem value="public">Công khai</MenuItem>
-      </Select>
-    </Grid>
-    <Grid item xs={12} sm={4}>
-      <Select
-        value={filterDiscountType}
-        onChange={(e) => setFilterDiscountType(e.target.value)}
-        displayEmpty
-        fullWidth
-        size="small"
-      >
-        <MenuItem value="">Loại</MenuItem>
-        <MenuItem value="percentage">Phần trăm</MenuItem>
-        <MenuItem value="fixed_amount">Số tiền cố định</MenuItem>
-      </Select>
-    </Grid>
-    <Grid item xs={12} sm={4}>
-      <Select
-        value={filterStatus}
-        onChange={(e) => setFilterStatus(e.target.value)}
-        displayEmpty
-        fullWidth
-        size="small"
-      >
-        <MenuItem value="">Trạng thái</MenuItem>
-        <MenuItem value="Ongoing">Đang diễn ra</MenuItem>
-        <MenuItem value="Ended">Kết thúc</MenuItem>
-        <MenuItem value="Not Started">Chưa bắt đầu</MenuItem>
-      </Select>
-    </Grid>
-  </Grid>
+        {/* Second row: Kiểu, Loại, Trạng thái, Thêm mới */}
+        <Grid container spacing={2} alignItems="center" style={{ marginTop: '10px' }}>
+          <Grid item xs={12} sm={3}>
+            <Select
+              value={discountType}
+              onChange={(e) => {
+                setDiscountType(e.target.value);
+                handleSearchKeywordAndDate();
+              }}
+              displayEmpty
+              fullWidth
+              size="small"
+              style={{ height: '40px' }}
+            >
+              <MenuItem value="">Loại</MenuItem>
+              <MenuItem value="percentage">Phần trăm</MenuItem>
+              <MenuItem value="fixed_amount">Số tiền cố định</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              displayEmpty
+              fullWidth
+              size="small"
+              style={{ height: '40px' }}
+            >
+              <MenuItem value="">Kiểu</MenuItem>
+              <MenuItem value="personal">Cá nhân</MenuItem>
+              <MenuItem value="public">Công khai</MenuItem>
+            </Select>
+          </Grid>
 
-  {/* Buttons: Clear and Create New */}
-  <Grid container spacing={2} style={{ marginTop: '10px' }} justifyContent="flex-end">
-    <Grid item xs={6} sm={2}>
-      <Button variant="outlined" color="secondary" onClick={handleClear} fullWidth size="small">
-        Clear
-      </Button>
-    </Grid>
-    <Grid item xs={6} sm={2}>
-      <Button variant="contained" color="success" component={Link} to="/coupon/create" fullWidth size="small">
-        + Tạo mới
-      </Button>
-    </Grid>
-  </Grid>
-</Box>
+          <Grid item xs={12} sm={3}>
+            <Select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              displayEmpty
+              fullWidth
+              size="small"
+              style={{ height: '40px' }}
+            >
+              <MenuItem value="">Trạng thái</MenuItem>
+              <MenuItem value="Bắt đầu">Bắt đầu</MenuItem>
+              <MenuItem value="Kết thúc">Kết thúc</MenuItem>
+              <MenuItem value="C.Bắt đầu">Chưa bắt đầu</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleClear}
+              fullWidth
+              size="small"
+              style={{ height: '40px' }}
+            >
+              Xóa lọc
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
 
-
-      <TableContainer component={Paper}>
-        <Table aria-label="coupon table">
-          <TableHead>
-            <TableRow>
-              <TableCell>STT</TableCell>
-              <TableCell>Mã</TableCell>
-              <TableCell>Tên</TableCell>
-              <TableCell>Kiểu</TableCell>
-              <TableCell>Loại</TableCell>
-              <TableCell>Số lượng</TableCell>
-              <TableCell>Ngày bắt đầu</TableCell>
-              <TableCell>Ngày kết thúc</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {coupons.length > 0 ? (
-              coupons.map((coupon, index) => (
-                <TableRow key={coupon.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{coupon.code}</TableCell>
-                  <TableCell>{coupon.name}</TableCell>
+      <Grid container>
+        <Grid item xs={12}>
+          <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
                   <TableCell>
-                    {coupon.type === 'public' ? (
-                      <PublicIcon sx={{ color: 'blue' }} titleAccess="Public Coupon" />
-                    ) : coupon.type === 'personal' ? (
-                      <PersonIcon sx={{ color: 'green' }} titleAccess="Personal Coupon" />
-                    ) : (
-                      <span>{coupon.type}</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {coupon.discountType === 'percentage' ? (
-                      <PercentIcon sx={{ color: 'purple' }} titleAccess="Percentage Discount" />
-                    ) : coupon.discountType === 'pixed_amount' ? (
-                      <AttachMoneyIcon sx={{ color: 'goldenrod' }} titleAccess="Pixed Amount Discount" />
-                    ) : (
-                      <span>{coupon.discountType}</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{coupon.quantity}</TableCell>
-                  <TableCell>{coupon.startDate}</TableCell>
-                  <TableCell>{coupon.endDate}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`badge ${coupon.status === 'Ongoing'
-                        ? 'bg-success'
-                        : coupon.status === 'Ended'
-                          ? 'bg-danger'
-                          : coupon.status === 'Not Started'
-                            ? 'bg-info'
-                            : ''
-                        }`}
+                    <TableSortLabel
+                      active={orderBy === 'name'}
+                      direction={orderBy === 'name' ? order : 'asc'} // Set the direction based on current state
+                      onClick={() => handleRequestSort('name')}
                     >
-                      {coupon.status}
-                    </span>
+                      Tên phiếu giảm giá
+                    </TableSortLabel>
+
                   </TableCell>
-                  <TableCell>
-                    <IconButton component={Link} to={`/coupon/detail/${coupon.id}`}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => onDelete(coupon.id)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
+                  <TableCell align="left">
+                    <TableSortLabel
+                      active={orderBy === 'code'}
+                      direction={orderBy === 'code' ? order : 'asc'}
+                      onClick={() => handleRequestSort('code')}
+                    >
+                      Mã
+                    </TableSortLabel>
                   </TableCell>
+                  <TableCell align="left">
+                    <TableSortLabel
+                      active={orderBy === 'quantity'}
+                      direction={orderBy === 'quantity' ? order : 'asc'}
+                      onClick={() => handleRequestSort('quantity')}
+                    >
+                      Số lượng
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell align="left">Loại</TableCell>
+                  <TableCell align="left">Kiểu</TableCell>
+                  <TableCell align="left">Trạng thái</TableCell>
+                  <TableCell align="left">
+                    <TableSortLabel
+                      active={orderBy === 'startDate'}
+                      direction={orderBy === 'startDate' ? order : 'asc'}
+                      onClick={() => handleRequestSort('startDate')}
+                    >
+                      Bắt đầu
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell align="left">
+                    <TableSortLabel
+                      active={orderBy === 'endDate'}
+                      direction={orderBy === 'endDate' ? order : 'asc'}
+                      onClick={() => handleRequestSort('endDate')}
+                    >
+                      Kết thúc
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell align="right">Hành động</TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={10}>No coupons found</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Stack spacing={2} marginTop={2}>
-        <Pagination count={10} page={page} onChange={(e, value) => setPage(value)} />
+              </TableHead>
+              <TableBody>
+                {coupons.map((coupon) => (
+                  <TableRow key={coupon.id}>
+                    <TableCell>{coupon.name}</TableCell>
+                    <TableCell align="left">{coupon.code}</TableCell>
+                    <TableCell align="left">{coupon.quantity}</TableCell>
+                    <TableCell align="left">
+                      {coupon.discountType === 'percentage' ? <PercentIcon /> : <AttachMoneyIcon />}
+                    </TableCell>
+                    <TableCell align="left">
+                      {coupon.type === 'public' ? <PublicIcon /> : <PersonIcon />}
+                    </TableCell>
+                    <TableCell align="left">{coupon.status}</TableCell>
+                    <TableCell align="left">{coupon.startDate}</TableCell>
+                    <TableCell align="left">{coupon.endDate}</TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        component={Link}
+                        to={`/coupon/detail/${coupon.id}`}
+                        color="primary"
+                        size="small"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => onDelete(coupon.id)}
+                        color="secondary"
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
+
+      {/* Pagination */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" marginY="10px">
+        <Typography>{`Hiển thị ${coupons.length} trong tổng số ${totalPages} kết quả`}</Typography>
+        <Box display="flex" alignItems="center">
+          <Typography>Hiển thị:</Typography>
+          <Select
+            value={size}
+            onChange={handleSizeChange}
+            size="small"
+            style={{ marginLeft: '10px', width: '80px' }}
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+          </Select>
+        </Box>
       </Stack>
+
+      <Pagination
+        count={totalPages}
+        page={page}
+        onChange={handlePageChange}
+        color="primary"
+        size="large"
+        style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}
+      />
     </Container>
   );
 };

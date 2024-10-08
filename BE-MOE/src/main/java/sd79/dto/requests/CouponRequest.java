@@ -14,14 +14,12 @@ import java.util.Date;
 @Builder
 public class CouponRequest {
 
-    @NotNull(message = "Code cannot be null")
     @NotEmpty(message = "Code cannot be empty")
-    @Size(max = 100, message = "Code should not exceed 100 characters")
+    @Size(max = 12, message = "Code should not exceed 12 characters")
     private String code;
 
-    @NotNull(message = "Name cannot be null")
     @NotEmpty(message = "Name cannot be empty")
-    @Size(max = 100, message = "Name should not exceed 100 characters")
+    @Size(max = 50, message = "Name should not exceed 50 characters")
     private String name;
 
     @NotNull(message = "Discount type is required")
@@ -54,6 +52,9 @@ public class CouponRequest {
 
     @Size(max = 255, message = "Description should not exceed 255 characters")
     private String description;
+
+    @Size(max = 255, message = "Image should not exceed 255 characters")
+    private String image;
 
     @NotNull(message = "User id must be not null!")
     private Long userId;

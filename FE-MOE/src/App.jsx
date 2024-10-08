@@ -8,6 +8,7 @@ import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
 import CustomerDetailPage from './pages/customer/CustomerDetailPage';
 import { Categories } from "./pages/products/categories/Categories";
+import { Promotion } from "~/pages/promotions/Promotion"
 import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
@@ -74,6 +75,7 @@ function App() {
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/promotions" element={<Promotion />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
