@@ -23,16 +23,13 @@ import { fetchAllColors } from "~/apis/colorApi";
 import { fetchAllSizes } from "~/apis/sizesApi";
 import { postProduct } from "~/apis/productApi";
 import { useNavigate } from "react-router-dom";
-import { uploadSingleImage } from "~/utils/cloudinarySingleUpload";
-import { NHV_CLODINARY } from "~/utils/constants";
-import { result } from "lodash";
 
 export const ProductFrom = () => {
   const [categories, setCategories] = useState([]);
   const [countries, setCountries] = useState([]);
   const [brands, setBrands] = useState([]);
   const [materials, setMaterials] = useState([]);
-  const [colors, setColors] = useState([]);
+  const [colors, setColors] = useState([]); 
   const [sizes, setSizes] = useState([]);
 
   const [productDetails, setProductDetails] = useState([
@@ -46,8 +43,6 @@ export const ProductFrom = () => {
 
   const [product, setProduct] = useState({
     name: "",
-    description: "",
-    status: "",
     categoryId: "",
     brandId: "",
     materialId: "",
@@ -158,26 +153,26 @@ export const ProductFrom = () => {
     });
   };
 
-  const handleUploadImages = () => {
-    const url = [];
-    const countFiles = product.imageUrl.length;
-    for (let i = 0; i < countFiles; i++) {
-      uploadSingleImage(NHV_CLODINARY, product.imageUrl[i]).then((result) => {
-        url.push(result);
-      });
-    }
-    handleImagesUpload(url);
-    console.log(url);
-    console.log("First");
-    
-  };
-
   const handleSubmit = async () => {
-    // TODO: Add product to database
-    console.log(product);
-    await postProduct(product);
+    const formData = new FormData();
+    formData.append("name", product.name);
+    formData.append("categoryId", product.categoryId);
+    formData.append("brandId", product.brandId);
+    formData.append("materialId", product.materialId);
+    formData.append("origin", product.origin);
+    formData.append("description", product.description);
+    formData.append("status", product.status);
+    formData.append("userId", product.userId);
+    formData.append("productDetails", JSON.stringify(productDetails));
+    formData.append("imageUrl", JSON.stringify(product.imageUrl));
 
-    navigate("/product");
+    console.log(product);
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+  });
+    
+    // await postProduct(formData);
+    // navigate("/product");
   };
 
   return (
@@ -206,9 +201,9 @@ export const ProductFrom = () => {
               <FormControl fullWidth size="small">
                 <InputLabel id="origin">Xuất sứ</InputLabel>
                 <Select
-                  labelId="origin"
-                  label="Xuất sứ"
-                  name="origin"
+                    labelId="origin"
+                    label="Xuất sứ"
+                    name="origin"
                   value={product.origin || ""}
                   onChange={handleInputChange}
                 >

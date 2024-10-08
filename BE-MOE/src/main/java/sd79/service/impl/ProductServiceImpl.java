@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.ProductDetailRequest;
+import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
 import sd79.dto.response.ProductResponse;
 import sd79.exception.EntityNotFoundException;
@@ -67,12 +68,12 @@ public class ProductServiceImpl implements ProductService {
         product = this.productRepository.save(product);
 
         // Images
-        for (MultipartFile file : req.getImages()){
-            ProductImage productImage = new ProductImage();
-            productImage.setProduct(product);
-            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
-            this.productImageRepository.save(productImage);
-        }
+//        for (MultipartFile file : req.getImages()){
+//            ProductImage productImage = new ProductImage();
+//            productImage.setProduct(product);
+//            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
+//            this.productImageRepository.save(productImage);
+//        }
 
         // Product details
         for (ProductDetailRequest prd : req.getProductDetails()){
@@ -88,6 +89,21 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return product.getId();
+    }
+
+    @Override
+    public void storeProductImages(ProductImageReq req) {
+        Product product = this.getProductById(req.getProductId());
+        for (MultipartFile file : req.getImages()){
+            ProductImage productImage = new ProductImage();
+            productImage.setProduct(product);
+            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
+            this.productImageRepository.save(productImage);
+        }
+    }
+
+    private Product getProductById(long id) {
+        return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
     private Size getSizeById(int id) {

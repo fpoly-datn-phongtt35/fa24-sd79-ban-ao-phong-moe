@@ -20,6 +20,7 @@ import { Employee } from "~/pages/employee/Employee";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+import { ProductManager } from "./pages/products/productManager/ProductManager";
 // import 'bootstrap/dist/js/bootstrap.bundle.min';
 
 
@@ -77,7 +78,8 @@ function App() {
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
-        <Route path="/product/add" element={<ProductFrom />} />
+        <Route path="/product/add2" element={<ProductFrom />} />
+        <Route path="/product/add" element={<ProductManager  />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />

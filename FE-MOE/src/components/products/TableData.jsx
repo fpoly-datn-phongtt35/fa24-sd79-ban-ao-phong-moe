@@ -62,7 +62,7 @@ export const TableData = (props) => {
               data.map((value) => (
                 <TableRow key={value.id}>
                   <TableCell>
-                    <Image src={value.imageUrl[0]} rounded width={100} />
+                    <Image src={value.imageUrl[0] || "https://flysunrise.com/wp-content/uploads/2024/03/featured-image-placeholder.jpg"} rounded width={100} />
                   </TableCell>
                   <TableCell>{value.name}</TableCell>
                   <TableCell>{value.category}</TableCell>

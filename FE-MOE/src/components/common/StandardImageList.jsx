@@ -42,7 +42,6 @@ export default function StandardImageList({ onImagesUpload }) {
     <Box>
       <Button
         component="label"
-        variant="contained"
         startIcon={<CloudUploadIcon />}
       >
         Upload files

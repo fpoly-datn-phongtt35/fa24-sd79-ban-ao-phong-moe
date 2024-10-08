@@ -1,5 +1,6 @@
 package sd79.service;
 
+import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
 import sd79.dto.response.ProductResponse;
 
@@ -9,4 +10,6 @@ public interface ProductService {
     List<ProductResponse> getAllProducts();
 
     long storeProduct(ProductRequest req);
+
+    void storeProductImages(ProductImageReq req);
 }

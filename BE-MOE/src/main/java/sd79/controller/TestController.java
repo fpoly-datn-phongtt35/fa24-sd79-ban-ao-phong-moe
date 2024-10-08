@@ -14,6 +14,7 @@ import sd79.configuration.CloudinaryConfig;
 import sd79.utils.CloudinaryUpload;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -26,25 +27,26 @@ public class TestController {
 
     @PostMapping("/test")
     public String test(@ModelAttribute FileUploadDto fileUploadDto) {
-        MultipartFile file = fileUploadDto.getFile();
+
         String description = fileUploadDto.getDescription();
         String fileType = fileUploadDto.getFileType();
 
-        return cloudinaryUpload.upload(fileUploadDto.getFile());
+        log.info("url={}, description={}, type={}", cloudinaryUpload.upload(fileUploadDto.getFiles().get(0)), description, fileType  );
+        return "Success";
     }
 
     class FileUploadDto {
-        private MultipartFile file;
+        private List<MultipartFile> files; // Sử dụng List để chứa nhiều tệp
         private String description;
         private String fileType;
 
         // Getter và Setter
-        public MultipartFile getFile() {
-            return file;
+        public List<MultipartFile> getFiles() {
+            return files;
         }
 
-        public void setFile(MultipartFile file) {
-            this.file = file;
+        public void setFiles(List<MultipartFile> files) {
+            this.files = files;
         }
 
         public String getDescription() {

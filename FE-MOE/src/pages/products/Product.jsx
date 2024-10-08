@@ -23,7 +23,7 @@ export const Product = () => {
       style={{ height: "100%", marginTop: "15px" }}
     >
       <HeardForm title="Quản lý sản phẩm"/>
-      <Filter />
+      {/* <Filter /> comming soon */}
       <TableData data={products}/>
     </Container>
   );
