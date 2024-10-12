@@ -26,6 +26,7 @@ export const Filter = (props) => {
             <Grid item xs={3}>
               <FormControl variant="standard">
                 <Select label="Trạng thái" value={props.status} onChange={props.onChangeStatus}>
+                  <MenuItem value="ALL">Tất cả</MenuItem>
                   <MenuItem value="ACTIVE">Đang hoạt động</MenuItem>
                   <MenuItem value="INACTIVE">Ngừng hoạt động</MenuItem>
                   <MenuItem value="OUT_OF_STOCK">Hết hàng</MenuItem>

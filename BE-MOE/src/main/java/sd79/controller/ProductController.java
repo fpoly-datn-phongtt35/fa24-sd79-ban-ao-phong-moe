@@ -27,10 +27,10 @@ public class ProductController {
     )
     @GetMapping
     public ResponseData<?> getAllProducts(
-            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "3") int pageSize,
-            @RequestParam(value = "keyword", defaultValue = "") String keyword,
-            @RequestParam(value = "status", defaultValue = "ACTIVE") ProductStatus status
+            @RequestParam(value = "pageNo", required = false, defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "3") Integer pageSize,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", defaultValue = "ALL") ProductStatus status
     ) {
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProducts(pageNo, pageSize, keyword, status));
     }
@@ -48,6 +48,23 @@ public class ProductController {
     public ResponseData<?> uploadFile(@ModelAttribute ProductImageReq request) {
         this.productService.storeProductImages(request);
         return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added product images");
+    }
+
+    @PatchMapping("/change-status/{id}/{status}")
+    public ResponseData<?> changeProductStatus(@PathVariable("id") long id, @PathVariable("status") ProductStatus status) {
+        this.productService.setProductStatus(id, status);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Move to bin successfully");
+    }
+
+    @PatchMapping("/move-to-bin/{id}")
+    public ResponseData<?> moveToBin(@PathVariable Long id){
+        this.productService.moveToBin(id);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Move to bin successfully");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseData<?> getProduct(@PathVariable Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Found a product with id " + id, this.productService.getProductInfo(id));
     }
 }
     

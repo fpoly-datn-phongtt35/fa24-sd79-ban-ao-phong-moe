@@ -17,6 +17,7 @@ import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
+import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
@@ -48,22 +49,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final CloudinaryUpload cloudinaryUpload;
 
+    private final ProductCustomizeQuery productCustomizeQuery;
+    
     @Override
-    public PageableResponse getAllProducts(int pageNo, int pageSize, String keyword, ProductStatus status) {
-        if(pageNo < 1 || pageSize < 1) {
+    public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status) {
+        if (pageNo < 1) {
             pageNo = 1;
         }
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        Page<Product> page = this.productRepository.findAllProductActive(pageable, keyword, status);
-        List<ProductResponse> data = page.getContent().stream().map(this::convertToProductResponse).toList();
-        return PageableResponse.builder()
-                .pageNo(pageNo)
-                .pageSize(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .pageNumber(page.getNumber())
-                .content(data)
-                .build();
+        return this.productCustomizeQuery.getAllProducts(pageNo, pageSize, keyword, status);
     }
 
     @Override
@@ -87,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
         product = this.productRepository.save(product);
 
         // Product details
-        for (ProductDetailRequest prd : req.getProductDetails()){
+        for (ProductDetailRequest prd : req.getProductDetails()) {
             ProductDetail productDetail = new ProductDetail();
             productDetail.setProduct(product);
             productDetail.setRetailPrice(prd.getRetailPrice());
@@ -105,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void storeProductImages(ProductImageReq req) {
         Product product = this.getProductById(req.getProductId());
-        for (MultipartFile file : req.getImages()){
+        for (MultipartFile file : req.getImages()) {
             ProductImage productImage = new ProductImage();
             productImage.setProduct(product);
             productImage.setImageUrl(this.cloudinaryUpload.upload(file));
@@ -114,9 +107,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void setProductToInactive(long id) {
+    public void setProductStatus(long id, ProductStatus status) {
         Product product = this.getProductById(id);
-        product.setStatus(ProductStatus.INACTIVE);
+        product.setStatus(status);
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public void moveToBin(Long id) {
+        Product product = this.getProductById(id);
+        product.setIsDeleted(true);
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public ProductResponse getProductInfo(long id) {
+        return convertToProductResponse(this.getProductById(id));
     }
 
     private Product getProductById(long id) {

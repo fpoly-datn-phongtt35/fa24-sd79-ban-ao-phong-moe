@@ -26,13 +26,15 @@ import {
   attributeProducts,
   postProduct,
   postProductImage,
+  fetchProduct,
 } from "~/apis/productApi";
 import { HeardForm } from "~/components/other/HeaderForm";
-import { useNavigate } from "react-router-dom";
 import StandardImageList from "~/components/common/StandardImageList";
 import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
 
-export const ProductManager = () => {
+export const ProductManagerUpdate = () => {
+  const [product, setProduct] = useState(null);
   const [attributes, setAttribute] = useState(null);
   const [colorCount, setColorCount] = useState([]);
   const [sizeCount, setSizeCount] = useState([]);
@@ -45,9 +47,19 @@ export const ProductManager = () => {
 
   const navigate = useNavigate();
 
+  const { id } = useParams();
+
   useEffect(() => {
     fetchAttributes();
+    getProduct();
+    setDefaultValues();
   }, []);
+
+  useEffect(() => {
+    if (product) {
+      setDefaultValues();
+    }
+  }, [product]);
 
   useEffect(() => {
     const newDetails = [];
@@ -80,10 +92,31 @@ export const ProductManager = () => {
     formState: { errors },
   } = useForm();
 
+  const setDefaultValues = () => {
+    console.log('setting default values');    
+    console.log(product);
+    
+    if(product){
+      setValue("name", product.name);
+      setValue("category", product.categoryId);
+      setValue("brand", product.brandId);
+      setValue("material", product.materialId);
+      setValue("origin", product.origin);
+      setValue("description", product.description);
+      // setValue("productDetails", product.productDetails);
+      // setImages(product.images);
+    }
+  }
+
   const fetchAttributes = async () => {
     const res = await attributeProducts();
     setAttribute(res);
   };
+
+  const getProduct = async () => {
+    const res = await fetchProduct(id);
+    setProduct(res.data);
+  }
 
   const handleInputDetails = (index, event) => {
     const { name, value } = event.target;
@@ -130,7 +163,7 @@ export const ProductManager = () => {
       className="bg-white"
       style={{ height: "100%", marginTop: "15px" }}
     >
-      <HeardForm title="Thêm sản phẩm" />
+      <HeardForm title="Cập nhật sản phẩm" />
       <form action="#" method="post" onSubmit={handleSubmit(onSubmit)}>
         <Box marginTop={3}>
           <Grid container spacing={2}>
@@ -403,13 +436,7 @@ export const ProductManager = () => {
               <StandardImageList onImagesUpload={handleImagesUpload} />
             </Grid>
             <Grid item xs={12}>
-              <Button
-                className="me-2"
-                color="error"
-                variant="contained"
-                type="button"
-                onClick={() => navigate("/product")}
-              >
+              <Button className="me-2" color="error" variant="contained" type="button" onClick={() => navigate("/product")}>
                 Thoát
               </Button>
               {isSubmit ? (
@@ -418,7 +445,7 @@ export const ProductManager = () => {
                 </Button>
               ) : (
                 <Button variant="contained" type="submit">
-                  Lưu
+                  Cập nhật
                 </Button>
               )}
             </Grid>

@@ -1,6 +1,6 @@
 import { Container, Box, Stack, Pagination } from "@mui/material";
 import { useEffect, useState } from "react";
-import { fetchAllProducts } from "~/apis/productApi";
+import { fetchAllProducts, moveToBin, changeStatus } from "~/apis/productApi";
 import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import { HeardForm } from "~/components/other/HeaderForm";
@@ -10,7 +10,7 @@ export const Product = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [keyword, setKeyword] = useState("");
-  const [status, setStatus] = useState("ACTIVE")
+  const [status, setStatus] = useState("ALL")
   useEffect(() => {
     handleSetProducts();
   }, [currentPage, keyword, status]);
@@ -37,6 +37,28 @@ export const Product = () => {
     setCurrentPage(1);
     setStatus(e.target.value);
   }
+
+  const onMoveToBin = (id) => {
+    swal({
+      title: "Xác nhận",
+      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((confirm) => {
+      if (confirm) {
+        moveToBin(id);
+        handleSetProducts();
+      }
+    });
+  }
+
+  const onSetStatus = (id, status) => {
+    console.log(id, !status ? 'ACTIVE': 'INACTIVE');
+    changeStatus(id, !status ? 'ACTIVE': 'INACTIVE');
+    
+  
+  }
   return (
     <Container
       maxWidth="max-width"
@@ -45,7 +67,7 @@ export const Product = () => {
     >
       <HeardForm title="Quản lý sản phẩm" />
       <Filter onChangeSearch={onChangeSearch} status={status} onChangeStatus={onChangeStatus}/>
-      <TableData data={products.content} />
+      <TableData data={products.content} onMoveToBin={onMoveToBin} onSetStatus={onSetStatus}/>
       <Box
         display="flex"
         justifyContent="center"

@@ -10,7 +10,17 @@ import { fetchAllSizes } from "./sizesApi";
 
 export const fetchAllProducts = async (pageNo, keyword, status) => {
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}/product?pageNo=${pageNo}&keyword=${keyword}&status=${status}`)
+    .get(
+      `${API_ROOT}/product?pageNo=${pageNo}&keyword=${keyword}&status=${status}`
+    )
+    .then((res) => res.data);
+};
+
+export const fetchProduct = async (id) => {
+  return await authorizedAxiosInstance
+    .get(
+      `${API_ROOT}/product/${id}`
+    )
     .then((res) => res.data);
 };
 
@@ -30,13 +40,27 @@ export const postProductImage = async (data) => {
     });
 };
 
+export const moveToBin = async (id) => {
+  return await authorizedAxiosInstance
+    .patch(`${API_ROOT}/product/move-to-bin/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const changeStatus = async (id, status) => {
+  return await authorizedAxiosInstance.patch(
+    `${API_ROOT}/product/change-status/${id}/${status}`
+  );
+};
+
 export const attributeProducts = async () => {
   return {
     origin: await fetchAllCountry(),
-    brands: await fetchAllBrands().then(res => res.data),
-    categories: await fetchAllCategories().then(res => res.data),
-    materials: await fetchAllMaterials().then(res => res.data),
-    colors: await fetchAllColors().then(res => res.data),
-    sizes: await fetchAllSizes().then(res => res.data)
+    brands: await fetchAllBrands().then((res) => res.data),
+    categories: await fetchAllCategories().then((res) => res.data),
+    materials: await fetchAllMaterials().then((res) => res.data),
+    colors: await fetchAllColors().then((res) => res.data),
+    sizes: await fetchAllSizes().then((res) => res.data),
   };
 };

@@ -21,7 +21,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
 import { ProductManager } from "./pages/products/productManager/ProductManager";
-// import 'bootstrap/dist/js/bootstrap.bundle.min';
+import { ProductManagerUpdate } from "./pages/products/productManager/ProductManagerUpdate";
 
 
 const ProtectedRoutes = () => {
@@ -80,6 +80,7 @@ function App() {
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
         <Route path="/product/add" element={<ProductManager  />} />
+        <Route path="/product/edit/:id" element={<ProductManagerUpdate  />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
