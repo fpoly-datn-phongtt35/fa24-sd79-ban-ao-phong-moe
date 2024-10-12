@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { Badge, Image } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import { ImageRotator } from "../common/ImageRotator ";
 
 export const TableData = (props) => {
   const [data, setData] = useState();
@@ -42,7 +43,7 @@ export const TableData = (props) => {
   }
 
   return (
-    <Box marginTop={5}>
+    <Box marginTop={2}>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -62,22 +63,15 @@ export const TableData = (props) => {
             {data.length === 0 && (
               <TableRow>
                 <TableCell colSpan={9} align="center">
-                  No data found
+                  Không tìm thấy sản phẩm!
                 </TableCell>
               </TableRow>
             )}
             {data &&
               data.map((value) => (
                 <TableRow key={value.id}>
-                  <TableCell>
-                    <Image
-                      src={
-                        value.imageUrl[0] ||
-                        "https://flysunrise.com/wp-content/uploads/2024/03/featured-image-placeholder.jpg"
-                      }
-                      rounded
-                      width={100}
-                    />
+                  <TableCell className="text-center">
+                    <ImageRotator imageUrl={value.imageUrl}/>
                   </TableCell>
                   <TableCell>{value.name}</TableCell>
                   <TableCell className="text-center">

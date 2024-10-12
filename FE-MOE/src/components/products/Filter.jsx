@@ -2,29 +2,35 @@ import {
   Box,
   FormControl,
   Grid,
+  Input,
+  InputAdornment,
   MenuItem,
   Select,
   TextField,
 } from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
 
 export const Filter = (props) => {
   return (
-    <Box marginTop={5}>
+    <Box marginTop={2} sx={{backgroundColor: "#fff", padding: "15px", boxShadow: 1, borderRadius: 1}}>
       <Grid container spacing={2}>
         <Grid item xs={3}>
-          <TextField
-            type="search"
-            placeholder="Search..."
-            variant="standard"
-            onChange={props.onChangeSearch}
-            fullWidth
+          <Input
+          placeholder="Tìm kiếm..."
+          variant="standard"
+          onChange={props.onChangeSearch}
+          startAdornment={
+            <InputAdornment position="start">
+              <SearchIcon/>
+            </InputAdornment>
+          }
           />
         </Grid>
 
         <Grid item xs={9}>
           <Grid container spacing={2}>
             <Grid item xs={3}>
-              <FormControl variant="standard">
+              <FormControl variant="standard" fullWidth >
                 <Select label="Trạng thái" value={props.status} onChange={props.onChangeStatus}>
                   <MenuItem value="ALL">Tất cả</MenuItem>
                   <MenuItem value="ACTIVE">Đang hoạt động</MenuItem>
