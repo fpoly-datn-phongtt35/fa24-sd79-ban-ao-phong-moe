@@ -1,6 +1,8 @@
 package sd79.configuration;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import sd79.dto.response.ExceptionResponse;
+import sd79.exception.AuthenticationException;
 import sd79.service.JwtService;
 import sd79.service.TokenService;
 import sd79.service.UserService;
@@ -39,7 +42,6 @@ public class PreFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        log.info("========== doFilterInternal ==========");
         final String authorization = request.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(authorization) || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -48,8 +50,8 @@ public class PreFilter extends OncePerRequestFilter {
         final String token = authorization.substring("Bearer ".length());
         try {
             final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-            if(this.tokenService.getToken(username) == null) {
-                throw new Exception("Authentication failed");
+            if (this.tokenService.getToken(username) == null) {
+                throw new AuthenticationException("Authentication failed");
             }
             if (StringUtils.isNotEmpty(username) & SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userService.userDetailsService().loadUserByUsername(username);
@@ -75,10 +77,12 @@ public class PreFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             ObjectMapper objectMapper = new ObjectMapper();
             response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        } catch (SignatureException e) {
+            log.error("Invalid signature message={}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         } catch (Exception e) {
             log.error("error={}", e.getMessage(), e.getCause());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Authentication failed");
+
         }
     }
 }
