@@ -59,16 +59,22 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Size(max = 255)
+    @Column(name = "image")
+    private String image;
+
     public String getStatus() {
         Date currentDate = new Date();
 
         if (startDate != null && endDate != null) {
             if (currentDate.before(startDate)) {
-                return "Not Started";  // chưa diễn ra
+//                return "Not Started";  // chưa diễn ra
+                return "C.Bắt đầu";
             } else if (currentDate.after(endDate)) {
-                return "Ended";  // kết thúc
+//                return "Ended";  // kết thúc
+                return "Kết thúc";
             } else {
-                return "Ongoing";  // đang diễn ra
+                return "Bắt đầu";
             }
         }
         return "Invalid Date";

@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import sd79.dto.response.CouponResponse;
+import sd79.enums.TodoDiscountType;
+import sd79.enums.TodoType;
 import sd79.model.Coupon;
 
 import java.util.Date;
@@ -26,8 +29,22 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
 
     @Query("FROM Coupon c " +
             "WHERE (c.name LIKE %:keyword% OR c.code LIKE %:keyword%) " +
-            "OR (c.startDate BETWEEN :startDate AND :endDate)")
-    List<Coupon> findByKeywordAndDate(@Param("keyword") String keyword,
-                                      @Param("startDate") Date startDate,
-                                      @Param("endDate") Date endDate);
+            "OR (Date(c.startDate) BETWEEN :startDate AND :endDate) " +
+            "AND (Date(c.endDate) BETWEEN :startDate AND :endDate) " +
+            "OR (c.discountType = :discountType OR c.type = :type) " +
+            "OR ((:status = 'C.Bắt đầu' AND c.startDate > CURRENT_DATE) " +
+            "OR (:status = 'Bắt đầu' AND c.startDate <= CURRENT_DATE AND c.endDate >= CURRENT_DATE) " +
+            "OR (:status = 'Kết thúc' AND c.endDate < CURRENT_DATE))")
+    Page<Coupon> findByKeywordAndDate(@Param("keyword") String keyword,
+                                              @Param("startDate") Date startDate,
+                                              @Param("endDate") Date endDate,
+                                              @Param("discountType") TodoDiscountType discountType,
+                                              @Param("type") TodoType type,
+                                              @Param("status") String status,
+                                              Pageable pageable);
+
+
+
+
+
 }

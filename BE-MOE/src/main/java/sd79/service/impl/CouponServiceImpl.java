@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
+import sd79.enums.TodoDiscountType;
+import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Coupon;
 import sd79.model.User;
@@ -50,6 +52,7 @@ public class CouponServiceImpl implements CouponService {
                 .startDate(couponRequest.getStartDate())
                 .endDate(couponRequest.getEndDate())
                 .description(couponRequest.getDescription())
+                .image(couponRequest.getImage())
                 .build();
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
@@ -71,8 +74,9 @@ public class CouponServiceImpl implements CouponService {
         coupon.setStartDate(couponRequest.getStartDate());
         coupon.setEndDate(couponRequest.getEndDate());
         coupon.setDescription(couponRequest.getDescription());
+        coupon.setImage(couponRequest.getImage());
+        coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
-
         return couponRepo.save(coupon).getId();
     }
 
@@ -92,9 +96,25 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public List<Coupon> findByKeywordAndDate(String keyword, Date startDate, Date endDate) {
-        return couponRepo.findByKeywordAndDate(keyword, startDate, endDate);
+    public Page<CouponResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
+                                          TodoDiscountType discountType, TodoType type,
+                                          String status, Pageable pageable) {
+        Page<Coupon> coupons;
+
+        // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
+        if ((keyword == null || keyword.isEmpty()) && startDate == null && endDate == null &&
+                discountType == null && type == null && (status == null || status.isEmpty())) {
+            coupons = couponRepo.findAll(pageable);  // Lấy toàn bộ danh sách với phân trang
+        } else {
+            // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
+            coupons = couponRepo.findByKeywordAndDate(keyword, startDate, endDate, discountType, type, status, pageable);
+        }
+
+        // Chuyển đổi từ entity Coupon sang DTO CouponResponse
+        return coupons.map(this::convertCouponResponse);
     }
+
+
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach
         return CouponResponse.builder()
@@ -111,6 +131,7 @@ public class CouponServiceImpl implements CouponService {
                 .endDate(coupon.getEndDate())
                 .status(coupon.getStatus())
                 .description(coupon.getDescription())
+                .image(coupon.getImage())
                 .build();
     }
 

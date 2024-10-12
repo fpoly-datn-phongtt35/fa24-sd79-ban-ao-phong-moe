@@ -20,7 +20,7 @@ export default function StandardImageList({ onImagesUpload }) {
     width: 1,
   });
 
-  // Hàm xử lý khi người dùng upload file
+  
   const handleImageUpload = (event) => {
     const files = event.target.files;
     const newImages = [];
@@ -28,13 +28,14 @@ export default function StandardImageList({ onImagesUpload }) {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const url = URL.createObjectURL(file); // Tạo URL từ file upload
+      const url = URL.createObjectURL(file);
       newImages.push({ img: url, title: file.name });
-      newImageUrls.push(url); // Lưu URL vào danh sách mới
+      // newImageUrls.push(url); 
+      newImageUrls.push(files[i]); 
     }
 
-    setUploadedImages(newImages); // Cập nhật state với ảnh mới upload
-    onImagesUpload(newImageUrls); // Gọi hàm để cập nhật ảnh trong product
+    setUploadedImages(newImages); 
+    onImagesUpload(newImageUrls); 
   };
 
   return (

@@ -15,9 +15,9 @@ import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
-
-    @Query("SELECT e FROM employees e WHERE e.phone_number = :phone_number")
-    Optional<Employee> findByPhone_number(String phone_number);
+//
+//    @Query("SELECT e FROM employees e WHERE e.phone_number = :phone_number")
+//    Optional<Employee> findByPhone_number(String phone_number);
 
     @Query("from employees where id = :id")
     Optional<Employee> findByIdEmp(Integer id);

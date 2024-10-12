@@ -4,12 +4,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.ResponseData;
 import sd79.model.Coupon;
 import sd79.model.Employee;
@@ -36,9 +40,14 @@ public class EmployeeController {
             description = "Get all employee from database"
     )
     @GetMapping
-    public ResponseData<?> getEmployees() {
-        return new ResponseData<>(HttpStatus.OK.value(), "List employee", employeeService.getEmployee());
+    public ResponseData<?> getEmployees(
+            @RequestParam(defaultValue = "0") int page, // Trang bắt đầu từ 0
+            @RequestParam(defaultValue = "5") int size) { // Mặc định mỗi trang có 5 phần tử
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EmployeeResponse> employeePage = employeeService.getEmployee(pageable);
+        return new ResponseData<>(HttpStatus.OK.value(), "List employee", employeePage);
     }
+
 
     @GetMapping("/positions")
     public ResponseData<?> getPositions(){

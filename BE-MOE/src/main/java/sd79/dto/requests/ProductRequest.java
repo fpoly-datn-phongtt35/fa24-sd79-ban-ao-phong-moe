@@ -2,6 +2,7 @@ package sd79.dto.requests;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 import sd79.enums.ProductStatus;
 
 import java.util.Set;
@@ -17,7 +18,7 @@ public class ProductRequest {
     private int brandId;
     private int materialId;
     private String origin;
-    private String[] imageUrl;
+    private MultipartFile[] images;
     //Product detail
     private Set<ProductDetailRequest> productDetails;
     //Created by

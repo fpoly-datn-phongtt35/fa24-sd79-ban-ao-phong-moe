@@ -38,11 +38,18 @@ export const Sidebar_ = () => {
           <MenuItem> ABC </MenuItem>
           <MenuItem> ABC </MenuItem>
         </SubMenu>
+<<<<<<< HEAD
+        <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-link"></i>}>
+        <MenuItem component={<Link to="/promotions"/>}> Quản lý đợt giảm giá </MenuItem>
+          <MenuItem> ABC </MenuItem>
+        </SubMenu>
+=======
         <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-tag" ></i>}>
           <MenuItem component={<Link to="/coupon"/>}> Phiếu giảm giá </MenuItem>
           <MenuItem> Đợt giảm giá </MenuItem>
         </SubMenu>
         <MenuItem icon={<i className="fa-solid fa-address-card"></i>} component={<Link to="/employee"/>}> Nhân viên</MenuItem>
+>>>>>>> dbaaae768a84707ccef9ae6aca2395b41b071433
       </Menu>
       <Menu>
         <MenuItem icon={<i className="fa-solid fa-user-circle"></i>}> Profile </MenuItem>

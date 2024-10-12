@@ -23,8 +23,9 @@ public class CouponResponse {
     private BigDecimal conditions;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date startDate; // ngay bat dau
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm") //yyyy-MM-dd
     private Date endDate; // ngay ket thuc
     private String status; //trang thai
     private String description;
+    private String image;
 }

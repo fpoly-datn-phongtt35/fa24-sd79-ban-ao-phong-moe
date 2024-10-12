@@ -3,6 +3,7 @@ package sd79.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.ProductDetailRequest;
 import sd79.dto.requests.ProductRequest;
 import sd79.dto.response.ProductResponse;
@@ -10,6 +11,7 @@ import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
 import sd79.service.ProductService;
+import sd79.utils.CloudinaryUpload;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +39,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductDetailRepository productDetailRepository;
 
+    private final CloudinaryUpload cloudinaryUpload;
+
     @Override
     public List<ProductResponse> getAllProducts() {
         return this.productRepository.findByIsDeletedFalse().stream().map(this::convertToProductResponse).toList();
@@ -63,10 +67,10 @@ public class ProductServiceImpl implements ProductService {
         product = this.productRepository.save(product);
 
         // Images
-        for (String value : req.getImageUrl()){
+        for (MultipartFile file : req.getImages()){
             ProductImage productImage = new ProductImage();
             productImage.setProduct(product);
-            productImage.setImageUrl(value);
+            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
             this.productImageRepository.save(productImage);
         }
 

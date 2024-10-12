@@ -79,6 +79,7 @@ public class PreFilter extends OncePerRequestFilter {
             log.error("error={}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Authentication failed");
+            log.error("error={}", e.getMessage());
         }
     }
 }

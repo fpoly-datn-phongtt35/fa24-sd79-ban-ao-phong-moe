@@ -6,6 +6,6 @@ public enum TodoDiscountType {
     @JsonProperty("percentage")
     PERCENTAGE,
 
-    @JsonProperty("pixed_amount")
+    @JsonProperty("fixed_amount")
     FIXED_AMOUNT,
 }

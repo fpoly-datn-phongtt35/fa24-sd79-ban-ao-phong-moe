@@ -23,6 +23,9 @@ import { fetchAllColors } from "~/apis/colorApi";
 import { fetchAllSizes } from "~/apis/sizesApi";
 import { postProduct } from "~/apis/productApi";
 import { useNavigate } from "react-router-dom";
+import { uploadSingleImage } from "~/utils/cloudinarySingleUpload";
+import { NHV_CLODINARY } from "~/utils/constants";
+import { result } from "lodash";
 
 export const ProductFrom = () => {
   const [categories, setCategories] = useState([]);
@@ -155,10 +158,25 @@ export const ProductFrom = () => {
     });
   };
 
+  const handleUploadImages = () => {
+    const url = [];
+    const countFiles = product.imageUrl.length;
+    for (let i = 0; i < countFiles; i++) {
+      uploadSingleImage(NHV_CLODINARY, product.imageUrl[i]).then((result) => {
+        url.push(result);
+      });
+    }
+    handleImagesUpload(url);
+    console.log(url);
+    console.log("First");
+    
+  };
+
   const handleSubmit = async () => {
     // TODO: Add product to database
-    // await postProduct(product);
     console.log(product);
+    await postProduct(product);
+
     navigate("/product");
   };
 

@@ -1,6 +1,8 @@
 package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.EmployeeReq;
@@ -40,27 +42,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     //    @Transactional
-    @Override
-    public long createEmployee(EmployeeRequest employeeRequest) { //tạo nhân viên mới
-        Employee employee = new Employee();
-        populateEmployeeData(employee, employeeRequest);
-        return employeeRepository.saveAndFlush(employee).getId();
-    }
 
-    @Transactional
-    @Override
-    public long updateEmployee(Integer id, EmployeeRequest employeeRequest) { //cập nhật thông tin nhân viên
-        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-        employee.setUpdateAt(new Date()); // set updatedAt
-        populateEmployeeData(employee, employeeRequest);
-        return employeeRepository.save(employee).getId();
-    }
+
+//    @Transactional
+//    @Override
+//    public long updateEmployee(Integer id, EmployeeRequest employeeRequest) { //cập nhật thông tin nhân viên
+//        Employee employee = employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+//        employee.setUpdateAt(new Date()); // set updatedAt
+//        populateEmployeeData(employee, employeeRequest);
+//        return employeeRepository.save(employee).getId();
+//    }
 
     @Transactional
     @Override
     public void deleteEmployee(Integer id) { //xoá nhân viên
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         employeeRepository.delete(employee);
+    }
+
+    @Override
+    public Page<EmployeeResponse> getEmployee(Pageable pageable) {
+        return employeeRepository.findAll(pageable).map(this::convertEmployeeResponse);
     }
 
     @Override
