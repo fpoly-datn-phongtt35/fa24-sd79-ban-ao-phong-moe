@@ -27,6 +27,7 @@ body {
 }
 
 .main-content {
+  height: calc(100vh - 70px);
   flex: 1;
   overflow-y: auto;
 }
