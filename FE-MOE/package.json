@@ -15,7 +15,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^6.1.1",
-    "@mui/material": "^6.1.1",
+    "@mui/material": "^6.1.2",
+    "@mui/styled-engine-sc": "^6.1.2",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
@@ -28,6 +29,7 @@
     "react-pro-sidebar": "^1.1.0",
     "react-router-dom": "^6.26.2",
     "react-toastify": "^10.0.5",
+    "styled-components": "^6.1.13",
     "sweetalert": "^2.1.2"
   },
   "devDependencies": {

@@ -1,8 +1,7 @@
-// CustomerDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchAllCustomer, putCustomer } from '~/apis/customerApi';
-import { Container, Form, Button } from 'react-bootstrap';
+import { Container, TextField, MenuItem, Button, Box, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
 
 const GENDER_OPTIONS = [
@@ -15,9 +14,9 @@ const GENDER_OPTIONS = [
 const formatDate = (dateString, time = "00:00:00") => {
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
-  return `${year}-${month}-${day} | ${time}`;
+  return `${day}/${month}/${year} | ${time}`;
 };
 
 const CustomerDetailPage = () => {
@@ -64,7 +63,7 @@ const CustomerDetailPage = () => {
     e.preventDefault();
     const updatedCustomer = {
       ...customer,
-      dateOfBirth: formatDate(customer.dateOfBirth), // Use the original format for submission
+      dateOfBirth: formatDate(customer.dateOfBirth), // Keep the date format
       updatedAt: new Date().toISOString(),
     };
 
@@ -79,89 +78,90 @@ const CustomerDetailPage = () => {
   };
 
   return (
-    <Container>
-      <h2>Edit Customer</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="firstName">
-          <Form.Label>First Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="firstName"
-            value={customer.firstName}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+    <Container maxWidth="sm">
+      <Box component="form" onSubmit={handleSubmit} mt={4}>
+        <Typography variant="h4" mb={3}>
+          Edit Customer
+        </Typography>
 
-        <Form.Group controlId="lastName">
-          <Form.Label>Last Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="lastName"
-            value={customer.lastName}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+        <TextField
+          label="First Name"
+          name="firstName"
+          value={customer.firstName}
+          onChange={handleChange}
+          fullWidth
+          required
+          margin="normal"
+        />
 
-        <Form.Group controlId="phoneNumber">
-          <Form.Label>Phone Number</Form.Label>
-          <Form.Control
-            type="text"
-            name="phoneNumber"
-            value={customer.phoneNumber}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+        <TextField
+          label="Last Name"
+          name="lastName"
+          value={customer.lastName}
+          onChange={handleChange}
+          fullWidth
+          required
+          margin="normal"
+        />
 
-        <Form.Group controlId="gender">
-          <Form.Label>Gender</Form.Label>
-          <Form.Control
-            as="select"
-            name="gender"
-            value={customer.gender}
-            onChange={handleChange}
-            required
-          >
-            {GENDER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+        <TextField
+          label="Phone Number"
+          name="phoneNumber"
+          value={customer.phoneNumber}
+          onChange={handleChange}
+          fullWidth
+          required
+          margin="normal"
+        />
 
-        <Form.Group controlId="dateOfBirth">
-          <Form.Label>Date of Birth</Form.Label>
-          <Form.Control
-            type="text"
-            name="dateOfBirth"
-            value={formatDate(customer.dateOfBirth)} // Use formatted date for input
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+        <TextField
+          label="Gender"
+          name="gender"
+          select
+          value={customer.gender}
+          onChange={handleChange}
+          fullWidth
+          required
+          margin="normal"
+        >
+          {GENDER_OPTIONS.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
 
-        <Form.Group controlId="image">
-          <Form.Label>Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            name="image"
-            value={customer.image}
-            onChange={handleChange}
-          />
-        </Form.Group>
-        <br />
-        <Button variant="primary" type="submit">
-          Update Customer
-        </Button>
-        &nbsp;
-        &nbsp;
-        <Button variant="secondary" onClick={() => navigate('/customer')}>
-          Cancel
-        </Button>
-      </Form>
+        <TextField
+          label="Date of Birth"
+          name="dateOfBirth"
+          type="text"
+          value={customer.dateOfBirth}
+          onChange={handleChange}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          margin="normal"
+          required
+        />
+
+
+        <TextField
+          label="Image URL"
+          name="image"
+          value={customer.image}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+
+        <Box mt={3} display="flex" justifyContent="space-between">
+          <Button variant="contained" color="primary" type="submit">
+            Update Customer
+          </Button>
+          <Button variant="outlined" onClick={() => navigate('/customer')}>
+            Cancel
+          </Button>
+        </Box>
+      </Box>
     </Container>
   );
 };
