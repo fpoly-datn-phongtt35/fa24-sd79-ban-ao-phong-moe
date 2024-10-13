@@ -20,6 +20,6 @@ public class ProductRequest {
     private String origin;
     //Product detail
     private Set<ProductDetailRequest> productDetails;
-    //Created by
+    //Created/Updated by
     private Long userId;
 }

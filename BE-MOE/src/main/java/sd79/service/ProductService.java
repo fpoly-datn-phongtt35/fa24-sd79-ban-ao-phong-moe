@@ -20,4 +20,6 @@ public interface ProductService {
     void moveToBin(Long id);
 
     ProductModifyRes getProductInfo(long id);
+
+    void updateProduct(ProductRequest req, long id);
 }

@@ -66,5 +66,12 @@ public class ProductController {
     public ResponseData<?> getProduct(@PathVariable Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Found a product with id " + id, this.productService.getProductInfo(id));
     }
+
+    @PutMapping("/update-product/{id}")
+    public ResponseData<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+        log.info("name={}", request.getName());
+        this.productService.updateProduct(request, id);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Updated product successfully");
+    }
 }
     

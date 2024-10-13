@@ -64,3 +64,11 @@ export const attributeProducts = async () => {
     sizes: await fetchAllSizes().then((res) => res.data),
   };
 };
+
+export const updateProduct = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/product/update-product/${id}`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};

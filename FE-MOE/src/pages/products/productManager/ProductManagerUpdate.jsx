@@ -6,7 +6,16 @@ import {
   ImageListItem,
   Link,
 } from "@mui/material";
-import { Grid, Box, Typography, Sheet } from "@mui/joy";
+import {
+  Grid,
+  Box,
+  Typography,
+  Sheet,
+  Modal,
+  ModalDialog,
+  DialogTitle,
+  DialogContent,
+} from "@mui/joy";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -14,6 +23,7 @@ import { fetchProduct } from "~/apis/productApi";
 import Button from "@mui/joy/Button";
 import EditIcon from "@mui/icons-material/Edit";
 import Table from "@mui/joy/Table";
+import { ModifyProduct } from "~/components/products/ModifyProduct";
 
 export const ProductManagerUpdate = () => {
   const [product, setProduct] = useState(null);
@@ -166,14 +176,7 @@ export const ProductManagerUpdate = () => {
               </Typography>
             </Box>
             <Box marginBottom={1}>
-              <Button
-                size="sm"
-                color="neutral"
-                variant="outlined"
-                startDecorator={<EditIcon />}
-              >
-                Chỉnh sửa
-              </Button>
+              <ModifyProduct data={product} id={id} getProduct={getProduct} />
             </Box>
           </Grid>
 

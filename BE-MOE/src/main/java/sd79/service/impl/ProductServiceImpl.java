@@ -122,6 +122,25 @@ public class ProductServiceImpl implements ProductService {
         return convertToProductResponse(this.getProductById(id));
     }
 
+    @Override
+    public void updateProduct(ProductRequest req, long id) {
+        User user = getUserById(req.getUserId());
+
+        // Products
+        Product product = this.getProductById(id);
+        product.setName(req.getName());
+        product.setDescription(req.getDescription());
+
+        product.setCategory(this.categoryRepository.findById(req.getCategoryId()).orElseThrow(() -> new EntityNotFoundException("Invalid category")));
+        product.setBrand(this.brandRepository.findById(req.getBrandId()).orElseThrow(() -> new EntityNotFoundException("Invalid brand")));
+        product.setMaterial(this.materialRepository.findById(req.getMaterialId()).orElseThrow(() -> new EntityNotFoundException("Invalid material")));
+
+        product.setOrigin(req.getOrigin());
+        product.setUpdatedBy(user);
+
+        this.productRepository.save(product);
+    }
+
     private Product getProductById(long id) {
         return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
