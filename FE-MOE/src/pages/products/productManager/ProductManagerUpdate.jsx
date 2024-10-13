@@ -1,457 +1,252 @@
 import {
-  Autocomplete,
-  Box,
-  Button,
-  CircularProgress,
+  Breadcrumbs,
   Container,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
+  IconButton,
+  ImageList,
+  ImageListItem,
+  Link,
 } from "@mui/material";
-import FormHelperText from "@mui/material/FormHelperText";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import {
-  attributeProducts,
-  postProduct,
-  postProductImage,
-  fetchProduct,
-} from "~/apis/productApi";
-import { HeardForm } from "~/components/other/HeaderForm";
-import StandardImageList from "~/components/common/StandardImageList";
-import { toast } from "react-toastify";
+import { Grid, Box, Typography, Sheet } from "@mui/joy";
+import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { fetchProduct } from "~/apis/productApi";
+import Button from "@mui/joy/Button";
+import EditIcon from "@mui/icons-material/Edit";
+import Table from "@mui/joy/Table";
 
 export const ProductManagerUpdate = () => {
   const [product, setProduct] = useState(null);
-  const [attributes, setAttribute] = useState(null);
-  const [colorCount, setColorCount] = useState([]);
-  const [sizeCount, setSizeCount] = useState([]);
-  const [details, setDetails] = useState([]);
-  const [images, setImages] = useState([]);
-
-  const [isSubmit, setIsSubmit] = useState(false);
-
-  const [error, setError] = useState([]);
-
   const navigate = useNavigate();
-
   const { id } = useParams();
 
   useEffect(() => {
-    fetchAttributes();
     getProduct();
-    setDefaultValues();
   }, []);
-
-  useEffect(() => {
-    if (product) {
-      setDefaultValues();
-    }
-  }, [product]);
-
-  useEffect(() => {
-    const newDetails = [];
-
-    colorCount.forEach((color) => {
-      sizeCount.forEach((size) => {
-        const existingDetail = details.find(
-          (d) => d.colorId === color.id && d.sizeId === size.id
-        );
-        newDetails.push(
-          existingDetail || {
-            colorId: color.id,
-            colorName: color.name,
-            sizeId: size.id,
-            sizeName: size.name,
-            retailPrice: "",
-            quantity: "",
-          }
-        );
-      });
-    });
-
-    setDetails(newDetails);
-  }, [colorCount, sizeCount]);
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
-
-  const setDefaultValues = () => {
-    console.log('setting default values');    
-    console.log(product);
-    
-    if(product){
-      setValue("name", product.name);
-      setValue("category", product.categoryId);
-      setValue("brand", product.brandId);
-      setValue("material", product.materialId);
-      setValue("origin", product.origin);
-      setValue("description", product.description);
-      // setValue("productDetails", product.productDetails);
-      // setImages(product.images);
-    }
-  }
-
-  const fetchAttributes = async () => {
-    const res = await attributeProducts();
-    setAttribute(res);
-  };
 
   const getProduct = async () => {
     const res = await fetchProduct(id);
     setProduct(res.data);
-  }
-
-  const handleInputDetails = (index, event) => {
-    const { name, value } = event.target;
-    const updatedDetails = [...details];
-    updatedDetails[index][name] = value;
-    setDetails(updatedDetails);
-    setValue("productDetails", details);
-  };
-
-  const handleImagesUpload = (files) => {
-    setImages(files);
-  };
-
-  const onSubmit = async (data) => {
-    let product = {
-      name: data.name,
-      categoryId: data.category,
-      brandId: data.brand,
-      materialId: data.material,
-      origin: data.origin,
-      description: data.description,
-      status: "ACTIVE",
-      productDetails: data.productDetails,
-      userId: localStorage.getItem("userId"),
-    };
-    setIsSubmit(true);
-    await postProduct(product).then(async (response) => {
-      let formData = new FormData();
-      formData.append("productId", response);
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
-      await postProductImage(formData).then(() => {
-        toast.success("Thêm thành công");
-        setIsSubmit(false);
-        navigate("/product");
-      });
-    });
   };
 
   return (
     <Container
       maxWidth="max-width"
-      className="bg-white"
       style={{ height: "100%", marginTop: "15px" }}
     >
-      <HeardForm title="Cập nhật sản phẩm" />
-      <form action="#" method="post" onSubmit={handleSubmit(onSubmit)}>
-        <Box marginTop={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <TextField
-                  size="small"
-                  label="Tên sản phẩm"
-                  fullWidth
-                  {...register("name", { required: true })}
-                />
-                {errors.name && (
-                  <FormHelperText error>
-                    Vui lòng điền đầy đủ thông tin
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="origin">Xuất sứ</InputLabel>
-                <Select
-                  labelId="origin"
-                  label="Xuất sứ"
-                  defaultValue=""
-                  {...register("origin", { required: true })}
-                >
-                  {attributes &&
-                    attributes.origin.map((value, index) => (
-                      <MenuItem key={index} value={value}>
-                        {value}
-                      </MenuItem>
-                    ))}
-                </Select>
-                {errors.origin && (
-                  <FormHelperText error>
-                    Vui lòng điền đầy đủ thông tin
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="brand">Thương hiệu</InputLabel>
-                <Select
-                  labelId="brand"
-                  label="Thương hiệu"
-                  defaultValue=""
-                  {...register("brand", { required: true })}
-                >
-                  {attributes?.brands &&
-                    attributes.brands.map((value, index) => (
-                      <MenuItem key={index} value={value.id}>
-                        {value.name}
-                      </MenuItem>
-                    ))}
-                </Select>
-                {errors.brand && (
-                  <FormHelperText error>
-                    Vui lòng điền đầy đủ thông tin
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="category">Loại sản phẩm</InputLabel>
-                <Select
-                  labelId="category"
-                  label="Loại sản phẩm"
-                  defaultValue=""
-                  {...register("category", { required: true })}
-                >
-                  {attributes?.categories &&
-                    attributes.categories.map((value, index) => (
-                      <MenuItem key={index} value={value.id}>
-                        {value.name}
-                      </MenuItem>
-                    ))}
-                </Select>
-                {errors.category && (
-                  <FormHelperText error>
-                    Vui lòng điền đầy đủ thông tin
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="material">chất liệu</InputLabel>
-                <Select
-                  labelId="material"
-                  label="chất liệu"
-                  defaultValue=""
-                  {...register("material", { required: true })}
-                >
-                  {attributes?.materials &&
-                    attributes.materials.map((value, index) => (
-                      <MenuItem key={index} value={value.id}>
-                        {value.name}
-                      </MenuItem>
-                    ))}
-                </Select>
-                {errors.material && (
-                  <FormHelperText error>
-                    Vui lòng điền đầy đủ thông tin
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
-            {/* TODO Handle product details */}
-            <Grid item xs={6}>
-              <Autocomplete
-                multiple
-                filterSelectedOptions
-                options={attributes?.colors || []}
-                getOptionLabel={(option) => option.name}
-                onChange={(event, value) => {
-                  const data = value.map((color) => {
-                    return {
-                      id: color.id,
-                      name: color.name,
-                    };
-                  });
-                  setColorCount(data);
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Color"
-                    placeholder="Color"
-                    error={!!errors.color}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={6}>
-              <Autocomplete
-                multiple
-                options={attributes?.sizes || []}
-                filterSelectedOptions
-                getOptionLabel={(option) => option.name}
-                onChange={(event, value) => {
-                  const data = value.map((size) => {
-                    return {
-                      id: size.id,
-                      name: size.name,
-                    };
-                  });
-
-                  setSizeCount(data);
-                }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Size" placeholder="Size" />
-                )}
-              />
-            </Grid>
-            {colorCount &&
-              colorCount.map((color, colorIndex) => (
-                <Grid item xs={12} key={color.id}>
-                  <TableContainer component={Paper}>
-                    <Box
-                      display="flex"
-                      justifyContent="center"
-                      padding="5px"
-                      bgcolor="#5d94c5"
-                    >
-                      <Typography variant="h6" component="div" color="#fff">
-                        Các sản phẩm màu {color.name}
-                      </Typography>
-                    </Box>
-                    <Table sx={{ minWidth: 60 }}>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>#</TableCell>
-                          <TableCell>Sản phẩm</TableCell>
-                          <TableCell>Số lượng</TableCell>
-                          <TableCell>Giá tiền</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {sizeCount.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={4} align="center">
-                              <Box
-                                display="flex"
-                                justifyContent="center"
-                                padding="5px"
-                              >
-                                <Typography variant="i" component="div">
-                                  Chưa có thuộc tính size
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                        {sizeCount &&
-                          sizeCount.map((size, sizeIndex) => {
-                            const detailIndex =
-                              colorIndex * sizeCount.length + sizeIndex;
-                            const detail = details[detailIndex];
-                            return (
-                              <TableRow key={sizeIndex}>
-                                <TableCell>{sizeIndex + 1}</TableCell>
-                                <TableCell>
-                                  Sản phẩm [{color.name} - {size.name}]
-                                </TableCell>
-                                <TableCell>
-                                  <TextField
-                                    fullWidth
-                                    size="small"
-                                    placeholder="Số lượng"
-                                    type="number"
-                                    name="quantity"
-                                    value={detail?.quantity || ""}
-                                    onChange={(event) =>
-                                      handleInputDetails(detailIndex, event)
-                                    }
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <TextField
-                                    fullWidth
-                                    size="small"
-                                    placeholder="Giá tiền"
-                                    type="number"
-                                    name="retailPrice"
-                                    value={detail?.retailPrice || ""}
-                                    error={
-                                      errors.details?.[detailIndex]
-                                        ?.retailPrice === ""
-                                    }
-                                    // error={true}
-                                    onChange={(event) =>
-                                      handleInputDetails(detailIndex, event)
-                                    }
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Grid>
-              ))}
-
-            <Grid item xs={12}>
-              <TextField
-                label="Mô tả"
-                multiline
-                fullWidth
-                rows={4}
-                {...register("description", { required: true })}
-              />
-              {errors.description && (
-                <FormHelperText error>
-                  Vui lòng điền đầy đủ thông tin
-                </FormHelperText>
-              )}
-            </Grid>
-
-            <Grid item xs={12}>
-              <StandardImageList onImagesUpload={handleImagesUpload} />
-            </Grid>
-            <Grid item xs={12}>
-              <Button className="me-2" color="error" variant="contained" type="button" onClick={() => navigate("/product")}>
-                Thoát
-              </Button>
-              {isSubmit ? (
-                <Button disabled>
-                  <CircularProgress />
-                </Button>
-              ) : (
-                <Button variant="contained" type="submit">
-                  Cập nhật
-                </Button>
-              )}
-            </Grid>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+        <Link
+          underline="hover"
+          sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+          color="inherit"
+          onClick={() => navigate("/")}
+        >
+          <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+          Trang chủ
+        </Link>
+        <Link
+          underline="hover"
+          sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+          color="inherit"
+          onClick={() => navigate("/product")}
+        >
+          Quản lý sản phẩm
+        </Link>
+        <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+          Cập nhật sản phẩm
+        </Typography>
+      </Breadcrumbs>
+      <Box marginTop={3}>
+        <Typography color="neutral" level="title-lg" noWrap variant="plain">
+          Thông tin sản phẩm
+        </Typography>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            flexGrow: 2,
+            justifyContent: "space-between",
+            border: "1px solid black",
+            borderRadius: "5px",
+          }}
+          marginTop={1}
+        >
+          <Grid size={3}>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Tên sản phẩm: {product?.name}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Xuất sứ: {product?.origin}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Thương hiệu: {product?.brand.name}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Danh mục: {product?.category.name}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Chất liệu: {product?.material.name}
+              </Typography>
+            </Box>
           </Grid>
-        </Box>
-      </form>
+
+          <Grid size={3}>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Người tạo: {product?.created_by}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Ngày tạo: {product?.created_at}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Người sửa: {product?.modified_by}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Typography
+                color="neutral"
+                level="title-md"
+                noWrap={false}
+                variant="plain"
+              >
+                Ngày sửa: {product?.modified_at}
+              </Typography>
+            </Box>
+            <Box marginBottom={1}>
+              <Button
+                size="sm"
+                color="neutral"
+                variant="outlined"
+                startDecorator={<EditIcon />}
+              >
+                Chỉnh sửa
+              </Button>
+            </Box>
+          </Grid>
+
+          <Grid size={3}>
+            <ImageList
+              sx={{ width: 400, height: 150 }}
+              cols={3}
+              rowHeight={164}
+            >
+              {product?.imageUrl?.length > 0 &&
+                product?.imageUrl.map((item, index) => (
+                  <ImageListItem key={index}>
+                    <img
+                      srcSet={`${item}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                      src={`${item}?w=164&h=164&fit=crop&auto=format`}
+                      loading="lazy"
+                    />
+                  </ImageListItem>
+                ))}
+            </ImageList>
+          </Grid>
+        </Grid>
+      </Box>
+      <Box marginTop={3}>
+        <Typography color="neutral" level="title-lg" noWrap variant="plain">
+          Chi tiết sản phẩm
+        </Typography>
+        <Sheet
+          sx={{
+            marginTop: 2,
+            padding: "2px",
+            border: "1px solid black",
+            borderRadius: "5px",
+          }}
+        >
+          <Table borderAxis="yBetween" stripe="odd">
+            <thead>
+              <tr>
+                <th className="text-center" style={{ width: "50px" }}>
+                  STT
+                </th>
+                <th className="text-center" style={{ width: "250px" }}>
+                  Tên sản phẩm
+                </th>
+                <th className="text-center">Màu sắc</th>
+                <th className="text-center">Kích thước</th>
+                <th className="text-center">Giá tiền</th>
+                <th className="text-center">Số lượng</th>
+                <th className="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {product?.details.map((item, index) => (
+                <tr key={index}>
+                  <td className="text-center">{index + 1}</td>
+                  <td>{`${product?.name} [${item.color} - ${item.size}]`}</td>
+                  <td className="text-center">{item.color}</td>
+                  <td className="text-center">{item.size}</td>
+                  <td className="text-center">{item.price}</td>
+                  <td className="text-center">{item.quantity}</td>
+                  <td className="text-center">
+                    <Box marginBottom={1}>
+                      <IconButton color="warning">
+                        <EditIcon />
+                      </IconButton>
+                    </Box>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Sheet>
+      </Box>
     </Container>
   );
 };

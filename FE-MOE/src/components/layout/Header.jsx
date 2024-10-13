@@ -10,6 +10,8 @@ import {
   MenuItem,
   Tooltip,
 } from "@mui/material";
+import logo from '~/assert/MainLogo.jpg'
+import ReorderIcon from '@mui/icons-material/Reorder';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export const Header = () => {
@@ -34,11 +36,12 @@ export const Header = () => {
   return (
     <header className="header">
       <div className="logo">
+        {/* <ReorderIcon /> */}
         <img
-          src="https://www.moe.co.nz/wp-content/uploads/2021/12/Moe_Logo_Alpha.png"
+          src={logo}
           alt="MOE Logo"
           className="img-fluid"
-          style={{ width: "80px", cursor: "pointer" }}
+          style={{ width: "50px", marginLeft: "5px", cursor: "pointer" }}
           onClick={() => navigate("/dashboard")}
         />
       </div>

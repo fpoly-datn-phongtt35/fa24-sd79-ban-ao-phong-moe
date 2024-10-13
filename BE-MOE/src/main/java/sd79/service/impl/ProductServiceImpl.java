@@ -2,17 +2,13 @@ package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.ProductDetailRequest;
 import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
-import sd79.dto.requests.common.ParamReq;
 import sd79.dto.response.PageableResponse;
-import sd79.dto.response.ProductResponse;
+import sd79.dto.response.productResponse.*;
 import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
@@ -21,6 +17,7 @@ import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryUpload cloudinaryUpload;
 
     private final ProductCustomizeQuery productCustomizeQuery;
-    
+
     @Override
     public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status) {
         if (pageNo < 1) {
@@ -121,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getProductInfo(long id) {
+    public ProductModifyRes getProductInfo(long id) {
         return convertToProductResponse(this.getProductById(id));
     }
 
@@ -137,24 +134,37 @@ public class ProductServiceImpl implements ProductService {
         return this.colorRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Color not found"));
     }
 
-    private ProductResponse convertToProductResponse(Product product) {
-        return ProductResponse.builder()
-                .id(product.getId())
-                .imageUrl(convertToUrl(product.getProductImages()))
+    private ProductModifyRes convertToProductResponse(Product product) {
+        return ProductModifyRes.builder()
                 .name(product.getName())
                 .description(product.getDescription())
-                .status(product.getStatus())
-                .category(product.getCategory().getName())
-                .brand(product.getBrand().getName())
-                .material(product.getMaterial().getName())
+                .category(CategoryResponse.builder().id(product.getCategory().getId()).name(product.getCategory().getName()).build())
+                .brand(BrandResponse.builder().id(product.getBrand().getId()).name(product.getBrand().getName()).build())
+                .material(MaterialResponse.builder().id(product.getMaterial().getId()).name(product.getMaterial().getName()).build())
                 .origin(product.getOrigin())
-                .createdBy(product.getCreatedBy().getUsername())
-                .updatedBy(product.getUpdatedBy().getUsername())
-                .createdAt(product.getCreateAt())
-                .updatedAt(product.getUpdateAt())
-                .productQuantity(this.productDetailRepository.countByProductId(product.getId()))
+                .imageUrl(convertToUrl(product.getProductImages()))
+                .created_by(product.getCreatedBy().getUsername())
+                .modified_by(product.getUpdatedBy().getUsername())
+                .created_at(product.getCreateAt())
+                .modified_at(product.getUpdateAt())
+                .details(convertToProductDetailResponse(product.getProductDetails()))
                 .build();
     }
+
+    private List<ProductDetailResponse> convertToProductDetailResponse(List<ProductDetail> productDetails) {
+        List<ProductDetailResponse> productDetailResponses = new ArrayList<>();
+        productDetails.forEach(productDetail -> {
+            productDetailResponses.add(ProductDetailResponse.builder()
+                    .id(productDetail.getId())
+                    .color(productDetail.getColor().getName())
+                    .size(productDetail.getSize().getName())
+                    .price(productDetail.getRetailPrice())
+                    .quantity(productDetail.getQuantity())
+                    .build());
+        });
+        return productDetailResponses;
+    }
+
 
     private List<String> convertToUrl(List<ProductImage> images) {
         return images.stream()

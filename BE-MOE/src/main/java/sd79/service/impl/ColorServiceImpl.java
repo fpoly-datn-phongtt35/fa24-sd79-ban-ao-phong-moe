@@ -3,7 +3,7 @@ package sd79.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.ColorRequest;
-import sd79.dto.response.ColorResponse;
+import sd79.dto.response.productResponse.ColorResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Color;
 import sd79.model.User;

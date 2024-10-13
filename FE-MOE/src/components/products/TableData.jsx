@@ -45,7 +45,10 @@ export const TableData = (props) => {
   return (
     <Box marginTop={2}>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table
+          sx={{ minWidth: 650 }}
+          variant="soft"
+        >
           <TableHead>
             <TableRow>
               <TableCell className="text-center">Ảnh</TableCell>
@@ -71,7 +74,7 @@ export const TableData = (props) => {
               data.map((value) => (
                 <TableRow key={value.id}>
                   <TableCell className="text-center">
-                    <ImageRotator imageUrl={value.imageUrl}/>
+                    <ImageRotator imageUrl={value.imageUrl} w={70} h={90}/>
                   </TableCell>
                   <TableCell>{value.name}</TableCell>
                   <TableCell className="text-center">

@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.response.PageableResponse;
-import sd79.dto.response.ProductResponse;
+import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 import sd79.model.Product;
 import sd79.model.ProductImage;

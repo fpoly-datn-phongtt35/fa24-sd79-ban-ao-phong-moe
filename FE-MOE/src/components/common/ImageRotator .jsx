@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Image } from "react-bootstrap";
 import "./ImageRotator.css";
 
-export const ImageRotator = ({ imageUrl }) => {
+export const ImageRotator = ({ imageUrl, w, h }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [inTransition, setInTransition] = useState(false);
 
@@ -26,8 +26,8 @@ export const ImageRotator = ({ imageUrl }) => {
           "https://flysunrise.com/wp-content/uploads/2024/03/featured-image-placeholder.jpg"
         }
         rounded
-        width={70}
-        height={90}
+        width={w}//70
+        height={h}//90
       />
     </div>
   );

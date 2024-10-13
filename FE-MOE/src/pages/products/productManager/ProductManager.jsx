@@ -1,12 +1,14 @@
 import {
   Autocomplete,
   Box,
+  Breadcrumbs,
   Button,
   CircularProgress,
   Container,
   FormControl,
   Grid,
   InputLabel,
+  Link,
   MenuItem,
   Paper,
   Select,
@@ -20,6 +22,7 @@ import {
   Typography,
 } from "@mui/material";
 import FormHelperText from "@mui/material/FormHelperText";
+import HomeIcon from "@mui/icons-material/Home";  
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -27,7 +30,6 @@ import {
   postProduct,
   postProductImage,
 } from "~/apis/productApi";
-import { HeardForm } from "~/components/other/HeaderForm";
 import { useNavigate } from "react-router-dom";
 import StandardImageList from "~/components/common/StandardImageList";
 import { toast } from "react-toastify";
@@ -130,7 +132,37 @@ export const ProductManager = () => {
       className="bg-white"
       style={{ height: "100%", marginTop: "15px" }}
     >
-      <HeardForm title="Thêm sản phẩm" />
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        marginBottom={2}
+        height={"50px"}
+      >
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/product")}
+          >
+            Quản lý sản phẩm
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Thêm sản phẩm
+          </Typography>
+        </Breadcrumbs>
+      </Grid>
+      {/* <HeardForm title="Thêm sản phẩm" /> */}
       <form action="#" method="post" onSubmit={handleSubmit(onSubmit)}>
         <Box marginTop={3}>
           <Grid container spacing={2}>

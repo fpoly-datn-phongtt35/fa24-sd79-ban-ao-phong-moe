@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.BrandRequest;
-import sd79.dto.response.BrandResponse;
+import sd79.dto.response.productResponse.BrandResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Brand;
 import sd79.model.User;

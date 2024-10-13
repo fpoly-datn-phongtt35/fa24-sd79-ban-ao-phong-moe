@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.MaterialRequest;
-import sd79.dto.response.MaterialResponse;
+import sd79.dto.response.productResponse.MaterialResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Material;
 import sd79.model.User;

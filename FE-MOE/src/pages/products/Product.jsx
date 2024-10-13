@@ -10,7 +10,7 @@ import {
   Grid,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import HomeIcon from '@mui/icons-material/Home';
+import HomeIcon from "@mui/icons-material/Home";
 import { fetchAllProducts, moveToBin, changeStatus } from "~/apis/productApi";
 import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
@@ -50,7 +50,7 @@ export const Product = () => {
 
   const onChangeStatus = (e) => {
     setCurrentPage(1);
-    setStatus(e.target.value);
+    setStatus(e);
   };
 
   const onMoveToBin = (id) => {
@@ -90,21 +90,19 @@ export const Product = () => {
   return (
     <Container
       maxWidth="max-width"
-      sx={{ height: "100%", marginTop: "15px", backgroundColor: "#f5f5f5"}}
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
-      {/* <HeardForm title="Quản lý sản phẩm" /> */}
-
       <Grid
         container
         spacing={2}
         alignItems="center"
-        bgcolor={"#1976d2"}
+        marginBottom={2}
         height={"50px"}
       >
-        <Breadcrumbs aria-label="breadcrumb" sx={{color: "#fff", marginLeft: "5px"}}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
           <Link
             underline="hover"
-            sx={{ cursor: "pointer", display: 'flex', alignItems: 'center' }}
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
             color="inherit"
             onClick={() => navigate("/")}
           >
@@ -116,6 +114,7 @@ export const Product = () => {
           </Typography>
         </Breadcrumbs>
       </Grid>
+      <HeardForm title="Danh sách sản phẩm" />
 
       <Filter
         onChangeSearch={onChangeSearch}

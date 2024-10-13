@@ -3,7 +3,7 @@ package sd79.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.SizeRequest;
-import sd79.dto.response.SizeResponse;
+import sd79.dto.response.productResponse.SizeResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Size;
 import sd79.model.User;
