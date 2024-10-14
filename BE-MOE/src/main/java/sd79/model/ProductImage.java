@@ -20,6 +20,10 @@ public class ProductImage {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Size(max = 100)
+    @Column(name = "public_id")
+    private String publicId;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")

@@ -3,15 +3,16 @@ import { useForm } from 'react-hook-form';
 import { TextField, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import { postCoupon } from '~/apis/couponApi';
 import { Link } from 'react-router-dom';
+import { faPercent, faDollarSign, faCamera } from '@fortawesome/free-solid-svg-icons';
 
 const CreateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
     const [discountType, setDiscountType] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomers, setSelectedCustomers] = useState([]);
+    const [image, setImage] = useState(null);
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -21,24 +22,46 @@ const CreateCoupon = () => {
         return `${day}/${month}/${year} | ${time}`;
     };
 
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Check file type and size
+            if (file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024) { // Max 2MB
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Get the base64 string and remove the header
+                    const base64String = reader.result.split(',')[1];
+                    setImage(base64String); // Store only the raw base64 string
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Please upload a valid image file (max 2MB).");
+            }
+        }
+    };
+    
+
+
     const onSubmit = async (data) => {
         try {
+
             await postCoupon({
                 code: data.code,
                 name: data.name,
                 discountValue: data.discountValue,
-                discountType: discountType == 'percentage' ? 'percentage' : 'pixed_amount',
+                discountType: discountType == 'percentage' ? 'percentage' : 'fixed_amount',
                 maxValue: data.maxValue,
                 quantity: data.quantity,
                 conditions: data.conditions,
                 startDate: formatDate(data.startDate),
                 endDate: formatDate(data.endDate),
                 type: data.type === 'public' ? 'public' : 'personal',
-                description: data.description,              
+                description: data.description,
+                image: image,
                 userId: localStorage.getItem("userId"),
             });
             console.log("Coupon created successfully", data);
-            location.href = "/coupon";
+            // location.href = "/coupon";
         } catch (error) {
             console.error("Error creating coupon", error);
         }
@@ -87,8 +110,25 @@ const CreateCoupon = () => {
             <Box p={4}>
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <Typography variant="h4" mb={2}>Tạo Phiếu Giảm Giá</Typography>
-                        <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2}>
+                        <Box display="flex" alignItems="center" mb={2}>
+                            <Typography variant="h4" mr={2}>Tạo Phiếu Giảm Giá</Typography>
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="image-upload"
+                                type="file"
+                                onChange={handleImageUpload}
+                            />
+                            <label htmlFor="image-upload">
+                                <IconButton component="span" color="primary">
+                                    <FontAwesomeIcon icon={faCamera} />
+                                </IconButton>
+                            </label>
+                        </Box>
+
+
+                        <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2} >
+
                             <TextField
                                 variant="outlined"
                                 label="Mã phiếu giảm giá"
@@ -229,6 +269,11 @@ const CreateCoupon = () => {
                                 rows={3}
                                 fullWidth
                             />
+                            {image && (
+                                <Box mb={2}>
+                                    <img src={image} alt="Uploaded" style={{ width: '10%', height: 'auto' }} />
+                                </Box>
+                            )}
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <Link to={'/coupon'} className='btn btn-danger w-100' type="submit" variant="contained" >
@@ -288,7 +333,7 @@ const CreateCoupon = () => {
                                         <td>{customer.email}</td>
                                         <td>{customer.dob}</td>
                                     </tr>
-                                ))}                            
+                                ))}
                             </tbody>
                         </table>
                     </Grid>

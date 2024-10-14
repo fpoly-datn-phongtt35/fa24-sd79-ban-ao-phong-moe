@@ -1,0 +1,18 @@
+.image-container {
+    position: relative;
+    overflow: hidden;
+    width: 100px;
+    height: 120px;
+  }
+  
+  .image-container img {
+    transition: filter 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    filter: blur(0);
+    opacity: 1;
+  }
+  
+  .image-container.flip img {
+    filter: blur(10px); 
+    opacity: 0; 
+  }
+  

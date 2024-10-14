@@ -1,12 +1,25 @@
 package sd79.service;
 
+import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
-import sd79.dto.response.ProductResponse;
-
-import java.util.List;
+import sd79.dto.response.PageableResponse;
+import sd79.dto.response.productResponse.ProductModifyRes;
+import sd79.dto.response.productResponse.ProductResponse;
+import sd79.enums.ProductStatus;
 
 public interface ProductService {
-    List<ProductResponse> getAllProducts();
+
+    PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status);
 
     long storeProduct(ProductRequest req);
+
+    void storeProductImages(ProductImageReq req);
+
+    void setProductStatus(long id, ProductStatus status);
+
+    void moveToBin(Long id);
+
+    ProductModifyRes getProductInfo(long id);
+
+    void updateProduct(ProductRequest req, long id);
 }

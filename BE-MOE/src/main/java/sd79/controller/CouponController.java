@@ -10,12 +10,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.ResponseData;
+import sd79.enums.TodoDiscountType;
+import sd79.enums.TodoType;
 import sd79.model.Coupon;
 import sd79.service.CouponService;
 
@@ -54,8 +57,10 @@ public class CouponController {
             description = "New coupon into database"
     )
     @PostMapping("/store")
-    public ResponseData<?> addCoupon(@Valid @RequestBody CouponRequest couponRequest) {
-        ;
+    public ResponseData<?> addCoupon(@Valid @RequestBody CouponRequest couponRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation errors", formatValidationErrors(bindingResult));
+        }
         return new ResponseData<>(HttpStatus.CREATED.value(), "Coupon created successfully", couponService.createCoupon(couponRequest));
     }
 
@@ -65,14 +70,17 @@ public class CouponController {
             description = "Update coupon into database"
     )
     @PutMapping("/update/{id}")
-    public ResponseData<?> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponRequest couponRequest) {
+    public ResponseData<?> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponRequest couponRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation errors", formatValidationErrors(bindingResult));
+        }
         return new ResponseData<>(HttpStatus.OK.value(), "Coupon updated successfully", couponService.updateCoupon(id, couponRequest));
     }
 
     // Xóa coupon
     @Operation(
             summary = "Delete Coupon",
-            description = "Set is delete of coupon to true and hidde from from"
+            description = "Set is delete of coupon to true and hide it from view"
     )
     @DeleteMapping("/delete/{id}")
     public ResponseData<?> deleteCoupon(@PathVariable Long id) {
@@ -80,41 +88,61 @@ public class CouponController {
         return new ResponseData<>(HttpStatus.OK.value(), "Coupon deleted successfully");
     }
 
-//    @GetMapping("/search")
-//    public ResponseData<?> searchCoupons(
-//            @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-//            @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
-//            @RequestParam(value = "name", required = false) String name,
-//            @RequestParam(value = "code", required = false) String code,
-//            @RequestParam(value = "page", defaultValue = "0") int page,
-//            @RequestParam(value = "size", defaultValue = "10") int size,
-//            @RequestParam(value = "sort", defaultValue = "startDate") String sortBy,
-//            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(direction), sortBy);
-//        Page<CouponResponse> result = couponService.searchCoupons(startDate, endDate, name, code, pageable);
-//
-//        return new ResponseData<>(HttpStatus.OK.value(), "Search results", result.getContent());
-//    }
-
     @GetMapping("/searchKeywordAndDate")
     public ResponseData<?> searchKeywordAndDate(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate) {
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+            @RequestParam(value = "discountType", required = false) String discountTypeStr,
+            @RequestParam(value = "type", required = false) String typeStr,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "sort", defaultValue = "startDate") String sort,
+            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
 
-        List<Coupon> results = couponService.findByKeywordAndDate(keyword, startDate, endDate);
-        return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
+        // Convert discountType and type to enum if present
+        TodoDiscountType discountType = (discountTypeStr != null) ? TodoDiscountType.valueOf(discountTypeStr.toUpperCase()) : null;
+        TodoType type = (typeStr != null) ? TodoType.valueOf(typeStr.toUpperCase()) : null;
+
+        // Determine sort direction
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+
+        // Apply sorting using Sort class
+        Sort sortBy = Sort.by(sortDirection, sort);
+
+        // Create pageable object with sorting
+        Pageable pageable = PageRequest.of(page, size, sortBy);
+
+        // Fetch paginated and sorted data
+        Page<CouponResponse> results = couponService.findByKeywordAndDate(
+                keyword, startDate, endDate, discountType, type, status, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", results.getContent());
+        response.put("totalPages", results.getTotalPages());
+        response.put("totalElements", results.getTotalElements());
+
+        return new ResponseData<>(HttpStatus.OK.value(), "List coupon", response);
     }
 
+
+
+
+
+    // Custom exception handler for validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", formatValidationErrors(ex.getBindingResult()));
+    }
+
+    // Helper method to format validation errors
+    private Map<String, String> formatValidationErrors(BindingResult bindingResult) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+        for (FieldError error : bindingResult.getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
+        }
+        return errors;
     }
 }

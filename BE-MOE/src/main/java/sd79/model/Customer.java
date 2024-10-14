@@ -51,7 +51,7 @@ public class Customer {
     private Date updatedAt;
 
     @OneToOne
-    @JoinColumn(name = "customerAddress_id")
+    @JoinColumn(name = "address_id")
     private CustomerAddress customerAddress;
 
 }
