@@ -7,6 +7,6 @@ import sd79.model.ProductDetail;
 @Repository
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
 
-    @Query("SELECT sum(p.quantity) FROM ProductDetail p WHERE p.product.id = :productId")
+    @Query("SELECT coalesce(sum(p.quantity), 0) FROM ProductDetail p WHERE p.product.id = :productId")
     int countByProductId(long productId);
 }

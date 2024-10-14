@@ -115,7 +115,6 @@ export const Product = () => {
   };
 
   const onSetStatus = (id, status) => {
-    console.log(id, !status ? "ACTIVE" : "INACTIVE");
     changeStatus(id, !status ? "ACTIVE" : "INACTIVE");
   };
 

@@ -53,7 +53,7 @@ export const Filter = (props) => {
                   <Input
                     type="search"
                     placeholder="Tìm kiếm…"
-                    value={props.keyword}
+                    // value={props.keyword}
                     startDecorator={<SearchIcon />}
                     onChange={props.onChangeSearch}
                   />
@@ -70,7 +70,7 @@ export const Filter = (props) => {
                     <Option value="ALL">Tất cả</Option>
                     <Option value="ACTIVE">Đang hoạt động</Option>
                     <Option value="INACTIVE">Ngừng hoạt động</Option>
-                    <Option value="OUT_OF_STOCK">Hêt hàng</Option>
+                    <Option value="OUT_OF_STOCK">Hết hàng</Option>
                   </Select>
                 </FormControl>
               </Grid>
