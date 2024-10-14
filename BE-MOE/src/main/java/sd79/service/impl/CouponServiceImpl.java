@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
 import sd79.enums.TodoDiscountType;
@@ -15,6 +17,7 @@ import sd79.model.User;
 import sd79.repositories.CouponRepo;
 import sd79.repositories.UserRepository;
 import sd79.service.CouponService;
+import sd79.utils.CloudinaryUpload;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +28,7 @@ public class CouponServiceImpl implements CouponService {
 
     private final CouponRepo couponRepo;
     private final UserRepository userRepository;
+    private final CloudinaryUpload cloudinaryUpload;
 
     @Override
     public List<CouponResponse> getCoupon() { //tra ra danh dach phieu giam gia
@@ -39,7 +43,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Transactional
     @Override
-    public long createCoupon(CouponRequest couponRequest) { //tao phieu giam gia
+    public long createCoupon(CouponRequest couponRequest) {
         Coupon coupon = Coupon.builder()
                 .code(couponRequest.getCode())
                 .name(couponRequest.getName())
@@ -52,12 +56,24 @@ public class CouponServiceImpl implements CouponService {
                 .startDate(couponRequest.getStartDate())
                 .endDate(couponRequest.getEndDate())
                 .description(couponRequest.getDescription())
-                .image(couponRequest.getImage())
                 .build();
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         return couponRepo.save(coupon).getId();
     }
+
+    public Coupon findCouponById(Long id) {
+        return this.couponRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
+    }
+
+    @Override
+    public void addCouponImage(CouponImageReq req) {
+        Coupon coupon = this.findCouponById(req.getCouponID());
+        System.out.println("Coupon id : "+ coupon.getId());
+        coupon.setImage(this.cloudinaryUpload.upload(req.getImages()));
+        this.couponRepo.save(coupon);
+    }
+
 
     @Transactional
     @Override
@@ -74,7 +90,6 @@ public class CouponServiceImpl implements CouponService {
         coupon.setStartDate(couponRequest.getStartDate());
         coupon.setEndDate(couponRequest.getEndDate());
         coupon.setDescription(couponRequest.getDescription());
-        coupon.setImage(couponRequest.getImage());
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         return couponRepo.save(coupon).getId();
@@ -97,8 +112,8 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Page<CouponResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
-                                          TodoDiscountType discountType, TodoType type,
-                                          String status, Pageable pageable) {
+                                                     TodoDiscountType discountType, TodoType type,
+                                                     String status, Pageable pageable) {
         Page<Coupon> coupons;
 
         // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
@@ -113,7 +128,6 @@ public class CouponServiceImpl implements CouponService {
         // Chuyển đổi từ entity Coupon sang DTO CouponResponse
         return coupons.map(this::convertCouponResponse);
     }
-
 
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach

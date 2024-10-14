@@ -119,7 +119,7 @@ const Coupon = () => {
   const handleDelete = async (id) => {
     try {
       await deleteCoupon(id);
-      handleSetCoupon();
+      handleSearchKeywordAndDate();
     } catch (error) {
       console.error('Failed to delete coupon', error);
       swal('Error', 'Failed to delete coupon', 'error');
