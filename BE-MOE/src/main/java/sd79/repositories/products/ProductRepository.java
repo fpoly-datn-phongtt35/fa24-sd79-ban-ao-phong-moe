@@ -1,4 +1,4 @@
-package sd79.repositories;
+package sd79.repositories.products;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

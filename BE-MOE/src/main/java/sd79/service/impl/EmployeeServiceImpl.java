@@ -9,6 +9,7 @@ import sd79.dto.response.EmployeeResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.EmployeeService;
 
 import java.util.Date;

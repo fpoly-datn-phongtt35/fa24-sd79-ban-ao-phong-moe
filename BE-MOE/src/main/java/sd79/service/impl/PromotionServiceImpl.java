@@ -6,16 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PromotionResponse;
-import sd79.enums.TodoDiscountType;
-import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Coupon;
 import sd79.model.Promotion;
 import sd79.model.User;
 import sd79.repositories.PromotionRepo;
-import sd79.repositories.UserRepository;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.PromotionService;
 
 import java.util.Date;

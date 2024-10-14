@@ -16,7 +16,7 @@ import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 import sd79.model.Product;
 import sd79.model.ProductImage;
-import sd79.repositories.ProductDetailRepository;
+import sd79.repositories.products.ProductDetailRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +59,7 @@ public class ProductCustomizeQuery {
 
         List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
 
-        // Count page
+        // TODO count products
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = false");
         if (StringUtils.hasLength(keyword)) {
             countPage.append(" AND lower(prd.name) like lower(:keyword)");

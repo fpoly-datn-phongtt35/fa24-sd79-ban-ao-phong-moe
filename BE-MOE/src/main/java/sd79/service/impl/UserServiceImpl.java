@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import sd79.exception.EntityNotFoundException;
-import sd79.repositories.UserRepository;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.UserService;
 
 @Service

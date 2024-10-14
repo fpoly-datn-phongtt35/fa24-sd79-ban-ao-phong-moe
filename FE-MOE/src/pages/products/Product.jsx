@@ -73,7 +73,7 @@ export const Product = () => {
     changeStatus(id, !status ? "ACTIVE" : "INACTIVE");
   };
 
-  if (!products.content) {
+  if (!products?.content) {
     return (
       <Box
         display="flex"

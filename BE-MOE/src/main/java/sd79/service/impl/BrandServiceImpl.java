@@ -8,9 +8,9 @@ import sd79.dto.response.productResponse.BrandResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Brand;
 import sd79.model.User;
-import sd79.repositories.BrandRepository;
-import sd79.repositories.ProductRepository;
-import sd79.repositories.UserRepository;
+import sd79.repositories.products.BrandRepository;
+import sd79.repositories.products.ProductRepository;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.BrandService;
 
 import java.util.List;

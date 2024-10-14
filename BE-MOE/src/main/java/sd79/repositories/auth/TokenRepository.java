@@ -1,4 +1,4 @@
-package sd79.repositories;
+package sd79.repositories.auth;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

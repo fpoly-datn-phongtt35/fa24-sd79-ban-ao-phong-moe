@@ -13,7 +13,7 @@ import sd79.exception.EntityNotFoundException;
 import sd79.model.Coupon;
 import sd79.model.User;
 import sd79.repositories.CouponRepo;
-import sd79.repositories.UserRepository;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.CouponService;
 
 import java.util.Date;
