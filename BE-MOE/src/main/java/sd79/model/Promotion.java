@@ -23,10 +23,6 @@ public class Promotion {
     @Column(name = "name")
     private String name;
 
-    @Size(max = 50)
-    @Column(name = "promotion_type", length = 50)
-    private String promotionType;
-
     @Column(name = "promotion_value", precision = 10, scale = 2)
     private BigDecimal promotionValue;
 

@@ -100,7 +100,6 @@ public class PromotionServiceImpl implements PromotionService {
     private void populatePromotionData(Promotion promotion, PromotionRequest promotionRequest) {//lay du lieu phieu giam gia request de them
         promotion.setName(promotionRequest.getName());
         promotion.setPromotionValue(promotionRequest.getPromotionValue());
-        promotion.setPromotionType(promotionRequest.getPromotionType());
         promotion.setStartDate(promotionRequest.getStartDate());
         promotion.setEndDate(promotionRequest.getEndDate());
         promotion.setDescription(promotionRequest.getDescription());
@@ -111,7 +110,6 @@ public class PromotionServiceImpl implements PromotionService {
                 .id(promotion.getId())
                 .name(promotion.getName())
                 .promotionValue(promotion.getPromotionValue())
-                .promotionType(promotion.getPromotionType())
                 .startDate(promotion.getStartDate())
                 .endDate(promotion.getEndDate())
                 .description(promotion.getDescription())

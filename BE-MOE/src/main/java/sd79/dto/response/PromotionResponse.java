@@ -11,7 +11,6 @@ import java.util.Date;
 public class PromotionResponse {
     private Integer id;
     private String name;
-    private String promotionType;
     private BigDecimal promotionValue;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date startDate;
