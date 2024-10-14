@@ -43,7 +43,6 @@ export const Promotion = () => {
         await putDiscount(
           {
             name: data.name,
-            promotionType: data.promotionType,
             promotionValue: data.promotionValue,
             startDate: formatDate(data.startDate),
             endDate: formatDate(data.endDate),
@@ -55,7 +54,6 @@ export const Promotion = () => {
       } else {
         await postDiscount({
           name: data.name,
-          promotionType: data.promotionType,
           promotionValue: data.promotionValue,
           startDate: formatDate(data.startDate),
           endDate: formatDate(data.endDate),
@@ -179,17 +177,6 @@ export const Promotion = () => {
               </Col>
               <Col md={6}>
                 <Form.Control
-                  type="text"
-                  className={errors.promotionType ? "is-invalid" : ""}
-                  placeholder="Loại giảm giá..."
-                  {...register("promotionType", { required: "Vui lòng nhập loại giảm giá" })}
-                />
-                {errors.promotionType && (
-                  <div className="invalid-feedback">{errors.promotionType.message}</div>
-                )}
-              </Col>
-              <Col md={6}>
-                <Form.Control
                   type="number"
                   className={errors.promotionValue ? "is-invalid" : ""}
                   placeholder="Tỷ lệ giảm giá (%)..."
@@ -252,7 +239,6 @@ export const Promotion = () => {
             <tr>
               <th>#</th>
               <th>Tên đợt giảm giá</th>
-              <th>Loại giảm giá</th>
               <th>Tỷ lệ giảm giá</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
@@ -266,7 +252,6 @@ export const Promotion = () => {
                 <tr key={discount.id}>
                   <td>{index + 1}</td>
                   <td>{discount.name}</td>
-                  <td>{discount.promotionType}</td>
                   <td>{discount.promotionValue}%</td>
                   <td>{new Date(discount.startDate).toLocaleDateString()}</td>
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
