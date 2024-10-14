@@ -162,7 +162,8 @@ export const ModifyProduct = (props) => {
                   >
                     <FormLabel>Mô tả</FormLabel>
                     <Textarea
-                      minRows={3}
+                      // minRows={3}
+                      sx={{maxHeight: 300}}
                       placeholder="Nhập mô tả..."
                       defaultValue={props?.data?.description}
                       {...register("description", { required: true })}
