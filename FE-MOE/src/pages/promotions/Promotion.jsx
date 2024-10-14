@@ -1,24 +1,27 @@
-// src/components/Promotion.js
 import { useEffect, useState } from "react";
-import { Container, Button, Row, Col, Table, Form } from "react-bootstrap";
+import { Container, Button, Row, Col, Table, Form, Pagination } from "react-bootstrap";
 import { fetchAllDiscounts, postDiscount, deleteDiscount, putDiscount } from "~/apis/discountApi";
 import { useForm } from "react-hook-form";
+import { useNavigate  } from "react-router-dom";
 import Swal from "sweetalert2";
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); // State để lưu giá trị tìm kiếm
-  const [searchStartDate, setSearchStartDate] = useState(""); // State để lưu giá trị ngày bắt đầu
-  const [searchEndDate, setSearchEndDate] = useState(""); // State để lưu giá trị ngày kết thúc
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchStartDate, setSearchStartDate] = useState("");
+  const [searchEndDate, setSearchEndDate] = useState("");
   const [selectedDiscount, setSelectedDiscount] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // State quản lý trang hiện tại
+  const itemsPerPage = 5; // Số lượng mục hiển thị mỗi trang
 
   const formatDate = (dateString, time = "00:00:00") => {
-         const date = new Date(dateString);
-         const day = String(date.getDate()).padStart(2, '0');
-         const month = String(date.getMonth()  + 1).padStart(2, '0'); // getMonth() is zero-based
-         const year = date.getFullYear();
-         return `${day}/${month}/${year} | ${time}`;
-       };
+    const date = new Date(dateString);
+    const day = String(date.getDate() + 1).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year} | ${time}`;
+  };
+  
 
   const {
     register,
@@ -40,16 +43,13 @@ export const Promotion = () => {
   const onSubmit = async (data) => {
     try {
       if (selectedDiscount) {
-        await putDiscount(
-          {
-            name: data.name,
-            promotionValue: data.promotionValue,
-            startDate: formatDate(data.startDate),
-            endDate: formatDate(data.endDate),
-            description: data.description,
-          },
-          selectedDiscount.id
-        );
+        await putDiscount({
+          name: data.name,
+          promotionValue: data.promotionValue,
+          startDate: formatDate(data.startDate),
+          endDate: formatDate(data.endDate),
+          description: data.description,
+        }, selectedDiscount.id);
         Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
       } else {
         await postDiscount({
@@ -118,6 +118,19 @@ export const Promotion = () => {
     return isNameMatched && isWithinDateRange;
   });
 
+  // Tính toán số lượng trang
+  const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
+
+  // Lấy dữ liệu cho trang hiện tại
+  const currentDiscounts = filteredDiscounts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const handleReset = () => {
     setSearchTerm("");
     setSearchStartDate("");
@@ -125,10 +138,11 @@ export const Promotion = () => {
     setSelectedDiscount(null);
     reset();
     handleSetDiscounts();
+    setCurrentPage(1); // Đặt lại trang về 1 sau khi reset
   };
 
   return (
-    <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: '15px' }}>
+    <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: "15px" }}>
       <div className="fs-3 mb-4">
         <span className="fw-bold">
           {selectedDiscount ? "Chỉnh sửa đợt giảm giá" : "Quản lý đợt giảm giá"}
@@ -161,71 +175,102 @@ export const Promotion = () => {
           />
         </Col>
       </Row>
-
+      
       <Row className="mb-5">
         <Col>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Row className="g-2">
+              {/* Form input fields */}
               <Col md={6}>
-                <Form.Control
-                  type="text"
-                  className={errors.name ? "is-invalid" : ""}
-                  placeholder="Tên đợt giảm giá..."
-                  {...register("name", { required: "Vui lòng nhập tên đợt giảm giá" })}
-                />
-                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
+                <Form.Group>
+                  <Form.Label>Tên đợt giảm giá</Form.Label>
+                  <Form.Control
+                    type="text"
+                    {...register("name", { required: true })}
+                    placeholder="Nhập tên đợt giảm giá"
+                    isInvalid={errors.name}
+                  />
+                  {errors.name && (
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng nhập tên đợt giảm giá.
+                    </Form.Control.Feedback>
+                  )}
+                </Form.Group>
               </Col>
+
               <Col md={6}>
-                <Form.Control
-                  type="number"
-                  className={errors.promotionValue ? "is-invalid" : ""}
-                  placeholder="Tỷ lệ giảm giá (%)..."
-                  {...register("promotionValue", { required: "Vui lòng nhập tỷ lệ giảm giá" })}
-                />
-                {errors.promotionValue && (
-                  <div className="invalid-feedback">{errors.promotionValue.message}</div>
-                )}
+                <Form.Group>
+                  <Form.Label>Tỷ lệ giảm giá (%)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    {...register("promotionValue", { required: true, min: 1, max: 100 })}
+                    placeholder="Nhập tỷ lệ giảm giá"
+                    isInvalid={errors.promotionValue}
+                  />
+                  {errors.promotionValue && (
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng nhập tỷ lệ giảm giá từ 1 đến 100.
+                    </Form.Control.Feedback>
+                  )}
+                </Form.Group>
               </Col>
+
               <Col md={6}>
-                <Form.Control
-                  type="date"
-                  className={errors.startDate ? "is-invalid" : ""}
-                  placeholder="Ngày bắt đầu..."
-                  {...register("startDate", { required: "Vui lòng chọn ngày bắt đầu" })}
-                />
-                {errors.startDate && (
-                  <div className="invalid-feedback">{errors.startDate.message}</div>
-                )}
+                <Form.Group>
+                  <Form.Label>Ngày bắt đầu</Form.Label>
+                  <Form.Control
+                    type="date"
+                    {...register("startDate", { required: true })}
+                    isInvalid={errors.startDate}
+                  />
+                  {errors.startDate && (
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng chọn ngày bắt đầu.
+                    </Form.Control.Feedback>
+                  )}
+                </Form.Group>
               </Col>
+
               <Col md={6}>
-                <Form.Control
-                  type="date"
-                  className={errors.endDate ? "is-invalid" : ""}
-                  placeholder="Ngày kết thúc..."
-                  {...register("endDate", { required: "Vui lòng chọn ngày kết thúc" })}
-                />
-                {errors.endDate && (
-                  <div className="invalid-feedback">{errors.endDate.message}</div>
-                )}
+                <Form.Group>
+                  <Form.Label>Ngày kết thúc</Form.Label>
+                  <Form.Control
+                    type="date"
+                    {...register("endDate", { required: true })}
+                    isInvalid={errors.endDate}
+                  />
+                  {errors.endDate && (
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng chọn ngày kết thúc.
+                    </Form.Control.Feedback>
+                  )}
+                </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Control
-                  type="text"
-                  className={errors.description ? "is-invalid" : ""}
-                  placeholder="Mô tả..."
-                  {...register("description", { required: "Vui lòng nhập mô tả" })}
-                />
-                {errors.description && (
-                  <div className="invalid-feedback">{errors.description.message}</div>
-                )}
+
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label>Mô tả</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    {...register("description", { required: true })}
+                    placeholder="Nhập mô tả"
+                    isInvalid={errors.description}
+                  />
+                  {errors.description && (
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng nhập mô tả.
+                    </Form.Control.Feedback>
+                  )}
+                </Form.Group>
               </Col>
-              <Col md={12} className="text-end">
-                <Button type="submit" variant="outline-secondary" className="me-2">
-                  {selectedDiscount ? "Cập nhật" : "Thêm đợt giảm giá"}{" "}
-                  <i className={`fa-solid ${selectedDiscount ? "fa-pen" : "fa-plus"}`}></i>
+
+              <Col md={12}>
+                <Button type="submit" className="me-2">
+                  {selectedDiscount ? "Cập nhật" : "Thêm mới"}
                 </Button>
-                <Button variant="outline-danger" onClick={handleReset}>
-                  Reset <i className="fa-solid fa-rotate-right"></i>
+                <Button variant="secondary" onClick={handleReset}>
+                  Reset
                 </Button>
               </Col>
             </Row>
@@ -233,24 +278,24 @@ export const Promotion = () => {
         </Col>
       </Row>
 
-      <div>
-        <Table striped bordered hover className="text-center">
+      <div className="table-responsive">
+        <Table className="table table-hover table-striped">
           <thead>
             <tr>
               <th>#</th>
-              <th>Tên đợt giảm giá</th>
-              <th>Tỷ lệ giảm giá</th>
+              <th>Tên</th>
+              <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
               <th>Mô tả</th>
-              <th>Thao tác</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
-            {filteredDiscounts.length > 0 ? (
-              filteredDiscounts.map((discount, index) => (
+            {currentDiscounts.length > 0 ? (
+              currentDiscounts.map((discount, index) => (
                 <tr key={discount.id}>
-                  <td>{index + 1}</td>
+                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td>{discount.name}</td>
                   <td>{discount.promotionValue}%</td>
                   <td>{new Date(discount.startDate).toLocaleDateString()}</td>
@@ -274,6 +319,35 @@ export const Promotion = () => {
           </tbody>
         </Table>
       </div>
+
+      {/* Pagination Component */}
+      <Pagination className="justify-content-center">
+        <Pagination.First
+          onClick={() => handlePageChange(1)}
+          disabled={currentPage === 1}
+        />
+        <Pagination.Prev
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        />
+        {[...Array(totalPages).keys()].map((number) => (
+          <Pagination.Item
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => handlePageChange(number + 1)}
+          >
+            {number + 1}
+          </Pagination.Item>
+        ))}
+        <Pagination.Next
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        />
+        <Pagination.Last
+          onClick={() => handlePageChange(totalPages)}
+          disabled={currentPage === totalPages}
+        />
+      </Pagination>
     </Container>
   );
 };
