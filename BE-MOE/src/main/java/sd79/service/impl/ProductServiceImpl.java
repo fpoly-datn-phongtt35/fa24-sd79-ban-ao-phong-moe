@@ -49,11 +49,11 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCustomizeQuery productCustomizeQuery;
 
     @Override
-    public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status) {
+    public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status, String category, String brand, String material, String origin) {
         if (pageNo < 1) {
             pageNo = 1;
         }
-        return this.productCustomizeQuery.getAllProducts(pageNo, pageSize, keyword, status);
+        return this.productCustomizeQuery.getAllProducts(pageNo, pageSize, keyword, status, category, brand, material, origin);
     }
 
     @Override

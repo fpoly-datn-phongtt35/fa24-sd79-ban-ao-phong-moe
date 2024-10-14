@@ -208,11 +208,10 @@ export const ProductManagerUpdate = () => {
           sx={{
             marginTop: 2,
             padding: "2px",
-            border: "1px solid black",
             borderRadius: "5px",
           }}
         >
-          <Table borderAxis="yBetween" stripe="odd">
+          <Table borderAxis="yBetween" stripe="odd" variant="outlined">
             <thead>
               <tr>
                 <th className="text-center" style={{ width: "50px" }}>

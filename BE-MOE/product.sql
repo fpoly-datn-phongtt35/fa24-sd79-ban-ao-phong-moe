@@ -36,7 +36,7 @@ CREATE TABLE products(
 	category_id INT,
 	brand_id INT,
 	material_id INT,
-	origin VARCHAR(30),
+	origin VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,

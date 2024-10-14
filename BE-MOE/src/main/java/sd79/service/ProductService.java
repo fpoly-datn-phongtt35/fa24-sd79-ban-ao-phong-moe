@@ -9,7 +9,7 @@ import sd79.enums.ProductStatus;
 
 public interface ProductService {
 
-    PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status);
+    PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status, String category, String brand, String material, String origin);
 
     long storeProduct(ProductRequest req);
 

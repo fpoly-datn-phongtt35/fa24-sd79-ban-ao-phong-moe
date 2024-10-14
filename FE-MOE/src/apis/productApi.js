@@ -8,19 +8,50 @@ import { fetchAllMaterials } from "./materialApi";
 import { fetchAllColors } from "./colorApi";
 import { fetchAllSizes } from "./sizesApi";
 
-export const fetchAllProducts = async (pageNo, keyword, status) => {
+export const fetchAllProducts = async (
+  pageNo,
+  keyword,
+  status,
+  category,
+  brand,
+  material,
+  origin
+) => {
+  let uri = "/product?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (category) {
+    queryParams.push(`category=${category}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+  if (material) {
+    queryParams.push(`material=${material}`);
+  }
+  if (origin) {
+    queryParams.push(`origin=${origin}`);
+  }
+
+  uri += queryParams.join("&");
+
   return await authorizedAxiosInstance
-    .get(
-      `${API_ROOT}/product?pageNo=${pageNo}&keyword=${keyword}&status=${status}`
-    )
+    .get(`${API_ROOT}${uri}`)
     .then((res) => res.data);
 };
 
 export const fetchProduct = async (id) => {
   return await authorizedAxiosInstance
-    .get(
-      `${API_ROOT}/product/${id}`
-    )
+    .get(`${API_ROOT}/product/${id}`)
     .then((res) => res.data);
 };
 

@@ -30,9 +30,13 @@ public class ProductController {
             @RequestParam(value = "pageNo", required = false, defaultValue = "1") Integer pageNo,
             @RequestParam(value = "pageSize", required = false, defaultValue = "3") Integer pageSize,
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "status", defaultValue = "ALL") ProductStatus status
+            @RequestParam(value = "status", defaultValue = "ALL") ProductStatus status,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "material", required = false) String material,
+            @RequestParam(value = "origin", required = false) String origin
     ) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProducts(pageNo, pageSize, keyword, status));
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProducts(pageNo, pageSize, keyword, status, category, brand, material, origin));
     }
 
     @Operation(
@@ -57,7 +61,7 @@ public class ProductController {
     }
 
     @PatchMapping("/move-to-bin/{id}")
-    public ResponseData<?> moveToBin(@PathVariable Long id){
+    public ResponseData<?> moveToBin(@PathVariable Long id) {
         this.productService.moveToBin(id);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Move to bin successfully");
     }
