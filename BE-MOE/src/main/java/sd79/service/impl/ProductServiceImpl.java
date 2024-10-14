@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.ProductDetailRequest;
 import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
+import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.*;
 import sd79.enums.ProductStatus;
@@ -49,11 +50,11 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCustomizeQuery productCustomizeQuery;
 
     @Override
-    public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status, String category, String brand, String material, String origin) {
-        if (pageNo < 1) {
-            pageNo = 1;
+    public PageableResponse getAllProducts(ProductParamFilter param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
         }
-        return this.productCustomizeQuery.getAllProducts(pageNo, pageSize, keyword, status, category, brand, material, origin);
+        return this.productCustomizeQuery.getAllProducts(param);
     }
 
     @Override

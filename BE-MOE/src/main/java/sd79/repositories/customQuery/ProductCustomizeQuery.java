@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
@@ -32,119 +33,119 @@ public class ProductCustomizeQuery {
 
     private static final String LIKE_FORMAT = "%%%s%%";
 
-    public PageableResponse getAllProducts(Integer pageNo, Integer pageSize, String keyword, ProductStatus status, String category, String brand, String material, String origin) {
-        log.info("Executing query product with keyword={}", keyword);
+    public PageableResponse getAllProducts(ProductParamFilter param) {
+        log.info("Executing query product with keyword={}", param.getKeyword());
         StringBuilder sql = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
-        if (StringUtils.hasLength(keyword)) {
+        if (StringUtils.hasLength(param.getKeyword())) {
             sql.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (status != ProductStatus.ALL && status != ProductStatus.OUT_OF_STOCK) {
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             sql.append(" AND prd.status = :status");
-        } else if (status == ProductStatus.OUT_OF_STOCK) {
+        } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
             sql.append(" AND ((SELECT SUM(d.quantity) FROM ProductDetail d WHERE d.product.id = prd.id) < 1)");
         }
 
-        if (StringUtils.hasLength(category)) {
+        if (StringUtils.hasLength(param.getCategory())) {
             sql.append(" AND prd.category.name like :category");
         }
 
-        if (StringUtils.hasLength(brand)) {
+        if (StringUtils.hasLength(param.getBrand())) {
             sql.append(" AND prd.brand.name like :brand");
         }
 
-        if (StringUtils.hasLength(material)) {
+        if (StringUtils.hasLength(param.getMaterial())) {
             sql.append(" AND prd.material.name like :material");
         }
 
-        if (StringUtils.hasLength(origin)) {
+        if (StringUtils.hasLength(param.getOrigin())) {
             sql.append(" AND prd.origin like :origin");
         }
 
         TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
-        if (StringUtils.hasLength(keyword)) {
-            query.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+        if (StringUtils.hasLength(param.getKeyword())) {
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
         }
-        if (status != ProductStatus.ALL && status != ProductStatus.OUT_OF_STOCK) {
-            query.setParameter("status", status);
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            query.setParameter("status", param.getStatus());
         }
-        if (StringUtils.hasLength(category)) {
-            query.setParameter("category", category);
-        }
-
-        if (StringUtils.hasLength(brand)) {
-            query.setParameter("brand", brand);
+        if (StringUtils.hasLength(param.getCategory())) {
+            query.setParameter("category", param.getCategory());
         }
 
-        if (StringUtils.hasLength(material)) {
-            query.setParameter("material", material);
+        if (StringUtils.hasLength(param.getBrand())) {
+            query.setParameter("brand", param.getBrand());
         }
 
-        if (StringUtils.hasLength(origin)) {
-            query.setParameter("origin", origin);
+        if (StringUtils.hasLength(param.getMaterial())) {
+            query.setParameter("material", param.getMaterial());
         }
 
-        query.setFirstResult((pageNo - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        if (StringUtils.hasLength(param.getOrigin())) {
+            query.setParameter("origin", param.getOrigin());
+        }
+
+        query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
+        query.setMaxResults(param.getPageSize());
 
         List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
 
         // TODO count products
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = false");
-        if (StringUtils.hasLength(keyword)) {
+        if (StringUtils.hasLength(param.getKeyword())) {
             countPage.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (status != ProductStatus.ALL && status != ProductStatus.OUT_OF_STOCK) {
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             countPage.append(" AND prd.status = :status");
-        } else if (status == ProductStatus.OUT_OF_STOCK) {
+        } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
             countPage.append(" AND ((SELECT SUM(d.quantity) FROM ProductDetail d WHERE d.product.id = prd.id) < 1)");
         }
-        if (StringUtils.hasLength(category)) {
+        if (StringUtils.hasLength(param.getCategory())) {
             countPage.append(" AND prd.category.name like :category");
         }
 
-        if (StringUtils.hasLength(brand)) {
+        if (StringUtils.hasLength(param.getBrand())) {
             countPage.append(" AND prd.brand.name like :brand");
         }
 
-        if (StringUtils.hasLength(material)) {
+        if (StringUtils.hasLength(param.getMaterial())) {
             countPage.append(" AND prd.material.name like :material");
         }
 
-        if (StringUtils.hasLength(origin)) {
+        if (StringUtils.hasLength(param.getOrigin())) {
             countPage.append(" AND prd.origin like :origin");
         }
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
-        if (StringUtils.hasLength(keyword)) {
-            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
         }
-        if (status != ProductStatus.ALL && status != ProductStatus.OUT_OF_STOCK) {
-            countQuery.setParameter("status", status);
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            countQuery.setParameter("status", param.getStatus());
         }
-        if (StringUtils.hasLength(category)) {
-            countQuery.setParameter("category", category);
-        }
-
-        if (StringUtils.hasLength(brand)) {
-            countQuery.setParameter("brand", brand);
+        if (StringUtils.hasLength(param.getCategory())) {
+            countQuery.setParameter("category", param.getCategory());
         }
 
-        if (StringUtils.hasLength(material)) {
-            countQuery.setParameter("material", material);
+        if (StringUtils.hasLength(param.getBrand())) {
+            countQuery.setParameter("brand", param.getBrand());
         }
 
-        if (StringUtils.hasLength(origin)) {
-            countQuery.setParameter("origin", origin);
+        if (StringUtils.hasLength(param.getMaterial())) {
+            countQuery.setParameter("material", param.getMaterial());
+        }
+
+        if (StringUtils.hasLength(param.getOrigin())) {
+            countQuery.setParameter("origin", param.getOrigin());
         }
         Long totalElements = countQuery.getSingleResult();
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<?> page = new PageImpl<>(data, pageable, totalElements);
         return PageableResponse.builder()
-                .pageNumber(pageNo)
-                .pageNo(pageNo)
-                .pageSize(pageSize)
+                .pageNumber(param.getPageNo())
+                .pageNo(param.getPageNo())
+                .pageSize(param.getPageSize())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements()) // Not required
                 .content(data)

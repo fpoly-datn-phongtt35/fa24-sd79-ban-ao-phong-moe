@@ -101,6 +101,8 @@ ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KE
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
 
+ALTER TABLE products MODIFY description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
@@ -172,3 +174,76 @@ VALUES
 (3, 550000, 3, 3, 1, 'ACTIVE'),
 (4, 700000, 4, 4, 15, 'ACTIVE'),
 (5, 800000, 5, 5, 30, 'ACTIVE');
+
+
+-- More data
+-- Insert additional data into products
+INSERT INTO products (name, description, status, category_id, brand_id, material_id, origin, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Áo Thun Nữ Nike 01', 'Áo thun nữ Nike, chất liệu cotton', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-09-30 10:00:00', '2023-09-30 10:00:00', 0),
+('Áo Thun Nữ Adidas 01', 'Áo thun nữ Adidas, thoáng mát', 'ACTIVE', 1, 2, 1, 'Vietnam', 1, 1, '2023-09-30 11:00:00', '2023-09-30 11:00:00', 0),
+('Áo Thun Nữ Puma 01', 'Áo thun nữ Puma, năng động', 'ACTIVE', 1, 3, 2, 'Vietnam', 1, 1, '2023-09-30 12:00:00', '2023-09-30 12:00:00', 0),
+('Áo Khoác Levi\'s 01', 'Áo khoác Levi\'s thời trang', 'INACTIVE', 2, 4, 3, 'Vietnam', 1, 1, '2023-09-30 13:00:00', '2023-09-30 13:00:00', 0),
+('Váy Zara 01', 'Váy Zara nữ tính', 'ACTIVE', 4, 5, 4, 'Vietnam', 1, 1, '2023-09-30 14:00:00', '2023-09-30 14:00:00', 0),
+('Áo Thun Nữ Nike 02', 'Áo thun nữ Nike chất lượng cao', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-10-01 10:00:00', '2023-10-01 10:00:00', 0),
+('Áo Thun Nữ Adidas 02', 'Áo thun nữ Adidas thiết kế đẹp', 'ACTIVE', 1, 2, 1, 'Vietnam', 1, 1, '2023-10-01 11:00:00', '2023-10-01 11:00:00', 0),
+('Áo Thun Nữ Puma 02', 'Áo thun nữ Puma thể thao', 'ACTIVE', 1, 3, 2, 'Vietnam', 1, 1, '2023-10-01 12:00:00', '2023-10-01 12:00:00', 0),
+('Áo Khoác Levi\'s 02', 'Áo khoác Levi\'s dày dặn', 'INACTIVE', 2, 4, 3, 'Vietnam', 1, 1, '2023-10-01 13:00:00', '2023-10-01 13:00:00', 0),
+('Váy Zara 02', 'Váy Zara phong cách sang trọng', 'ACTIVE', 4, 5, 4, 'Vietnam', 1, 1, '2023-10-01 14:00:00', '2023-10-01 14:00:00', 0),
+('Áo Thun Nữ Nike 03', 'Áo thun nữ Nike form rộng', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-10-02 10:00:00', '2023-10-02 10:00:00', 0),
+('Áo Thun Nữ Adidas 03', 'Áo thun nữ Adidas form ôm', 'ACTIVE', 1, 2, 1, 'Vietnam', 1, 1, '2023-10-02 11:00:00', '2023-10-02 11:00:00', 0),
+('Áo Thun Nữ Puma 03', 'Áo thun nữ Puma siêu nhẹ', 'ACTIVE', 1, 3, 2, 'Vietnam', 1, 1, '2023-10-02 12:00:00', '2023-10-02 12:00:00', 0),
+('Áo Khoác Levi\'s 03', 'Áo khoác Levi\'s không thấm nước', 'INACTIVE', 2, 4, 3, 'Vietnam', 1, 1, '2023-10-02 13:00:00', '2023-10-02 13:00:00', 0),
+('Váy Zara 03', 'Váy Zara chất liệu mềm mại', 'ACTIVE', 4, 5, 4, 'Vietnam', 1, 1, '2023-10-02 14:00:00', '2023-10-02 14:00:00', 0),
+('Áo Thun Nữ Nike 04', 'Áo thun nữ Nike phối màu đẹp', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-10-03 10:00:00', '2023-10-03 10:00:00', 0),
+('Áo Thun Nữ Adidas 04', 'Áo thun nữ Adidas co giãn', 'ACTIVE', 1, 2, 1, 'Vietnam', 1, 1, '2023-10-03 11:00:00', '2023-10-03 11:00:00', 0),
+('Áo Thun Nữ Puma 04', 'Áo thun nữ Puma với logo nổi bật', 'ACTIVE', 1, 3, 2, 'Vietnam', 1, 1, '2023-10-03 12:00:00', '2023-10-03 12:00:00', 0),
+('Áo Khoác Levi\'s 04', 'Áo khoác Levi\'s ấm áp', 'INACTIVE', 2, 4, 3, 'Vietnam', 1, 1, '2023-10-03 13:00:00', '2023-10-03 13:00:00', 0),
+('Váy Zara 04', 'Váy Zara thiết kế thanh lịch', 'ACTIVE', 4, 5, 4, 'Vietnam', 1, 1, '2023-10-03 14:00:00', '2023-10-03 14:00:00', 0);
+
+-- Insert additional data into product_details
+INSERT INTO product_details (product_id, retail_price, size_id, color_id, quantity, status)
+VALUES
+(6, 550000, 1, 2, 10, 'ACTIVE'),
+(7, 600000, 2, 1, 20, 'ACTIVE'),
+(8, 620000, 3, 3, 15, 'ACTIVE'),
+(9, 750000, 4, 4, 18, 'INACTIVE'),
+(10, 800000, 5, 5, 12, 'ACTIVE'),
+(11, 550000, 1, 2, 30, 'ACTIVE'),
+(12, 600000, 2, 1, 25, 'ACTIVE'),
+(13, 620000, 3, 3, 18, 'ACTIVE'),
+(14, 750000, 4, 4, 10, 'INACTIVE'),
+(15, 800000, 5, 5, 22, 'ACTIVE'),
+(16, 550000, 1, 2, 17, 'ACTIVE'),
+(17, 600000, 2, 1, 20, 'ACTIVE'),
+(18, 620000, 3, 3, 10, 'ACTIVE'),
+(19, 750000, 4, 4, 15, 'INACTIVE'),
+(20, 800000, 5, 5, 18, 'ACTIVE'),
+(21, 550000, 1, 2, 20, 'ACTIVE'),
+(22, 600000, 2, 1, 25, 'ACTIVE'),
+(23, 620000, 3, 3, 22, 'ACTIVE'),
+(24, 750000, 4, 4, 18, 'INACTIVE'),
+(25, 800000, 5, 5, 30, 'ACTIVE');
+
+INSERT INTO product_details (product_id, retail_price, size_id, color_id, quantity, status)
+VALUES
+(6, 550000, 1, 2, 50, 'ACTIVE'),
+(7, 600000, 2, 3, 40, 'ACTIVE'),
+(8, 650000, 3, 1, 30, 'ACTIVE'),
+(9, 700000, 4, 4, 20, 'ACTIVE'),
+(10, 750000, 5, 5, 15, 'ACTIVE'),
+(11, 800000, 1, 2, 10, 'INACTIVE'),
+(12, 850000, 2, 3, 25, 'ACTIVE'),
+(13, 900000, 3, 1, 35, 'ACTIVE'),
+(14, 950000, 4, 4, 45, 'INACTIVE'),
+(15, 1000000, 5, 5, 50, 'ACTIVE'),
+(16, 550000, 1, 2, 60, 'ACTIVE'),
+(17, 600000, 2, 3, 70, 'ACTIVE'),
+(18, 650000, 3, 1, 80, 'ACTIVE'),
+(19, 700000, 4, 4, 90, 'INACTIVE'),
+(20, 750000, 5, 5, 100, 'ACTIVE'),
+(21, 800000, 1, 2, 55, 'ACTIVE'),
+(22, 850000, 2, 3, 65, 'ACTIVE'),
+(23, 900000, 3, 1, 75, 'ACTIVE'),
+(24, 950000, 4, 4, 85, 'INACTIVE'),
+(25, 1000000, 5, 5, 95, 'ACTIVE');

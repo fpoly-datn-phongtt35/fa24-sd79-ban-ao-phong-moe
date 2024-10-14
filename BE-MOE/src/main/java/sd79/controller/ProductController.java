@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.ProductImageReq;
 import sd79.dto.requests.ProductRequest;
+import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.ResponseData;
 import sd79.enums.ProductStatus;
 import sd79.service.ProductService;
@@ -26,17 +27,8 @@ public class ProductController {
             description = "Get the entire product list (updating search and pagination functions)"
     )
     @GetMapping
-    public ResponseData<?> getAllProducts(
-            @RequestParam(value = "pageNo", required = false, defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "pageSize", required = false, defaultValue = "3") Integer pageSize,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "status", defaultValue = "ALL") ProductStatus status,
-            @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "brand", required = false) String brand,
-            @RequestParam(value = "material", required = false) String material,
-            @RequestParam(value = "origin", required = false) String origin
-    ) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProducts(pageNo, pageSize, keyword, status, category, brand, material, origin));
+    public ResponseData<?> getAllProducts(ProductParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProducts(param));
     }
 
     @Operation(

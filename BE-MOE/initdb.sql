@@ -237,6 +237,8 @@ ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KE
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
 
+ALTER TABLE products MODIFY description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- promotions
 ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
