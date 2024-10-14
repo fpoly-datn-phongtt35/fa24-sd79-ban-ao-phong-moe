@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Box, Grid, TextField, FormControl, InputLabel, Select, MenuItem, Button, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
-import { postCustomer } from '~/apis/customerApi'; // Adjust the import path as necessary
+import { postCustomer } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
 
 export const AddCustomer = () => {
@@ -20,12 +20,13 @@ export const AddCustomer = () => {
     phoneNumber: '',
     gender: '',
     dateOfBirth: '',
+    customerAddress: '',
     image: '',
-    createdAt: new Date(), 
+    createdAt: new Date(),
     updatedAt: new Date()
   });
 
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,15 +39,15 @@ export const AddCustomer = () => {
 
     const customerWithTimestamps = {
       ...customerData,
-      dateOfBirth: formatDate(customerData.dateOfBirth), 
+      dateOfBirth: formatDate(customerData.dateOfBirth),
       createdAt: currentDate,
       updatedAt: currentDate,
     };
 
     try {
-      await postCustomer(customerWithTimestamps); 
+      await postCustomer(customerWithTimestamps);
       toast.success('Customer added successfully!');
-      navigate('/customer'); 
+      navigate('/customer');
     } catch (error) {
       toast.error('There was an error adding the customer');
     }
@@ -62,7 +63,7 @@ export const AddCustomer = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="First Name"
+                label="Tên"
                 name="firstName"
                 value={customerData.firstName}
                 onChange={handleChange}
@@ -72,7 +73,7 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Last Name"
+                label="Họ"
                 name="lastName"
                 value={customerData.lastName}
                 onChange={handleChange}
@@ -82,7 +83,7 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Phone Number"
+                label="Số điện thoại"
                 name="phoneNumber"
                 value={customerData.phoneNumber}
                 onChange={handleChange}
@@ -92,7 +93,7 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth required>
-                <InputLabel>Gender</InputLabel>
+                <InputLabel>Giới tính</InputLabel>
                 <Select
                   name="gender"
                   value={customerData.gender}
@@ -107,7 +108,7 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Date of Birth"
+                label="Ngày sinh"
                 name="dateOfBirth"
                 type="date"
                 value={customerData.dateOfBirth}
@@ -121,11 +122,21 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Image URL"
+                label="Ảnh"
                 name="image"
                 value={customerData.image}
                 onChange={handleChange}
                 fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Địa chỉ"  
+                name="city"
+                value={customerData.city}
+                onChange={handleChange}
+                fullWidth
+                required
               />
             </Grid>
           </Grid>

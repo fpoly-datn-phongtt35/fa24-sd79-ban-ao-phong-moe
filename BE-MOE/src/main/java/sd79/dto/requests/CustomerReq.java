@@ -1,8 +1,5 @@
 package sd79.dto.requests;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 
-import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -41,5 +37,7 @@ public class CustomerReq {
     private String image;
 
 
+    @NotEmpty(message = "City cannot be empty")
+    private String city;
 
 }

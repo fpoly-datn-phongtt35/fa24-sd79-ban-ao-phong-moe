@@ -27,6 +27,7 @@ const CustomerDetailPage = () => {
     phoneNumber: '',
     gender: '',
     dateOfBirth: '',
+    customerAddress: "",
     image: '',
   });
   const navigate = useNavigate();
@@ -143,6 +144,15 @@ const CustomerDetailPage = () => {
           required
         />
 
+        <TextField
+          label="Địa chỉ"
+          name="customerAddress"
+          value={customer.customerAddress}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          required
+        />
 
         <TextField
           label="Image URL"

@@ -57,7 +57,8 @@ export const Customer = () => {
   const handleDelete = async (id) => {
     try {
       await deleteCustomer(id);
-      handleSetCustomer;
+      await handleSetCustomer();
+      // handleSetCustomer;
     } catch (error) {
       console.error('Failed to delete customer', error);
       swal('Error', 'Failed to delete customer', 'error');
@@ -150,6 +151,7 @@ export const Customer = () => {
               <TableCell>Số điện thoại</TableCell>
               <TableCell>Giới tính</TableCell>
               <TableCell>Ngày sinh</TableCell>
+              <TableCell>Địa chỉ</TableCell>
               <TableCell>Ảnh</TableCell>
               <TableCell>Ngày tạo</TableCell>
               <TableCell>Ngày cập nhật</TableCell>
@@ -166,6 +168,7 @@ export const Customer = () => {
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{customer.gender}</TableCell>
                   <TableCell>{customer.dateOfBirth}</TableCell>
+                  <TableCell>{customer.customerAddress}</TableCell>
                   <TableCell>{customer.image}</TableCell>
                   <TableCell>{customer.createdAt}</TableCell>
                   <TableCell>{customer.updatedAt}</TableCell>
