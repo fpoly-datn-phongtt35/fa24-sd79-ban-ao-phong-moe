@@ -5,19 +5,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
+import sd79.dto.response.PageableResponse;
+import sd79.enums.ProductStatus;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Coupon;
-import sd79.model.User;
+import sd79.model.*;
+import sd79.repositories.CouponImageRepo;
 import sd79.repositories.CouponRepo;
 import sd79.repositories.auth.UserRepository;
+import sd79.repositories.customQuery.CouponCustomizeQuery;
 import sd79.service.CouponService;
+import sd79.service.ProductService;
+import sd79.utils.CloudinaryUpload;
+import sd79.utils.CloudinaryUploadCoupon;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +34,16 @@ public class CouponServiceImpl implements CouponService {
 
     private final CouponRepo couponRepo;
     private final UserRepository userRepository;
+    private final CloudinaryUploadCoupon cloudinaryUploadCoupon;
+    private final CouponCustomizeQuery couponCustomizeQuery;
+    private final CouponImageRepo couponImageRepo;
 
     @Override
-    public List<CouponResponse> getCoupon() { //tra ra danh dach phieu giam gia
-        return couponRepo.findAll().stream().map(this::convertCouponResponse).toList();
+    public PageableResponse getAllCoupon(Integer pageNo, Integer pageSize, String keyword, TodoType type, TodoDiscountType discountType, String startDate, String endDate, String status, String sort, String direction) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        return this.couponCustomizeQuery.getAllCoupons(pageNo, pageSize, keyword, type, discountType, startDate, endDate, status, sort, direction);
     }
 
     @Override
@@ -39,7 +54,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Transactional
     @Override
-    public long createCoupon(CouponRequest couponRequest) { //tao phieu giam gia
+    public long storeCoupon(CouponRequest couponRequest) {
         Coupon coupon = Coupon.builder()
                 .code(couponRequest.getCode())
                 .name(couponRequest.getName())
@@ -52,11 +67,49 @@ public class CouponServiceImpl implements CouponService {
                 .startDate(couponRequest.getStartDate())
                 .endDate(couponRequest.getEndDate())
                 .description(couponRequest.getDescription())
-                .image(couponRequest.getImage())
                 .build();
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         return couponRepo.save(coupon).getId();
+    }
+
+    @Transactional
+    @Override
+    public void storeCouponImages(CouponImageReq req) {
+        Coupon coupon = this.findCouponById(req.getCouponID());
+        CouponImage couponImage = coupon.getCouponImage();
+
+        // If an existing image is present, delete it from Cloudinary and the database
+        if (couponImage != null && couponImage.getPublicId() != null) {
+            cloudinaryUploadCoupon.delete(couponImage.getPublicId());
+            couponImageRepo.delete(couponImage);
+        }
+
+        // Upload the new image to Cloudinary
+        String imageUrl = cloudinaryUploadCoupon.upload(req.getImages());
+        String publicId = extractPublicId(imageUrl);
+
+        // Create a new CouponImage entity
+        CouponImage newCouponImage = new CouponImage();
+        newCouponImage.setCoupon(coupon);
+        newCouponImage.setImageUrl(imageUrl);
+        newCouponImage.setPublicId(publicId);
+
+        // Save the new image record in the database
+        couponImageRepo.save(newCouponImage);
+    }
+
+    private String extractPublicId(String url) {
+        String[] parts = url.split("/upload/");
+        if (parts.length > 1) {
+            return parts[1].split("\\.")[0];
+        } else {
+            throw new IllegalArgumentException("Invalid Cloudinary URL format");
+        }
+    }
+
+    public Coupon findCouponById(Long id) {
+        return this.couponRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
     }
 
     @Transactional
@@ -74,7 +127,6 @@ public class CouponServiceImpl implements CouponService {
         coupon.setStartDate(couponRequest.getStartDate());
         coupon.setEndDate(couponRequest.getEndDate());
         coupon.setDescription(couponRequest.getDescription());
-        coupon.setImage(couponRequest.getImage());
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         return couponRepo.save(coupon).getId();
@@ -97,8 +149,8 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Page<CouponResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
-                                          TodoDiscountType discountType, TodoType type,
-                                          String status, Pageable pageable) {
+                                                     TodoDiscountType discountType, TodoType type,
+                                                     String status, Pageable pageable) {
         Page<Coupon> coupons;
 
         // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
@@ -114,6 +166,17 @@ public class CouponServiceImpl implements CouponService {
         return coupons.map(this::convertCouponResponse);
     }
 
+    @Override
+    public void deleteCouponImage(Long couponId) {
+        Coupon coupon = this.findCouponById(couponId);
+        CouponImage couponImage = coupon.getCouponImage();
+        if (couponImage != null && couponImage.getPublicId() != null) {
+            cloudinaryUploadCoupon.delete(couponImage.getPublicId());
+            couponImageRepo.delete(couponImage);
+        } else {
+            throw new RuntimeException("Coupon image not found");
+        }
+    }
 
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach
@@ -131,11 +194,17 @@ public class CouponServiceImpl implements CouponService {
                 .endDate(coupon.getEndDate())
                 .status(coupon.getStatus())
                 .description(coupon.getDescription())
-                .image(coupon.getImage())
+                .imageUrl(convertToUrl(coupon.getCouponImage()))
                 .build();
     }
 
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
+
+    private String convertToUrl(CouponImage image) {
+        return (image != null) ? image.getImageUrl() : null;
+    }
+
+
 }

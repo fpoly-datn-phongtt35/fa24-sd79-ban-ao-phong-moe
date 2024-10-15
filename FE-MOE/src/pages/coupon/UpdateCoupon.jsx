@@ -1,72 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { TextField, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, } from '@mui/material';
+import { updateCoupon, detailCoupon, postCouponImage } from '~/apis/couponApi';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import {
+    TextField, Button, Box, Grid, Typography, FormControl, FormLabel,
+    RadioGroup, FormControlLabel, Radio, Checkbox, IconButton
+} from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { postCoupon } from '~/apis/couponApi';
-import { Link } from 'react-router-dom';
 import { faPercent, faDollarSign, faCamera } from '@fortawesome/free-solid-svg-icons';
+import CouponImage from '~/components/common/CouponImage';
 
-const CreateCoupon = () => {
+const UpdateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
     const [discountType, setDiscountType] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCustomers, setSelectedCustomers] = useState([]);
-    const [image, setImage] = useState(null);
+    const { id } = useParams();
+    const [couponType, setCouponType] = useState('public');
+    const [images, setImages] = useState(null);
+    const navigate = useNavigate();
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
     };
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            // Check file type and size
-            if (file.type.startsWith("image/") && file.size <= 2 * 1024 * 1024) { // Max 2MB
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    // Get the base64 string and remove the header
-                    const base64String = reader.result.split(',')[1];
-                    setImage(base64String); // Store only the raw base64 string
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert("Please upload a valid image file (max 2MB).");
-            }
-        }
+    const handleImagesUpload = (files) => {
+        setImages(files);
     };
-    
 
-
+    // Submit form data
     const onSubmit = async (data) => {
-        try {
+        const coupon = {
+            code: data.code,
+            name: data.name,
+            discountValue: data.discountValue,
+            discountType: discountType === 'percentage' ? 'percentage' : 'fixed_amount',
+            maxValue: data.maxValue,
+            quantity: data.quantity,
+            conditions: data.conditions,
+            startDate: formatDate(data.startDate),
+            endDate: formatDate(data.endDate),
+            type: data.type === 'public' ? 'public' : 'personal',
+            description: data.description,
+            userId: localStorage.getItem("userId"),
+        };
 
-            await postCoupon({
-                code: data.code,
-                name: data.name,
-                discountValue: data.discountValue,
-                discountType: discountType == 'percentage' ? 'percentage' : 'fixed_amount',
-                maxValue: data.maxValue,
-                quantity: data.quantity,
-                conditions: data.conditions,
-                startDate: formatDate(data.startDate),
-                endDate: formatDate(data.endDate),
-                type: data.type === 'public' ? 'public' : 'personal',
-                description: data.description,
-                image: image,
-                userId: localStorage.getItem("userId"),
-            });
-            console.log("Coupon created successfully", data);
-            // location.href = "/coupon";
-        } catch (error) {
-            console.error("Error creating coupon", error);
-        }
+        console.log(coupon);
+
+        await updateCoupon(id, coupon).then(async (response) => {
+            console.log(response)
+            let formData = new FormData();
+            formData.append("couponID", response);
+            formData.append("images", images[0]);
+            console.log(images)
+            await postCouponImage(formData);
+            navigate("/coupon");
+        });
     };
+    // Fetch coupon details to populate the form
+    useEffect(() => {
+        const fetchCouponDetail = async () => {
+            try {
+                const coupon = await detailCoupon(id);
+                const couponData = coupon.data;
 
+                setValue('code', couponData.code);
+                setValue('name', couponData.name);
+                setValue('discountValue', couponData.discountValue);
+                setValue('maxValue', couponData.maxValue);
+                setValue('quantity', couponData.quantity);
+                setValue('conditions', couponData.conditions);
+                setValue('startDate', couponData.startDate.split(' ')[0]);
+                setValue('endDate', couponData.endDate.split(' ')[0]);
+                setCouponType(couponData.type);
+                setValue('description', couponData.description);
+                setDiscountType(couponData.discountType);
+
+                // Set Cloudinary image
+                if (couponData.images && couponData.images.length > 0) {
+                    setImages(couponData.images.map(img => ({ img: img.url, title: img.name })));
+                }
+            } catch (error) {
+                console.log("Error fetching coupon details", error);
+            }
+        };
+
+        fetchCouponDetail();
+    }, [id, setValue]);
+
+
+    // Customers list
     const customers = [
         { name: 'Nguyễn Văn Nhật', phone: '0261748212', email: 'nhatnguyendzpro@gmail.com', dob: '01-01-1990' },
         { name: 'Anh Lê', phone: '0562718362', email: 'anhle@gmail.com', dob: '20-12-2001' },
@@ -80,27 +107,6 @@ const CreateCoupon = () => {
         customer.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleCustomerSelect = (index) => {
-        setSelectedCustomers(prev => {
-            const newSelection = [...prev];
-            if (newSelection.includes(index)) {
-                newSelection.splice(newSelection.indexOf(index), 1);
-            } else {
-                newSelection.push(index);
-            }
-            return newSelection;
-        });
-    };
-
-    const handleSelectAll = (event) => {
-        if (event.target.checked) {
-            const allSelected = filteredCustomers.map((_, index) => index);
-            setSelectedCustomers(allSelected);
-        } else {
-            setSelectedCustomers([]);
-        }
-    };
-
     return (
         <Container
             maxWidth="max-width"
@@ -111,24 +117,9 @@ const CreateCoupon = () => {
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <Box display="flex" alignItems="center" mb={2}>
-                            <Typography variant="h4" mr={2}>Tạo Phiếu Giảm Giá</Typography>
-                            <input
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                id="image-upload"
-                                type="file"
-                                onChange={handleImageUpload}
-                            />
-                            <label htmlFor="image-upload">
-                                <IconButton component="span" color="primary">
-                                    <FontAwesomeIcon icon={faCamera} />
-                                </IconButton>
-                            </label>
+                            <Typography variant="h4" mr={2}>Chi Tiết Phiếu Giảm Giá</Typography>
                         </Box>
-
-
-                        <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2} >
-
+                        <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2}>
                             <TextField
                                 variant="outlined"
                                 label="Mã phiếu giảm giá"
@@ -136,6 +127,7 @@ const CreateCoupon = () => {
                                 error={!!errors.code}
                                 helperText={errors.code && 'Mã phiếu giảm giá là bắt buộc'}
                                 fullWidth
+                                InputLabelProps={{ shrink: true }}
                             />
 
                             <TextField
@@ -145,6 +137,7 @@ const CreateCoupon = () => {
                                 error={!!errors.name}
                                 helperText={errors.name && 'Tên phiếu giảm giá là bắt buộc'}
                                 fullWidth
+                                InputLabelProps={{ shrink: true }}
                             />
 
                             <Grid container spacing={2}>
@@ -157,6 +150,7 @@ const CreateCoupon = () => {
                                         error={!!errors.discountValue}
                                         helperText={errors.discountValue && 'Giá trị giảm giá phải lớn hơn 0'}
                                         fullWidth
+                                        InputLabelProps={{ shrink: true }}
                                         InputProps={{
                                             endAdornment: (
                                                 <Box display="flex" alignItems="center">
@@ -192,6 +186,7 @@ const CreateCoupon = () => {
                                         error={!!errors.maxValue}
                                         helperText={errors.maxValue && 'Giá trị đơn hàng tối thiểu phải lớn hơn 0'}
                                         fullWidth
+                                        InputLabelProps={{ shrink: true }}
                                     />
                                 </Grid>
                             </Grid>
@@ -206,6 +201,7 @@ const CreateCoupon = () => {
                                         error={!!errors.quantity}
                                         helperText={errors.quantity && 'Số lượng phải lớn hơn 0'}
                                         fullWidth
+                                        InputLabelProps={{ shrink: true }}
                                     />
                                 </Grid>
                                 <Grid item xs={6}>
@@ -217,6 +213,7 @@ const CreateCoupon = () => {
                                         error={!!errors.condition}
                                         helperText={errors.condition && 'Điều kiện là bắt buộc'}
                                         fullWidth
+                                        InputLabelProps={{ shrink: true }}
                                     />
                                 </Grid>
                             </Grid>
@@ -249,7 +246,7 @@ const CreateCoupon = () => {
                                         <FormLabel component="legend">Kiểu</FormLabel>
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <RadioGroup {...register('type')} defaultValue="public">
+                                        <RadioGroup value={couponType} onChange={(e) => setCouponType(e.target.value)}>
                                             <div className='flex'>
                                                 <FormControlLabel value="public" control={<Radio />} label="Công khai" />
                                                 <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
@@ -268,12 +265,13 @@ const CreateCoupon = () => {
                                 multiline
                                 rows={3}
                                 fullWidth
+                                InputLabelProps={{ shrink: true }}
                             />
-                            {image && (
-                                <Box mb={2}>
-                                    <img src={image} alt="Uploaded" style={{ width: '10%', height: 'auto' }} />
-                                </Box>
-                            )}
+
+                            <Grid item xs={12}>
+                                <CouponImage onImagesUpload={handleImagesUpload} />
+                            </Grid>
+
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <Link to={'/coupon'} className='btn btn-danger w-100' type="submit" variant="contained" >
@@ -282,15 +280,16 @@ const CreateCoupon = () => {
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Button type="submit" className='w-100' variant="contained" color="primary" >
-                                        Thêm mới
+                                        Sửa dữ liệu
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Box>
                     </Grid>
 
+                    {/* Customer List */}
                     <Grid item xs={6}>
-                        <Typography variant="h4" >Danh Sách Khách Hàng</Typography>
+                        <Typography variant="h4">Danh Sách Khách Hàng</Typography>
                         <TextField
                             variant="outlined"
                             label="Tìm kiếm khách hàng"
@@ -304,12 +303,7 @@ const CreateCoupon = () => {
                             <thead className="table-dark">
                                 <tr>
                                     <th>
-                                        {type === 'personal' && (
-                                            <Checkbox
-                                                checked={selectedCustomers.length === filteredCustomers.length && selectedCustomers.length > 0}
-                                                onChange={handleSelectAll}
-                                            />
-                                        )}
+                                        <Checkbox />
                                     </th>
                                     <th>Tên</th>
                                     <th>Số điện thoại</th>
@@ -321,12 +315,7 @@ const CreateCoupon = () => {
                                 {filteredCustomers.map((customer, index) => (
                                     <tr key={index}>
                                         <td className="text-center">
-                                            {type === 'personal' && (
-                                                <Checkbox
-                                                    checked={selectedCustomers.includes(index)}
-                                                    onChange={() => handleCustomerSelect(index)}
-                                                />
-                                            )}
+                                            <Checkbox />
                                         </td>
                                         <td>{customer.name}</td>
                                         <td>{customer.phone}</td>
@@ -343,4 +332,4 @@ const CreateCoupon = () => {
     );
 };
 
-export default CreateCoupon;
+export default UpdateCoupon;

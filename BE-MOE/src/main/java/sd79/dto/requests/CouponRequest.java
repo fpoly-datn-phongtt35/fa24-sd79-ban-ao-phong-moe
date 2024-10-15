@@ -4,13 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 
+import javax.swing.plaf.MenuBarUI;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
+@Setter
 @Builder
 public class CouponRequest {
 
@@ -53,9 +57,9 @@ public class CouponRequest {
     @Size(max = 255, message = "Description should not exceed 255 characters")
     private String description;
 
-    @Size(max = 255, message = "Image should not exceed 255 characters")
-    private String image;
-
     @NotNull(message = "User id must be not null!")
     private Long userId;
+
+//    @NotNull(message = "Images must be not null!")
+//    private MultipartFile images;
 }
