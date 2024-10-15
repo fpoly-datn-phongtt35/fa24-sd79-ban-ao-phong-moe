@@ -18,7 +18,11 @@ export const Filter = (props) => {
       <Grid
         container
         spacing={2}
-        sx={{ display: "flex", justifyContent: "space-between", padding: '0.5em' }}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "0.5em",
+        }}
       >
         <Grid size={6}>
           <Typography

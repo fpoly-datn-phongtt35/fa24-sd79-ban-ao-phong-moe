@@ -1,5 +1,6 @@
 package sd79.exception;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,7 @@ import java.util.Date;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, ConstraintViolationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, ConstraintViolationException.class, EntityExistsException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleValidException(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse();
@@ -45,6 +46,8 @@ public class GlobalExceptionHandler {
                 response.setError("Invalid payload format");
 
             }
+        }else if(ex instanceof EntityExistsException){
+            response.setError("Entity exists");
         }
         response.setMessage(message);
         return response;

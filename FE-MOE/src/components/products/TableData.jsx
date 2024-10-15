@@ -49,6 +49,7 @@ export const TableData = (props) => {
         </Grid>
         <Grid size={2}>
           <Button
+            variant="plain"
             size="sm"
             onClick={() => navigate("/product/add")}
             startDecorator={<AddIcon />}
@@ -68,7 +69,9 @@ export const TableData = (props) => {
           <thead>
             <tr>
               <th className="text-center">Ảnh</th>
-              <th className="text-center" style={{ width: '200px' }}>Tên sản phẩm</th>
+              <th className="text-center" style={{ width: "200px" }}>
+                Tên sản phẩm
+              </th>
               <th className="text-center">Danh mục</th>
               <th className="text-center">Thương hiệu</th>
               <th className="text-center">Chất liệu</th>

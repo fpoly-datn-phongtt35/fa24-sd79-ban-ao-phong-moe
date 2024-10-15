@@ -55,7 +55,7 @@ export const ModifyProduct = (props) => {
       <Button
         size="sm"
         color="neutral"
-        variant="outlined"
+        variant="soft"
         startDecorator={<EditIcon />}
         onClick={() => setOpen(true)}
       >

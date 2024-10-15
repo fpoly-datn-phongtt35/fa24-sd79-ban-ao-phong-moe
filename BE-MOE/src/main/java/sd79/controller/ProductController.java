@@ -6,12 +6,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.ProductImageReq;
-import sd79.dto.requests.ProductRequest;
+import sd79.dto.requests.productRequests.ProductDetailModify;
+import sd79.dto.requests.productRequests.ProductDetailRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
+import sd79.dto.requests.productRequests.ProductRequest;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.ResponseData;
 import sd79.enums.ProductStatus;
 import sd79.service.ProductService;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -67,7 +71,24 @@ public class ProductController {
     public ResponseData<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
         log.info("name={}", request.getName());
         this.productService.updateProduct(request, id);
-        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Updated product successfully");
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Cập nhật thành công");
+    }
+
+    @PatchMapping("/change-status/product-detail/{id}/{status}")
+    public ResponseData<?> changeProductStatus(@PathVariable Long id, @PathVariable("status") Boolean status) {
+        this.productService.setProductDetailStatus(id, status);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Cập nhật thành công");
+    }
+
+    @PutMapping("/update-product-details/attribute")
+    public ResponseData<?> updateProductDetailAttribute(@RequestBody List<ProductDetailModify> items) {
+        this.productService.updateAttributeProductDetail(items);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Cập nhật thành công");
+    }
+
+    @PostMapping("/store-product-detail/attribute")
+    public ResponseData<?> storeProductDetailAttribute(@RequestBody ProductDetailRequest item) {
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.productService.storeProductDetailAttribute(item));
     }
 }
     

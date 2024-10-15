@@ -1,12 +1,14 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sd79.dto.requests.ProductDetailRequest;
-import sd79.dto.requests.ProductImageReq;
-import sd79.dto.requests.ProductRequest;
+import sd79.dto.requests.productRequests.ProductDetailModify;
+import sd79.dto.requests.productRequests.ProductDetailRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
+import sd79.dto.requests.productRequests.ProductRequest;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.*;
@@ -18,6 +20,7 @@ import sd79.repositories.products.*;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -142,8 +145,37 @@ public class ProductServiceImpl implements ProductService {
         this.productRepository.save(product);
     }
 
+    @Override
+    public void setProductDetailStatus(long id, boolean status) {
+        ProductDetail prd = this.getProductDetailById(id);
+        prd.setStatus(status ? ProductStatus.ACTIVE : ProductStatus.INACTIVE);
+        this.productDetailRepository.save(prd);
+    }
+
+    @Override
+    public void updateAttributeProductDetail(List<ProductDetailModify> items) {
+        items.forEach(i -> {
+            ProductDetail prd = this.getProductDetailById(i.getId());
+            prd.setQuantity(i.getQuantity());
+            prd.setRetailPrice(i.getPrice());
+            this.productDetailRepository.save(prd);
+        });
+    }
+
+    @Override
+    public long storeProductDetailAttribute(ProductDetailRequest request) {
+        if(this.productDetailRepository.existsDetailByAttribute(request.getId(), request.getColorId(), request.getSizeId())){
+            throw new EntityExistsException("Thuộc tính đã tồn tại!");
+        }
+        return 0;
+    }
+
     private Product getProductById(long id) {
         return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    }
+
+    private ProductDetail getProductDetailById(long id) {
+        return this.productDetailRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product detail not found"));
     }
 
     private Size getSizeById(int id) {
@@ -180,6 +212,7 @@ public class ProductServiceImpl implements ProductService {
                     .size(productDetail.getSize().getName())
                     .price(productDetail.getRetailPrice())
                     .quantity(productDetail.getQuantity())
+                    .status(productDetail.getStatus())
                     .build());
         });
         return productDetailResponses;

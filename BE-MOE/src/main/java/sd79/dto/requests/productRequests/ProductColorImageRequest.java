@@ -1,9 +1,7 @@
-package sd79.dto.requests;
+package sd79.dto.requests.productRequests;
 
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @Builder

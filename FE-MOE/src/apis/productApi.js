@@ -103,3 +103,16 @@ export const updateProduct = async (data, id) => {
       toast.success(res.data.message);
     });
 };
+
+export const changeStatusProductDetail = async (id, status) => {
+  return await authorizedAxiosInstance.patch(
+    `${API_ROOT}/product/change-status/product-detail/${id}/${status}`
+  );
+};
+export const updateProductDetailAttribute = async (data) => {
+  return await authorizedAxiosInstance.put(
+    `${API_ROOT}/product/update-product-details/attribute`, data
+  ).then((res) => {
+    toast.success(res.data.message);
+  });
+};

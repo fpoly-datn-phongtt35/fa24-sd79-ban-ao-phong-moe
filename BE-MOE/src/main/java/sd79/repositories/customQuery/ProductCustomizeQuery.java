@@ -34,7 +34,6 @@ public class ProductCustomizeQuery {
     private static final String LIKE_FORMAT = "%%%s%%";
 
     public PageableResponse getAllProducts(ProductParamFilter param) {
-        log.info("Executing query product with keyword={}", param.getKeyword());
         StringBuilder sql = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
         if (StringUtils.hasLength(param.getKeyword())) {
             sql.append(" AND lower(prd.name) like lower(:keyword)");
@@ -43,7 +42,7 @@ public class ProductCustomizeQuery {
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             sql.append(" AND prd.status = :status");
         } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
-            sql.append(" AND ((SELECT SUM(d.quantity) FROM ProductDetail d WHERE d.product.id = prd.id) < 1)");
+            sql.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') < 1)");
         }
 
         if (StringUtils.hasLength(param.getCategory())) {
@@ -92,7 +91,7 @@ public class ProductCustomizeQuery {
 
         List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
 
-        // TODO count products
+        // TODO count product
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = false");
         if (StringUtils.hasLength(param.getKeyword())) {
             countPage.append(" AND lower(prd.name) like lower(:keyword)");
@@ -101,7 +100,7 @@ public class ProductCustomizeQuery {
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             countPage.append(" AND prd.status = :status");
         } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
-            countPage.append(" AND ((SELECT SUM(d.quantity) FROM ProductDetail d WHERE d.product.id = prd.id) < 1)");
+            countPage.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') < 1)");
         }
         if (StringUtils.hasLength(param.getCategory())) {
             countPage.append(" AND prd.category.name like :category");
