@@ -20,6 +20,7 @@ import { Employee } from "~/pages/employee/Employee";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+//  import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { ProductManager } from "./pages/products/productManager/ProductManager";
 import { ProductManagerUpdate } from "./pages/products/productManager/ProductManagerUpdate";
 
@@ -69,7 +70,7 @@ function App() {
         <Route path="/product" element={<Product />} />
         <Route path="/customer" element={<Customer />} />
         <Route path="/customer/add" element={<AddCustomer />} />
-         <Route path="/customer/:id" element={<CustomerDetailPage />} />
+        <Route path="/customer/:id" element={<CustomerDetailPage />} />
         <Route path="/coupon" element={<Coupon />} />
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
@@ -84,6 +85,8 @@ function App() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
+        {/* { <Route path="/promotion/add" element={<AddPromotion />} /> } */}
+        {/* <Route path="/promotion/:id" element={<UpdatePromotion />} /> */}
       </Route>
     </Routes>
   );

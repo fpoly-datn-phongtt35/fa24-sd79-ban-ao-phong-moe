@@ -1,8 +1,7 @@
-package sd79.dto.requests;
+package sd79.dto.requests.productRequests;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
 import sd79.enums.ProductStatus;
 
 import java.util.Set;

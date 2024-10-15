@@ -55,7 +55,7 @@ export const ModifyProduct = (props) => {
       <Button
         size="sm"
         color="neutral"
-        variant="outlined"
+        variant="soft"
         startDecorator={<EditIcon />}
         onClick={() => setOpen(true)}
       >
@@ -163,6 +163,7 @@ export const ModifyProduct = (props) => {
                     <FormLabel>Mô tả</FormLabel>
                     <Textarea
                       minRows={3}
+                      maxRows={10}
                       placeholder="Nhập mô tả..."
                       defaultValue={props?.data?.description}
                       {...register("description", { required: true })}

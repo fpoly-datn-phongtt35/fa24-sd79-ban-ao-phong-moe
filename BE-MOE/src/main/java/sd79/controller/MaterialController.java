@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.MaterialRequest;
+import sd79.dto.requests.productRequests.MaterialRequest;
 import sd79.dto.response.ResponseData;
 import sd79.service.MaterialService;
 

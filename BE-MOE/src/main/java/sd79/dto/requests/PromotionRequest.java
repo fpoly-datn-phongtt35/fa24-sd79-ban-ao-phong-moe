@@ -20,9 +20,6 @@ public class PromotionRequest {
     @Size(max = 100, message = "Name should not exceed 100 characters")
     private String name;
 
-    @NotNull(message = "Promotion type is required")
-    private String promotionType;
-
     @NotNull(message = "Promotion value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Promotion value must be greater than zero")
     private BigDecimal promotionValue;

@@ -1,22 +1,52 @@
 import { Box, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import Input from "@mui/joy/Input";
-import { FormControl, FormLabel, Option, Select, Typography } from "@mui/joy";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Option,
+  Select,
+  Typography,
+} from "@mui/joy";
 
 export const Filter = (props) => {
   return (
     <>
-      <Typography
-        color="neutral"
-        level="title-lg"
-        noWrap
-        variant="plain"
-        alignItems="center"
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "0.5em",
+        }}
       >
-        <FilterAltIcon size='sm'/>
-        Bộ lọc
-      </Typography>
+        <Grid size={6}>
+          <Typography
+            color="neutral"
+            level="title-lg"
+            noWrap
+            variant="plain"
+            alignItems="center"
+          >
+            <FilterAltIcon size="sm" />
+            Bộ lọc
+          </Typography>
+        </Grid>
+        <Grid size={6}>
+          <Button
+            variant="plain"
+            size="sm"
+            onClick={props.clearFilter}
+            startDecorator={<RefreshIcon />}
+          >
+            Làm mới
+          </Button>
+        </Grid>
+      </Grid>
       <Box>
         <Grid container spacing={2} marginTop={0.5}>
           <Grid item xs={12}>
@@ -27,6 +57,7 @@ export const Filter = (props) => {
                   <Input
                     type="search"
                     placeholder="Tìm kiếm…"
+                    // value={props.keyword}
                     startDecorator={<SearchIcon />}
                     onChange={props.onChangeSearch}
                   />
@@ -43,7 +74,7 @@ export const Filter = (props) => {
                     <Option value="ALL">Tất cả</Option>
                     <Option value="ACTIVE">Đang hoạt động</Option>
                     <Option value="INACTIVE">Ngừng hoạt động</Option>
-                    <Option value="OUT_OF_STOCK">Hêt hàng</Option>
+                    <Option value="OUT_OF_STOCK">Hết hàng</Option>
                   </Select>
                 </FormControl>
               </Grid>

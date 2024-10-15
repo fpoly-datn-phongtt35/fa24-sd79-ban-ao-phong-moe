@@ -1,4 +1,4 @@
-package sd79.dto.requests;
+package sd79.dto.requests.productRequests;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

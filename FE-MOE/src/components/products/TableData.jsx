@@ -32,14 +32,30 @@ export const TableData = (props) => {
 
   return (
     <Box marginTop={2}>
-      <Grid container spacing={2} sx={{ flexGrow: 1 }} style={{display: 'flex', alignItems: 'center', justifyContent: "space-between",}}>
+      <Grid
+        container
+        spacing={2}
+        sx={{ flexGrow: 1 }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Grid size={8}>
           <Typography color="neutral" level="title-lg" noWrap variant="plain">
             Danh sách sản phẩm
           </Typography>
         </Grid>
-        <Grid size={4}>
-          <Button  onClick={() => navigate("/product/add")} startDecorator={<AddIcon/>}>Thêm sản phẩm</Button>
+        <Grid size={2}>
+          <Button
+            variant="plain"
+            size="sm"
+            onClick={() => navigate("/product/add")}
+            startDecorator={<AddIcon />}
+          >
+            Thêm sản phẩm
+          </Button>
         </Grid>
       </Grid>
       <Sheet
@@ -53,7 +69,9 @@ export const TableData = (props) => {
           <thead>
             <tr>
               <th className="text-center">Ảnh</th>
-              <th className="text-center">Tên sản phẩm</th>
+              <th className="text-center" style={{ width: "200px" }}>
+                Tên sản phẩm
+              </th>
               <th className="text-center">Danh mục</th>
               <th className="text-center">Thương hiệu</th>
               <th className="text-center">Chất liệu</th>

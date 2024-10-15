@@ -1,29 +1,17 @@
 import {
   Breadcrumbs,
   Container,
-  IconButton,
   ImageList,
   ImageListItem,
   Link,
 } from "@mui/material";
-import {
-  Grid,
-  Box,
-  Typography,
-  Sheet,
-  Modal,
-  ModalDialog,
-  DialogTitle,
-  DialogContent,
-} from "@mui/joy";
+import { Grid, Box, Typography } from "@mui/joy";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchProduct } from "~/apis/productApi";
-import Button from "@mui/joy/Button";
-import EditIcon from "@mui/icons-material/Edit";
-import Table from "@mui/joy/Table";
 import { ModifyProduct } from "~/components/products/ModifyProduct";
+import { TableDetails } from "~/components/products/TableDetails";
 
 export const ProductManagerUpdate = () => {
   const [product, setProduct] = useState(null);
@@ -76,7 +64,7 @@ export const ProductManagerUpdate = () => {
           sx={{
             flexGrow: 2,
             justifyContent: "space-between",
-            border: "1px solid black",
+            border: "1px solid #d2d0d1",
             borderRadius: "5px",
           }}
           marginTop={1}
@@ -88,6 +76,7 @@ export const ProductManagerUpdate = () => {
                 level="title-md"
                 noWrap={false}
                 variant="plain"
+                maxWidth={300}
               >
                 Tên sản phẩm: {product?.name}
               </Typography>
@@ -200,55 +189,7 @@ export const ProductManagerUpdate = () => {
           </Grid>
         </Grid>
       </Box>
-      <Box marginTop={3}>
-        <Typography color="neutral" level="title-lg" noWrap variant="plain">
-          Chi tiết sản phẩm
-        </Typography>
-        <Sheet
-          sx={{
-            marginTop: 2,
-            padding: "2px",
-            borderRadius: "5px",
-          }}
-        >
-          <Table borderAxis="yBetween" stripe="odd" variant="outlined">
-            <thead>
-              <tr>
-                <th className="text-center" style={{ width: "50px" }}>
-                  STT
-                </th>
-                <th className="text-center" style={{ width: "250px" }}>
-                  Tên sản phẩm
-                </th>
-                <th className="text-center">Màu sắc</th>
-                <th className="text-center">Kích thước</th>
-                <th className="text-center">Giá tiền</th>
-                <th className="text-center">Số lượng</th>
-                <th className="text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {product?.details.map((item, index) => (
-                <tr key={index}>
-                  <td className="text-center">{index + 1}</td>
-                  <td>{`${product?.name} [${item.color} - ${item.size}]`}</td>
-                  <td className="text-center">{item.color}</td>
-                  <td className="text-center">{item.size}</td>
-                  <td className="text-center">{item.price}</td>
-                  <td className="text-center">{item.quantity}</td>
-                  <td className="text-center">
-                    <Box marginBottom={1}>
-                      <IconButton color="warning">
-                        <EditIcon />
-                      </IconButton>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Sheet>
-      </Box>
+      <TableDetails data={product} getProduct={getProduct}/>
     </Container>
   );
 };

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
-import sd79.dto.requests.ProductImageReq;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;

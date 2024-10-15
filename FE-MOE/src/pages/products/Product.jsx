@@ -89,6 +89,16 @@ export const Product = () => {
     setOrigin(e);
   };
 
+  const clearFilter = () => {
+    setCurrentPage(1);
+    setKeyword("");
+    setStatus("ALL");
+    setCategory("");
+    setBrand("");
+    setMaterial("");
+    setOrigin("");
+  }
+
   const onMoveToBin = (id) => {
     swal({
       title: "Xác nhận",
@@ -105,7 +115,6 @@ export const Product = () => {
   };
 
   const onSetStatus = (id, status) => {
-    console.log(id, !status ? "ACTIVE" : "INACTIVE");
     changeStatus(id, !status ? "ACTIVE" : "INACTIVE");
   };
 
@@ -153,6 +162,7 @@ export const Product = () => {
 
       <Filter
         onChangeSearch={onChangeSearch}
+        keyword={keyword}
         status={status}
         category={category}
         brand={brand}
@@ -164,6 +174,7 @@ export const Product = () => {
         onChangeBrand={onChangeBrand}
         onChangeMaterial={onChangeMaterial}
         onChangeOrigin={onChangeOrigin}
+        clearFilter={clearFilter}
       />
 
       <TableData
