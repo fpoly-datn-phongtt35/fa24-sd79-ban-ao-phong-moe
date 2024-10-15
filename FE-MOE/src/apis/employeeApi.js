@@ -2,11 +2,22 @@ import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { toast } from "react-toastify";
 
-export const getAllEmployee = async () => {
+// export const getAllEmployee = async () => {
+//   return await authorizedAxiosInstance
+//     .get(`${API_ROOT}/employee`)
+//     .then((res) => res.data);
+// };
+// src/apis/employeeApi.js
+
+export const getAllEmployee = async (page = 0, size = 5) => { // Mặc định trang 0 và 5 phần tử mỗi trang
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}/employee`)
+    .get(`${API_ROOT}/employee`, {
+      params: { page, size },
+    })
     .then((res) => res.data);
 };
+
+
 
 export const getAllPositions = async () => {
   return await authorizedAxiosInstance
@@ -75,8 +86,4 @@ export const searchNameAndPhone = async (keyword, phone_number) => {
         throw err; // Ném lại lỗi để có thể xử lý ở nơi gọi hàm
     }
 };
-
-
-
-
 

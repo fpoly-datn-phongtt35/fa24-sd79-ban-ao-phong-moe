@@ -1,29 +1,36 @@
-import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
-import { useState, useEffect } from 'react';
+// src/pages/employee/Employee.jsx
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Grid, TextField, Typography, Button, Paper,
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Pagination
 } from '@mui/material';
 import { toast } from 'react-toastify';
+import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
 
 export const Employee = () => {
     const [employee, setEmployee] = useState([]);
     const [keyword, setKeyword] = useState('');
     const [phone_number, setPhone_number] = useState('');
+    const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại (bắt đầu từ 1)
+    const [totalPages, setTotalPages] = useState(1); // Tổng số trang
+    const [itemsPerPage] = useState(5); // Số lượng nhân viên mỗi trang
     const navigate = useNavigate();
 
     useEffect(() => {
-        handleSetEmployee();
-    }, []);
+        handleSetEmployee(currentPage);
+    }, [currentPage]);
 
     useEffect(() => {
         if (!keyword && !phone_number) {
+            handleSetEmployee(currentPage);
             return;
         }
         const delayDebounceFn = setTimeout(() => {
             handleSearchNameAndPhone();
-        }, 1000);
+        }, 500); // Đặt thời gian debounce ngắn hơn
 
         return () => clearTimeout(delayDebounceFn);
     }, [keyword, phone_number]);
@@ -31,10 +38,9 @@ export const Employee = () => {
     const handleSearchNameAndPhone = async () => {
         try {
             const res = await searchNameAndPhone(keyword.trim(), phone_number.trim());
-            console.log('Search results:', res);
-
             if (res && res.data && Array.isArray(res.data.data)) {
                 setEmployee(res.data.data);
+                setTotalPages(Math.ceil(res.data.totalElements / itemsPerPage));
             } else {
                 setEmployee([]);
             }
@@ -44,21 +50,23 @@ export const Employee = () => {
         }
     };
 
-    const handleSetEmployee = async () => {
+    const handleSetEmployee = async (page) => {
         try {
-            const res = await getAllEmployee();
-            if (res && Array.isArray(res.data)) {
-                setEmployee(res.data);
-            } else if (res && Array.isArray(res.data.data)) {
-                setEmployee(res.data.data);
+            const res = await getAllEmployee(page - 1, itemsPerPage); // API bắt đầu từ 0
+            if (res && res.data) {
+                setEmployee(res.data.content || res.data.data);
+                setTotalPages(res.data.totalPages || Math.ceil(res.data.totalElements / itemsPerPage));
             } else {
-                console.warn('API response data is not an array:', res);
                 setEmployee([]);
             }
         } catch (error) {
             console.error('Error fetching employees:', error);
             setEmployee([]);
         }
+    };
+
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
     };
 
     const addNewEmployee = () => {
@@ -68,9 +76,8 @@ export const Employee = () => {
     const removeEmployee = async (id) => {
         try {
             await deleteEmployee(id);
-            console.log("Xóa thành công!", id);
-            handleSetEmployee();
             toast.success("Xóa nhân viên thành công!");
+            handleSetEmployee(currentPage);
         } catch (error) {
             console.error("Error deleting employee:", error);
             toast.error("Xóa nhân viên thất bại!");
@@ -84,7 +91,8 @@ export const Employee = () => {
     const handleClear = () => {
         setKeyword('');
         setPhone_number('');
-        handleSetEmployee(); // Đặt lại danh sách nhân viên
+        setCurrentPage(1);
+        handleSetEmployee(1);
     };
 
     return (
@@ -95,7 +103,7 @@ export const Employee = () => {
             <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
                     <TextField
-                        label="Tìm  nhân viên"
+                        label="Tìm nhân viên"
                         variant="standard"
                         fullWidth
                         value={keyword}
@@ -153,7 +161,7 @@ export const Employee = () => {
                         {Array.isArray(employee) && employee.length > 0 ? (
                             employee.map((emp, index) => (
                                 <TableRow key={emp.id} className="text-center">
-                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                     <TableCell>{emp.first_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.last_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
@@ -165,7 +173,7 @@ export const Employee = () => {
                                     </TableCell>
                                     <TableCell>
                                         {typeof emp.employee_address === 'object' ? 
-                                            `${emp.employee_address.city }` : 
+                                            `${emp.employee_address.city}` : 
                                             (emp.employee_address || 'N/A')}
                                     </TableCell>
                                     <TableCell>
@@ -174,10 +182,19 @@ export const Employee = () => {
                                             (emp.position || 'N/A')}
                                     </TableCell>
                                     <TableCell>
-                                        <Button variant="contained" color="error" onClick={() => removeEmployee(emp.id)} style={{ marginRight: '10px' }}>
+                                        <Button 
+                                            variant="contained" 
+                                            color="error" 
+                                            onClick={() => removeEmployee(emp.id)} 
+                                            style={{ marginRight: '10px' }}
+                                        >
                                             Xóa
                                         </Button>
-                                        <Button variant="contained" color="info" onClick={() => updateEmployee(emp.id)}>
+                                        <Button 
+                                            variant="contained" 
+                                            color="info" 
+                                            onClick={() => updateEmployee(emp.id)}
+                                        >
                                             Sửa
                                         </Button>
                                     </TableCell>
@@ -193,6 +210,15 @@ export const Employee = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                />
+            </div>
         </div>
     );
 };
