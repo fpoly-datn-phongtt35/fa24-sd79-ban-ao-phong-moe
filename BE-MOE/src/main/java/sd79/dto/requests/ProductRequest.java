@@ -14,13 +14,12 @@ public class ProductRequest {
     private String name;
     private String description;
     private ProductStatus status;
-    private int categoryId;
-    private int brandId;
-    private int materialId;
+    private Integer categoryId;
+    private Integer brandId;
+    private Integer materialId;
     private String origin;
-    private MultipartFile[] images;
     //Product detail
     private Set<ProductDetailRequest> productDetails;
-    //Created by
-    private long userId;
+    //Created/Updated by
+    private Long userId;
 }

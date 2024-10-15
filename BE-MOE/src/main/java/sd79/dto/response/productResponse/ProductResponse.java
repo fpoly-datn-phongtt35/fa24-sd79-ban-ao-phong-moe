@@ -1,5 +1,6 @@
-package sd79.dto.response;
+package sd79.dto.response.productResponse;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.ProductStatus;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class ProductResponse {
     private Long id;
     private List<String> imageUrl;

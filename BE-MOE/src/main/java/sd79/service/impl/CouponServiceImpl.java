@@ -9,14 +9,18 @@ import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
+import sd79.dto.response.PageableResponse;
+import sd79.enums.ProductStatus;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Coupon;
 import sd79.model.User;
 import sd79.repositories.CouponRepo;
-import sd79.repositories.UserRepository;
+import sd79.repositories.auth.UserRepository;
+import sd79.repositories.customQuery.CouponCustomizeQuery;
 import sd79.service.CouponService;
+import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
 import java.util.Date;
@@ -29,10 +33,14 @@ public class CouponServiceImpl implements CouponService {
     private final CouponRepo couponRepo;
     private final UserRepository userRepository;
     private final CloudinaryUpload cloudinaryUpload;
+    private final CouponCustomizeQuery couponCustomizeQuery;
 
     @Override
-    public List<CouponResponse> getCoupon() { //tra ra danh dach phieu giam gia
-        return couponRepo.findAll().stream().map(this::convertCouponResponse).toList();
+    public PageableResponse getAllCoupon(Integer pageNo, Integer pageSize, String keyword, TodoType type, TodoDiscountType discountType, String startDate, String endDate, String status, String sort, String direction) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        return this.couponCustomizeQuery.getAllCoupons(pageNo, pageSize, keyword, type, discountType, startDate, endDate, status, sort, direction);
     }
 
     @Override

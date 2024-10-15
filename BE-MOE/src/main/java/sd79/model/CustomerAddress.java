@@ -2,13 +2,15 @@ package sd79.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "customer_address")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomerAddress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +36,5 @@ public class CustomerAddress {
     @Size(max = 255)
     @Column(name = "country")
     private String country;
-
-    @OneToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
 
 }

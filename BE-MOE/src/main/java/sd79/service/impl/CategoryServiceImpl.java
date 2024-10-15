@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.CategoryRequest;
-import sd79.dto.response.CategoryResponse;
+import sd79.dto.response.productResponse.CategoryResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Category;
 import sd79.model.User;
-import sd79.repositories.CategoryRepository;
-import sd79.repositories.ProductRepository;
-import sd79.repositories.UserRepository;
+import sd79.repositories.products.CategoryRepository;
+import sd79.repositories.products.ProductRepository;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.CategoryService;
 
 import java.util.List;

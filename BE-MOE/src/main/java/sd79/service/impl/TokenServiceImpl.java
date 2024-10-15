@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.redis_model.Token;
-import sd79.repositories.TokenRepository;
+import sd79.repositories.auth.TokenRepository;
 import sd79.service.TokenService;
 
 @Service

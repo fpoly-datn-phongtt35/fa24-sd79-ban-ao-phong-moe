@@ -67,13 +67,13 @@ CREATE TABLE customers (
     gender enum('MALE', 'FEMALE', 'OTHER'),
     date_of_birth date,
     image varchar(200),
+    address_id bigint UNIQUE,
     created_at datetime,
     updated_at datetime
 );
 
 CREATE TABLE customer_address (
     id bigint PRIMARY KEY AUTO_INCREMENT,
-    customer_id bigint UNIQUE,
     street_name varchar(255),
     ward varchar(255),
     district varchar(255),
@@ -116,11 +116,11 @@ CREATE TABLE products(
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(200),
 	description VARCHAR(255),
-	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'),
+	status ENUM('ACTIVE', 'INACTIVE'),
 	category_id INT,
 	brand_id INT,
 	material_id INT,
-	origin VARCHAR(30),
+	origin VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -155,7 +155,8 @@ CREATE TABLE colors(
 CREATE TABLE product_images(
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
 	product_id BIGINT,
-	image_url VARCHAR(255)
+	image_url VARCHAR(255),
+	public_id VARCHAR(100)
 );
 
 CREATE TABLE product_details(
@@ -165,7 +166,7 @@ CREATE TABLE product_details(
 	size_id INT,
 	color_id INT,
 	quantity INT,
-	status ENUM('ACTIVE', 'INACTIVE', 'OUT_OF_STOCK')
+	status ENUM('ACTIVE', 'INACTIVE')
 );
 
 -- coupons
@@ -190,6 +191,24 @@ CREATE TABLE coupons (
   is_deleted BIT DEFAULT 0
 );
 
+-- promotions
+CREATE TABLE promotions(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255),
+  promotion_type VARCHAR(50),
+  promotion_value DECIMAL(10,2),
+  start_date DATE,
+  end_date DATE,	
+  description TEXT
+);
+
+CREATE TABLE product_promotion(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id BIGINT,
+    promotion_id INT,
+    applied_date DATE,
+    promotion_price DECIMAL(10, 2)
+);
 
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
@@ -199,7 +218,7 @@ ALTER TABLE employees ADD CONSTRAINT fk_position_id FOREIGN KEY (position_id) RE
 ALTER TABLE employees ADD CONSTRAINT fk_salary_id FOREIGN KEY (salary_id) REFERENCES salary(id);
 
 -- Customer
-ALTER TABLE customer_address ADD CONSTRAINT fk_customer_address FOREIGN KEY (customer_id) REFERENCES customers(id);
+ALTER TABLE customers ADD CONSTRAINT fk_customer_address FOREIGN KEY (address_id) REFERENCES customer_address(id);
 
 -- Product
 ALTER TABLE users ADD CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id);
@@ -218,6 +237,10 @@ ALTER TABLE product_details ADD CONSTRAINT fk_product_details_size_id FOREIGN KE
 
 ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN KEY (color_id) REFERENCES colors(id);
 
+-- promotions
+ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+
+ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_promotion_id FOREIGN KEY (promotion_id) REFERENCES promotions(id);
 
 -- ROLE --
 INSERT INTO roles (name, created_at, updated_at) 
@@ -229,32 +252,72 @@ VALUES
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES 
 ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
+('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0),
 ('user', 'user@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0);
 
-INSERT INTO categories (name, created_by, updated_by, create_at, update_at)
-VALUES ('Áo cộc tay', 1, 1, NOW(), NOW()),('Áo dài tay', 1, 1, NOW(), NOW());
+INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Áo Thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+('Áo Khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+('Quần', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+('Váy', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+('Giày', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
-INSERT INTO brands (name, created_by, updated_by, create_at, update_at)
-VALUES ('Adidas', 1, 1, NOW(), NOW()), ('Nike', 1, 1, NOW(), NOW()), ('Fila', 1, 1, NOW(), NOW());
+INSERT INTO brands (name, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Nike', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+('Adidas', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+('Puma', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+('Levi\'s', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+('Zara', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
-INSERT INTO materials (name, created_by, updated_by, create_at, update_at)
-VALUES ('Fine cotton', 2, 1, NOW(), NOW()), ('Fine cotton', 1, 1, NOW(), NOW()), ('Twill', 2, 1, NOW(), NOW());
+INSERT INTO materials (name, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Cotton', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+('Polyester', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+('Denim', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+('Lụa', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+('Vải Len', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
-INSERT INTO sizes (name, length, width, sleeve, created_by, updated_by, create_at, update_at)
-VALUES ('S', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW()), ('L', 10.0, 5.0, 3.0, 1, 1, NOW(), NOW());
+INSERT INTO products (name, description, status, category_id, brand_id, material_id, origin, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Áo Thun Nữ Nike', 'Áo thun nữ chất liệu cotton mềm mịn', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-10-01 09:30:00', '2023-10-01 09:30:00', 0),
+('Áo Thun Nữ Adidas', 'Áo thun nữ Adidas thời trang, năng động', 'ACTIVE', 1, 2, 2, 'Vietnam', 1, 1, '2023-10-02 10:00:00', '2023-10-02 10:00:00', 0),
+('Áo Thun Nữ Puma', 'Áo thun nữ Puma, chất liệu polyester', 'ACTIVE', 1, 3, 2, 'Vietnam', 1, 1, '2023-10-03 11:00:00', '2023-10-03 11:00:00', 0),
+('Áo Khoác Levi\'s', 'Áo khoác Levi\'s phong cách, ấm áp', 'INACTIVE', 2, 4, 3, 'Vietnam', 1, 1, '2023-10-04 12:00:00', '2023-10-04 12:00:00', 0),
+('Váy Zara', 'Váy Zara nữ tính, chất liệu lụa', 'ACTIVE', 4, 5, 4, 'Vietnam', 1, 1, '2023-10-05 13:00:00', '2023-10-05 13:00:00', 0);
 
-INSERT INTO colors (name, hex_color_code, created_by, updated_by, create_at, update_at)
-VALUES ('Đỏ', '#FF0000', 1, 1, NOW(), NOW()), ('Trắng', '#FFFF', 1, 1, NOW(), NOW());
+INSERT INTO sizes (name, length, width, sleeve, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('S', 65, 40, 20, 1, 1, '2023-09-25 09:30:00', '2023-09-25 09:30:00', 0),
+('M', 70, 45, 22, 1, 1, '2023-09-26 10:00:00', '2023-09-26 10:00:00', 0),
+('L', 75, 50, 24, 1, 1, '2023-09-27 11:00:00', '2023-09-27 11:00:00', 0),
+('XL', 80, 55, 26, 1, 1, '2023-09-28 12:00:00', '2023-09-28 12:00:00', 0),
+('XXL', 85, 60, 28, 1, 1, '2023-09-29 13:00:00', '2023-09-29 13:00:00', 0);
 
-INSERT INTO products (name, description, status, category_id, brand_id, material_id, origin, created_by, updated_by, create_at, update_at)
-VALUES ('Áo thun nữ', 'Mềm mại có mùi thơn', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, NOW(), NOW());
+INSERT INTO colors (name, hex_color_code, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES
+('Đỏ', '#FF0000', 1, 1, '2023-09-25 09:30:00', '2023-09-25 09:30:00', 0),
+('Xanh Dương', '#0000FF', 1, 1, '2023-09-26 10:00:00', '2023-09-26 10:00:00', 0),
+('Đen', '#000000', 1, 1, '2023-09-27 11:00:00', '2023-09-27 11:00:00', 0),
+('Trắng', '#FFFFFF', 1, 1, '2023-09-28 12:00:00', '2023-09-28 12:00:00', 0),
+('Vàng', '#FFFF00', 1, 1, '2023-09-29 13:00:00', '2023-09-29 13:00:00', 0);
 
-INSERT INTO product_images (product_id, image_url)
-VALUES (1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lwmasa2beaxn93.webp'), 
-(1, 'https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lvmtc38j82s18c.webp');
+INSERT INTO product_images (product_id, image_url, public_id)
+VALUES
+(1, 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1728873702/jocjyfja3t4ll0ukxmc2.jpg', 'jocjyfja3t4ll0ukxmc2'),
+(2, 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1728873701/wuwifz1mwshehf6jh4cw.jpg', 'wuwifz1mwshehf6jh4cw'),
+(3, 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1728873700/mcgxktx0qw5zyhqf7j8p.jpg', 'mcgxktx0qw5zyhqf7j8p'),
+(4, 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1728873702/jocjyfja3t4ll0ukxmc2.jpg', 'jocjyfja3t4ll0ukxmc2'),
+(5, 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1728873701/wuwifz1mwshehf6jh4cw.jpg', 'wuwifz1mwshehf6jh4cw');
 
 INSERT INTO product_details (product_id, retail_price, size_id, color_id, quantity, status)
-VALUES (1, 50000, 1, 1, 100, 'ACTIVE');
+VALUES
+(1, 500000, 1, 1, 10, 'ACTIVE'),
+(2, 600000, 2, 2, 20, 'ACTIVE'),
+(3, 550000, 3, 3, 1, 'ACTIVE'),
+(4, 700000, 4, 4, 15, 'ACTIVE'),
+(5, 800000, 5, 5, 30, 'ACTIVE');
 
 INSERT INTO employee_address (street_name, ward, district, city, country)
 VALUES
@@ -281,24 +344,37 @@ VALUES
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
 -- Customer
-INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `created_at`, `updated_at`)
+INSERT INTO `customer_address` (`street_name`, `ward`, `district`, `city`, `country`)
 VALUES
-    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', NOW(), NOW()),
-    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', NOW(), NOW()),
-    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', NOW(), NOW()),
-    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', NOW(), NOW()),
-    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', NOW(), NOW());
+    ('123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
+    ('456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
+    ('789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
+    ('101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
+    ('202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
 
-INSERT INTO `customer_address` (`customer_id`, `street_name`, `ward`, `district`, `city`, `country`)
+
+INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `address_id`, `created_at`, `updated_at`)
 VALUES
-    (1, '123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
-    (2, '456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
-    (3, '789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
-    (4, '101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
-    (5, '202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
-		
+    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', 1, NOW(), NOW()),
+    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', 2, NOW(), NOW()),
+    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', 3, NOW(), NOW()),
+    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', 4, NOW(), NOW()),
+    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', 5, NOW(), NOW());
+	
+-- promotions
+INSERT INTO promotions (name, promotion_type, promotion_value, start_date, end_date, description)
+VALUES
+('Summer Sale', 'Discount', 15.00, '2024-06-01', '2024-06-30', 'Get 15% off on all summer collection shirts.'),
+('Buy 1 Get 1 Free', 'BOGO', 50.00, '2024-07-01', '2024-07-15', 'Buy one shirt and get another shirt of equal or lesser value for free.'),
+('Flash Sale', 'Discount', 25.00, '2024-08-10', '2024-08-10', '25% off on selected shirts for 24 hours.'),
+('Holiday Special', 'Discount', 20.00, '2024-12-20', '2024-12-31', 'Celebrate the holidays with 20% off on all shirts.');
+
+INSERT INTO product_promotion (product_id, promotion_id, applied_date, promotion_price)
+VALUES
+(1, 1, '2024-06-01', 85.00);
+
 -- Coupons
-INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`,`image`, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
+INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, image, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
 VALUES
 ('CODE5892', 'Coupon 1', 'FIXED_AMOUNT', 57.95, 489.77, 123.04, 38, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-03 06:42:47', 'This is description for Coupon 1', 'image_1.png', 9, 3, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE7309', 'Coupon 2', 'FIXED_AMOUNT', 85.12, 106.05, 14.56, 24, 'PUBLIC', '2024-10-03 06:42:47', '2025-07-09 06:42:47', 'This is description for Coupon 2', 'image_2.png', 1, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
@@ -310,10 +386,3 @@ VALUES
 ('CODE1771', 'Coupon 8', 'PERCENTAGE', 79.81, 485.91, 168.22, 97, 'PERSONAL', '2024-10-03 06:42:47', '2025-08-16 06:42:47', 'This is description for Coupon 8', 'image_8.png', 1, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE1117', 'Coupon 9', 'FIXED_AMOUNT', 64.88, 331.88, 72.62, 99, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-02 06:42:47', 'This is description for Coupon 9', 'image_9.png', 9, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
 ('CODE5308', 'Coupon 10', 'FIXED_AMOUNT', 53.34, 449.04, 113.73, 56, 'PERSONAL', '2024-10-03 06:42:47', '2025-02-28 06:42:47', 'This is description for Coupon 10', 'image_10.png', 7, 10, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1);
-
-
-
-
-
-
-

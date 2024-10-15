@@ -29,13 +29,14 @@ export const Sidebar_ = () => {
             <MenuItem component={<Link to="/size"/>}> Quản lý size </MenuItem>
             <MenuItem component={<Link to="/color"/>}> Quản lý color </MenuItem>
           </SubMenu>
+          <MenuItem component={<Link to="/material"/>}> Kho lưu trữ </MenuItem>
         </SubMenu>
         <SubMenu label="Khách hàng" icon={<i className="fa-solid fa-users" ></i>}>
           <MenuItem component={<Link to="/customer"/>}> Khách hàng</MenuItem>
           <MenuItem component={<Link to="/customer/add"/>} > CreateCustomer </MenuItem>
         </SubMenu>
-        <SubMenu label="Other" icon={<i className="fa-solid fa-link"></i>}>
-          <MenuItem> ABC </MenuItem>
+        <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-link"></i>}>
+        <MenuItem component={<Link to="/promotions"/>}> Quản lý đợt giảm giá </MenuItem>
           <MenuItem> ABC </MenuItem>
         </SubMenu>
         <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-tag" ></i>}>

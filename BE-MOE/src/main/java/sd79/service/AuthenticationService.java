@@ -15,10 +15,9 @@ import sd79.dto.response.TokenResponse;
 import sd79.exception.InvalidDataException;
 import sd79.model.User;
 import sd79.model.redis_model.Token;
-import sd79.repositories.UserRepository;
+import sd79.repositories.auth.UserRepository;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static sd79.enums.TokenType.ACCESS_TOKEN;
 import static sd79.enums.TokenType.REFRESH_TOKEN;
 
 @Slf4j

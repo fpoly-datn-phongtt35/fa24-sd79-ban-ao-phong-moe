@@ -2,7 +2,7 @@
   font-family: 'Roboto', sans-serif;  
 } 
 body {
-  background-color: #fff ;
+  background-color: #f1efef ;
 }
 
 .layout {
@@ -14,12 +14,12 @@ body {
 .content-area {
   display: flex;
   flex: 1;
-  margin-top: 80px;
+  margin-top: 60px;
 }
 
 .sidebar {
   width: 260px; 
-  height: calc(100vh - 80px);
+  height: calc(100vh - 70px);
   overflow-y: auto;
   background-color: #fff;
   position: sticky;
@@ -27,9 +27,8 @@ body {
 }
 
 .main-content {
-  padding: 3px;
+  height: calc(100vh - 70px);
   flex: 1;
-  height: calc(100vh - 80px); 
-  background-color: #fff;
   overflow-y: auto;
+  background-color: #fff;
 }

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.response.CouponResponse;
+import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.model.Coupon;
@@ -14,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface CouponService {
-    List<CouponResponse> getCoupon();
+    PageableResponse getAllCoupon(Integer pageNo, Integer pageSize, String keyword, TodoType type, TodoDiscountType discountType, String startDate, String endDate, String status, String sort, String direction);
     CouponResponse getCouponById(Long id);
     long createCoupon(CouponRequest couponRequest);
     void addCouponImage(CouponImageReq couponImageReq);

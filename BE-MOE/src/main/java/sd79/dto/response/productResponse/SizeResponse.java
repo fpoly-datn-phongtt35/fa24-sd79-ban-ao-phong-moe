@@ -1,4 +1,4 @@
-package sd79.dto.response;
+package sd79.dto.response.productResponse;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,10 +7,12 @@ import java.util.Date;
 
 @Getter
 @Builder
-public class CategoryResponse {
+public class SizeResponse {
     private Integer id;
     private String name;
-    private Long productCount;
+    private float length;
+    private float width;
+    private float sleeve;
     private String createdBy;
     private Date createdAt;
     private Date updatedAt;

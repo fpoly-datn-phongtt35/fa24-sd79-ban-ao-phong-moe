@@ -8,11 +8,11 @@ import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
 import CustomerDetailPage from './pages/customer/CustomerDetailPage';
 import { Categories } from "./pages/products/categories/Categories";
+import { Promotion } from "~/pages/promotions/Promotion"
 import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
 import { Color } from "./pages/products/colors/Color";
-import { ProductFrom } from "./pages/products/details/ProductForm";
 import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/CreateCoupon";
 import UpdateCoupon from "./pages/coupon/UpdateCoupon";
@@ -20,7 +20,8 @@ import { Employee } from "~/pages/employee/Employee";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
-// import 'bootstrap/dist/js/bootstrap.bundle.min';
+import { ProductManager } from "./pages/products/productManager/ProductManager";
+import { ProductManagerUpdate } from "./pages/products/productManager/ProductManagerUpdate";
 
 
 const ProtectedRoutes = () => {
@@ -73,11 +74,13 @@ function App() {
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/promotions" element={<Promotion />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
-        <Route path="/product/add" element={<ProductFrom />} />
+        <Route path="/product/add" element={<ProductManager  />} />
+        <Route path="/product/edit/:id" element={<ProductManagerUpdate  />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
