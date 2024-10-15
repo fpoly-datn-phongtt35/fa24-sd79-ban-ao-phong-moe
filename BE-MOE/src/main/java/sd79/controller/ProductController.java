@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.productRequests.ProductDetailModify;
-import sd79.dto.requests.productRequests.ProductDetailRequest;
-import sd79.dto.requests.productRequests.ProductImageReq;
-import sd79.dto.requests.productRequests.ProductRequest;
+import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.ResponseData;
 import sd79.enums.ProductStatus;
@@ -87,7 +84,7 @@ public class ProductController {
     }
 
     @PostMapping("/store-product-detail/attribute")
-    public ResponseData<?> storeProductDetailAttribute(@RequestBody ProductDetailRequest item) {
+    public ResponseData<?> storeProductDetailAttribute(@RequestBody ProductDetailStoreRequest item) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.productService.storeProductDetailAttribute(item));
     }
 }

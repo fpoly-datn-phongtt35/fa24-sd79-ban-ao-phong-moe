@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sd79.dto.requests.productRequests.ProductDetailModify;
-import sd79.dto.requests.productRequests.ProductDetailRequest;
-import sd79.dto.requests.productRequests.ProductImageReq;
-import sd79.dto.requests.productRequests.ProductRequest;
+import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.*;
@@ -163,11 +160,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public long storeProductDetailAttribute(ProductDetailRequest request) {
-        if(this.productDetailRepository.existsDetailByAttribute(request.getId(), request.getColorId(), request.getSizeId())){
+    public long storeProductDetailAttribute(ProductDetailStoreRequest request) {
+        if (this.productDetailRepository.existsDetailByAttribute(request.getProductId(), request.getColorId(), request.getSizeId())) {
             throw new EntityExistsException("Thuộc tính đã tồn tại!");
         }
-        return 0;
+        return this.productDetailRepository.save(ProductDetail.builder()
+                .color(this.getColorById(request.getColorId()))
+                .size(this.getSizeById(request.getSizeId()))
+                .retailPrice(request.getRetailPrice())
+                .quantity(request.getQuantity())
+                .product(this.getProductById(request.getProductId()))
+                .status(ProductStatus.ACTIVE)
+                .build()).getId();
     }
 
     private Product getProductById(long id) {

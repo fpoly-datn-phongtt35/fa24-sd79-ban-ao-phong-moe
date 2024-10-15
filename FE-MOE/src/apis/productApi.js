@@ -109,10 +109,19 @@ export const changeStatusProductDetail = async (id, status) => {
     `${API_ROOT}/product/change-status/product-detail/${id}/${status}`
   );
 };
+
 export const updateProductDetailAttribute = async (data) => {
-  return await authorizedAxiosInstance.put(
-    `${API_ROOT}/product/update-product-details/attribute`, data
-  ).then((res) => {
-    toast.success(res.data.message);
-  });
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/product/update-product-details/attribute`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const storeProductDetailAttribute = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/product/store-product-detail/attribute`, data)
+    .then((res) => {
+      toast.success(res?.data?.message);
+    });
 };

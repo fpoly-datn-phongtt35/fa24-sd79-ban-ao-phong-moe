@@ -1,8 +1,7 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import sd79.enums.ProductStatus;
 
@@ -11,6 +10,9 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "product_details")
 public class ProductDetail {
     @Id
