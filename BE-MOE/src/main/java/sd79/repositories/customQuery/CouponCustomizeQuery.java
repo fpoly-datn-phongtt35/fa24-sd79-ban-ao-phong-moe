@@ -16,12 +16,14 @@ import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.model.Coupon;
+import sd79.model.CouponImage;
 import sd79.repositories.CouponRepo;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -166,12 +168,12 @@ public class CouponCustomizeQuery {
                 .endDate(coupon.getEndDate())
                 .status(coupon.getStatus())
                 .description(coupon.getDescription())
-                .image(convertToUrl(coupon.getImage()))
+                .imageUrl(convertToUrl(coupon.getCouponImage()))
                 .build();
     }
 
-    private String convertToUrl(String images) {
-        return images != null ? images.trim() : null;
+    private String convertToUrl(CouponImage image) {
+        return (image != null) ? image.getImageUrl() : null;
     }
 
 

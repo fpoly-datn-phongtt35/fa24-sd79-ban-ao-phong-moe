@@ -10,7 +10,9 @@ import sd79.enums.TodoType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -59,9 +61,8 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
     @Column(name = "description")
     private String description;
 
-    @Size(max = 255)
-    @Column(name = "image")
-    private String image;
+    @OneToOne(mappedBy = "coupon")
+    private CouponImage couponImage;
 
     public String getStatus() {
         Date currentDate = new Date();

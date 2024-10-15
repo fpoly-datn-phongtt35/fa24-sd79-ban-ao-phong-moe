@@ -169,7 +169,7 @@ CREATE TABLE product_details(
 	status ENUM('ACTIVE', 'INACTIVE')
 );
 
--- coupons
+-- Coupons
 CREATE TABLE coupons (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(10) UNIQUE,
@@ -183,12 +183,19 @@ CREATE TABLE coupons (
   start_date DATETIME,
   end_date DATETIME,
   description TEXT,
-  image VARCHAR(255) NULL,
   created_by BIGINT,
   updated_by BIGINT,
   create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   is_deleted BIT DEFAULT 0
+);
+
+CREATE TABLE coupon_images(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  coupon_id BIGINT,
+  image_url VARCHAR(255),
+  public_id VARCHAR(100),
+  CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
 );
 
 -- promotions
@@ -374,15 +381,26 @@ VALUES
 (1, 1, '2024-06-01', 85.00);
 
 -- Coupons
-INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, image, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
-VALUES
-('CODE5892', 'Coupon 1', 'FIXED_AMOUNT', 57.95, 489.77, 123.04, 38, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-03 06:42:47', 'This is description for Coupon 1', 'image_1.png', 9, 3, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE7309', 'Coupon 2', 'FIXED_AMOUNT', 85.12, 106.05, 14.56, 24, 'PUBLIC', '2024-10-03 06:42:47', '2025-07-09 06:42:47', 'This is description for Coupon 2', 'image_2.png', 1, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
-('CODE9879', 'Coupon 3', 'PERCENTAGE', 21.37, 69.60, 116.24, 3, 'PERSONAL', '2024-10-03 06:42:47', '2025-01-27 06:42:47', 'This is description for Coupon 3', 'image_3.png', 8, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE6860', 'Coupon 4', 'FIXED_AMOUNT', 58.65, 134.11, 57.17, 66, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-10 06:42:47', 'This is description for Coupon 4', 'image_4.png', 5, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE3542', 'Coupon 5', 'PERCENTAGE', 43.87, 395.30, 197.18, 60, 'PUBLIC', '2024-10-03 06:42:47', '2025-02-04 06:42:47', 'This is description for Coupon 5', 'image_5.png', 9, 2, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE7612', 'Coupon 6', 'PERCENTAGE', 55.79, 370.94, 105.59, 4, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-30 06:42:47', 'This is description for Coupon 6', 'image_6.png', 2, 9, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE3354', 'Coupon 7', 'FIXED_AMOUNT', 68.56, 104.59, 17.24, 74, 'PERSONAL', '2024-10-03 06:42:47', '2025-05-03 06:42:47', 'This is description for Coupon 7', 'image_7.png', 7, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
-('CODE1771', 'Coupon 8', 'PERCENTAGE', 79.81, 485.91, 168.22, 97, 'PERSONAL', '2024-10-03 06:42:47', '2025-08-16 06:42:47', 'This is description for Coupon 8', 'image_8.png', 1, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE1117', 'Coupon 9', 'FIXED_AMOUNT', 64.88, 331.88, 72.62, 99, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-02 06:42:47', 'This is description for Coupon 9', 'image_9.png', 9, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE5308', 'Coupon 10', 'FIXED_AMOUNT', 53.34, 449.04, 113.73, 56, 'PERSONAL', '2024-10-03 06:42:47', '2025-02-28 06:42:47', 'This is description for Coupon 10', 'image_10.png', 7, 10, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1);
+INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, created_by, updated_by) VALUES
+('COUP01', 'Summer Sale', 'PERCENTAGE', 10, 5000, 100, 100, 'PUBLIC', '2024-06-01 00:00:00', '2024-07-01 00:00:00', '10% off summer sale', 1, 1),
+('COUP02', 'Winter Offer', 'FIXED_AMOUNT', 500, 5000, 1000, 50, 'PERSONAL', '2024-12-01 00:00:00', '2024-12-31 00:00:00', '500 off winter offer', 2, 2),
+('COUP03', 'Black Friday', 'PERCENTAGE', 20, 10000, 500, 200, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 00:00:00', '20% off Black Friday', 3, 3),
+('COUP04', 'New Year Discount', 'FIXED_AMOUNT', 1000, 10000, 2000, 150, 'PERSONAL', '2024-12-31 00:00:00', '2025-01-01 23:59:59', '1000 off New Year Discount', 4, 4),
+('COUP05', 'Flash Sale', 'PERCENTAGE', 15, 8000, 300, 500, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-16 00:00:00', '15% off Flash Sale', 5, 5),
+('COUP06', 'Holiday Offer', 'FIXED_AMOUNT', 200, 2000, 1000, 300, 'PERSONAL', '2024-12-20 00:00:00', '2024-12-25 00:00:00', '200 off Holiday Offer', 6, 6),
+('COUP07', 'Exclusive Discount', 'PERCENTAGE', 5, 3000, 500, 50, 'PERSONAL', '2024-11-01 00:00:00', '2024-11-10 00:00:00', '5% Exclusive Discount', 7, 7),
+('COUP08', 'Limited Offer', 'FIXED_AMOUNT', 1500, 6000, 2000, 100, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-30 00:00:00', '1500 off Limited Offer', 8, 8),
+('COUP09', 'Birthday Special', 'PERCENTAGE', 25, 7000, 500, 50, 'PERSONAL', '2024-11-20 00:00:00', '2024-11-25 00:00:00', '25% off Birthday Special', 9, 9),
+('COUP10', 'Anniversary Deal', 'FIXED_AMOUNT', 300, 2000, 800, 50, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-10 00:00:00', '300 off Anniversary Deal', 10, 10);
+
+INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
+(1, 'https://example.com/images/coupon01.jpg', 'abc123'),
+(2, 'https://example.com/images/coupon02.jpg', 'def456'),
+(3, 'https://example.com/images/coupon03.jpg', 'ghi789'),
+(4, 'https://example.com/images/coupon04.jpg', 'jkl012'),
+(5, 'https://example.com/images/coupon05.jpg', 'mno345'),
+(6, 'https://example.com/images/coupon06.jpg', 'pqr678'),
+(7, 'https://example.com/images/coupon07.jpg', 'stu901'),
+(8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
+(9, 'https://example.com/images/coupon09.jpg', 'yz567'),
+(10, 'https://example.com/images/coupon10.jpg', 'abc890');

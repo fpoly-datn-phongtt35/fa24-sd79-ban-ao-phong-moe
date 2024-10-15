@@ -28,6 +28,6 @@ public class CouponResponse {
     private Date endDate; // ngay ket thuc
     private String status; //trang thai
     private String description;
-    private String image;
+    private String imageUrl;
 
 }

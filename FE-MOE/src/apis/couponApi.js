@@ -98,42 +98,11 @@ export const deleteCoupon = async (id) => {
     })
 };
 
-// export const searchKeywordAndDate = async (keyword, startDate, endDate, discountType, type, status, page, size, sort, direction) => {
-//   try {
-//     const params = {};
-//     if (keyword) params.keyword = keyword;
-//     if (startDate && endDate) {
-//       const start = new Date(startDate);
-//       const end = new Date(endDate);
-//       if (start > end) {
-//         console.error("Start date cannot be after end date.");
-//         toast.error("Start date cannot be after end date.");
-//         return null;
-//       } else {
-//         params.startDate = startDate;
-//         params.endDate = endDate;
-//       }
-//     } else {
-//       if (startDate) params.startDate = startDate;
-//       if (endDate) params.endDate = endDate;
-//     }
-//     if (discountType) params.discountType = discountType;
-//     if (type) params.type = type;
-//     if (status) params.status = status;
-//     if (page !== undefined) params.page = page - 1;
-//     if (size !== undefined) params.size = size;
-//     if (sort && direction) {
-//       params.sort = sort;
-//       params.direction = direction;
-//     }
-//     const res = await authorizedAxiosInstance.get(`${API_ROOT}/coupon/searchKeywordAndDate`, { params });
-//     return res.data;
-//   } catch (err) {
-//     console.error("Failed to search coupons.", err);
-//     toast.error("Failed to search coupons.");
-//     return null;
-//   }
-// };
-
-
+export const deleteCouponImage = async (id) => {
+  return await authorizedAxiosInstance
+    .delete(`${API_ROOT}/coupon/delete/images/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    })
+};
 
