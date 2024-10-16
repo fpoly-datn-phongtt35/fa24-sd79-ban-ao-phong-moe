@@ -17,7 +17,6 @@ import sd79.repositories.products.*;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -124,10 +123,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void updateProduct(ProductRequest req, long id) {
+    public void updateProduct(ProductUpdateRequest req, long id) {
         User user = getUserById(req.getUserId());
 
-        // Products
         Product product = this.getProductById(id);
         product.setName(req.getName());
         product.setDescription(req.getDescription());

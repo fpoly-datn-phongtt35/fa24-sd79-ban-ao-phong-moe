@@ -22,7 +22,7 @@ public interface ProductService {
 
     ProductModifyRes getProductInfo(long id);
 
-    void updateProduct(ProductRequest req, long id);
+    void updateProduct(ProductUpdateRequest req, long id);
 
     void setProductDetailStatus(long id, boolean status);
 
