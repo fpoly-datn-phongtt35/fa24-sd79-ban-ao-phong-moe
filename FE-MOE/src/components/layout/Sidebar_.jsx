@@ -1,54 +1,199 @@
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { handleLogoutAPI } from "~/apis";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import HomeIcon from "@mui/icons-material/Home";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { Box, Typography } from "@mui/joy";
+import logo from "~/assert/MainLogo.jpg";
+import { useEffect, useState } from "react";
 
-export const Sidebar_ = () => {
+export const Sidebar_ = (props) => {
   const navigate = useNavigate();
+  const [ADMIN, setAdmin] = useState(false);
 
-  const handleLogout = async () => {
-    await handleLogoutAPI();
-    navigate("/");
-    setUser(null);
+  useEffect(() => {
+    setAdmin(getAuthority() == "USER");
+  }, []);
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
   };
-  // Icon link https://fontawesome.com/search
+
+  const handleLogout = () => {
+    swal({
+      title: "Cảnh báo",
+      text: "Bạn có muốn đăng xuất không?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then(async (confirm) => {
+      if (confirm) {
+        await handleLogoutAPI();
+        navigate("/");
+      }
+    });
+  };
+
   return (
-    <Sidebar className="sidebar">
-      <Menu>
-        <MenuItem icon={<i className="fa-solid fa-house"></i>} component={<Link to="/"/>}> Trang chủ </MenuItem>
-        <SubMenu label="Bán hàng" icon={<i className="fa-solid fa-cart-shopping"></i>}>
-          <MenuItem component={<Link to="/dashboard?offline"/>}> Offline </MenuItem>
-          <MenuItem> Online </MenuItem>
-        </SubMenu>
-        <SubMenu label="Sản phẩm" icon={<i className="fa-solid fa-shirt"></i>}>
-          <MenuItem component={<Link to="/product"/>}> Quản lý sản phẩm </MenuItem>
-          <MenuItem component={<Link to="categories"/>}> Quản lý danh mục </MenuItem>
-          <MenuItem component={<Link to="/brand"/>}> Quản lý thương hiệu </MenuItem>
-          <MenuItem component={<Link to="/material"/>}> Quản lý chất liệu </MenuItem>
-          <SubMenu label="Thuộc tính sản phẩm">
-            <MenuItem component={<Link to="/size"/>}> Quản lý size </MenuItem>
-            <MenuItem component={<Link to="/color"/>}> Quản lý color </MenuItem>
+    <Box>
+      <Box
+        sx={{
+          cursor: "pointer",
+          padding: 1,
+          display: "flex",
+          alignItems: "center",
+          background: "#fbfbfb",
+        }}
+        marginBottom={3}
+        marginTop={1}
+        onClick={() => navigate("/dashboard")}
+      >
+        <img
+          src={logo}
+          alt="MOE Logo"
+          style={{
+            maxWidth: !props.collapsed ? "80px" : "50px",
+            marginLeft: "10px",
+          }}
+        />
+        {!props.collapsed && (
+          <Typography level="title-lg" sx={{ color: "#0071bd", marginLeft: 1 }}>
+            MOE Store
+          </Typography>
+        )}
+      </Box>
+      <Sidebar
+        className="sidebar"
+        collapsed={props.collapsed}
+        rootStyles={{ background: "#fff" }}
+      >
+        <Menu
+          rootStyles={{
+            color: "#32383e",
+          }}
+        >
+          <MenuItem
+            icon={<HomeIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/" />}
+          >
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Trang chủ
+            </Typography>
+          </MenuItem>
+          <SubMenu
+            label="Bán hàng"
+            icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
+          >
+            <MenuItem component={<Link to="/dashboard?offline" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Offline
+              </Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Online
+              </Typography>
+            </MenuItem>
           </SubMenu>
-          <MenuItem component={<Link to="/material"/>}> Kho lưu trữ </MenuItem>
-        </SubMenu>
-        <SubMenu label="Khách hàng" icon={<i className="fa-solid fa-users" ></i>}>
-          <MenuItem component={<Link to="/customer"/>}> Khách hàng</MenuItem>
-          <MenuItem component={<Link to="/customer/add"/>} > CreateCustomer </MenuItem>
-        </SubMenu>
-        <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-link"></i>}>
-        <MenuItem component={<Link to="/promotions"/>}> Quản lý đợt giảm giá </MenuItem>
-          <MenuItem> ABC </MenuItem>
-        </SubMenu>
-        <SubMenu label="Giảm giá" icon={<i className="fa-solid fa-tag" ></i>}>
-          <MenuItem component={<Link to="/coupon"/>}> Phiếu giảm giá </MenuItem>
-          <MenuItem> Đợt giảm giá </MenuItem>
-        </SubMenu>
-        <MenuItem icon={<i className="fa-solid fa-address-card"></i>} component={<Link to="/employee"/>}> Nhân viên</MenuItem>
-      </Menu>
-      <Menu>
-        <MenuItem icon={<i className="fa-solid fa-user-circle"></i>}> Profile </MenuItem>
-        <MenuItem icon={<i className="fa-solid fa-sign-out-alt"></i>} onClick={handleLogout}> Logout </MenuItem>
-      </Menu>
-    </Sidebar>
+          <SubMenu
+            disabled={ADMIN}
+            label="Sản phẩm"
+            icon={
+              <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>
+            }
+          >
+            <MenuItem component={<Link to="/product" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Quản lý sản phẩm
+              </Typography>
+            </MenuItem>
+            <MenuItem component={<Link to="categories" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Quản lý danh mục
+              </Typography>
+            </MenuItem>
+            <MenuItem component={<Link to="/brand" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Quản lý thương hiệu
+              </Typography>
+            </MenuItem>
+            <MenuItem component={<Link to="/material" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Quản lý chất liệu
+              </Typography>
+            </MenuItem>
+            <SubMenu label="Thuộc tính sản phẩm">
+              <MenuItem component={<Link to="/size" />}>
+                <Typography sx={{ color: "#32383e" }} level="body-md">
+                  Quản lý size
+                </Typography>
+              </MenuItem>
+              <MenuItem component={<Link to="/color" />}>
+                <Typography sx={{ color: "#32383e" }} level="body-md">
+                  Quản lý color
+                </Typography>
+              </MenuItem>
+            </SubMenu>
+            <MenuItem component={<Link to="/material" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Kho lưu trữ
+              </Typography>
+            </MenuItem>
+          </SubMenu>
+          <SubMenu
+            label="Người dùng"
+            icon={<PeopleAltIcon style={{ color: "#0071bd" }} />}
+          >
+            <MenuItem component={<Link to="/customer" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Khách hàng
+              </Typography>
+            </MenuItem>
+            <MenuItem component={<Link to="/employee" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Nhân viên
+              </Typography>
+            </MenuItem>
+          </SubMenu>
+          <SubMenu
+            label="Giảm giá"
+            icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
+          >
+            <MenuItem component={<Link to="/coupon" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Phiếu giảm giá
+              </Typography>
+            </MenuItem>
+            <MenuItem component={<Link to="/promotions" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Quản lý đợt giảm giá
+              </Typography>
+            </MenuItem>
+          </SubMenu>
+        </Menu>
+        <Menu
+          rootStyles={{
+            color: "#657d8d",
+          }}
+        >
+          <MenuItem
+            icon={<LogoutIcon style={{ color: "#0071bd" }} />}
+            onClick={handleLogout}
+          >
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Đăng xuất
+            </Typography>
+          </MenuItem>
+        </Menu>
+      </Sidebar>
+    </Box>
   );
 };

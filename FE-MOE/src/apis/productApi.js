@@ -8,19 +8,50 @@ import { fetchAllMaterials } from "./materialApi";
 import { fetchAllColors } from "./colorApi";
 import { fetchAllSizes } from "./sizesApi";
 
-export const fetchAllProducts = async (pageNo, keyword, status) => {
+export const fetchAllProducts = async (
+  pageNo,
+  keyword,
+  status,
+  category,
+  brand,
+  material,
+  origin
+) => {
+  let uri = "/product?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (category) {
+    queryParams.push(`category=${category}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+  if (material) {
+    queryParams.push(`material=${material}`);
+  }
+  if (origin) {
+    queryParams.push(`origin=${origin}`);
+  }
+
+  uri += queryParams.join("&");
+
   return await authorizedAxiosInstance
-    .get(
-      `${API_ROOT}/product?pageNo=${pageNo}&keyword=${keyword}&status=${status}`
-    )
+    .get(`${API_ROOT}${uri}`)
     .then((res) => res.data);
 };
 
 export const fetchProduct = async (id) => {
   return await authorizedAxiosInstance
-    .get(
-      `${API_ROOT}/product/${id}`
-    )
+    .get(`${API_ROOT}/product/${id}`)
     .then((res) => res.data);
 };
 
@@ -70,5 +101,27 @@ export const updateProduct = async (data, id) => {
     .put(`${API_ROOT}/product/update-product/${id}`, data)
     .then((res) => {
       toast.success(res.data.message);
+    });
+};
+
+export const changeStatusProductDetail = async (id, status) => {
+  return await authorizedAxiosInstance.patch(
+    `${API_ROOT}/product/change-status/product-detail/${id}/${status}`
+  );
+};
+
+export const updateProductDetailAttribute = async (data) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/product/update-product-details/attribute`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const storeProductDetailAttribute = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/product/store-product-detail/attribute`, data)
+    .then((res) => {
+      toast.success(res?.data?.message);
     });
 };

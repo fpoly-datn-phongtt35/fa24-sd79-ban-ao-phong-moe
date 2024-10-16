@@ -1,6 +1,6 @@
 package sd79.service;
 
-import sd79.dto.requests.MaterialRequest;
+import sd79.dto.requests.productRequests.MaterialRequest;
 import sd79.dto.response.productResponse.MaterialResponse;
 
 import java.util.List;

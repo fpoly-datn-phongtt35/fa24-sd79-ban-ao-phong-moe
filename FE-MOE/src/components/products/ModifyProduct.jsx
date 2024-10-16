@@ -55,7 +55,7 @@ export const ModifyProduct = (props) => {
       <Button
         size="sm"
         color="neutral"
-        variant="outlined"
+        variant="soft"
         startDecorator={<EditIcon />}
         onClick={() => setOpen(true)}
       >
@@ -69,7 +69,7 @@ export const ModifyProduct = (props) => {
             <Stack spacing={2}>
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>
                 <Grid size={6}>
-                  <FormControl error={!!errors?.name}>
+                  <FormControl required error={!!errors?.name}>
                     <FormLabel>Tên sản phẩm</FormLabel>
                     <Input
                       autoFocus
@@ -84,7 +84,7 @@ export const ModifyProduct = (props) => {
                   </FormControl>
                 </Grid>
                 <Grid size={6}>
-                  <FormControl>
+                  <FormControl required>
                     <FormLabel>Xuất sứ</FormLabel>
                     <Select
                       placeholder="Chọn nơi xuất sứ"
@@ -102,7 +102,7 @@ export const ModifyProduct = (props) => {
                   </FormControl>
                 </Grid>
                 <Grid size={6}>
-                  <FormControl>
+                  <FormControl required>
                     <FormLabel>Thương hiệu</FormLabel>
                     <Select
                       defaultValue={props?.data?.brand.id}
@@ -120,7 +120,7 @@ export const ModifyProduct = (props) => {
                   </FormControl>
                 </Grid>
                 <Grid size={6}>
-                  <FormControl>
+                  <FormControl required>
                     <FormLabel>Danh mục</FormLabel>
                     <Select
                       defaultValue={props?.data?.category.id}
@@ -138,7 +138,7 @@ export const ModifyProduct = (props) => {
                   </FormControl>
                 </Grid>
                 <Grid size={6}>
-                  <FormControl>
+                  <FormControl required>
                     <FormLabel>Chất liệu</FormLabel>
                     <Select
                       defaultValue={props?.data?.material.id}
@@ -163,9 +163,10 @@ export const ModifyProduct = (props) => {
                     <FormLabel>Mô tả</FormLabel>
                     <Textarea
                       minRows={3}
+                      maxRows={10}
                       placeholder="Nhập mô tả..."
                       defaultValue={props?.data?.description}
-                      {...register("description", { required: true })}
+                      {...register("description", { required: false })}
                     />
                     {errors.description && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>

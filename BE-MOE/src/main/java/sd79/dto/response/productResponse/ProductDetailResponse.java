@@ -2,6 +2,7 @@ package sd79.dto.response.productResponse;
 
 import lombok.Builder;
 import lombok.Getter;
+import sd79.enums.ProductStatus;
 
 import java.math.BigDecimal;
 
@@ -17,4 +18,6 @@ public class ProductDetailResponse {
     private int quantity;
 
     private BigDecimal price;
+
+    private ProductStatus status;
 }

@@ -11,10 +11,14 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import HomeIcon from "@mui/icons-material/Home";
-import { fetchAllProducts, moveToBin, changeStatus } from "~/apis/productApi";
+import {
+  fetchAllProducts,
+  moveToBin,
+  changeStatus,
+  attributeProducts,
+} from "~/apis/productApi";
 import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
-import { HeardForm } from "~/components/other/HeaderForm";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
 
@@ -23,19 +27,34 @@ export const Product = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("ALL");
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [material, setMaterial] = useState("");
+  const [origin, setOrigin] = useState("");
+
+  const [attributes, setAttribute] = useState(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     handleSetProducts();
-  }, [currentPage, keyword, status]);
+  }, [currentPage, keyword, status, category, brand, material, origin]);
+
+  useEffect(() => {
+    fetchAttributes();
+  }, []);
+
+  const fetchAttributes = async () => {
+    const res = await attributeProducts();
+    setAttribute(res);
+  };
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
   const handleSetProducts = async () => {
-    const res = await fetchAllProducts(currentPage, keyword, status);
+    const res = await fetchAllProducts(currentPage, keyword, status, category, brand, material, origin);
     setProducts(res.data);
   };
 
@@ -53,6 +72,33 @@ export const Product = () => {
     setStatus(e);
   };
 
+  const onChangeCategory = (e) => {
+    setCurrentPage(1);
+    setCategory(e);
+  };
+  const onChangeBrand = (e) => {
+    setCurrentPage(1);
+    setBrand(e);
+  };
+  const onChangeMaterial = (e) => {
+    setCurrentPage(1);
+    setMaterial(e);
+  };
+  const onChangeOrigin = (e) => {
+    setCurrentPage(1);
+    setOrigin(e);
+  };
+
+  const clearFilter = () => {
+    setCurrentPage(1);
+    setKeyword("");
+    setStatus("ALL");
+    setCategory("");
+    setBrand("");
+    setMaterial("");
+    setOrigin("");
+  }
+
   const onMoveToBin = (id) => {
     swal({
       title: "Xác nhận",
@@ -69,7 +115,6 @@ export const Product = () => {
   };
 
   const onSetStatus = (id, status) => {
-    console.log(id, !status ? "ACTIVE" : "INACTIVE");
     changeStatus(id, !status ? "ACTIVE" : "INACTIVE");
   };
 
@@ -114,12 +159,22 @@ export const Product = () => {
           </Typography>
         </Breadcrumbs>
       </Grid>
-      <HeardForm title="Danh sách sản phẩm" />
 
       <Filter
         onChangeSearch={onChangeSearch}
+        keyword={keyword}
         status={status}
+        category={category}
+        brand={brand}
+        material={material}
+        attributes={attributes}
+        origin={origin}
         onChangeStatus={onChangeStatus}
+        onChangeCategory={onChangeCategory}
+        onChangeBrand={onChangeBrand}
+        onChangeMaterial={onChangeMaterial}
+        onChangeOrigin={onChangeOrigin}
+        clearFilter={clearFilter}
       />
 
       <TableData

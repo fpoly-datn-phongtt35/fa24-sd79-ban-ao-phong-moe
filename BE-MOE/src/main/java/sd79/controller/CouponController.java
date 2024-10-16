@@ -4,27 +4,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
-import sd79.dto.response.CouponResponse;
 import sd79.dto.response.ResponseData;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
-import sd79.model.Coupon;
 import sd79.service.CouponService;
+import sd79.utils.CloudinaryUpload;
 
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,17 +29,34 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CouponController {
 
+    private static final Logger log = LoggerFactory.getLogger(CouponController.class);
     private final CouponService couponService;
+    private final CloudinaryUpload cloudinaryUpload;
 
     // Lấy danh sách coupon
     @Operation(
             summary = "Get Coupon",
-            description = "Get all coupon from database"
+            description = "Get all coupons from the database"
     )
     @GetMapping
-    public ResponseData<?> getCoupons() {
-        return new ResponseData<>(HttpStatus.OK.value(), "List coupon", couponService.getCoupon());
+    public ResponseData<?> getAllCoupons(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy/MM/dd") String startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy/MM/dd") String endDate,
+            @RequestParam(value = "discountType", required = false) String discountTypeStr,
+            @RequestParam(value = "type", required = false) String typeStr,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(value = "sort", defaultValue = "startDate") String sort,
+            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
+
+        TodoDiscountType discountType = (discountTypeStr != null) ? TodoDiscountType.valueOf(discountTypeStr.toUpperCase()) : null;
+        TodoType type = (typeStr != null) ? TodoType.valueOf(typeStr.toUpperCase()) : null;
+
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon list", this.couponService.getAllCoupon(pageNo, pageSize, keyword, type, discountType, startDate, endDate, status, sort, direction));
     }
+
 
     // Lấy thông tin coupon theo ID
     @GetMapping("/detail/{id}")
@@ -61,7 +74,7 @@ public class CouponController {
         if (bindingResult.hasErrors()) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation errors", formatValidationErrors(bindingResult));
         }
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Coupon created successfully", couponService.createCoupon(couponRequest));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Coupon created successfully", couponService.storeCoupon(couponRequest));
     }
 
     // Cập nhật coupon
@@ -88,56 +101,12 @@ public class CouponController {
         return new ResponseData<>(HttpStatus.OK.value(), "Coupon deleted successfully");
     }
 
-    @GetMapping("/searchKeywordAndDate")
-    public ResponseData<?> searchKeywordAndDate(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-            @RequestParam(value = "discountType", required = false) String discountTypeStr,
-            @RequestParam(value = "type", required = false) String typeStr,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size,
-            @RequestParam(value = "sort", defaultValue = "startDate") String sort,
-            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
-
-        // Convert discountType and type to enum if present
-        TodoDiscountType discountType = (discountTypeStr != null) ? TodoDiscountType.valueOf(discountTypeStr.toUpperCase()) : null;
-        TodoType type = (typeStr != null) ? TodoType.valueOf(typeStr.toUpperCase()) : null;
-
-        // Determine sort direction
-        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
-
-        // Apply sorting using Sort class
-        Sort sortBy = Sort.by(sortDirection, sort);
-
-        // Create pageable object with sorting
-        Pageable pageable = PageRequest.of(page, size, sortBy);
-
-        // Fetch paginated and sorted data
-        Page<CouponResponse> results = couponService.findByKeywordAndDate(
-                keyword, startDate, endDate, discountType, type, status, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", results.getContent());
-        response.put("totalPages", results.getTotalPages());
-        response.put("totalElements", results.getTotalElements());
-
-        return new ResponseData<>(HttpStatus.OK.value(), "List coupon", response);
-    }
-
-
-
-
-
-    // Custom exception handler for validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", formatValidationErrors(ex.getBindingResult()));
     }
 
-    // Helper method to format validation errors
     private Map<String, String> formatValidationErrors(BindingResult bindingResult) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : bindingResult.getFieldErrors()) {
@@ -145,4 +114,28 @@ public class CouponController {
         }
         return errors;
     }
+    @PostMapping("/upload")
+    public ResponseData<?> uploadFile(@ModelAttribute CouponImageReq request) {
+        this.couponService.storeCouponImages(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added coupon images");
+    }
+
+    @Operation(
+            summary = "Delete Coupon Image",
+            description = "Delete a coupon image from Cloudinary and remove the record from the database"
+    )
+    @DeleteMapping("/delete/images/{couponId}")
+    public ResponseData<?> deleteCouponImage(@PathVariable Long couponId) {
+        try {
+            couponService.deleteCouponImage(couponId);
+            return new ResponseData<>(HttpStatus.OK.value(), "Coupon image deleted successfully");
+        } catch (RuntimeException e) {
+            log.error("Error deleting coupon image: {}", e.getMessage());
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), "Coupon image not found");
+        } catch (Exception e) {
+            log.error("Error: {}", e.getMessage());
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to delete coupon image");
+        }
+    }
+
 }

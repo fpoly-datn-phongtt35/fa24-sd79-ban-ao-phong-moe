@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from "react";
-import "./Header.css";
-import { useNavigate } from "react-router-dom";
 import {
   Avatar,
-  Badge,
   Box,
   IconButton,
   Menu,
   MenuItem,
   Tooltip,
 } from "@mui/material";
-import logo from '~/assert/MainLogo.jpg'
 import ReorderIcon from '@mui/icons-material/Reorder';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 
-export const Header = () => {
+export const Header = (props) => {
   const [username, setUsername] = useState("Unknown");
   const [avatar, setAvatar] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     setUsername(localStorage.getItem("username"));
@@ -36,22 +31,10 @@ export const Header = () => {
   return (
     <header className="header">
       <div className="logo">
-        {/* <ReorderIcon /> */}
-        <img
-          src={logo}
-          alt="MOE Logo"
-          className="img-fluid"
-          style={{ width: "50px", marginLeft: "5px", cursor: "pointer" }}
-          onClick={() => navigate("/dashboard")}
-        />
+        {props.collapsed ?  <PlaylistPlayIcon size='sm' sx={{color: '#0071bd'}} onClick={props.onCollapsed} /> :  <ReorderIcon size='sm' sx={{color: '#0071bd'}} onClick={props.onCollapsed} />}
       </div>
       <div className="header-left">
-        {/* <Box sx={{marginRight: "5px"}}>
-          <Badge badgeContent={4} color="error">
-            <NotificationsIcon color="action" />
-          </Badge>
-        </Box> */}
-        <Box sx={{marginLeft: "5px"}}>
+        <Box sx={{ marginLeft: "5px" }}>
           <IconButton
             size="small"
             aria-label="account of current user"

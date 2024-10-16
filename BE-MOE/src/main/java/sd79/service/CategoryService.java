@@ -1,6 +1,6 @@
 package sd79.service;
 
-import sd79.dto.requests.CategoryRequest;
+import sd79.dto.requests.productRequests.CategoryRequest;
 import sd79.dto.response.productResponse.CategoryResponse;
 
 import java.util.List;

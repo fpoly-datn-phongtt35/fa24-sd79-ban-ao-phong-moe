@@ -1,24 +1,12 @@
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  IconButton,
-  Fab,
-  Switch,
-} from "@mui/material";
+import { Box, CircularProgress, IconButton, Switch } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
-import { Badge, Image } from "react-bootstrap";
+import { Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import { ImageRotator } from "../common/ImageRotator ";
+import { Button, Chip, Grid, Sheet, Table, Typography } from "@mui/joy";
 
 export const TableData = (props) => {
   const [data, setData] = useState();
@@ -44,66 +32,93 @@ export const TableData = (props) => {
 
   return (
     <Box marginTop={2}>
-      <TableContainer component={Paper}>
-        <Table
-          sx={{ minWidth: 650 }}
-          variant="soft"
-        >
-          <TableHead>
-            <TableRow>
-              <TableCell className="text-center">Ảnh</TableCell>
-              <TableCell className="text-center">Tên sản phẩm</TableCell>
-              <TableCell className="text-center">Danh mục</TableCell>
-              <TableCell className="text-center">Thương hiệu</TableCell>
-              <TableCell className="text-center">Chất liệu</TableCell>
-              <TableCell className="text-center">Xuất xứ</TableCell>
-              <TableCell className="text-center">Số lượng</TableCell>
-              <TableCell className="text-center">Trạng thái</TableCell>
-              <TableCell className="text-center">Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <Grid
+        container
+        spacing={2}
+        sx={{ flexGrow: 1 }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Grid size={8}>
+          <Typography color="neutral" level="title-lg" noWrap variant="plain">
+            Danh sách sản phẩm
+          </Typography>
+        </Grid>
+        <Grid size={2}>
+          <Button
+            variant="plain"
+            size="sm"
+            onClick={() => navigate("/product/new")}
+            startDecorator={<AddIcon />}
+          >
+            Thêm sản phẩm
+          </Button>
+        </Grid>
+      </Grid>
+      <Sheet
+        sx={{
+          marginTop: 2,
+          padding: "2px",
+          borderRadius: "5px",
+        }}
+      >
+        <Table borderAxis="x" size="lg" stickyHeader variant="outlined">
+          <thead>
+            <tr>
+              <th className="text-center">Ảnh</th>
+              <th className="text-center" style={{ width: "200px" }}>
+                Tên sản phẩm
+              </th>
+              <th className="text-center">Danh mục</th>
+              <th className="text-center">Thương hiệu</th>
+              <th className="text-center">Chất liệu</th>
+              <th className="text-center">Xuất xứ</th>
+              <th className="text-center">Số lượng</th>
+              <th className="text-center">Trạng thái</th>
+              <th className="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
             {data.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={9} align="center">
+              <tr>
+                <td colSpan={9} align="center">
                   Không tìm thấy sản phẩm!
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             )}
             {data &&
               data.map((value) => (
-                <TableRow key={value.id}>
-                  <TableCell className="text-center">
-                    <ImageRotator imageUrl={value.imageUrl} w={70} h={90}/>
-                  </TableCell>
-                  <TableCell>{value.name}</TableCell>
-                  <TableCell className="text-center">
-                    {value.category}
-                  </TableCell>
-                  <TableCell className="text-center">{value.brand}</TableCell>
-                  <TableCell className="text-center">
-                    {value.material}
-                  </TableCell>
-                  <TableCell className="text-center">{value.origin}</TableCell>
-                  <TableCell className="text-center">
+                <tr key={value.id}>
+                  <td className="text-center">
+                    <ImageRotator imageUrl={value.imageUrl} w={70} h={90} />
+                  </td>
+                  <td>{value.name}</td>
+                  <td className="text-center">{value.category}</td>
+                  <td className="text-center">{value.brand}</td>
+                  <td className="text-center">{value.material}</td>
+                  <td className="text-center">{value.origin}</td>
+                  <td className="text-center">
                     {value.productQuantity > 0 ? (
                       value.productQuantity
                     ) : (
-                      <Badge bg="danger">Hết hàng</Badge>
+                      <Chip color="danger" variant="soft">Hết hàng</Chip>
                     )}
-                  </TableCell>
-                  <TableCell className="text-center">
+                  </td>
+                  <td className="text-center">
                     <Switch
                       defaultChecked={value.status === "ACTIVE"}
                       onClick={() =>
                         props.onSetStatus(value.id, value.status === "ACTIVE")
                       }
                     />
-                  </TableCell>
-                  <TableCell className="text-center">
+                  </td>
+                  <td className="text-center">
                     <IconButton
                       color="warning"
-                      onClick={() => navigate(`/product/edit/${value.id}`)}
+                      onClick={() => navigate(`/product/view/${value.id}`)}
                     >
                       <EditIcon />
                     </IconButton>
@@ -113,24 +128,12 @@ export const TableData = (props) => {
                     >
                       <ArchiveIcon />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))}
-          </TableBody>
+          </tbody>
         </Table>
-      </TableContainer>
-      <Fab
-        color="primary"
-        aria-label="add"
-        style={{
-          position: "fixed",
-          bottom: 15,
-          right: 15,
-        }}
-        onClick={() => navigate("/product/add")}
-      >
-        <AddIcon />
-      </Fab>
+      </Sheet>
     </Box>
   );
 };

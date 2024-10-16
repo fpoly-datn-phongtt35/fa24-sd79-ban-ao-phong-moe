@@ -8,6 +8,7 @@ import sd79.enums.TodoType;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Builder
@@ -27,5 +28,6 @@ public class CouponResponse {
     private Date endDate; // ngay ket thuc
     private String status; //trang thai
     private String description;
-    private String image;
+    private String imageUrl;
+
 }
