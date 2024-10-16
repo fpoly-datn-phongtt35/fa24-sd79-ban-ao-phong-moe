@@ -19,7 +19,10 @@ public class CustomerResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date dateOfBirth;
     private String image;
-    private String customerAddress;
+    private String city;
+    private String district;
+    private String ward;
+    private String streetName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date createdAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
