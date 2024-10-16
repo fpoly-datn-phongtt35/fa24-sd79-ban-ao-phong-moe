@@ -6,11 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.ProductStatus;
 
-import java.util.Set;
-
 @Getter
 @Builder
-public class ProductRequest {
+public class ProductUpdateRequest {
     @NotBlank(message = "Vui lòng nhập tên sản phẩm")
     private String name;
 
@@ -29,9 +27,6 @@ public class ProductRequest {
 
     @NotBlank(message = "Vui lòng nhập nơi xuất xứ")
     private String origin;
-
-    @NotNull(message = "Chưa có thuộc tính sản phẩm!")
-    private Set<ProductDetailRequest> productDetails;
 
     @NotNull(message = "User is null!")
     private Long userId;

@@ -51,7 +51,7 @@ export const TableData = (props) => {
           <Button
             variant="plain"
             size="sm"
-            onClick={() => navigate("/product/add")}
+            onClick={() => navigate("/product/new")}
             startDecorator={<AddIcon />}
           >
             Thêm sản phẩm

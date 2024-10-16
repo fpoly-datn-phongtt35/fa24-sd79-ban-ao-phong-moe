@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
                 response.setError("Invalid payload format");
 
             }
-        }else if(ex instanceof EntityExistsException){
+        } else if (ex instanceof EntityExistsException) {
             response.setError("Entity exists");
         }
         response.setMessage(message);
@@ -56,7 +56,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({EntityNotFoundException.class, InternalAuthenticationServiceException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ExceptionResponse handleEntityNotFound(Exception ex, WebRequest request) {
-        log.info("============== handleEntityNotFound ==============");
         ExceptionResponse response = new ExceptionResponse();
         response.setTimestamp(new Date());
         response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -64,7 +63,8 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         if (ex instanceof EntityNotFoundException) {
             response.setError("Entity not found");
-        }if(ex instanceof InternalAuthenticationServiceException) {
+        }
+        if (ex instanceof InternalAuthenticationServiceException) {
             response.setError("Internal authentication service error");
             message = "Username or password incorrect";
         }

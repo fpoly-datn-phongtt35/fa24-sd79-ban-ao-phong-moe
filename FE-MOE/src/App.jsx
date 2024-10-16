@@ -6,9 +6,9 @@ import { Product } from "./pages/products/Product";
 import { Dashboard } from "./pages/other/Dashboard";
 import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
-import CustomerDetailPage from './pages/customer/CustomerDetailPage';
+import CustomerDetailPage from "./pages/customer/CustomerDetailPage";
 import { Categories } from "./pages/products/categories/Categories";
-import { Promotion } from "~/pages/promotions/Promotion"
+import { Promotion } from "~/pages/promotions/Promotion";
 import { Brand } from "./pages/products/brands/Brand";
 import { Material } from "./pages/products/materials/Material";
 import { Size } from "./pages/products/sizes/Size";
@@ -17,26 +17,39 @@ import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/CreateCoupon";
 import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
-//  import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { ProductManager } from "./pages/products/productManager/ProductManager";
 import { ProductManagerUpdate } from "./pages/products/productManager/ProductManagerUpdate";
-
+import { useState } from "react";
+import { ProductStore } from "./pages/products/productManager/ProductStore";
 
 const ProtectedRoutes = () => {
+  const [collapsed, setCollapsed] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
+
+  const onCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
   }
   return (
     <div className="layout">
-      <Header />
-      <div className="content-area">
-        <Sidebar_ />
-        <div className="main-content">
+      <div className="sidebar">
+        <Sidebar_ collapsed={collapsed} />
+      </div>
+
+      <div className="main-area">
+        <div className="header">
+          <div className="header-left">
+          </div>
+          <Header onCollapsed={onCollapsed} collapsed={collapsed}/>
+        </div>
+
+        <div className="content-area">
           <Outlet />
         </div>
       </div>
@@ -80,8 +93,9 @@ function App() {
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
-        <Route path="/product/add" element={<ProductManager  />} />
-        <Route path="/product/edit/:id" element={<ProductManagerUpdate  />} />
+        <Route path="/product/add" element={<ProductManager />} />
+        <Route path="/product/new" element={<ProductStore />} />
+        <Route path="/product/edit/:id" element={<ProductManagerUpdate />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />

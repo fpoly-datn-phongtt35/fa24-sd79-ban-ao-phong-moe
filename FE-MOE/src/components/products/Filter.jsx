@@ -1,6 +1,6 @@
 import { Box, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Input from "@mui/joy/Input";
 import {
@@ -30,9 +30,9 @@ export const Filter = (props) => {
             level="title-lg"
             noWrap
             variant="plain"
-            alignItems="center"
+            sx={{display: "flex", alignItems: "center"}}
           >
-            <FilterAltIcon size="sm" />
+            <FilterAltOutlinedIcon sx={{ color: "#32383e", marginRight: 1 }} size="sm" />
             Bộ lọc
           </Typography>
         </Grid>
