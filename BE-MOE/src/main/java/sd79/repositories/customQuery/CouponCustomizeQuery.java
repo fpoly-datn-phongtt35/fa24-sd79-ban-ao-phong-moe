@@ -60,7 +60,7 @@ public class CouponCustomizeQuery {
 
         // Keyword filtering
         if (StringUtils.hasLength(keyword)) {
-            sql.append(" AND lower(c.name) like lower(:keyword)");
+            sql.append(" AND lower(c.name) like lower(:keyword) OR lower(c.code) like lower(:keyword)");
         }
 
         // Status filtering
@@ -124,7 +124,7 @@ public class CouponCustomizeQuery {
         // Count query for pagination
         StringBuilder countPage = new StringBuilder("SELECT count(c) FROM Coupon c WHERE c.isDeleted = false");
         if (StringUtils.hasLength(keyword)) {
-            countPage.append(" AND lower(c.name) like lower(:keyword)");
+            countPage.append(" AND lower(c.name) like lower(:keyword) OR lower(c.code) like lower(:keyword)");
         }
         if (startDate != null && endDate != null) {
             countPage.append(" AND ((Date(c.startDate) BETWEEN :startDate AND :endDate) OR (Date(c.endDate) BETWEEN :startDate AND :endDate))");

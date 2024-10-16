@@ -20,6 +20,7 @@ public class CouponRequest {
 
     @NotEmpty(message = "Code cannot be empty")
     @Size(max = 12, message = "Code should not exceed 12 characters")
+
     private String code;
 
     @NotEmpty(message = "Name cannot be empty")

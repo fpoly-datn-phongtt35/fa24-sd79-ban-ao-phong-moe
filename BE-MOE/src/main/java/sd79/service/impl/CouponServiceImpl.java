@@ -1,5 +1,6 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +48,7 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public CouponResponse getCouponById(Long id) { // tim kiem id phieu giam gia
+    public CouponResponse getCouponById(Long id) {
         Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
         return convertCouponResponse(coupon);
     }
@@ -55,6 +56,9 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     @Override
     public long storeCoupon(CouponRequest couponRequest) {
+        if(this.couponRepo.existsCouponByAttribute(couponRequest.getCode())){
+            throw new EntityExistsException("Mã phiếu giảm giá đã tồn tại!");
+        }
         Coupon coupon = Coupon.builder()
                 .code(couponRequest.getCode())
                 .name(couponRequest.getName())
@@ -76,6 +80,7 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     @Override
     public void storeCouponImages(CouponImageReq req) {
+
         Coupon coupon = this.findCouponById(req.getCouponID());
         CouponImage couponImage = coupon.getCouponImage();
 
@@ -102,11 +107,15 @@ public class CouponServiceImpl implements CouponService {
     private String extractPublicId(String url) {
         String[] parts = url.split("/upload/");
         if (parts.length > 1) {
-            return parts[1].split("\\.")[0];
+            String pathAfterUpload = parts[1];
+            String[] pathParts = pathAfterUpload.split("/");
+            String publicIdWithExtension = pathParts[pathParts.length - 1];
+            return publicIdWithExtension.split("\\.")[0];
         } else {
             throw new IllegalArgumentException("Invalid Cloudinary URL format");
         }
     }
+
 
     public Coupon findCouponById(Long id) {
         return this.couponRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
@@ -140,32 +149,6 @@ public class CouponServiceImpl implements CouponService {
         couponRepo.delete(coupon);
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public Page<CouponResponse> searchCoupons(Date startDate, Date endDate, String name, String code, Pageable pageable) {
-        Page<Coupon> coupons = couponRepo.searchCoupons(startDate, endDate, name, code, pageable);
-        return coupons.map(this::convertCouponResponse);  // Convert entity to response DTO
-    }
-
-    @Override
-    public Page<CouponResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
-                                                     TodoDiscountType discountType, TodoType type,
-                                                     String status, Pageable pageable) {
-        Page<Coupon> coupons;
-
-        // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
-        if ((keyword == null || keyword.isEmpty()) && startDate == null && endDate == null &&
-                discountType == null && type == null && (status == null || status.isEmpty())) {
-            coupons = couponRepo.findAll(pageable);  // Lấy toàn bộ danh sách với phân trang
-        } else {
-            // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
-            coupons = couponRepo.findByKeywordAndDate(keyword, startDate, endDate, discountType, type, status, pageable);
-        }
-
-        // Chuyển đổi từ entity Coupon sang DTO CouponResponse
-        return coupons.map(this::convertCouponResponse);
-    }
-
     @Override
     public void deleteCouponImage(Long couponId) {
         Coupon coupon = this.findCouponById(couponId);
@@ -174,9 +157,10 @@ public class CouponServiceImpl implements CouponService {
             cloudinaryUploadCoupon.delete(couponImage.getPublicId());
             couponImageRepo.delete(couponImage);
         } else {
-            throw new RuntimeException("Coupon image not found");
+            throw new RuntimeException("Coupon image not found or public ID is null");
         }
     }
+
 
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach

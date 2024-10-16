@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { updateCoupon, detailCoupon, postCouponImage } from '~/apis/couponApi';
+import { updateCoupon, detailCoupon, postCouponImage, deleteCouponImage } from '~/apis/couponApi';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
     TextField, Button, Box, Grid, Typography, FormControl, FormLabel,
@@ -19,6 +19,7 @@ const UpdateCoupon = () => {
     const [couponType, setCouponType] = useState('public');
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
+    const [storedImageUrl, setStoredImageUrl] = useState('');
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -53,6 +54,7 @@ const UpdateCoupon = () => {
 
         await updateCoupon(id, coupon).then(async (response) => {
             console.log(response)
+            await deleteCouponImage(response)
             let formData = new FormData();
             formData.append("couponID", response);
             formData.append("images", images[0]);
@@ -68,6 +70,8 @@ const UpdateCoupon = () => {
                 const coupon = await detailCoupon(id);
                 const couponData = coupon.data;
 
+                console.log("Fetched coupon data: ", couponData);
+
                 setValue('code', couponData.code);
                 setValue('name', couponData.name);
                 setValue('discountValue', couponData.discountValue);
@@ -79,19 +83,15 @@ const UpdateCoupon = () => {
                 setCouponType(couponData.type);
                 setValue('description', couponData.description);
                 setDiscountType(couponData.discountType);
+                setStoredImageUrl(couponData.imageUrl || '');
 
-                // Set Cloudinary image
-                if (couponData.images && couponData.images.length > 0) {
-                    setImages(couponData.images.map(img => ({ img: img.url, title: img.name })));
-                }
             } catch (error) {
-                console.log("Error fetching coupon details", error);
+                console.error("Error fetching coupon details: ", error);
             }
         };
 
         fetchCouponDetail();
     }, [id, setValue]);
-
 
     // Customers list
     const customers = [
@@ -269,7 +269,11 @@ const UpdateCoupon = () => {
                             />
 
                             <Grid item xs={12}>
-                                <CouponImage onImagesUpload={handleImagesUpload} />
+                                <CouponImage
+                                    onImagesUpload={handleImagesUpload}
+                                    initialImages={[]}
+                                    storedImageUrl={storedImageUrl}
+                                />
                             </Grid>
 
                             <Grid container spacing={2}>

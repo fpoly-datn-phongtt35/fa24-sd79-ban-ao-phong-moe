@@ -21,7 +21,5 @@ public interface CouponService {
     void storeCouponImages(CouponImageReq req);
     long updateCoupon(Long id, CouponRequest couponRequest);
     void deleteCoupon(Long id);
-    Page<CouponResponse> searchCoupons(Date startDate, Date endDate, String name, String code, Pageable pageable);
-    Page<CouponResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate, TodoDiscountType discountType, TodoType type, String status, Pageable pageable);
     void deleteCouponImage(Long couponId);
 }
