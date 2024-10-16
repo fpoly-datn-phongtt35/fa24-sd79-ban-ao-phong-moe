@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, Paper, IconButton, Pagination
+  Container, Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Pagination,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -9,6 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { toast } from 'react-toastify';
 import swal from 'sweetalert';
+import { FormLabel } from 'react-bootstrap';
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -28,6 +36,18 @@ export const Customer = () => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+  const mapGender = (gender) => {
+    switch (gender) {
+      case 'MALE':
+        return 'Nam';
+      case 'FEMALE':
+        return 'Nữ';
+      case 'OTHER':
+        return 'Khác';
+      default:
+        return ''; // or return 'Không xác định' for undefined genders
+    }
   };
 
   const handleSetCustomer = async () => {
@@ -57,7 +77,7 @@ export const Customer = () => {
     }
   };
 
-  
+
 
   useEffect(() => {
     handleSetCustomer();
@@ -126,16 +146,20 @@ export const Customer = () => {
             />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField
-              label="Giới tính"
-              variant="standard"
-              fullWidth
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              size="small"
-            />
+            <FormControl fullWidth variant="standard" size="small">
+              <InputLabel>Giới tính</InputLabel>
+              <Select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                label="Giới tính"
+              >
+                <MenuItem value="MALE">Nam</MenuItem>
+                <MenuItem value="FEMALE">Nữ</MenuItem>
+                <MenuItem value="OTHER">Khác</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          {/* <Grid item xs={12} sm={4}>
             <TextField
               label="Ngày sinh"
               type="date"
@@ -146,7 +170,7 @@ export const Customer = () => {
               onChange={(e) => setBirth(e.target.value)}
               size="small"
             />
-          </Grid>
+          </Grid> */}
         </Grid>
         <Grid container spacing={2} style={{ marginTop: '10px' }} justifyContent="flex-end">
           <Grid item xs={6} sm={2}>
@@ -186,7 +210,7 @@ export const Customer = () => {
                   <TableCell>{customer.firstName}</TableCell>
                   <TableCell>{customer.lastName}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
-                  <TableCell>{customer.gender}</TableCell>
+                  <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
                   <TableCell>{customer.city}, {customer.district}, {customer.ward}, {customer.streetName}</TableCell>
                   <TableCell>{customer.image}</TableCell>
@@ -217,7 +241,7 @@ export const Customer = () => {
         color="primary"
         style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
       />
-      
+
     </Container>
   );
 };
