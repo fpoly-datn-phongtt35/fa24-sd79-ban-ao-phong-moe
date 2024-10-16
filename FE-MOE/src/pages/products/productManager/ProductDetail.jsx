@@ -13,7 +13,7 @@ import { fetchProduct } from "~/apis/productApi";
 import { ModifyProduct } from "~/components/products/ModifyProduct";
 import { TableDetails } from "~/components/products/TableDetails";
 
-export const ProductManagerUpdate = () => {
+export const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const navigate = useNavigate();
   const { id } = useParams();

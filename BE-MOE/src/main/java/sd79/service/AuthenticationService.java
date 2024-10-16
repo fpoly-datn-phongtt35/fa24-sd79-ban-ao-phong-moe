@@ -49,6 +49,7 @@ public class AuthenticationService {
                 .accessToken(access_token)
                 .refreshToken(refresh_token)
                 .userId(user.getId())
+                .authority(user.getRole().getName())
                 .build();
     }
 

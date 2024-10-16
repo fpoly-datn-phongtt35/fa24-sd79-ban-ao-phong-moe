@@ -25,6 +25,7 @@ import sd79.service.UserService;
 import java.util.List;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import static sd79.configuration.Endpoints.ADMIN_ENDPOINTS;
 
 @Configuration
 @EnableWebSecurity
@@ -60,6 +61,7 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
+                        .requestMatchers(ADMIN_ENDPOINTS).hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))

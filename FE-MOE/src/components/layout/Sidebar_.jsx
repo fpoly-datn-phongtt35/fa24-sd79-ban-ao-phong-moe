@@ -9,9 +9,23 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/MainLogo.jpg";
+import { useEffect, useState } from "react";
 
 export const Sidebar_ = (props) => {
   const navigate = useNavigate();
+  const [ADMIN, setAdmin] = useState(false);
+
+  useEffect(() => {
+    setAdmin(getAuthority() == "USER");
+  }, []);
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
 
   const handleLogout = () => {
     swal({
@@ -24,7 +38,6 @@ export const Sidebar_ = (props) => {
       if (confirm) {
         await handleLogoutAPI();
         navigate("/");
-        setUser(null);
       }
     });
   };
@@ -91,6 +104,7 @@ export const Sidebar_ = (props) => {
             </MenuItem>
           </SubMenu>
           <SubMenu
+            disabled={ADMIN}
             label="Sản phẩm"
             icon={
               <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>

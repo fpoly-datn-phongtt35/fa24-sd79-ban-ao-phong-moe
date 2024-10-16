@@ -6,7 +6,7 @@ import { Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import { ImageRotator } from "../common/ImageRotator ";
-import { Button, Grid, Sheet, Table, Typography } from "@mui/joy";
+import { Button, Chip, Grid, Sheet, Table, Typography } from "@mui/joy";
 
 export const TableData = (props) => {
   const [data, setData] = useState();
@@ -104,7 +104,7 @@ export const TableData = (props) => {
                     {value.productQuantity > 0 ? (
                       value.productQuantity
                     ) : (
-                      <Badge bg="danger">Hết hàng</Badge>
+                      <Chip color="danger" variant="soft">Hết hàng</Chip>
                     )}
                   </td>
                   <td className="text-center">
@@ -118,7 +118,7 @@ export const TableData = (props) => {
                   <td className="text-center">
                     <IconButton
                       color="warning"
-                      onClick={() => navigate(`/product/edit/${value.id}`)}
+                      onClick={() => navigate(`/product/view/${value.id}`)}
                     >
                       <EditIcon />
                     </IconButton>
