@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Integer> {
     List<Brand> findByIsDeletedFalse();
+
+    boolean existsBrandByName(String name);
 }

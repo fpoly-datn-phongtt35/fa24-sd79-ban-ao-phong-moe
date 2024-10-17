@@ -4,6 +4,7 @@ import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.ProductModifyRes;
+import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 
 import java.util.List;
@@ -20,6 +21,10 @@ public interface ProductService {
 
     void moveToBin(Long id);
 
+    void restore(Long id);
+
+    void deleteProductForever(Long id);
+
     ProductModifyRes getProductInfo(long id);
 
     void updateProduct(ProductUpdateRequest req, long id);
@@ -31,4 +36,6 @@ public interface ProductService {
     long storeProductDetailAttribute(ProductDetailStoreRequest request);
 
     void removeImageCloudinary(String publicId);
+
+    PageableResponse productArchive(ProductParamFilter param);
 }

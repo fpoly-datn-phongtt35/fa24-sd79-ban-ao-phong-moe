@@ -16,6 +16,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByIsDeletedFalse();
 
+    List<Product> findByIsDeletedTrue();
+
     @Query("FROM Product WHERE isDeleted = false AND name like %:keyword% AND status = :status")
     Page<Product> findAllProductActive(Pageable pageable, String keyword, ProductStatus status);
 

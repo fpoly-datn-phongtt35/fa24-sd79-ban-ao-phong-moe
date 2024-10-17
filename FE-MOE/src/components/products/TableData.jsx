@@ -1,7 +1,9 @@
 import { Box, CircularProgress, IconButton, Switch } from "@mui/material";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { useEffect, useState } from "react";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import SettingsBackupRestoreOutlinedIcon from "@mui/icons-material/SettingsBackupRestoreOutlined";
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { ImageRotator } from "../common/ImageRotator ";
 import { useNavigate } from "react-router-dom";
 import {
@@ -100,7 +102,7 @@ export const TableData = (props) => {
               <th className="text-center">Chất liệu</th>
               <th className="text-center">Xuất xứ</th>
               <th className="text-center">Số lượng</th>
-              <th className="text-center">Trạng thái</th>
+              {!props.restore && <th className="text-center">Trạng thái</th>}
               <th className="text-center">Thao tác</th>
             </tr>
           </thead>
@@ -132,32 +134,58 @@ export const TableData = (props) => {
                       </Chip>
                     )}
                   </td>
-                  <td className="text-center">
-                    <Switch
-                      defaultChecked={value.status === "ACTIVE"}
-                      onClick={() =>
-                        props.onSetStatus(value.id, value.status === "ACTIVE")
-                      }
-                    />
-                  </td>
-                  <td className="text-center">
-                    <Tooltip title="Xem chi tiết sản phẩm" variant="plain">
-                      <IconButton
-                        color="warning"
-                        onClick={() => navigate(`/product/view/${value.id}`)}
+                  {!props.restore && (
+                    <td className="text-center">
+                      <Switch
+                        defaultChecked={value.status === "ACTIVE"}
+                        onClick={() =>
+                          props.onSetStatus(value.id, value.status === "ACTIVE")
+                        }
+                      />
+                    </td>
+                  )}
+                  {props.restore ? (
+                    <td className="text-center">
+                      <Tooltip
+                        title="Khôi phục vào danh sách sản phẩm"
+                        variant="plain"
                       >
-                        <RemoveRedEyeOutlinedIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Chuyển vào kho lưu trữ" variant="plain">
-                      <IconButton
-                        color="primary"
-                        onClick={() => props.onMoveToBin(value.id)}
-                      >
-                        <ArchiveIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </td>
+                        <IconButton
+                          color="primary"
+                          onClick={() => props.onRestoreProduct(value.id)}
+                        >
+                          <SettingsBackupRestoreOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Xóa vĩnh viễn" variant="plain">
+                        <IconButton
+                          color="error"
+                          onClick={() => props.onDeleteForerver(value.id)}
+                        >
+                          <DeleteOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </td>
+                  ) : (
+                    <td className="text-center">
+                      <Tooltip title="Xem chi tiết sản phẩm" variant="plain">
+                        <IconButton
+                          color="warning"
+                          onClick={() => navigate(`/product/view/${value.id}`)}
+                        >
+                          <EditNoteTwoToneIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Chuyển vào kho lưu trữ" variant="plain">
+                        <IconButton
+                          color="primary"
+                          onClick={() => props.onMoveToBin(value.id)}
+                        >
+                          <ArchiveIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </td>
+                  )}
                 </tr>
               ))}
           </tbody>

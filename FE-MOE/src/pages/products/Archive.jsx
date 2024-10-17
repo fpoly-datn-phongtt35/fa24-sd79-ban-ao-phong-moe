@@ -12,17 +12,19 @@ import {
 import { useEffect, useState } from "react";
 import HomeIcon from "@mui/icons-material/Home";
 import {
-  fetchAllProducts,
-  moveToBin,
   changeStatus,
   attributeProducts,
+  fetchAllProductArchives,
+  productRestore,
+  deleteForever,
 } from "~/apis/productApi";
 import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; 
 
-export const Product = () => {
+export const Archive = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(null);
@@ -64,7 +66,7 @@ export const Product = () => {
   };
 
   const handleSetProducts = async () => {
-    const res = await fetchAllProducts(
+    const res = await fetchAllProductArchives(
       currentPage,
       pageSize,
       keyword,
@@ -122,16 +124,33 @@ export const Product = () => {
     setOrigin("");
   };
 
-  const onMoveToBin = (id) => {
+  const handleDeleteForerver = (id) => {
     swal({
       title: "Xác nhận",
-      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
+      text: "Xóa vĩnh viễn sản phẩm này không?",
       icon: "warning",
       buttons: true,
       dangerMode: true,
     }).then((confirm) => {
       if (confirm) {
-        moveToBin(id).then(() => {
+        deleteForever(id).then(() => {
+          setCurrentPage(1);
+          handleSetProducts();
+        });
+      }
+    });
+  };
+
+  const handleRestoreProduct = (id) => {
+    swal({
+      title: "Xác nhận",
+      text: "Bạn có muốn khôi phục sản phẩm này không?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((confirm) => {
+      if (confirm) {
+        productRestore(id).then(() => {
           setCurrentPage(1);
           handleSetProducts();
         });
@@ -180,13 +199,13 @@ export const Product = () => {
             Trang chủ
           </Link>
           <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-            Quản lý sản phẩm
+            Kho lưu trữ sản phẩm
           </Typography>
         </Breadcrumbs>
       </Grid>
 
       <Filter
-        btnAdd={true}
+        btnAdd={false}
         onChangeSearch={onChangeSearch}
         keyword={keyword}
         status={status}
@@ -204,9 +223,10 @@ export const Product = () => {
       />
 
       <TableData
-        restore={false}
+        restore={true}
         data={products.content}
-        onMoveToBin={onMoveToBin}
+        onRestoreProduct={handleRestoreProduct}
+        onDeleteForerver={handleDeleteForerver}
         onSetStatus={onSetStatus}
         onSetPageSize={handleSetPageSize}
       />

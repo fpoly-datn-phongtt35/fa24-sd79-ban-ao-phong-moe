@@ -48,18 +48,20 @@ export const Filter = (props) => {
             size="sm"
             onClick={props.clearFilter}
             startDecorator={<RefreshIcon />}
-            sx={{marginRight: 1}}
+            sx={{ marginRight: 1 }}
           >
             Làm mới
           </Button>
-          <Button
-            variant="soft"
-            size="sm"
-            onClick={() => navigate("/product/new")}
-            startDecorator={<AddIcon />}
-          >
-            Thêm sản phẩm
-          </Button>
+          {props.btnAdd && (
+            <Button
+              variant="soft"
+              size="sm"
+              onClick={() => navigate("/product/new")}
+              startDecorator={<AddIcon />}
+            >
+              Thêm sản phẩm
+            </Button>
+          )}
         </Grid>
       </Grid>
       <Box>

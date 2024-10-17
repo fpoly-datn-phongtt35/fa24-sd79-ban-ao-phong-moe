@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
-export const Header = (props) => {
+export const Header_Admin = (props) => {
   const [username, setUsername] = useState("Unknown");
   const [avatar, setAvatar] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);

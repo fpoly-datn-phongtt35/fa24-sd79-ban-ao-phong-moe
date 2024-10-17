@@ -110,6 +110,9 @@ export const ProductDetail = () => {
         >
           Quản lý sản phẩm
         </Link>
+        <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Thông tin sản phẩm
+          </Typography>
       </Breadcrumbs>
       <Box marginTop={3}>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>

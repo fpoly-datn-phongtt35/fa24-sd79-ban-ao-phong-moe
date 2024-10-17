@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ColorRepository extends JpaRepository<Color, Integer> {
     List<Color> findByIsDeletedFalse();
+
+    boolean existsColorByName(String name);
 }

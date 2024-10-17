@@ -53,6 +53,51 @@ export const fetchAllProducts = async (
     .then((res) => res.data);
 };
 
+export const fetchAllProductArchives = async (
+  pageNo,
+  pageSize,
+  keyword,
+  status,
+  category,
+  brand,
+  material,
+  origin
+) => {
+  let uri = "/product/archive?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (category) {
+    queryParams.push(`category=${category}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+  if (material) {
+    queryParams.push(`material=${material}`);
+  }
+  if (origin) {
+    queryParams.push(`origin=${origin}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
 export const fetchProduct = async (id) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/product/${id}`)
@@ -78,6 +123,22 @@ export const postProductImage = async (data) => {
 export const moveToBin = async (id) => {
   return await authorizedAxiosInstance
     .patch(`${API_ROOT}/product/move-to-bin/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const productRestore = async (id) => {
+  return await authorizedAxiosInstance
+    .patch(`${API_ROOT}/product/restore/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const deleteForever = async (id) => {
+  return await authorizedAxiosInstance
+    .delete(`${API_ROOT}/product/delete-forever/${id}`)
     .then((res) => {
       toast.success(res.data.message);
     });
@@ -137,4 +198,3 @@ export const removeImage = async (publicId) => {
       toast.warning(res?.data?.message);
     });
 };
-

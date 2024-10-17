@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface SizeRepository extends JpaRepository<Size, Integer> {
     List<Size> findByIsDeletedFalse();
+
+    boolean existsSizeByName(String name);
 }

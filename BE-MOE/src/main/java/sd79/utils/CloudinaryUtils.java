@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CloudinaryUpload {
+public class CloudinaryUtils {
 
     private final Cloudinary cloudinary;
 

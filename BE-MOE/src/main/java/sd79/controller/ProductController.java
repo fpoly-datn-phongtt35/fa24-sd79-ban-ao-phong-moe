@@ -33,6 +33,15 @@ public class ProductController {
     }
 
     @Operation(
+            summary = "Get all product listings",
+            description = "Get the entire product list (updating search and pagination functions)"
+    )
+    @GetMapping("/archive")
+    public ResponseData<?> getAllProductArchives(ProductParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.productArchive(param));
+    }
+
+    @Operation(
             summary = "Create Product",
             description = "Add a product into database"
     )
@@ -68,7 +77,27 @@ public class ProductController {
     @PatchMapping("/move-to-bin/{id}")
     public ResponseData<?> moveToBin(@PathVariable Long id) {
         this.productService.moveToBin(id);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Move to bin successfully");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sản phẩm đã lưu ở kho lưu trữ");
+    }
+
+    @Operation(
+            summary = "Restore product",
+            description = "Switch the product to isDelete = false and display to form"
+    )
+    @PatchMapping("/restore/{id}")
+    public ResponseData<?> restore(@PathVariable Long id) {
+        this.productService.restore(id);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sản phẩm đã được khôi phục");
+    }
+
+    @Operation(
+            summary = "Restore product",
+            description = "Switch the product to isDelete = false and display to form"
+    )
+    @DeleteMapping("/delete-forever/{id}")
+    public ResponseData<?> deleteForever(@PathVariable Long id) {
+        this.productService.deleteProductForever(id);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }
 
     @Operation(
@@ -124,7 +153,7 @@ public class ProductController {
             description = "Remove image from database and cloudinary"
     )
     @DeleteMapping("/remove-image")
-    public ResponseData<?> removeImage(@RequestParam String publicId){
+    public ResponseData<?> removeImage(@RequestParam String publicId) {
         this.productService.removeImageCloudinary(publicId);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }

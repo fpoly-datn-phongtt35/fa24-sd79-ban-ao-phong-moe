@@ -1,9 +1,27 @@
 import * as React from "react";
-import { Grid2, IconButton, DialogTitle, DialogContent, Dialog, DialogActions, TextField, Button } from "@mui/material";
+import {
+  Button,
+  DialogTitle,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Input,
+  Modal,
+  ModalDialog,
+  Stack,
+} from "@mui/joy";
+import { useForm } from "react-hook-form";
+import { IconButton } from "@mui/material";
 
 export const DialogIconUpdate = (props) => {
-  const [value, setValue] = React.useState(props.value);
   const [open, setOpen] = React.useState(false);
+  const [defaultValue, setDefaultValue] = React.useState(props.value);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -13,103 +31,124 @@ export const DialogIconUpdate = (props) => {
     setOpen(false);
   };
 
+  const onSubmit = async (item) => {
+    const data = {
+      name: item.name,
+      length: item.length,
+      width: item.width,
+      sleeve: item.sleeve,
+      userId: localStorage.getItem("userId"),
+    };
+    props.handleSubmit(data, props.id);
+    handleClose();
+  };
   return (
     <React.Fragment>
       <IconButton color={props.color} onClick={handleClickOpen}>
         {props.icon}
       </IconButton>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: (event) => {
-            event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const formJson = Object.fromEntries(formData.entries());
-            const data = {
-              name: formJson.name,
-              length: formJson.length,
-              width: formJson.width,
-              sleeve: formJson.sleeve,
-              userId: localStorage.getItem("userId"),
-            };
-            props.handleSubmit(data, props.id);
-            handleClose();
-          },
-        }}
-      >
-        <DialogTitle>{props.title}</DialogTitle>
-        <DialogContent>
-        <Grid2 container spacing={2}>
-            <Grid2 size={6}>
-            <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="name"
-                name="name"
-                label="Size"
-                type="text"
-                fullWidth
-                variant="standard"
-                value={value.name}
-                onChange={(event) => setValue({...value, name: event.target.value })}
-              />
-            </Grid2>
-            <Grid2 size={6}>
-            <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="sleeve"
-                name="sleeve"
-                label="Chiều dài tay áo"
-                type="number"
-                fullWidth
-                variant="standard"
-                value={value.sleeve}
-                onChange={(event) => setValue({...value, sleeve: event.target.value })}
-              />
-            </Grid2>
-            <Grid2 size={6}>
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="length"
-                name="length"
-                label="Chiều dài"
-                type="text"
-                fullWidth
-                variant="standard"
-                value={value.length}
-                onChange={(event) => setValue({...value, length: event.target.value })}
-              />
-            </Grid2>
-
-            <Grid2 size={6}>
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="width"
-                name="width"
-                label="Chiều rộng"
-                type="text"
-                fullWidth
-                variant="standard"
-                value={value.width}
-                onChange={(event) => setValue({...value, width: event.target.value })}
-              />
-            </Grid2>
-          </Grid2>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Hủy</Button>
-          <Button type="submit">Lưu</Button>
-        </DialogActions>
-      </Dialog>
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <ModalDialog>
+          <DialogTitle>{props.title}</DialogTitle>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={2} direction="row">
+              <FormControl error={!!errors?.name}>
+                <FormLabel required>Kích thước</FormLabel>
+                <Input
+                  defaultValue={defaultValue.name}
+                  placeholder={props.label}
+                  {...register("name", {
+                    required: true,
+                  })}
+                />
+                {errors.name && (
+                  <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
+                )}
+              </FormControl>
+              <FormControl error={!!errors?.length}>
+                <FormLabel required>Chiều dài</FormLabel>
+                <Input
+                  defaultValue={defaultValue.length}
+                  type="number"
+                  placeholder={props.label}
+                  {...register("length", {
+                    required: {
+                      value: true,
+                      message: "Vui lòng nhập chiều dài!",
+                    },
+                    min: {
+                      value: 1,
+                      message: "Chiều dài phải lớn hơn 0",
+                    },
+                    max: {
+                      value: 100,
+                      message: "Dữ liệu không hợp lệ!",
+                    },
+                  })}
+                />
+                {errors.length && (
+                  <FormHelperText>{errors.length.message}</FormHelperText>
+                )}
+              </FormControl>
+            </Stack>
+            <Stack spacing={2} direction="row" marginTop={2}>
+              <FormControl error={!!errors?.width}>
+                <FormLabel required>Chiều rộng</FormLabel>
+                <Input
+                  defaultValue={defaultValue.width}
+                  type="number"
+                  placeholder={props.label}
+                  {...register("width", {
+                    required: {
+                      value: true,
+                      message: "Vui lòng nhập chiều rộng!",
+                    },
+                    min: {
+                      value: 1,
+                      message: "Chiều rộng phải lớn hơn 0",
+                    },
+                    max: {
+                      value: 100,
+                      message: "Dữ liệu không hợp lệ!",
+                    },
+                  })}
+                />
+                {errors.width && (
+                  <FormHelperText>{errors.width.message}</FormHelperText>
+                )}
+              </FormControl>
+              <FormControl error={!!errors?.sleeve}>
+                <FormLabel required>Chiều dài tay áo</FormLabel>
+                <Input
+                  defaultValue={defaultValue.sleeve}
+                  type="number"
+                  placeholder={props.label}
+                  {...register("sleeve", {
+                    required: {
+                      value: true,
+                      message: "Vui lòng nhập chiều dài tay áo!",
+                    },
+                    min: {
+                      value: 1,
+                      message: "Chiều dài tay áo phải lớn hơn 0",
+                    },
+                    max: {
+                      value: 100,
+                      message: "Dữ liệu không hợp lệ!",
+                    },
+                  })}
+                />
+                {errors.sleeve && (
+                  <FormHelperText>{errors.sleeve.message}</FormHelperText>
+                )}
+              </FormControl>
+            </Stack>
+            <Stack marginTop={2}>
+              <Button type="submit">Lưu</Button>
+            </Stack>
+          </form>
+        </ModalDialog>
+      </Modal>
     </React.Fragment>
   );
 };
