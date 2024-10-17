@@ -118,5 +118,15 @@ public class ProductController {
     public ResponseData<?> storeProductDetailAttribute(@RequestBody ProductDetailStoreRequest item) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.productService.storeProductDetailAttribute(item));
     }
+
+    @Operation(
+            summary = "Remove image",
+            description = "Remove image from database and cloudinary"
+    )
+    @DeleteMapping("/remove-image")
+    public ResponseData<?> removeImage(@RequestParam String publicId){
+        this.productService.removeImageCloudinary(publicId);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
+    }
 }
     

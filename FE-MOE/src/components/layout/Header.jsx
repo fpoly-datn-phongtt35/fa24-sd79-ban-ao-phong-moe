@@ -7,8 +7,7 @@ import {
   MenuItem,
   Tooltip,
 } from "@mui/material";
-import ReorderIcon from '@mui/icons-material/Reorder';
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import MenuIcon from "@mui/icons-material/Menu";
 
 export const Header = (props) => {
   const [username, setUsername] = useState("Unknown");
@@ -31,7 +30,11 @@ export const Header = (props) => {
   return (
     <header className="header">
       <div className="logo">
-        {props.collapsed ?  <PlaylistPlayIcon size='sm' sx={{color: '#0071bd'}} onClick={props.onCollapsed} /> :  <ReorderIcon size='sm' sx={{color: '#0071bd'}} onClick={props.onCollapsed} />}
+        <MenuIcon
+          size="sm"
+          sx={{ color: "#0071bd" }}
+          onClick={props.onCollapsed}
+        />
       </div>
       <div className="header-left">
         <Box sx={{ marginLeft: "5px" }}>

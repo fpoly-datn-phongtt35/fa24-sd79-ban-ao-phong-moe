@@ -1,16 +1,23 @@
 import { Box, CircularProgress, IconButton, Switch } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import AddIcon from "@mui/icons-material/Add";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import { useEffect, useState } from "react";
-import { Badge } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import { ImageRotator } from "../common/ImageRotator ";
-import { Button, Chip, Grid, Sheet, Table, Typography } from "@mui/joy";
+import { useNavigate } from "react-router-dom";
+import {
+  Chip,
+  Grid,
+  Option,
+  Select,
+  Sheet,
+  Stack,
+  Table,
+  Tooltip,
+  Typography,
+} from "@mui/joy";
 
 export const TableData = (props) => {
   const [data, setData] = useState();
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,14 +55,30 @@ export const TableData = (props) => {
           </Typography>
         </Grid>
         <Grid size={2}>
-          <Button
-            variant="plain"
-            size="sm"
-            onClick={() => navigate("/product/new")}
-            startDecorator={<AddIcon />}
+          <Stack
+            spacing={1}
+            direction="row"
+            sx={{
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
-            Thêm sản phẩm
-          </Button>
+            <Typography color="neutral" level="title-md" noWrap variant="plain">
+              Hiển thị:
+            </Typography>
+            <Select
+              defaultValue={3}
+              sx={{ width: "80px" }}
+              onChange={(event, value) => props.onSetPageSize(value)}
+            >
+              <Option value={3}>3</Option>
+              <Option value={5}>5</Option>
+              <Option value={10}>10</Option>
+              <Option value={25}>25</Option>
+              <Option value={50}>50</Option>
+              <Option value={100}>100</Option>
+            </Select>
+          </Stack>
         </Grid>
       </Grid>
       <Sheet
@@ -104,7 +127,9 @@ export const TableData = (props) => {
                     {value.productQuantity > 0 ? (
                       value.productQuantity
                     ) : (
-                      <Chip color="danger" variant="soft">Hết hàng</Chip>
+                      <Chip color="danger" variant="soft">
+                        Hết hàng
+                      </Chip>
                     )}
                   </td>
                   <td className="text-center">
@@ -116,18 +141,22 @@ export const TableData = (props) => {
                     />
                   </td>
                   <td className="text-center">
-                    <IconButton
-                      color="warning"
-                      onClick={() => navigate(`/product/view/${value.id}`)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="gray"
-                      onClick={() => props.onMoveToBin(value.id)}
-                    >
-                      <ArchiveIcon />
-                    </IconButton>
+                    <Tooltip title="Xem chi tiết sản phẩm" variant="plain">
+                      <IconButton
+                        color="warning"
+                        onClick={() => navigate(`/product/view/${value.id}`)}
+                      >
+                        <RemoveRedEyeOutlinedIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Chuyển vào kho lưu trữ" variant="plain">
+                      <IconButton
+                        color="primary"
+                        onClick={() => props.onMoveToBin(value.id)}
+                      >
+                        <ArchiveIcon />
+                      </IconButton>
+                    </Tooltip>
                   </td>
                 </tr>
               ))}

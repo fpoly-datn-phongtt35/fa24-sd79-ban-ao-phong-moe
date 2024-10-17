@@ -10,6 +10,7 @@ import { fetchAllSizes } from "./sizesApi";
 
 export const fetchAllProducts = async (
   pageNo,
+  pageSize,
   keyword,
   status,
   category,
@@ -22,6 +23,9 @@ export const fetchAllProducts = async (
 
   if (pageNo !== null && pageNo !== undefined) {
     queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
   }
   if (keyword) {
     queryParams.push(`keyword=${keyword}`);
@@ -125,3 +129,12 @@ export const storeProductDetailAttribute = async (data) => {
       toast.success(res?.data?.message);
     });
 };
+
+export const removeImage = async (publicId) => {
+  return await authorizedAxiosInstance
+    .delete(`${API_ROOT}/product/remove-image?publicId=${publicId}`)
+    .then((res) => {
+      toast.warning(res?.data?.message);
+    });
+};
+

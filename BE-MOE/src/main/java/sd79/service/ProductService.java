@@ -29,4 +29,6 @@ public interface ProductService {
     void updateAttributeProductDetail(List<ProductDetailModify> items);
 
     long storeProductDetailAttribute(ProductDetailStoreRequest request);
+
+    void removeImageCloudinary(String publicId);
 }

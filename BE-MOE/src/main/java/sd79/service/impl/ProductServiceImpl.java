@@ -19,6 +19,7 @@ import sd79.utils.CloudinaryUpload;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static sd79.utils.UserUtils.getUserById;
@@ -97,8 +98,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = this.getProductById(req.getProductId());
         for (MultipartFile file : req.getImages()) {
             ProductImage productImage = new ProductImage();
+            Map<String, String> uploadResult = this.cloudinaryUpload.upload(file);
             productImage.setProduct(product);
-            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
+            productImage.setImageUrl(uploadResult.get("url"));
+            productImage.setPublicId(uploadResult.get("publicId"));
             this.productImageRepository.save(productImage);
         }
     }
@@ -172,6 +175,12 @@ public class ProductServiceImpl implements ProductService {
                 .build()).getId();
     }
 
+    @Override
+    public void removeImageCloudinary(String publicId) {
+        this.cloudinaryUpload.removeByPublicId(publicId);
+        this.productImageRepository.deleteByPublicId(publicId);
+    }
+
     private Product getProductById(long id) {
         return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
@@ -196,7 +205,7 @@ public class ProductServiceImpl implements ProductService {
                 .brand(BrandResponse.builder().id(product.getBrand().getId()).name(product.getBrand().getName()).build())
                 .material(MaterialResponse.builder().id(product.getMaterial().getId()).name(product.getMaterial().getName()).build())
                 .origin(product.getOrigin())
-                .imageUrl(convertToUrl(product.getProductImages()))
+                .imageUrl(convertToImageResponse(product.getProductImages()))
                 .created_by(product.getCreatedBy().getUsername())
                 .modified_by(product.getUpdatedBy().getUsername())
                 .created_at(product.getCreateAt())
@@ -221,10 +230,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    private List<String> convertToUrl(List<ProductImage> images) {
-        return images.stream()
-                .map(ProductImage::getImageUrl)
-                .collect(Collectors.toList());
+    private List<ImageResponse> convertToImageResponse(List<ProductImage> images) {
+        List<ImageResponse> imageResponses = new ArrayList<>();
+        images.forEach(imageResponse -> {
+            ImageResponse image = ImageResponse.builder()
+                    .publicId(imageResponse.getPublicId())
+                    .url(imageResponse.getImageUrl())
+                    .build();
+            imageResponses.add(image);
+        });
+        return imageResponses;
     }
 
 }

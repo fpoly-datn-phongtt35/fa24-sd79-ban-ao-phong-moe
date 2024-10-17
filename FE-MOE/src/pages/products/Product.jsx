@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 export const Product = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("ALL");
   const [category, setCategory] = useState("");
@@ -38,7 +39,16 @@ export const Product = () => {
 
   useEffect(() => {
     handleSetProducts();
-  }, [currentPage, keyword, status, category, brand, material, origin]);
+  }, [
+    currentPage,
+    pageSize,
+    keyword,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+  ]);
 
   useEffect(() => {
     fetchAttributes();
@@ -54,7 +64,16 @@ export const Product = () => {
   };
 
   const handleSetProducts = async () => {
-    const res = await fetchAllProducts(currentPage, keyword, status, category, brand, material, origin);
+    const res = await fetchAllProducts(
+      currentPage,
+      pageSize,
+      keyword,
+      status,
+      category,
+      brand,
+      material,
+      origin
+    );
     setProducts(res.data);
   };
 
@@ -89,6 +108,10 @@ export const Product = () => {
     setOrigin(e);
   };
 
+  const handleSetPageSize = (value) => {
+    setCurrentPage(1);
+    setPageSize(value);
+  }
   const clearFilter = () => {
     setCurrentPage(1);
     setKeyword("");
@@ -97,7 +120,7 @@ export const Product = () => {
     setBrand("");
     setMaterial("");
     setOrigin("");
-  }
+  };
 
   const onMoveToBin = (id) => {
     swal({
@@ -181,6 +204,7 @@ export const Product = () => {
         data={products.content}
         onMoveToBin={onMoveToBin}
         onSetStatus={onSetStatus}
+        onSetPageSize={handleSetPageSize}
       />
       <Box
         display="flex"
@@ -189,7 +213,7 @@ export const Product = () => {
         padding={3}
       >
         {products.totalPages > 1 && (
-          <Stack spacing={2}>
+          <Stack>
             <Pagination
               count={products.totalPages}
               page={currentPage}

@@ -1,4 +1,4 @@
-package sd79.dto.response;
+package sd79.dto.response.auth;
 
 import lombok.Builder;
 import lombok.Getter;
