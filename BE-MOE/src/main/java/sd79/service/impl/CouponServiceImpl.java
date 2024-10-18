@@ -101,7 +101,7 @@ public class CouponServiceImpl implements CouponService {
                             coupon.getDiscountValue(), coupon.getDiscountType(),
                             coupon.getStartDate(), coupon.getEndDate()
                     );
-                 email.sendEmail(null, subject, body);
+                 email.sendEmail(customer.getUser().getEmail(), subject, body);
                 } catch (Exception e) {
                     System.out.println("THAT BAI");
                 }

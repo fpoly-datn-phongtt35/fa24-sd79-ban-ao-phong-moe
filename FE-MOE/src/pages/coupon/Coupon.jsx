@@ -26,7 +26,7 @@ const Coupon = () => {
   const [discountType, setDiscountType] = useState('');
   const [type, setType] = useState(''); 
   const [status, setStatus] = useState('');
-  const [sort, setSort] = useState('asc');
+  const [sort, setSort] = useState('desc');
   const [sortBy, setSortBy] = useState('');
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);

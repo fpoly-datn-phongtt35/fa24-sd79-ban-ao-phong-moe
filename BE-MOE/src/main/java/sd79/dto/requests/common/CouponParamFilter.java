@@ -2,7 +2,6 @@ package sd79.dto.requests.common;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 
@@ -18,7 +17,5 @@ public class CouponParamFilter {
     private int pageNo = 1;
     private int pageSize = 5;
     private String sort = "id";
-    private String direction = "ASC";
-
-
+    private String direction = "DESC";
 }
