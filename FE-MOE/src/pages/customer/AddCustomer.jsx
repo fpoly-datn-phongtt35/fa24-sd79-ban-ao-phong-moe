@@ -22,6 +22,11 @@ export const AddCustomer = () => {
     dateOfBirth: '',
     customerAddress: '',
     image: '',
+    address: [{
+      city: '',
+      district: '',
+      ward: '',
+      streetName: ''}],
     createdAt: new Date(),
     updatedAt: new Date()
   });
@@ -124,6 +129,7 @@ export const AddCustomer = () => {
               <TextField
                 label="Ảnh"
                 name="image"
+                type='text'
                 value={customerData.image}
                 onChange={handleChange}
                 fullWidth
@@ -131,9 +137,39 @@ export const AddCustomer = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Địa chỉ"  
-                name="city"
-                value={customerData.city}
+                label="Thành Phố"  
+                name="city"      
+                value={customerData.address.city}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Huyện"  
+                name="district"
+                value={customerData.address.district}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Xã/ Phường"  
+                name="ward"
+                value={customerData.address.ward}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Tên Đường"  
+                name="streetName"
+                value={customerData.address.streetName}
                 onChange={handleChange}
                 fullWidth
                 required

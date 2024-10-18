@@ -17,7 +17,6 @@ export const fetchAllCoupon = async (
   let uri = "/coupon?";
   let queryParams = [];
 
-  console.log(pageNo)
   if (pageNo !== null && pageNo !== undefined) {
     queryParams.push(`pageNo=${pageNo}`);
   }

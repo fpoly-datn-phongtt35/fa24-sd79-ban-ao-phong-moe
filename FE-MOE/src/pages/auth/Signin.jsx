@@ -43,7 +43,7 @@ function Login() {
         </div>
 
         <p className="text-center text-muted">
-          Username: sysadmin | Password: sysadmin
+          Username: sysadmin | Password: Admin@
         </p>
 
         <form className="mt-4">

@@ -4,13 +4,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CustomerReq;
+import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
+import sd79.enums.Gender;
 import sd79.model.Customer;
 import sd79.service.CustomerService;
 
@@ -27,14 +33,22 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    // Lấy danh sách khách hàng
+    // Lấy danh sách khách hàng (có phân trang)
     @Operation(
-            summary = "Get All Customers",
-            description = "Retrieve all customers from the database"
+            summary = "Get All Customers (Paginated)",
+            description = "Retrieve paginated list of customers from the database"
     )
     @GetMapping
-    public ResponseData<?> getAllCustomers() {
-        return new ResponseData<>(HttpStatus.OK.value(), "List of customers", customerService.getAll());
+    public ResponseData<?> getAllCustomers(
+            @RequestParam(defaultValue = "0") int page,  // Page number
+            @RequestParam(defaultValue = "5") int size,  // Page size
+            @RequestParam(defaultValue = "id") String sortBy,  // Sorting criteria
+            @RequestParam(defaultValue = "asc") String sortDir  // Sorting direction (asc or desc)
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<CustomerResponse> customers = customerService.getAll(pageable);
+        return new ResponseData<>(HttpStatus.OK.value(), "List of customers (paginated)", customers);
     }
 
     // Lấy thông tin khách hàng theo ID
@@ -78,21 +92,40 @@ public class CustomerController {
         return new ResponseData<>(HttpStatus.OK.value(), "Customer deleted successfully");
     }
 
-
     @Operation(
-            summary = "Search Customers by Keyword and Date",
-            description = "Search for customers based on keyword and date range"
+            summary = "Search Customers",
+            description = "Search customers by keyword, gender, and date of birth with pagination"
     )
-    @GetMapping("/searchKeywordAndDate")
-    public ResponseData<?> searchCustomersByKeywordAndDate(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate) {
+    @GetMapping("/search")
+    public ResponseData<?> searchCustomers(
+            @RequestParam(required = false) String keyword,  // Search keyword (can be null)
+            @RequestParam(required = false) String genderStr,  // Gender as String (can be null)
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateOfBirth,  // Date of birth (can be null)
+            @RequestParam(defaultValue = "0") int page,  // Page number
+            @RequestParam(defaultValue = "5") int size,  // Page size
+            @RequestParam(defaultValue = "id") String sortBy,  // Sorting criteria
+            @RequestParam(defaultValue = "asc") String sortDir  // Sorting direction (asc or desc)
+    ) {
+        // Convert gender string to Gender enum, handling null and invalid cases
+        Gender gender = null;
+        if (genderStr != null) {
+            try {
+                gender = Gender.valueOf(genderStr.toUpperCase());  // Convert to enum, handle case insensitivity
+            } catch (IllegalArgumentException e) {
+                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Invalid gender value", null);
+            }
+        }
 
-        List<Customer> results = customerService.findByKeywordAndDate(keyword, startDate, endDate);
-        return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
+        // Set up pagination and sorting
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Call the service layer to search customers
+        Page<CustomerResponse> customers = customerService.searchCustomers(keyword, gender, dateOfBirth, pageable);
+
+        // Return the paginated search results
+        return new ResponseData<>(HttpStatus.OK.value(), "Search results (paginated)", customers);
     }
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

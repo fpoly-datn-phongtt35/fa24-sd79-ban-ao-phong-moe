@@ -8,10 +8,12 @@ import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
+import sd79.model.Customer;
 
 import javax.swing.plaf.MenuBarUI;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -61,6 +63,6 @@ public class CouponRequest {
     @NotNull(message = "User id must be not null!")
     private Long userId;
 
-//    @NotNull(message = "Images must be not null!")
-//    private MultipartFile images;
+    private List<Long> customerIds;
+
 }

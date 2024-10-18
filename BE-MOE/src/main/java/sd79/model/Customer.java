@@ -54,4 +54,8 @@ public class Customer {
     @JoinColumn(name = "address_id")
     private CustomerAddress customerAddress;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private User user;
+
 }

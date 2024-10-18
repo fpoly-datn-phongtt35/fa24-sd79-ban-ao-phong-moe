@@ -248,8 +248,8 @@ const UpdateCoupon = () => {
                                     <Grid item xs={6}>
                                         <RadioGroup value={couponType} onChange={(e) => setCouponType(e.target.value)}>
                                             <div className='flex'>
-                                                <FormControlLabel value="public" control={<Radio />} label="Công khai" />
-                                                <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
+                                                <FormControlLabel value="PUBLIC" control={<Radio />} label="Công khai" />
+                                                <FormControlLabel value="PERSONAL" control={<Radio />} label="Cá nhân" />
                                             </div>
                                         </RadioGroup>
                                     </Grid>
