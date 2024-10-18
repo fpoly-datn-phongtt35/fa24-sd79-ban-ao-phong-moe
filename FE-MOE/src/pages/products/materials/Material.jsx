@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import debounce from "lodash.debounce";
 import Container from "@mui/material/Container";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -25,13 +26,22 @@ import {
 
 export const Material = () => {
   const [materials, setMaterials] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetMaterials();
-  }, []);
+  }, [keyword]);
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
+  };
 
   const handleSetMaterials = async () => {
-    const res = await fetchAllMaterials();
+    const res = await fetchAllMaterials(keyword);
     setMaterials(res.data);
   };
 
@@ -75,6 +85,7 @@ export const Material = () => {
             <FormControl>
               <FormLabel>Tìm kiếm</FormLabel>
               <Input
+                onChange={onChangeSearch}
                 startDecorator={<SearchIcon />}
                 placeholder="Tìm kiếm chất liệu"
                 fullWidth

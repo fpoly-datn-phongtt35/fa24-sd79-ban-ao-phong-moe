@@ -6,6 +6,7 @@ import {
   putCategory,
   deleteCategory,
 } from "~/apis/categoriesApi";
+import debounce from "lodash.debounce";
 import AddIcon from "@mui/icons-material/Add";
 import FolderDeleteTwoToneIcon from "@mui/icons-material/FolderDeleteTwoTone";
 import SearchIcon from "@mui/icons-material/Search";
@@ -25,13 +26,22 @@ import {
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetCategories();
-  }, []);
+  }, [keyword]);
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
+  };
 
   const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
+    const res = await fetchAllCategories(keyword);
     setCategories(res.data);
   };
 
@@ -75,6 +85,7 @@ export const Categories = () => {
             <FormControl>
               <FormLabel>Tìm kiếm</FormLabel>
               <Input
+                onChange={onChangeSearch}
                 startDecorator={<SearchIcon />}
                 placeholder="Tìm kiếm danh mục"
                 fullWidth

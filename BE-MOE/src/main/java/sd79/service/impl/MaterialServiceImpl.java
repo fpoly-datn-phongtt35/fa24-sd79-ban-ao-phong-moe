@@ -29,8 +29,8 @@ public class MaterialServiceImpl implements MaterialService {
     private final UserRepository userRepository;
 
     @Override
-    public List<MaterialResponse> getAllMaterials() {
-        return this.materialRepository.findByIsDeletedFalse().stream().map(this::convertToMaterialResponse).toList();
+    public List<MaterialResponse> getAllMaterials(String keyword) {
+        return this.materialRepository.findMaterialsByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToMaterialResponse).toList();
     }
 
     @Transactional
@@ -61,7 +61,6 @@ public class MaterialServiceImpl implements MaterialService {
         this.materialRepository.save(material);
     }
 
-    @Transactional
     @Override
     public void isDeleteBrand(Integer id) {
         Material material = this.getMaterialById(id);

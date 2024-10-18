@@ -23,8 +23,8 @@ public class ColorController {
             description = "Get all color from database"
     )
     @GetMapping
-    public ResponseData<?> getAllColors(){
-        return new ResponseData<>(HttpStatus.OK.value(), "Get success",  this.colorService.getAllColors());
+    public ResponseData<?> getAllColors(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get success", this.colorService.getAllColors(keyword));
     }
 
     @Operation(
@@ -32,7 +32,7 @@ public class ColorController {
             description = "New color into database"
     )
     @PostMapping
-    public ResponseData<?> storeColor(@Valid @RequestBody ColorRequest request){
+    public ResponseData<?> storeColor(@Valid @RequestBody ColorRequest request) {
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công", this.colorService.storeColor(request));
     }
 
@@ -41,7 +41,7 @@ public class ColorController {
             description = "Update color into database"
     )
     @PutMapping("/edit/{id}")
-    public ResponseData<?> updateColor(@Valid @RequestBody ColorRequest request, @PathVariable int id){
+    public ResponseData<?> updateColor(@Valid @RequestBody ColorRequest request, @PathVariable int id) {
         this.colorService.updateColor(request, id);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
     }
@@ -51,7 +51,7 @@ public class ColorController {
             description = "Set is delete of color to true and hidde from from"
     )
     @PatchMapping("/is-delete/{id}")
-    public ResponseData<?> deleteColor(@PathVariable Integer id){
+    public ResponseData<?> deleteColor(@PathVariable Integer id) {
         this.colorService.isDeleteColor(id);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }

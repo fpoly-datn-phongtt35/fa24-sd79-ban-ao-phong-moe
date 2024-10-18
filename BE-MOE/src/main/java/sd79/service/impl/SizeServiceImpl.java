@@ -25,8 +25,8 @@ public class SizeServiceImpl implements SizeService {
     private final UserRepository userRepository;
 
     @Override
-    public List<SizeResponse> getAllSizes() {
-        return this.sizeRepository.findByIsDeletedFalse().stream().map(this::convertToSizeResponse).toList();
+    public List<SizeResponse> getAllSizes(String keyword) {
+        return this.sizeRepository.findSizesByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToSizeResponse).toList();
     }
 
     @Override

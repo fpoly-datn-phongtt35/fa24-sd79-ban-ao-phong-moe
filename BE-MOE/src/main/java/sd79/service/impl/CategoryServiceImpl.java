@@ -28,8 +28,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final UserRepository userRepository;
 
     @Override
-    public List<CategoryResponse> getAllCategories() {
-        return this.categoryRepository.findByIsDeletedFalse().stream().map(this::convertToCategoryResponse).toList();
+    public List<CategoryResponse> getAllCategories(String keyword) {
+        return this.categoryRepository.findCategoriesByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToCategoryResponse).toList();
     }
 
     @Transactional

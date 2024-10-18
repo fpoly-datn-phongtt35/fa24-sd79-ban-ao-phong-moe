@@ -152,12 +152,12 @@ export const changeStatus = async (id, status) => {
 
 export const attributeProducts = async () => {
   return {
-    origin: await fetchAllCountry(),
-    brands: await fetchAllBrands().then((res) => res.data),
-    categories: await fetchAllCategories().then((res) => res.data),
-    materials: await fetchAllMaterials().then((res) => res.data),
-    colors: await fetchAllColors().then((res) => res.data),
-    sizes: await fetchAllSizes().then((res) => res.data),
+    origin: await fetchAllCountry(""),
+    brands: await fetchAllBrands("").then((res) => res.data),
+    categories: await fetchAllCategories("").then((res) => res.data),
+    materials: await fetchAllMaterials("").then((res) => res.data),
+    colors: await fetchAllColors("").then((res) => res.data),
+    sizes: await fetchAllSizes("").then((res) => res.data),
   };
 };
 

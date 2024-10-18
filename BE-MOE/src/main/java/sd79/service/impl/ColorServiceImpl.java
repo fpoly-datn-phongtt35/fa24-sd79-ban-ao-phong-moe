@@ -25,8 +25,8 @@ public class ColorServiceImpl implements ColorService {
     private final UserRepository userRepository;
 
     @Override
-    public List<ColorResponse> getAllColors() {
-        return this.colorRepository.findByIsDeletedFalse().stream().map(this::convertToResponse).toList();
+    public List<ColorResponse> getAllColors(String keyword) {
+        return this.colorRepository.findColorsByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToResponse).toList();
     }
 
     @Override

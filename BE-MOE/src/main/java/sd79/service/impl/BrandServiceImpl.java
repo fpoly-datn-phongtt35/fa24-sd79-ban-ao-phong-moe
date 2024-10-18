@@ -29,8 +29,8 @@ public class BrandServiceImpl implements BrandService {
     private final UserRepository userRepository;
 
     @Override
-    public List<BrandResponse> getAllBrands() {
-        return this.brandRepository.findByIsDeletedFalse().stream().map(this::convertToBrandResponse).toList();
+    public List<BrandResponse> getAllBrands(String keyword) {
+        return this.brandRepository.findBrandsByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToBrandResponse).toList();
     }
 
     @Transactional

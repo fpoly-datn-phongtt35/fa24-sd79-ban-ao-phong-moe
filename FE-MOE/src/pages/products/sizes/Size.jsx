@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import debounce from "lodash.debounce";
 import Container from "@mui/material/Container";
 import AddIcon from "@mui/icons-material/Add";
 import FolderDeleteTwoToneIcon from "@mui/icons-material/FolderDeleteTwoTone";
@@ -20,14 +21,23 @@ import { DialogStore } from "~/components/sizes/DialogStore";
 
 export const Size = () => {
   const [sizes, setSizes] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetSizes();
-  }, []);
+  }, [keyword]);
 
   const handleSetSizes = async () => {
-    const res = await fetchAllSizes();
+    const res = await fetchAllSizes(keyword);
     setSizes(res.data);
+  };
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
   };
 
   const handlePostSize = async (data) => {
@@ -70,6 +80,7 @@ export const Size = () => {
             <FormControl>
               <FormLabel>Tìm kiếm</FormLabel>
               <Input
+                onChange={onChangeSearch}
                 startDecorator={<SearchIcon />}
                 placeholder="Tìm kiếm kích thước"
                 fullWidth
@@ -99,7 +110,7 @@ export const Size = () => {
         >
           <Table borderAxis="x" size="lg" stickyHeader variant="outlined">
             <thead>
-            <tr>
+              <tr>
                 <th className="text-center">STT</th>
                 <th className="text-center">Size</th>
                 <th className="text-center">Chiều dài</th>
@@ -111,9 +122,9 @@ export const Size = () => {
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
-            
+
             <tbody>
-            {sizes &&
+              {sizes &&
                 sizes.map((sizes, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
