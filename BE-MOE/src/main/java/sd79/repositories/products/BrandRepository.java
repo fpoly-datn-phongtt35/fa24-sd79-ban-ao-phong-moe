@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Integer> {
 
-    @Query("FROM Brand WHERE isDeleted = false AND name like %:keyword%")
+    @Query("FROM Brand WHERE isDeleted = false AND name like %:keyword% ORDER BY id DESC")
     List<Brand> findBrandsByNameAndIsDeletedIsFalse(String keyword);
 
     boolean existsBrandByName(String name);

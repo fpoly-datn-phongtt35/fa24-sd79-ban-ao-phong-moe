@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface ColorRepository extends JpaRepository<Color, Integer> {
 
-    @Query("FROM Color WHERE isDeleted = false AND name like %:keyword%")
+    @Query("FROM Color WHERE isDeleted = false AND name like %:keyword% ORDER BY id DESC")
     List<Color> findColorsByNameAndIsDeletedIsFalse(String keyword);
 
     boolean existsColorByName(String name);

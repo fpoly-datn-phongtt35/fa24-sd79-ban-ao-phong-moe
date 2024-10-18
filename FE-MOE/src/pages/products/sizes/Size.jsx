@@ -8,10 +8,10 @@ import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
+  CircularProgress,
   FormControl,
   FormLabel,
   Input,
-  LinearProgress,
   Sheet,
   Table,
 } from "@mui/joy";
@@ -68,6 +68,20 @@ export const Size = () => {
     });
   };
 
+  if (!sizes) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Container
       maxWidth="max-width"
@@ -116,14 +130,19 @@ export const Size = () => {
                 <th className="text-center">Chiều dài</th>
                 <th className="text-center">Chiều rộng</th>
                 <th className="text-center">Độ dài tay áo</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
 
             <tbody>
+            {sizes?.length === 0 && (
+              <tr>
+                <td colSpan={7} align="center">
+                  Không tìm thấy sản phẩm!
+                </td>
+              </tr>
+            )}
               {sizes &&
                 sizes.map((sizes, index) => (
                   <tr key={index}>
@@ -132,8 +151,6 @@ export const Size = () => {
                     <td className="text-center">{sizes.length}</td>
                     <td className="text-center">{sizes.width}</td>
                     <td className="text-center">{sizes.sleeve}</td>
-                    <td className="text-center">{sizes.createdAt}</td>
-                    <td className="text-center">{sizes.updatedAt}</td>
                     <td className="text-center">{sizes.createdBy}</td>
                     <td className="text-center">
                       <DialogIconUpdate
@@ -141,7 +158,10 @@ export const Size = () => {
                         title="Chỉnh sửa size"
                         label="Nhập tên size"
                         color="warning"
-                        value={sizes}
+                        name={sizes.name}
+                        length={sizes.length}
+                        width={sizes.width}
+                        sleeve={sizes.sleeve}
                         id={sizes.id}
                         handleSubmit={handleEditSize}
                       />
@@ -156,7 +176,6 @@ export const Size = () => {
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface MaterialRepository extends JpaRepository<Material, Integer> {
-    @Query("FROM Material WHERE isDeleted = false AND name like %:keyword%")
+    @Query("FROM Material WHERE isDeleted = false AND name like %:keyword% ORDER BY id DESC")
     List<Material> findMaterialsByNameAndIsDeletedIsFalse(String keyword);
 
     boolean existsMaterialByName(String name);

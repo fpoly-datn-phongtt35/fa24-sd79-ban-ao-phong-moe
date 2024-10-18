@@ -10,18 +10,22 @@ import {
   ModalDialog,
   Stack,
 } from "@mui/joy";
-import { useForm } from "react-hook-form";
 import { IconButton } from "@mui/material";
 
 export const DialogIconUpdate = (props) => {
   const [open, setOpen] = React.useState(false);
-  const [defaultValue, setDefaultValue] = React.useState(props.value);
+  const [name, setName] = React.useState(props.name);
+  const [length, setLength] = React.useState(props.length);
+  const [width, setWidth] = React.useState(props.width);
+  const [sleeve, setSleeve] = React.useState(props.sleeve);
+  const [errors, setErrors] = React.useState({});
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  React.useEffect(() => {
+    setName(props.name);
+    setLength(props.length);
+    setWidth(props.width);
+    setSleeve(props.sleeve);
+  }, [props.name, props.length, props.width, props.sleeve]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -31,122 +35,95 @@ export const DialogIconUpdate = (props) => {
     setOpen(false);
   };
 
-  const onSubmit = async (item) => {
+  const validate = () => {
+    const newErrors = {};
+    if (!name) newErrors.name = "Vui lòng không bỏ trống!";
+    if (!length || length <= 0 || length > 100)
+      newErrors.length = "Chiều dài phải lớn hơn 0 và nhỏ hơn 100!";
+    if (!width || width <= 0 || width > 100)
+      newErrors.width = "Chiều rộng phải lớn hơn 0 và nhỏ hơn 100!";
+    if (!sleeve || sleeve <= 0 || sleeve > 100)
+      newErrors.sleeve = "Chiều dài tay áo phải lớn hơn 0 và nhỏ hơn 100!";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const onSubmit = async () => {
+    if (!validate()) return;
+
     const data = {
-      name: item.name,
-      length: item.length,
-      width: item.width,
-      sleeve: item.sleeve,
+      name: name,
+      length: length,
+      width: width,
+      sleeve: sleeve,
       userId: localStorage.getItem("userId"),
     };
     props.handleSubmit(data, props.id);
     handleClose();
   };
+
   return (
     <React.Fragment>
       <IconButton color={props.color} onClick={handleClickOpen}>
         {props.icon}
       </IconButton>
-      <Modal open={open} onClose={() => setOpen(false)}>
+      <Modal open={open} onClose={handleClose}>
         <ModalDialog>
           <DialogTitle>{props.title}</DialogTitle>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={2} direction="row">
-              <FormControl error={!!errors?.name}>
-                <FormLabel required>Kích thước</FormLabel>
-                <Input
-                  defaultValue={defaultValue.name}
-                  placeholder={props.label}
-                  {...register("name", {
-                    required: true,
-                  })}
-                />
-                {errors.name && (
-                  <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
-                )}
-              </FormControl>
-              <FormControl error={!!errors?.length}>
-                <FormLabel required>Chiều dài</FormLabel>
-                <Input
-                  defaultValue={defaultValue.length}
-                  type="number"
-                  placeholder={props.label}
-                  {...register("length", {
-                    required: {
-                      value: true,
-                      message: "Vui lòng nhập chiều dài!",
-                    },
-                    min: {
-                      value: 1,
-                      message: "Chiều dài phải lớn hơn 0",
-                    },
-                    max: {
-                      value: 100,
-                      message: "Dữ liệu không hợp lệ!",
-                    },
-                  })}
-                />
-                {errors.length && (
-                  <FormHelperText>{errors.length.message}</FormHelperText>
-                )}
-              </FormControl>
-            </Stack>
-            <Stack spacing={2} direction="row" marginTop={2}>
-              <FormControl error={!!errors?.width}>
-                <FormLabel required>Chiều rộng</FormLabel>
-                <Input
-                  defaultValue={defaultValue.width}
-                  type="number"
-                  placeholder={props.label}
-                  {...register("width", {
-                    required: {
-                      value: true,
-                      message: "Vui lòng nhập chiều rộng!",
-                    },
-                    min: {
-                      value: 1,
-                      message: "Chiều rộng phải lớn hơn 0",
-                    },
-                    max: {
-                      value: 100,
-                      message: "Dữ liệu không hợp lệ!",
-                    },
-                  })}
-                />
-                {errors.width && (
-                  <FormHelperText>{errors.width.message}</FormHelperText>
-                )}
-              </FormControl>
-              <FormControl error={!!errors?.sleeve}>
-                <FormLabel required>Chiều dài tay áo</FormLabel>
-                <Input
-                  defaultValue={defaultValue.sleeve}
-                  type="number"
-                  placeholder={props.label}
-                  {...register("sleeve", {
-                    required: {
-                      value: true,
-                      message: "Vui lòng nhập chiều dài tay áo!",
-                    },
-                    min: {
-                      value: 1,
-                      message: "Chiều dài tay áo phải lớn hơn 0",
-                    },
-                    max: {
-                      value: 100,
-                      message: "Dữ liệu không hợp lệ!",
-                    },
-                  })}
-                />
-                {errors.sleeve && (
-                  <FormHelperText>{errors.sleeve.message}</FormHelperText>
-                )}
-              </FormControl>
-            </Stack>
-            <Stack marginTop={2}>
-              <Button type="submit">Lưu</Button>
-            </Stack>
-          </form>
+          <Stack spacing={2} direction="row">
+            <FormControl error={!!errors.name}>
+              <FormLabel required>Kích thước</FormLabel>
+              <Input
+                value={name}
+                placeholder={props.label}
+                onChange={(e) => setName(e.target.value)}
+              />
+              {errors.name && (
+                <FormHelperText>{errors.name}</FormHelperText>
+              )}
+            </FormControl>
+            <FormControl error={!!errors.length}>
+              <FormLabel required>Chiều dài</FormLabel>
+              <Input
+                value={length}
+                type="number"
+                placeholder={props.label}
+                onChange={(e) => setLength(e.target.value)}
+              />
+              {errors.length && (
+                <FormHelperText>{errors.length}</FormHelperText>
+              )}
+            </FormControl>
+          </Stack>
+          <Stack spacing={2} direction="row" marginTop={2}>
+            <FormControl error={!!errors.width}>
+              <FormLabel required>Chiều rộng</FormLabel>
+              <Input
+                value={width}
+                type="number"
+                placeholder={props.label}
+                onChange={(e) => setWidth(e.target.value)}
+              />
+              {errors.width && (
+                <FormHelperText>{errors.width}</FormHelperText>
+              )}
+            </FormControl>
+            <FormControl error={!!errors.sleeve}>
+              <FormLabel required>Chiều dài tay áo</FormLabel>
+              <Input
+                value={sleeve}
+                type="number"
+                placeholder={props.label}
+                onChange={(e) => setSleeve(e.target.value)}
+              />
+              {errors.sleeve && (
+                <FormHelperText>{errors.sleeve}</FormHelperText>
+              )}
+            </FormControl>
+          </Stack>
+          <Stack marginTop={2}>
+            <Button onClick={onSubmit}>Lưu</Button>
+          </Stack>
         </ModalDialog>
       </Modal>
     </React.Fragment>
