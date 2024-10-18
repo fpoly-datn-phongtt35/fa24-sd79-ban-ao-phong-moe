@@ -82,7 +82,7 @@ export const Sidebar_Admin = (props) => {
         >
           <MenuItem
             icon={<HomeIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/" />}
+            component={<Link to="/dashboard" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
               Trang chủ
