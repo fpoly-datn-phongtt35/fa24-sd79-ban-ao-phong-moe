@@ -6,37 +6,42 @@ import {
   putCategory,
   deleteCategory,
 } from "~/apis/categoriesApi";
+import debounce from "lodash.debounce";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import FolderDeleteTwoToneIcon from "@mui/icons-material/FolderDeleteTwoTone";
+import SearchIcon from "@mui/icons-material/Search";
+import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { DialogModify } from "~/components/common/DialogModify";
 import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
+import { Grid, Box, IconButton } from "@mui/material";
+import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
-  Grid,
-  TextField,
-  Box,
-  Typography,
+  FormControl,
+  FormLabel,
+  Input,
+  LinearProgress,
+  Sheet,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Pagination,
-  Stack,
-} from "@mui/material";
+} from "@mui/joy";
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetCategories();
-  }, []);
+  }, [keyword]);
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
+  };
 
   const handleSetCategories = async () => {
-    const res = await fetchAllCategories();
+    const res = await fetchAllCategories(keyword);
     setCategories(res.data);
   };
 
@@ -71,30 +76,21 @@ export const Categories = () => {
   return (
     <Container
       maxWidth="max-width"
-      className="bg-white"
-      style={{ height: "100%", marginTop: "15px" }}
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
-      <Grid
-        container
-        spacing={2}
-        alignItems="center"
-        bgcolor={"#1976d2"}
-        height={"50px"}
-      >
-        <Typography
-          xs={4}
-          margin={"4px"}
-          variant="h6"
-          gutterBottom
-          color="#fff"
-        >
-          Quản lý danh mục
-        </Typography>
-      </Grid>
-      <Box className="mb-5 mt-5">
+      <BreadcrumbsAttributeProduct tag="danh mục" />
+      <Box>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm danh mục" fullWidth />
+            <FormControl>
+              <FormLabel>Tìm kiếm</FormLabel>
+              <Input
+                onChange={onChangeSearch}
+                startDecorator={<SearchIcon />}
+                placeholder="Tìm kiếm danh mục"
+                fullWidth
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
@@ -110,32 +106,38 @@ export const Categories = () => {
         </Grid>
       </Box>
       <Box>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>STT</TableCell>
-                <TableCell>Tên danh mục</TableCell>
-                <TableCell>Sản phẩm</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Ngày sửa</TableCell>
-                <TableCell>Người tạo</TableCell>
-                <TableCell>Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        <Sheet
+          sx={{
+            marginTop: 2,
+            padding: "2px",
+            borderRadius: "5px",
+          }}
+        >
+          <Table borderAxis="x" size="lg" stickyHeader variant="outlined">
+            <thead>
+              <tr>
+                <th className="text-center">STT</th>
+                <th className="text-center">Tên danh mục</th>
+                <th className="text-center">Sản phẩm</th>
+                <th className="text-center">Ngày tạo</th>
+                <th className="text-center">Ngày sửa</th>
+                <th className="text-center">Người tạo</th>
+                <th className="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
               {categories &&
                 categories.map((category, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.productCount}</TableCell>
-                    <TableCell>{category.createdAt}</TableCell>
-                    <TableCell>{category.updatedAt}</TableCell>
-                    <TableCell>{category.createdBy}</TableCell>
-                    <TableCell>
+                  <tr key={index}>
+                    <td className="text-center">{index + 1}</td>
+                    <td className="text-center">{category.name}</td>
+                    <td className="text-center">{category.productCount}</td>
+                    <td className="text-center">{category.createdAt}</td>
+                    <td className="text-center">{category.updatedAt}</td>
+                    <td className="text-center">{category.createdBy}</td>
+                    <td className="text-center">
                       <DialogModifyIconButton
-                        icon={<EditIcon />}
+                        icon={<EditNoteTwoToneIcon />}
                         title="Chỉnh sửa danh mục"
                         label="Nhập tên danh mục"
                         color="warning"
@@ -147,22 +149,15 @@ export const Categories = () => {
                         color="error"
                         onClick={() => ondelete(category.id)}
                       >
-                        <DeleteIcon />
+                        <FolderDeleteTwoToneIcon />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-            </TableBody>
+            </tbody>
           </Table>
-        </TableContainer>
-        <Stack
-          marginTop={3}
-          display={"flex"}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <Pagination count={10} variant="outlined" shape="rounded" />
-        </Stack>
+          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
+        </Sheet>
       </Box>
     </Container>
   );

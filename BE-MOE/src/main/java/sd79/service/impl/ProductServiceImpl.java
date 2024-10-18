@@ -11,15 +11,16 @@ import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.*;
 import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.NotAllowedDeleteEntityException;
 import sd79.model.*;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.repositories.products.*;
 import sd79.service.ProductService;
-import sd79.utils.CloudinaryUpload;
+import sd79.utils.CloudinaryUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import static sd79.utils.UserUtils.getUserById;
 
@@ -44,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductDetailRepository productDetailRepository;
 
-    private final CloudinaryUpload cloudinaryUpload;
+    private final CloudinaryUtils cloudinary;
 
     private final ProductCustomizeQuery productCustomizeQuery;
 
@@ -97,8 +98,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = this.getProductById(req.getProductId());
         for (MultipartFile file : req.getImages()) {
             ProductImage productImage = new ProductImage();
+            Map<String, String> uploadResult = this.cloudinary.upload(file);
             productImage.setProduct(product);
-            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
+            productImage.setImageUrl(uploadResult.get("url"));
+            productImage.setPublicId(uploadResult.get("publicId"));
             this.productImageRepository.save(productImage);
         }
     }
@@ -115,6 +118,27 @@ public class ProductServiceImpl implements ProductService {
         Product product = this.getProductById(id);
         product.setIsDeleted(true);
         this.productRepository.save(product);
+    }
+
+    @Override
+    public void restore(Long id) {
+        Product product = this.getProductById(id);
+        product.setIsDeleted(false);
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public void deleteProductForever(Long id) {
+        //Todo
+        if (id != null) {
+            throw new NotAllowedDeleteEntityException("Chưa cho phép xóa vĩnh viễn");
+        }
+        Product product = getProductById(id);
+        product.getProductImages().forEach(item -> {
+            ProductImage productImage = getProductImageById(item.getId());
+            this.cloudinary.removeByPublicId(productImage.getPublicId());
+            this.productImageRepository.delete(productImage);
+        });
     }
 
     @Override
@@ -172,8 +196,26 @@ public class ProductServiceImpl implements ProductService {
                 .build()).getId();
     }
 
+    @Override
+    public void removeImageCloudinary(String publicId) {
+        this.cloudinary.removeByPublicId(publicId);
+        this.productImageRepository.deleteByPublicId(publicId);
+    }
+
+    @Override
+    public PageableResponse productArchive(ProductParamFilter param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.productCustomizeQuery.getAllProductArchives(param);
+    }
+
     private Product getProductById(long id) {
         return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    }
+
+    private ProductImage getProductImageById(long id) {
+        return this.productImageRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product image not found"));
     }
 
     private ProductDetail getProductDetailById(long id) {
@@ -196,7 +238,7 @@ public class ProductServiceImpl implements ProductService {
                 .brand(BrandResponse.builder().id(product.getBrand().getId()).name(product.getBrand().getName()).build())
                 .material(MaterialResponse.builder().id(product.getMaterial().getId()).name(product.getMaterial().getName()).build())
                 .origin(product.getOrigin())
-                .imageUrl(convertToUrl(product.getProductImages()))
+                .imageUrl(convertToImageResponse(product.getProductImages()))
                 .created_by(product.getCreatedBy().getUsername())
                 .modified_by(product.getUpdatedBy().getUsername())
                 .created_at(product.getCreateAt())
@@ -221,10 +263,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    private List<String> convertToUrl(List<ProductImage> images) {
-        return images.stream()
-                .map(ProductImage::getImageUrl)
-                .collect(Collectors.toList());
+    private List<ImageResponse> convertToImageResponse(List<ProductImage> images) {
+        List<ImageResponse> imageResponses = new ArrayList<>();
+        images.forEach(imageResponse -> {
+            ImageResponse image = ImageResponse.builder()
+                    .publicId(imageResponse.getPublicId())
+                    .url(imageResponse.getImageUrl())
+                    .build();
+            imageResponses.add(image);
+        });
+        return imageResponses;
     }
 
 }

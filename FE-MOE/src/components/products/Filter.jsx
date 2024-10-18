@@ -1,8 +1,10 @@
 import { Box, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import AddIcon from "@mui/icons-material/Add";
 import Input from "@mui/joy/Input";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   FormControl,
@@ -13,6 +15,7 @@ import {
 } from "@mui/joy";
 
 export const Filter = (props) => {
+  const navigate = useNavigate();
   return (
     <>
       <Grid
@@ -30,21 +33,35 @@ export const Filter = (props) => {
             level="title-lg"
             noWrap
             variant="plain"
-            sx={{display: "flex", alignItems: "center"}}
+            sx={{ display: "flex", alignItems: "center" }}
           >
-            <FilterAltOutlinedIcon sx={{ color: "#32383e", marginRight: 1 }} size="sm" />
+            <FilterAltOutlinedIcon
+              sx={{ color: "#32383e", marginRight: 1 }}
+              size="sm"
+            />
             Bộ lọc
           </Typography>
         </Grid>
         <Grid size={6}>
           <Button
-            variant="plain"
+            variant="soft"
             size="sm"
             onClick={props.clearFilter}
             startDecorator={<RefreshIcon />}
+            sx={{ marginRight: 1 }}
           >
             Làm mới
           </Button>
+          {props.btnAdd && (
+            <Button
+              variant="soft"
+              size="sm"
+              onClick={() => navigate("/product/new")}
+              startDecorator={<AddIcon />}
+            >
+              Thêm sản phẩm
+            </Button>
+          )}
         </Grid>
       </Grid>
       <Box>
@@ -57,7 +74,6 @@ export const Filter = (props) => {
                   <Input
                     type="search"
                     placeholder="Tìm kiếm…"
-                    // value={props.keyword}
                     startDecorator={<SearchIcon />}
                     onChange={props.onChangeSearch}
                   />

@@ -11,7 +11,7 @@ import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/MainLogo.jpg";
 import { useEffect, useState } from "react";
 
-export const Sidebar_ = (props) => {
+export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
   const [ADMIN, setAdmin] = useState(false);
 
@@ -133,16 +133,16 @@ export const Sidebar_ = (props) => {
             <SubMenu label="Thuộc tính sản phẩm">
               <MenuItem component={<Link to="/size" />}>
                 <Typography sx={{ color: "#32383e" }} level="body-md">
-                  Quản lý size
+                  Quản lý kích thước
                 </Typography>
               </MenuItem>
               <MenuItem component={<Link to="/color" />}>
                 <Typography sx={{ color: "#32383e" }} level="body-md">
-                  Quản lý color
+                  Quản lý màu sắc
                 </Typography>
               </MenuItem>
             </SubMenu>
-            <MenuItem component={<Link to="/material" />}>
+            <MenuItem disabled={ADMIN} component={<Link to="/product/archive" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Kho lưu trữ
               </Typography>
@@ -164,6 +164,7 @@ export const Sidebar_ = (props) => {
             </MenuItem>
           </SubMenu>
           <SubMenu
+            disabled={ADMIN}
             label="Giảm giá"
             icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >

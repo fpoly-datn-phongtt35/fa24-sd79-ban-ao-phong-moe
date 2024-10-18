@@ -74,4 +74,19 @@ public class GlobalExceptionHandler {
         response.setMessage(message);
         return response;
     }
+
+    @ExceptionHandler({NotAllowedDeleteEntityException.class})
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ExceptionResponse handleEntityNotAccept(Exception ex, WebRequest request) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setTimestamp(new Date());
+        response.setStatus(HttpStatus.NOT_ACCEPTABLE.value());
+        response.setPath(request.getDescription(false).replace("uri=", ""));
+        String message = ex.getMessage();
+        if (ex instanceof NotAllowedDeleteEntityException) {
+            response.setError("Can't delete this entity");
+        }
+        response.setMessage(message);
+        return response;
+    }
 }

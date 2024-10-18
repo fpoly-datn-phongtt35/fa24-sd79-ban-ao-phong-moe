@@ -6,7 +6,7 @@ import sd79.dto.response.productResponse.ColorResponse;
 import java.util.List;
 
 public interface ColorService {
-    List<ColorResponse> getAllColors();
+    List<ColorResponse> getAllColors(String keyword);
 
     int storeColor(ColorRequest request);
 

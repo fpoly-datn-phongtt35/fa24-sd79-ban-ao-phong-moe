@@ -18,7 +18,7 @@ import sd79.dto.response.ResponseData;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.service.CouponService;
-import sd79.utils.CloudinaryUpload;
+import sd79.utils.CloudinaryUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class CouponController {
 
     private static final Logger log = LoggerFactory.getLogger(CouponController.class);
     private final CouponService couponService;
-    private final CloudinaryUpload cloudinaryUpload;
+    private final CloudinaryUtils cloudinaryUpload;
 
     // Lấy danh sách coupon
     @Operation(
