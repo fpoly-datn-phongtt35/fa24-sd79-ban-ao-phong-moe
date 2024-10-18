@@ -14,11 +14,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
+import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.ResponseData;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.service.CouponService;
 import sd79.utils.CloudinaryUpload;
+import sd79.utils.Email;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,22 +41,8 @@ public class CouponController {
             description = "Get all coupons from the database"
     )
     @GetMapping
-    public ResponseData<?> getAllCoupons(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy/MM/dd") String startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy/MM/dd") String endDate,
-            @RequestParam(value = "discountType", required = false) String discountTypeStr,
-            @RequestParam(value = "type", required = false) String typeStr,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
-            @RequestParam(value = "sort", defaultValue = "startDate") String sort,
-            @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
-
-        TodoDiscountType discountType = (discountTypeStr != null) ? TodoDiscountType.valueOf(discountTypeStr.toUpperCase()) : null;
-        TodoType type = (typeStr != null) ? TodoType.valueOf(typeStr.toUpperCase()) : null;
-
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon list", this.couponService.getAllCoupon(pageNo, pageSize, keyword, type, discountType, startDate, endDate, status, sort, direction));
+    public ResponseData<?> getAllCoupons(CouponParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon list", this.couponService.getAllCoupon(param));
     }
 
 
@@ -114,6 +102,7 @@ public class CouponController {
         }
         return errors;
     }
+
     @PostMapping("/upload")
     public ResponseData<?> uploadFile(@ModelAttribute CouponImageReq request) {
         this.couponService.storeCouponImages(request);

@@ -198,6 +198,15 @@ CREATE TABLE coupon_images(
   CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
 );
 
+CREATE TABLE coupon_share(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  coupon_id BIGINT,
+  customer_id BIGINT,
+  is_deleted BIT DEFAULT 0,
+  CONSTRAINT fk_coupon_share FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  CONSTRAINT fk_customer_share FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
 -- promotions
 CREATE TABLE promotions(
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -649,3 +658,10 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
 (9, 'https://example.com/images/coupon09.jpg', 'yz567'),
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
+
+INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
+    (1, 1, 0),  
+    (2, 2, 0), 
+    (3, 3, 0),  
+    (4, 4, 0),  
+    (5, 5, 0);  

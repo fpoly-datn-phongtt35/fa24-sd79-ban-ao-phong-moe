@@ -64,6 +64,9 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
     @OneToOne(mappedBy = "coupon")
     private CouponImage couponImage;
 
+    @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CouponShare> couponShares = new ArrayList<>();
+
     public String getStatus() {
         Date currentDate = new Date();
 
@@ -79,5 +82,10 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
             }
         }
         return "Invalid Date";
+    }
+
+    public void addCouponShare(CouponShare couponShare) {
+        couponShares.add(couponShare);
+        couponShare.setCoupon(this);
     }
 }

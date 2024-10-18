@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Link } from 'react-router-dom';
 import swal from 'sweetalert';
 import { fetchAllCoupon, deleteCoupon } from '~/apis/couponApi';
 import {
   Container, Grid, TextField, Box, Typography, IconButton, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Pagination, Stack, Select, MenuItem, Button, TableSortLabel
+  TableContainer, TableHead, TableRow, Paper, Pagination, Stack, Select, MenuItem, Button, TableSortLabel, Link
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -13,21 +12,25 @@ import PublicIcon from '@mui/icons-material/Public';
 import PersonIcon from '@mui/icons-material/Person';
 import PercentIcon from '@mui/icons-material/Percent';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { Breadcrumbs } from '@mui/joy';
+import HomeIcon from "@mui/icons-material/Home";
+import { useNavigate } from "react-router-dom";
 
 const Coupon = () => {
-  const [coupons, setCoupons] = useState([]); // Initialize as an empty array
+  const [coupons, setCoupons] = useState([]); 
   const [pageNo, setPage] = useState(1);
-  const [pageSize, setSize] = useState(5); // Default page size
+  const [pageSize, setSize] = useState(5); 
   const [keyword, setKeyword] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [discountType, setDiscountType] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState(''); 
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState('asc');
   const [sortBy, setSortBy] = useState('');
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     handleSetCoupon();
@@ -51,7 +54,7 @@ const Coupon = () => {
     setTotalPages(res.data.totalPages);
     setTotalElements(res.data.totalElements);
   };
-  
+
 
 
   // Hàm thay đổi kích thước trang
@@ -80,9 +83,9 @@ const Coupon = () => {
     setType('');
     setStatus('');
     setPage(1);
-    setSort('asc'); 
-    setSortBy('');  
-    handleSetCoupon(1, pageSize); 
+    setSort('asc');
+    setSortBy('');
+    handleSetCoupon(1, pageSize);
   };
 
 
@@ -112,10 +115,27 @@ const Coupon = () => {
 
   return (
     <Container maxWidth="max-width" className="bg-white" style={{ height: '100%', marginTop: '15px' }}>
-      <Grid container spacing={2} alignItems="center" bgcolor={'#1976d2'} height={'50px'}>
-        <Typography xs={4} margin={'4px'} variant="h6" gutterBottom color="#fff">
-          Quản lý phiếu giảm giá
-        </Typography>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        marginBottom={2}
+        height={"50px"}
+      >
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Quản lý phiếu giảm giá
+          </Typography>
+        </Breadcrumbs>
       </Grid>
       <Box className="mb-5" style={{ marginTop: '50px' }}>
         {/* First row: Search, Start Date, End Date, Clear */}
@@ -161,9 +181,7 @@ const Coupon = () => {
             <Button
               variant="contained"
               color="success"
-              onClick={handleClear}
-              component={Link}
-              to="/coupon/create"
+              onClick={() => navigate("/coupon/create")}
               fullWidth
               size="small"
               style={{ height: '40px' }}
@@ -188,8 +206,8 @@ const Coupon = () => {
               style={{ height: '40px' }}
             >
               <MenuItem value="">Loại</MenuItem>
-              <MenuItem value="percentage">Phần trăm</MenuItem>
-              <MenuItem value="fixed_amount">Số tiền cố định</MenuItem>
+              <MenuItem value="PERCENTAGE">Phần trăm</MenuItem>
+              <MenuItem value="FIXED_AMOUNT">Số tiền cố định</MenuItem>
             </Select>
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -202,8 +220,8 @@ const Coupon = () => {
               style={{ height: '40px' }}
             >
               <MenuItem value="">Kiểu</MenuItem>
-              <MenuItem value="personal">Cá nhân</MenuItem>
-              <MenuItem value="public">Công khai</MenuItem>
+              <MenuItem value="PERSONAL">Cá nhân</MenuItem>
+              <MenuItem value="PUBLIC">Công khai</MenuItem>
             </Select>
           </Grid>
 
@@ -308,18 +326,17 @@ const Coupon = () => {
                     <TableCell align="left">{coupon.code}</TableCell>
                     <TableCell align="left">{coupon.quantity}</TableCell>
                     <TableCell align="left">
-                      {coupon.discountType === 'percentage' ? <PercentIcon /> : <AttachMoneyIcon />}
+                      {coupon.discountType === 'PERCENTAGE' ? <PercentIcon /> : <AttachMoneyIcon />}
                     </TableCell>
                     <TableCell align="left">
-                      {coupon.type === 'public' ? <PublicIcon /> : <PersonIcon />}
+                      {coupon.type === 'PUBLIC' ? <PublicIcon /> : <PersonIcon />}
                     </TableCell>
                     <TableCell align="left">{coupon.status}</TableCell>
                     <TableCell align="left">{coupon.startDate}</TableCell>
                     <TableCell align="left">{coupon.endDate}</TableCell>
                     <TableCell align="right">
                       <IconButton
-                        component={Link}
-                        to={`/coupon/detail/${coupon.id}`}
+                        onClick={() => navigate(`/coupon/detail/${coupon.id}`)}
                         color="primary"
                         size="small"
                       >
