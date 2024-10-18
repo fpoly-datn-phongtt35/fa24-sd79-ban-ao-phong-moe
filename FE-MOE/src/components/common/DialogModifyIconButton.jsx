@@ -1,18 +1,23 @@
 import * as React from "react";
-import { IconButton} from "@mui/material";
-import { useForm } from "react-hook-form";
-import { Button, DialogTitle, FormControl, FormHelperText, FormLabel, Input, Modal, ModalDialog, Stack } from "@mui/joy";
+import { IconButton } from "@mui/material";
+import {
+  Button,
+  DialogTitle,
+  FormControl,
+  FormLabel,
+  Input,
+  Modal,
+  ModalDialog,
+  Stack,
+} from "@mui/joy";
 
 export const DialogModifyIconButton = (props) => {
-  const [defaultValue, setDefaultValue] = React.useState(props.value);
   const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState(props.value);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  React.useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -22,9 +27,9 @@ export const DialogModifyIconButton = (props) => {
     setOpen(false);
   };
 
-  const onSubmit = async (item) => {
+  const onSubmit = async () => {
     const data = {
-      name: item.value,
+      name: value,
       userId: localStorage.getItem("userId"),
     };
     props.handleSubmit(data, props.id);
@@ -38,23 +43,22 @@ export const DialogModifyIconButton = (props) => {
 
       <Modal open={open} onClose={() => setOpen(false)}>
         <ModalDialog>
-          <DialogTitle>{props.title}</DialogTitle>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={2}>
-              <FormControl required error={!!errors?.value}>
-                <FormLabel>{props.label}</FormLabel>
-                <Input
-                  defaultValue={defaultValue}
-                  placeholder={props.label}
-                  {...register("value", { required: true })}
-                />
-                {errors.name && (
-                  <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
-                )}
-              </FormControl>
-              <Button type="submit">Lưu</Button>
-            </Stack>
-          </form>
+          <DialogTitle>
+            {props.title} {props.value}
+          </DialogTitle>
+          <Stack spacing={2}>
+            <FormControl required>
+              <FormLabel>{props.label}</FormLabel>
+              <Input
+                defaultValue={value}
+                placeholder={props.label}
+                onChange={(e) => setValue(e.target.value)}
+              />
+            </FormControl>
+            <Button type="button" onClick={onSubmit}>
+              Lưu
+            </Button>
+          </Stack>
         </ModalDialog>
       </Modal>
     </React.Fragment>

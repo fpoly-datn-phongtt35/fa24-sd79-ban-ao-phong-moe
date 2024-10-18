@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class ColorRequest {
-    @NotBlank(message = "Vui lòng nhập tên cho size!")
+    @NotBlank(message = "Vui lòng nhập tên cho màu sắc!")
     private String name;
 
     @NotBlank(message = "Vui lòng nhập mã hex!")

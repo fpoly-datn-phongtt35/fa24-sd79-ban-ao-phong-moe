@@ -181,7 +181,7 @@ public class ProductCustomizeQuery {
             sql.append(" AND prd.origin like :origin");
         }
 
-        sql.append(" ORDER BY prd.id DESC");
+        sql.append(" ORDER BY prd.updateAt DESC");
 
         TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
         if (StringUtils.hasLength(param.getKeyword())) {

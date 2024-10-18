@@ -84,7 +84,7 @@ CREATE TABLE customer_address (
 -- Product
 CREATE TABLE categories(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -94,7 +94,7 @@ CREATE TABLE categories(
 
 CREATE TABLE brands(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -130,7 +130,7 @@ CREATE TABLE products(
 
 CREATE TABLE sizes(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	length FLOAT,
 	width FLOAT,
 	sleeve FLOAT,
@@ -143,7 +143,7 @@ CREATE TABLE sizes(
 
 CREATE TABLE colors(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	hex_color_code VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,

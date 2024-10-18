@@ -10,10 +10,10 @@ import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButt
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
+  CircularProgress,
   FormControl,
   FormLabel,
   Input,
-  LinearProgress,
   Sheet,
   Table,
 } from "@mui/joy";
@@ -72,7 +72,20 @@ export const Brand = () => {
       }
     });
   };
-
+  if (!brands) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
   return (
     <Container
       maxWidth="max-width"
@@ -119,21 +132,24 @@ export const Brand = () => {
                 <th className="text-center">STT</th>
                 <th className="text-center">Tên thương hiệu</th>
                 <th className="text-center">Sản phẩm</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody>
+              {brands?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {brands &&
                 brands.map((brand, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
                     <td className="text-center">{brand.name}</td>
                     <td className="text-center">{brand.productCount}</td>
-                    <td className="text-center">{brand.createdAt}</td>
-                    <td className="text-center">{brand.updatedAt}</td>
                     <td className="text-center">{brand.createdBy}</td>
                     <td className="text-center">
                       <DialogModifyIconButton
@@ -156,7 +172,6 @@ export const Brand = () => {
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

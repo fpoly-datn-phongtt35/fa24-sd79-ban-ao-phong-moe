@@ -82,7 +82,7 @@ export const Sidebar_Admin = (props) => {
         >
           <MenuItem
             icon={<HomeIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/" />}
+            component={<Link to="/dashboard" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
               Trang chủ
@@ -115,28 +115,28 @@ export const Sidebar_Admin = (props) => {
                 Quản lý sản phẩm
               </Typography>
             </MenuItem>
-            <MenuItem component={<Link to="categories" />}>
+            <MenuItem component={<Link to="/product/categories" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Quản lý danh mục
               </Typography>
             </MenuItem>
-            <MenuItem component={<Link to="/brand" />}>
+            <MenuItem component={<Link to="/product/brand" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Quản lý thương hiệu
               </Typography>
             </MenuItem>
-            <MenuItem component={<Link to="/material" />}>
+            <MenuItem component={<Link to="/product/material" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Quản lý chất liệu
               </Typography>
             </MenuItem>
             <SubMenu label="Thuộc tính sản phẩm">
-              <MenuItem component={<Link to="/size" />}>
+              <MenuItem component={<Link to="/product/size" />}>
                 <Typography sx={{ color: "#32383e" }} level="body-md">
                   Quản lý kích thước
                 </Typography>
               </MenuItem>
-              <MenuItem component={<Link to="/color" />}>
+              <MenuItem component={<Link to="/product/color" />}>
                 <Typography sx={{ color: "#32383e" }} level="body-md">
                   Quản lý màu sắc
                 </Typography>

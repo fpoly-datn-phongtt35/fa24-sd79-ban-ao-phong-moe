@@ -9,14 +9,7 @@ import { DialogModify } from "~/components/common/DialogModify";
 import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
-import {
-  FormControl,
-  FormLabel,
-  Input,
-  LinearProgress,
-  Sheet,
-  Table,
-} from "@mui/joy";
+import { CircularProgress, FormControl, FormLabel, Input, Sheet, Table } from "@mui/joy";
 import {
   deleteMaterial,
   fetchAllMaterials,
@@ -73,6 +66,20 @@ export const Material = () => {
     });
   };
 
+  if (!materials) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Container
       maxWidth="max-width"
@@ -119,21 +126,24 @@ export const Material = () => {
                 <th className="text-center">STT</th>
                 <th className="text-center">Tên chất liệu</th>
                 <th className="text-center">Sản phẩm</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody>
+              {materials?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {materials &&
                 materials.map((material, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
                     <td className="text-center">{material.name}</td>
                     <td className="text-center">{material.productCount}</td>
-                    <td className="text-center">{material.createdAt}</td>
-                    <td className="text-center">{material.updatedAt}</td>
                     <td className="text-center">{material.createdBy}</td>
                     <td className="text-center">
                       <DialogModifyIconButton
@@ -156,7 +166,6 @@ export const Material = () => {
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

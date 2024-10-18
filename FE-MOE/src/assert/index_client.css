@@ -1,0 +1,83 @@
+.layout_client {
+  display: flex;
+  height: 100vh;
+}
+.main-area_client {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.content-area_client {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 1px;
+  background-color: #fbfbfb;
+  padding: 20px;
+}
+
+.header_container_client {
+  background-color: #f5deb3;
+  color: #000;
+}
+
+.header_toolbar_client {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #fff;
+}
+
+.header_logo_client img {
+  height: 50px;
+}
+
+.header_search_client {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  margin: 0 20px;
+  max-width: 600px;
+}
+
+.search_input_client {
+  flex-grow: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search_button_client {
+  background-color: red;
+  color: white;
+  margin-left: 5px;
+}
+
+.header_icons_client {
+  display: flex;
+  align-items: center;
+}
+
+.icon_cart_client,
+.icon_account_client {
+  color: #000;
+  margin-left: 15px;
+}
+
+.menu_account_client {
+  margin-top: 35px;
+}
+
+.navbar_client {
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+}
+
+.navbar_client .MuiTab-root {
+  color: #000;
+  margin: 0 5px;
+  text-transform: none;
+  font-size: 15px;
+}
