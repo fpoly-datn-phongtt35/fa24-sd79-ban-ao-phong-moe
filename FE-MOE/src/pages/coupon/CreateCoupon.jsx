@@ -83,25 +83,25 @@ const CreateCoupon = () => {
             type: data.type,
             description: data.description,
             userId: localStorage.getItem("userId"),
-            customerIds: data.type === 'PERSONAL' ? selectedCustomers : null, 
+            customerIds: data.type === 'PERSONAL' ? selectedCustomers : null,
         };
-    
+
         try {
             const response = await postCoupon(coupon);
-    
+
             let formData = new FormData();
-            formData.append("couponID", response); 
+            formData.append("couponID", response);
             images.forEach((image, index) => {
                 formData.append("images", images[0]);
-            });       
+            });
             await postCouponImage(formData);
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
         }
     };
-    
-    
+
+
 
     const formatDateCustomer = (dateString) => {
         const date = new Date(dateString);
@@ -110,7 +110,7 @@ const CreateCoupon = () => {
 
     const handleSetCustomer = async () => {
         const response = await fetchAllCustomer();
-        setCustomers(response.data);
+        setCustomers(response.data.content);
         console.log(response)
     };
 
@@ -347,12 +347,12 @@ const CreateCoupon = () => {
                                             <FormLabel component="legend">Kiểu</FormLabel>
                                         </FormControl>
                                     </Grid>
-                                    <Grid item>                                 
+                                    <Grid item>
                                         <Controller
                                             name="type"
-                                            control={control} 
-                                            defaultValue="PUBLIC" 
-                                            rules={{ required: 'Type is required' }} 
+                                            control={control}
+                                            defaultValue="PUBLIC"
+                                            rules={{ required: 'Type is required' }}
                                             render={({ field }) => (
                                                 <RadioGroup
                                                     {...field}
@@ -434,12 +434,19 @@ const CreateCoupon = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {customers.map((customer, index) => (
+                                {customers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={9} align="center">
+                                            Không tìm thấy khách hàng!
+                                        </td>
+                                    </tr>
+                                )}
+                                {customers && customers.map((customer, index) => (
                                     <tr key={index}>
                                         <td>
                                             <Checkbox
-                                                checked={isSelected(customer.id)} // Check if this customer is selected
-                                                onChange={() => handleSelectCustomer(customer.id)} // Toggle selection on change
+                                                checked={isSelected(customer.id)}
+                                                onChange={() => handleSelectCustomer(customer.id)}
                                             />
                                         </td>
                                         <td>{customer.firstName}</td>

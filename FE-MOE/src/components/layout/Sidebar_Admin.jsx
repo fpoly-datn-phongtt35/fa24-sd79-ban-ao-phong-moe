@@ -164,7 +164,6 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
           </SubMenu>
           <SubMenu
-            disabled={ADMIN}
             label="Giảm giá"
             icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >
