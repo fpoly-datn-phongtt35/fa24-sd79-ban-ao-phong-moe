@@ -114,6 +114,8 @@ public class CustomerServiceImpl implements CustomerService {
                 .firstName(customer.getFirstName())
                 .lastName(customer.getLastName())
                 .phoneNumber(customer.getPhoneNumber())
+                .username(customer.getUser().getUsername())
+                .email(customer.getUser().getEmail())
                 .dateOfBirth(customer.getDateOfBirth())
                 .gender(customer.getGender())
                 .city(customer.getCustomerAddress().getCity())

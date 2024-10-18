@@ -45,7 +45,7 @@ public class CustomerController {
             @RequestParam(defaultValue = "id") String sortBy,  // Sorting criteria
             @RequestParam(defaultValue = "asc") String sortDir  // Sorting direction (asc or desc)
     ) {
-        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<CustomerResponse> customers = customerService.getAll(pageable);
         return new ResponseData<>(HttpStatus.OK.value(), "List of customers (paginated)", customers);
