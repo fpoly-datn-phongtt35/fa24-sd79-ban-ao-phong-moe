@@ -22,8 +22,8 @@ public class CategoryController {
             description = "Get all Category from database"
     )
     @GetMapping
-    public ResponseData<?> getAllCategories() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories());
+    public ResponseData<?> getAllCategories(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories(keyword));
     }
 
     @Operation(

@@ -1,4 +1,4 @@
-package sd79.dto.response;
+package sd79.dto.response.auth;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,4 +14,6 @@ public class TokenResponse implements Serializable {
     private String refreshToken;
 
     private Long userId;
+
+    private String authority;
 }

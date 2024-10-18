@@ -10,6 +10,7 @@ import { fetchAllSizes } from "./sizesApi";
 
 export const fetchAllProducts = async (
   pageNo,
+  pageSize,
   keyword,
   status,
   category,
@@ -22,6 +23,54 @@ export const fetchAllProducts = async (
 
   if (pageNo !== null && pageNo !== undefined) {
     queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (category) {
+    queryParams.push(`category=${category}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+  if (material) {
+    queryParams.push(`material=${material}`);
+  }
+  if (origin) {
+    queryParams.push(`origin=${origin}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
+export const fetchAllProductArchives = async (
+  pageNo,
+  pageSize,
+  keyword,
+  status,
+  category,
+  brand,
+  material,
+  origin
+) => {
+  let uri = "/product/archive?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
   }
   if (keyword) {
     queryParams.push(`keyword=${keyword}`);
@@ -79,6 +128,22 @@ export const moveToBin = async (id) => {
     });
 };
 
+export const productRestore = async (id) => {
+  return await authorizedAxiosInstance
+    .patch(`${API_ROOT}/product/restore/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
+export const deleteForever = async (id) => {
+  return await authorizedAxiosInstance
+    .delete(`${API_ROOT}/product/delete-forever/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};
+
 export const changeStatus = async (id, status) => {
   return await authorizedAxiosInstance.patch(
     `${API_ROOT}/product/change-status/${id}/${status}`
@@ -87,12 +152,12 @@ export const changeStatus = async (id, status) => {
 
 export const attributeProducts = async () => {
   return {
-    origin: await fetchAllCountry(),
-    brands: await fetchAllBrands().then((res) => res.data),
-    categories: await fetchAllCategories().then((res) => res.data),
-    materials: await fetchAllMaterials().then((res) => res.data),
-    colors: await fetchAllColors().then((res) => res.data),
-    sizes: await fetchAllSizes().then((res) => res.data),
+    origin: await fetchAllCountry(""),
+    brands: await fetchAllBrands("").then((res) => res.data),
+    categories: await fetchAllCategories("").then((res) => res.data),
+    materials: await fetchAllMaterials("").then((res) => res.data),
+    colors: await fetchAllColors("").then((res) => res.data),
+    sizes: await fetchAllSizes("").then((res) => res.data),
   };
 };
 
@@ -123,5 +188,13 @@ export const storeProductDetailAttribute = async (data) => {
     .post(`${API_ROOT}/product/store-product-detail/attribute`, data)
     .then((res) => {
       toast.success(res?.data?.message);
+    });
+};
+
+export const removeImage = async (publicId) => {
+  return await authorizedAxiosInstance
+    .delete(`${API_ROOT}/product/remove-image?publicId=${publicId}`)
+    .then((res) => {
+      toast.warning(res?.data?.message);
     });
 };

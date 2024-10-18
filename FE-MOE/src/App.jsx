@@ -1,8 +1,9 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Signin from "~/pages/auth/Signin";
-import { Header } from "./components/layout/Header";
-import { Sidebar_ } from "./components/layout/Sidebar_";
+import { Header_Admin } from "./components/layout/Header_Admin";
+import { Sidebar_Admin } from "./components/layout/Sidebar_Admin";
 import { Product } from "./pages/products/Product";
+import { Archive } from "./pages/products/Archive";
 import { Dashboard } from "./pages/other/Dashboard";
 import { Customer } from "./pages/customer/Customer";
 import { AddCustomer } from "./pages/customer/AddCustomer";
@@ -17,13 +18,11 @@ import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/CreateCoupon";
 import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
-import "bootstrap/dist/css/bootstrap.min.css";
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
-import { ProductManager } from "./pages/products/productManager/ProductManager";
-import { ProductManagerUpdate } from "./pages/products/productManager/ProductManagerUpdate";
+import { ProductDetail } from "./pages/products/main/ProductDetail";
+import { ProductStore } from "./pages/products/main/ProductStore";
 import { useState } from "react";
-import { ProductStore } from "./pages/products/productManager/ProductStore";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -39,14 +38,13 @@ const ProtectedRoutes = () => {
   return (
     <div className="layout">
       <div className="sidebar">
-        <Sidebar_ collapsed={collapsed} />
+        <Sidebar_Admin collapsed={collapsed} />
       </div>
 
       <div className="main-area">
         <div className="header">
-          <div className="header-left">
-          </div>
-          <Header onCollapsed={onCollapsed} collapsed={collapsed}/>
+          <div className="header-left"></div>
+          <Header_Admin onCollapsed={onCollapsed} collapsed={collapsed} />
         </div>
 
         <div className="content-area">
@@ -93,9 +91,9 @@ function App() {
         <Route path="/material" element={<Material />} />
         <Route path="/size" element={<Size />} />
         <Route path="/color" element={<Color />} />
-        <Route path="/product/add" element={<ProductManager />} />
         <Route path="/product/new" element={<ProductStore />} />
-        <Route path="/product/edit/:id" element={<ProductManagerUpdate />} />
+        <Route path="/product/view/:id" element={<ProductDetail />} />
+        <Route path="/product/archive" element={<Archive />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />

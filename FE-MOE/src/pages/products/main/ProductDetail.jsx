@@ -5,16 +5,46 @@ import {
   ImageListItem,
   Link,
 } from "@mui/material";
-import { Grid, Box, Typography } from "@mui/joy";
+import { Grid, Box, Typography, Button } from "@mui/joy";
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchProduct } from "~/apis/productApi";
+import { fetchProduct, postProductImage, removeImage } from "~/apis/productApi";
 import { ModifyProduct } from "~/components/products/ModifyProduct";
 import { TableDetails } from "~/components/products/TableDetails";
+import { IconButton } from "@mui/material";
+import HighlightOffTwoToneIcon from '@mui/icons-material/HighlightOffTwoTone';
+import BackupOutlinedIcon from "@mui/icons-material/BackupOutlined";
+import { styled } from "@mui/joy";
+import { toast } from "react-toastify";
+import { ZoomImage } from "~/components/products/ZoomImage";
 
-export const ProductManagerUpdate = () => {
+const VisuallyHiddenInput = styled("input")`
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  white-space: nowrap;
+  width: 1px;
+`;
+export const ProductDetail = () => {
   const [product, setProduct] = useState(null);
+  const [isHandleImage, setIsHandleImage] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState("");
+
+  const handleOpen = (url) => {
+    setUrl(url);
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setUrl("");
+    setOpen(false);
+  };
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -25,6 +55,36 @@ export const ProductManagerUpdate = () => {
   const getProduct = async () => {
     const res = await fetchProduct(id);
     setProduct(res.data);
+  };
+
+  const onUploadImage = async (file) => {
+    if (product?.imageUrl.length >= 5) {
+      toast.error("Số lượng ảnh tối đa là 5");
+      return;
+    }
+    setIsHandleImage(true);
+    let formData = new FormData();
+    formData.append("productId", id);
+    formData.append("images", file.target.files[0]);
+    await postProductImage(formData).then(() => {
+      getProduct();
+      setIsHandleImage(false);
+      toast.success("Thêm thành công");
+    });
+  };
+
+  const onRemoveImage = (publicId) => {
+    swal({
+      title: "Cảnh báo",
+      text: "Bạn có muốn xóa ảnh này không?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then(async (confirm) => {
+      if (confirm) {
+        await removeImage(publicId).then(() => getProduct());
+      }
+    });
   };
 
   return (
@@ -51,13 +111,30 @@ export const ProductManagerUpdate = () => {
           Quản lý sản phẩm
         </Link>
         <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-          Cập nhật sản phẩm
-        </Typography>
+            Thông tin sản phẩm
+          </Typography>
       </Breadcrumbs>
       <Box marginTop={3}>
-        <Typography color="neutral" level="title-lg" noWrap variant="plain">
-          Thông tin sản phẩm
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Typography color="neutral" level="title-lg" noWrap variant="plain">
+            Thông tin sản phẩm
+          </Typography>
+          <Button
+            loading={isHandleImage}
+            component="label"
+            role={undefined}
+            tabIndex={-1}
+            startDecorator={<BackupOutlinedIcon />}
+            variant="plain"
+          >
+            Upload a image
+            <VisuallyHiddenInput
+              type="file"
+              accept="image/*"
+              onChange={onUploadImage}
+            />
+          </Button>
+        </Box>
         <Grid
           container
           spacing={2}
@@ -177,19 +254,39 @@ export const ProductManagerUpdate = () => {
             >
               {product?.imageUrl?.length > 0 &&
                 product?.imageUrl.map((item, index) => (
-                  <ImageListItem key={index}>
+                  <ImageListItem key={index} style={{ position: "relative" }}>
                     <img
-                      srcSet={`${item}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                      src={`${item}?w=164&h=164&fit=crop&auto=format`}
+                      srcSet={`${item.url}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                      src={`${item.url}?w=164&h=164&fit=crop&auto=format`}
                       loading="lazy"
+                      onClick={() => handleOpen(item.url)}
                     />
+                    <ZoomImage
+                      handleClose={handleClose}
+                      open={open}
+                      url={url}
+                    />
+                    {product?.imageUrl.length > 1 && (
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => onRemoveImage(item.publicId)}
+                        style={{
+                          position: "absolute",
+                          top: -10,
+                          right: 0,
+                          color: "#ffff",
+                        }}
+                      >
+                        <HighlightOffTwoToneIcon  />
+                      </IconButton>
+                    )}
                   </ImageListItem>
                 ))}
             </ImageList>
           </Grid>
         </Grid>
       </Box>
-      <TableDetails data={product} getProduct={getProduct}/>
+      <TableDetails data={product} getProduct={getProduct} />
     </Container>
   );
 };

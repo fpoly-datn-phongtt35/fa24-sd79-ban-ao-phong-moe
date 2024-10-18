@@ -147,6 +147,11 @@ export const ProductStore = () => {
     const newImages = [];
     const newImageUrls = [];
 
+    if (files.length > 5) {
+      toast.error("Bạn chỉ có thể chọn tối đa 5 ảnh.");
+      return;
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const url = URL.createObjectURL(file);
@@ -377,7 +382,7 @@ export const ProductStore = () => {
                     <Autocomplete
                       placeholder="Chọn màu"
                       multiple
-                      limitTags={2}
+                      limitTags={5}
                       filterSelectedOptions
                       options={attributes?.colors || []}
                       getOptionLabel={(option) => option.name}
@@ -402,7 +407,7 @@ export const ProductStore = () => {
                     <Autocomplete
                       placeholder="Chọn kích thước"
                       multiple
-                      limitTags={3}
+                      limitTags={5}
                       filterSelectedOptions
                       options={attributes?.sizes || []}
                       getOptionLabel={(option) => option.name}
@@ -457,7 +462,7 @@ export const ProductStore = () => {
                     <tbody>
                       {sizeCount.length === 0 && (
                         <tr>
-                          <td colSpan={3} align="center">
+                          <td colSpan={5} align="center">
                             Chưa có kích thước!
                           </td>
                         </tr>

@@ -6,7 +6,7 @@ import sd79.dto.response.productResponse.BrandResponse;
 import java.util.List;
 
 public interface BrandService {
-    List<BrandResponse> getAllBrands();
+    List<BrandResponse> getAllBrands(String keyword);
 
     Integer storeBrand(BrandRequest req);
 

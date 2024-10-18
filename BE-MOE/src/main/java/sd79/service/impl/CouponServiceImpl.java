@@ -2,19 +2,13 @@ package sd79.service.impl;
 
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PageableResponse;
-import sd79.enums.ProductStatus;
-import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
@@ -25,14 +19,8 @@ import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.UserRepository;
 import sd79.repositories.customQuery.CouponCustomizeQuery;
 import sd79.service.CouponService;
-import sd79.service.ProductService;
-import sd79.utils.CloudinaryUpload;
 import sd79.utils.CloudinaryUploadCoupon;
 import sd79.utils.Email;
-
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -1,38 +1,43 @@
 import { useEffect, useState } from "react";
-import { fetchAllSizes, postSize, putSize, deleteSize } from "~/apis/sizesApi";
+import debounce from "lodash.debounce";
+import Container from "@mui/material/Container";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import { DialogStore } from "~/components/sizes/DialogStore";
-import { DialogIconUpdate } from "~/components/sizes/DialogIconUpdate";
+import FolderDeleteTwoToneIcon from "@mui/icons-material/FolderDeleteTwoTone";
+import SearchIcon from "@mui/icons-material/Search";
+import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
+import { Grid, Box, IconButton } from "@mui/material";
+import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
-  Container,
-  Grid,
-  TextField,
-  Box,
-  Typography,
+  FormControl,
+  FormLabel,
+  Input,
+  LinearProgress,
+  Sheet,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Pagination,
-  Stack,
-} from "@mui/material";
+} from "@mui/joy";
+import { deleteSize, fetchAllSizes, postSize, putSize } from "~/apis/sizesApi";
+import { DialogIconUpdate } from "~/components/sizes/DialogIconUpdate";
+import { DialogStore } from "~/components/sizes/DialogStore";
 
 export const Size = () => {
   const [sizes, setSizes] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetSizes();
-  }, []);
+  }, [keyword]);
 
   const handleSetSizes = async () => {
-    const res = await fetchAllSizes();
+    const res = await fetchAllSizes(keyword);
     setSizes(res.data);
+  };
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
   };
 
   const handlePostSize = async (data) => {
@@ -66,37 +71,29 @@ export const Size = () => {
   return (
     <Container
       maxWidth="max-width"
-      className="bg-white"
-      style={{ height: "100%", marginTop: "15px" }}
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
-      <Grid
-        container
-        spacing={2}
-        alignItems="center"
-        bgcolor={"#1976d2"}
-        height={"50px"}
-      >
-        <Typography
-          xs={4}
-          margin={"4px"}
-          variant="h6"
-          gutterBottom
-          color="#fff"
-        >
-          Quản lý size
-        </Typography>
-      </Grid>
-      <Box className="mb-5 mt-5">
+      <BreadcrumbsAttributeProduct tag="kích thước" />
+      <Box>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm size" fullWidth />
+            <FormControl>
+              <FormLabel>Tìm kiếm</FormLabel>
+              <Input
+                onChange={onChangeSearch}
+                startDecorator={<SearchIcon />}
+                placeholder="Tìm kiếm kích thước"
+                fullWidth
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               <DialogStore
-                buttonTitle="Thêm mới size"
+                buttonTitle="Thêm mới kích thước"
                 icon={<AddIcon />}
-                title="Thêm mới size"
+                title="Thêm mới kích thước"
+                label="Nhập tên kích thước"
                 handleSubmit={handlePostSize}
               />
             </Box>
@@ -104,36 +101,43 @@ export const Size = () => {
         </Grid>
       </Box>
       <Box>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>STT</TableCell>
-                <TableCell>Size</TableCell>
-                <TableCell>Chiều dài</TableCell>
-                <TableCell>Chiều rộng</TableCell>
-                <TableCell>Độ dài tay áo</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Ngày sửa</TableCell>
-                <TableCell>Người tạo</TableCell>
-                <TableCell>Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        <Sheet
+          sx={{
+            marginTop: 2,
+            padding: "2px",
+            borderRadius: "5px",
+          }}
+        >
+          <Table borderAxis="x" size="lg" stickyHeader variant="outlined">
+            <thead>
+              <tr>
+                <th className="text-center">STT</th>
+                <th className="text-center">Size</th>
+                <th className="text-center">Chiều dài</th>
+                <th className="text-center">Chiều rộng</th>
+                <th className="text-center">Độ dài tay áo</th>
+                <th className="text-center">Ngày tạo</th>
+                <th className="text-center">Ngày sửa</th>
+                <th className="text-center">Người tạo</th>
+                <th className="text-center">Thao tác</th>
+              </tr>
+            </thead>
+
+            <tbody>
               {sizes &&
                 sizes.map((sizes, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{sizes.name}</TableCell>
-                    <TableCell>{sizes.length}</TableCell>
-                    <TableCell>{sizes.width}</TableCell>
-                    <TableCell>{sizes.sleeve}</TableCell>
-                    <TableCell>{sizes.createdAt}</TableCell>
-                    <TableCell>{sizes.updatedAt}</TableCell>
-                    <TableCell>{sizes.createdBy}</TableCell>
-                    <TableCell>
+                  <tr key={index}>
+                    <td className="text-center">{index + 1}</td>
+                    <td className="text-center">{sizes.name}</td>
+                    <td className="text-center">{sizes.length}</td>
+                    <td className="text-center">{sizes.width}</td>
+                    <td className="text-center">{sizes.sleeve}</td>
+                    <td className="text-center">{sizes.createdAt}</td>
+                    <td className="text-center">{sizes.updatedAt}</td>
+                    <td className="text-center">{sizes.createdBy}</td>
+                    <td className="text-center">
                       <DialogIconUpdate
-                        icon={<EditIcon />}
+                        icon={<EditNoteTwoToneIcon />}
                         title="Chỉnh sửa size"
                         label="Nhập tên size"
                         color="warning"
@@ -145,22 +149,15 @@ export const Size = () => {
                         color="error"
                         onClick={() => ondelete(sizes.id)}
                       >
-                        <DeleteIcon />
+                        <FolderDeleteTwoToneIcon />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-            </TableBody>
+            </tbody>
           </Table>
-        </TableContainer>
-        <Stack
-          marginTop={3}
-          display={"flex"}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <Pagination count={10} variant="outlined" shape="rounded" />
-        </Stack>
+          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
+        </Sheet>
       </Box>
     </Container>
   );

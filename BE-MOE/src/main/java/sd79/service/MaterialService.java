@@ -6,7 +6,7 @@ import sd79.dto.response.productResponse.MaterialResponse;
 import java.util.List;
 
 public interface MaterialService {
-    List<MaterialResponse> getAllMaterials();
+    List<MaterialResponse> getAllMaterials(String keyword);
 
     Integer storeMaterial(MaterialRequest req);
 

@@ -23,8 +23,8 @@ public class MaterialController {
             description = "Get all material from database"
     )
     @GetMapping
-    public ResponseData<?> getAllMaterials() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials());
+    public ResponseData<?> getAllMaterials(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials(keyword));
     }
 
     @Operation(

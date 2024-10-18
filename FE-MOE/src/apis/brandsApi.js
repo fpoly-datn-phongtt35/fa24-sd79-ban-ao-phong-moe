@@ -2,9 +2,11 @@ import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { toast } from "react-toastify";
 
-export const fetchAllBrands = async () => {
+export const fetchAllBrands = async (keyword) => {
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}/brand`)
+    .get(
+      `${API_ROOT}/brand${keyword !== "" ? "?keyword=" + keyword.trim() : ""}`
+    )
     .then((res) => res.data);
 };
 

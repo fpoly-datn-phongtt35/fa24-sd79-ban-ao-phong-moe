@@ -2,9 +2,12 @@ package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
@@ -19,6 +22,7 @@ import java.util.List;
 @RequestMapping("api/${api.version}/product")
 @Tag(name = "Product Controller", description = "Product and product management details")
 @RequiredArgsConstructor
+@Validated
 public class ProductController {
 
     private final ProductService productService;
@@ -33,11 +37,20 @@ public class ProductController {
     }
 
     @Operation(
+            summary = "Get all product listings",
+            description = "Get the entire product list (updating search and pagination functions)"
+    )
+    @GetMapping("/archive")
+    public ResponseData<?> getAllProductArchives(ProductParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.productArchive(param));
+    }
+
+    @Operation(
             summary = "Create Product",
             description = "Add a product into database"
     )
     @PostMapping
-    public ResponseData<?> storeProduct(@RequestBody ProductRequest request) {
+    public ResponseData<?> storeProduct(@Valid @RequestBody ProductRequest request) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.productService.storeProduct(request));
     }
 
@@ -46,7 +59,7 @@ public class ProductController {
             description = "Upload the image to cloudinary and return the url to save to the database"
     )
     @PostMapping("/upload")
-    public ResponseData<?> uploadFile(@ModelAttribute ProductImageReq request) {
+    public ResponseData<?> uploadFile(@Valid @ModelAttribute ProductImageReq request) {
         this.productService.storeProductImages(request);
         return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added product images");
     }
@@ -56,7 +69,7 @@ public class ProductController {
             description = "Only update the product's status"
     )
     @PatchMapping("/change-status/{id}/{status}")
-    public ResponseData<?> changeProductStatus(@PathVariable("id") long id, @PathVariable("status") ProductStatus status) {
+    public ResponseData<?> changeProductStatus(@Min(1) @PathVariable("id") long id, @PathVariable("status") ProductStatus status) {
         this.productService.setProductStatus(id, status);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sản phẩm đã được lưu vào kho lưu trữ");
     }
@@ -66,9 +79,29 @@ public class ProductController {
             description = "Switch the product to isDelete = true and the product will be hidden from the display list"
     )
     @PatchMapping("/move-to-bin/{id}")
-    public ResponseData<?> moveToBin(@PathVariable Long id) {
+    public ResponseData<?> moveToBin(@Min(1) @PathVariable Long id) {
         this.productService.moveToBin(id);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Move to bin successfully");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sản phẩm đã lưu ở kho lưu trữ");
+    }
+
+    @Operation(
+            summary = "Restore product",
+            description = "Switch the product to isDelete = false and display to form"
+    )
+    @PatchMapping("/restore/{id}")
+    public ResponseData<?> restore(@Min(1) @PathVariable Long id) {
+        this.productService.restore(id);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sản phẩm đã được khôi phục");
+    }
+
+    @Operation(
+            summary = "Restore product",
+            description = "Switch the product to isDelete = false and display to form"
+    )
+    @DeleteMapping("/delete-forever/{id}")
+    public ResponseData<?> deleteForever(@Min(1) @PathVariable Long id) {
+        this.productService.deleteProductForever(id);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }
 
     @Operation(
@@ -76,7 +109,7 @@ public class ProductController {
             description = "Get a product from the database"
     )
     @GetMapping("/{id}")
-    public ResponseData<?> getProduct(@PathVariable Long id) {
+    public ResponseData<?> getProduct(@Min(1) @PathVariable Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Found a product with id " + id, this.productService.getProductInfo(id));
     }
 
@@ -85,7 +118,7 @@ public class ProductController {
             description = "Product updates"
     )
     @PutMapping("/update-product/{id}")
-    public ResponseData<?> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest request) {
+    public ResponseData<?> updateProduct(@Min(1) @PathVariable Long id, @Valid @RequestBody ProductUpdateRequest request) {
         this.productService.updateProduct(request, id);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Cập nhật thành công");
     }
@@ -95,7 +128,7 @@ public class ProductController {
             description = "Update status for detailed products"
     )
     @PatchMapping("/change-status/product-detail/{id}/{status}")
-    public ResponseData<?> changeProductStatus(@PathVariable Long id, @PathVariable("status") Boolean status) {
+    public ResponseData<?> changeProductStatus(@Min(1) @PathVariable Long id, @PathVariable("status") Boolean status) {
         this.productService.setProductDetailStatus(id, status);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Cập nhật thành công");
     }
@@ -115,8 +148,18 @@ public class ProductController {
             description = "Create a new attribute for the product and that attribute does not exist in the product"
     )
     @PostMapping("/store-product-detail/attribute")
-    public ResponseData<?> storeProductDetailAttribute(@RequestBody ProductDetailStoreRequest item) {
+    public ResponseData<?> storeProductDetailAttribute(@Valid @RequestBody ProductDetailStoreRequest item) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.productService.storeProductDetailAttribute(item));
+    }
+
+    @Operation(
+            summary = "Remove image",
+            description = "Remove image from database and cloudinary"
+    )
+    @DeleteMapping("/remove-image")
+    public ResponseData<?> removeImage(@RequestParam String publicId) {
+        this.productService.removeImageCloudinary(publicId);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }
 }
     

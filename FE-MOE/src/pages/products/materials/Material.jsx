@@ -1,46 +1,56 @@
 import { useEffect, useState } from "react";
-import { fetchAllMaterials, postMaterial, putMaterial, deleteMaterial } from "~/apis/materialApi";
+import debounce from "lodash.debounce";
+import Container from "@mui/material/Container";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import FolderDeleteTwoToneIcon from "@mui/icons-material/FolderDeleteTwoTone";
+import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { DialogModify } from "~/components/common/DialogModify";
 import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import { Grid, Box, IconButton } from "@mui/material";
+import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
-  Container,
-  Grid,
-  TextField,
-  Box,
-  Typography,
+  FormControl,
+  FormLabel,
+  Input,
+  LinearProgress,
+  Sheet,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Pagination,
-  Stack,
-} from "@mui/material";
+} from "@mui/joy";
+import {
+  deleteMaterial,
+  fetchAllMaterials,
+  postMaterial,
+  putMaterial,
+} from "~/apis/materialApi";
 
 export const Material = () => {
   const [materials, setMaterials] = useState(null);
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     handleSetMaterials();
-  }, []);
+  }, [keyword]);
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
+  };
 
   const handleSetMaterials = async () => {
-    const res = await fetchAllMaterials();
+    const res = await fetchAllMaterials(keyword);
     setMaterials(res.data);
   };
 
-  const handlePostMaterial= async (data) => {
+  const handlePostMaterial = async (data) => {
     await postMaterial(data);
     handleSetMaterials();
   };
 
-  const handleEditMaterial= async (data, id) => {
+  const handleEditMaterial = async (data, id) => {
     await putMaterial(data, id);
     handleSetMaterials();
   };
@@ -66,30 +76,21 @@ export const Material = () => {
   return (
     <Container
       maxWidth="max-width"
-      className="bg-white"
-      style={{ height: "100%", marginTop: "15px" }}
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
-      <Grid
-        container
-        spacing={2}
-        alignItems="center"
-        bgcolor={"#1976d2"}
-        height={"50px"}
-      >
-        <Typography
-          xs={4}
-          margin={"4px"}
-          variant="h6"
-          gutterBottom
-          color="#fff"
-        >
-          Quản lý chất liệu
-        </Typography>
-      </Grid>
-      <Box className="mb-5 mt-5">
+      <BreadcrumbsAttributeProduct tag="chất liệu" />
+      <Box>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={3}>
-            <TextField variant="standard" label="Tìm kiếm chất liệu" fullWidth />
+            <FormControl>
+              <FormLabel>Tìm kiếm</FormLabel>
+              <Input
+                onChange={onChangeSearch}
+                startDecorator={<SearchIcon />}
+                placeholder="Tìm kiếm chất liệu"
+                fullWidth
+              />
+            </FormControl>
           </Grid>
           <Grid item xs={9}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
@@ -105,59 +106,58 @@ export const Material = () => {
         </Grid>
       </Box>
       <Box>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>STT</TableCell>
-                <TableCell>Tên chất liệu</TableCell>
-                <TableCell>Sản phẩm</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Ngày sửa</TableCell>
-                <TableCell>Người tạo</TableCell>
-                <TableCell>Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        <Sheet
+          sx={{
+            marginTop: 2,
+            padding: "2px",
+            borderRadius: "5px",
+          }}
+        >
+          <Table borderAxis="x" size="lg" stickyHeader variant="outlined">
+            <thead>
+              <tr>
+                <th className="text-center">STT</th>
+                <th className="text-center">Tên chất liệu</th>
+                <th className="text-center">Sản phẩm</th>
+                <th className="text-center">Ngày tạo</th>
+                <th className="text-center">Ngày sửa</th>
+                <th className="text-center">Người tạo</th>
+                <th className="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
               {materials &&
-                materials.map((materials, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{materials.name}</TableCell>
-                    <TableCell>{materials.productCount}</TableCell>
-                    <TableCell>{materials.createdAt}</TableCell>
-                    <TableCell>{materials.updatedAt}</TableCell>
-                    <TableCell>{materials.createdBy}</TableCell>
-                    <TableCell>
+                materials.map((material, index) => (
+                  <tr key={index}>
+                    <td className="text-center">{index + 1}</td>
+                    <td className="text-center">{material.name}</td>
+                    <td className="text-center">{material.productCount}</td>
+                    <td className="text-center">{material.createdAt}</td>
+                    <td className="text-center">{material.updatedAt}</td>
+                    <td className="text-center">{material.createdBy}</td>
+                    <td className="text-center">
                       <DialogModifyIconButton
-                        icon={<EditIcon />}
+                        icon={<EditNoteTwoToneIcon />}
                         title="Chỉnh sửa chất liệu"
                         label="Nhập tên chất liệu"
                         color="warning"
-                        value={materials.name}
-                        id={materials.id}
+                        value={material.name}
+                        id={material.id}
                         handleSubmit={handleEditMaterial}
                       />
                       <IconButton
                         color="error"
-                        onClick={() => ondelete(materials.id)}
+                        onClick={() => ondelete(material.id)}
                       >
-                        <DeleteIcon />
+                        <FolderDeleteTwoToneIcon />
                       </IconButton>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-            </TableBody>
+            </tbody>
           </Table>
-        </TableContainer>
-        <Stack
-          marginTop={3}
-          display={"flex"}
-          justifyContent={"center"}
-          alignItems={"center"}
-        >
-          <Pagination count={10} variant="outlined" shape="rounded" />
-        </Stack>
+          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
+        </Sheet>
       </Box>
     </Container>
   );

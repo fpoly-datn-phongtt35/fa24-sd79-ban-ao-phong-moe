@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.authRequests.SignInRequest;
-import sd79.dto.response.TokenResponse;
+import sd79.dto.response.auth.TokenResponse;
 import sd79.exception.InvalidDataException;
 import sd79.model.User;
 import sd79.model.redis_model.Token;
@@ -49,6 +49,7 @@ public class AuthenticationService {
                 .accessToken(access_token)
                 .refreshToken(refresh_token)
                 .userId(user.getId())
+                .authority(user.getRole().getName())
                 .build();
     }
 

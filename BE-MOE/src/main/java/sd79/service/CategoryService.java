@@ -6,7 +6,7 @@ import sd79.dto.response.productResponse.CategoryResponse;
 import java.util.List;
 
 public interface CategoryService {
-    List<CategoryResponse> getAllCategories();
+    List<CategoryResponse> getAllCategories(String keyword);
 
     Integer storeCategory(CategoryRequest req);
 
