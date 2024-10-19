@@ -42,6 +42,11 @@ public class PromotionController {
         return new ResponseData<>(HttpStatus.OK.value(), "List promotion", service.getAllPromotion());
     }
 
+    @GetMapping("/detail/{id}")
+    public ResponseData<?> getPromotionId(@PathVariable Integer id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Coupon details", service.getPromotionId(id));
+    }
+
     @Operation(
             summary = "New Promotion",
             description = "New promotion into database"

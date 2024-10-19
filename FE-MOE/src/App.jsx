@@ -21,6 +21,9 @@ import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+import { AddPromotion } from "./pages/promotions/AddPromotion";
+import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
+
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
 import { useState } from "react";
@@ -119,8 +122,8 @@ function App() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
-        {/* { <Route path="/promotion/add" element={<AddPromotion />} /> } */}
-        {/* <Route path="/promotion/:id" element={<UpdatePromotion />} /> */}
+        <Route path="/promotions/add" element={<AddPromotion />} />
+        <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
       </Route>
     </Routes>
   );

@@ -16,7 +16,6 @@ public interface PromotionService {
     List<PromotionResponse> getAllPromotion();
     PromotionResponse getPromotionId(Integer id);
     Integer storePromotion(PromotionRequest promotionRequest);
-
     Integer updatePromotion(PromotionRequest req, Integer id);
     void isDeletePromotion(Integer id);
     Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable);

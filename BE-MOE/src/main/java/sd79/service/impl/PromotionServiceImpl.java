@@ -26,7 +26,7 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public List<PromotionResponse> getAllPromotion() { //tra ra danh dach phieu giam gia
-        return promotionRepo.findAll().stream().map(this::convertCPromotionResponse).toList();
+        return promotionRepo.findAll().stream().map(this::convertCPromotionResponse).toList().reversed();
     }
 
     @Override
