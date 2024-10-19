@@ -65,7 +65,7 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             query.setParameter("status", param.getStatus());
@@ -120,7 +120,7 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             countQuery.setParameter("status", param.getStatus());
@@ -185,7 +185,7 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             query.setParameter("status", param.getStatus());
@@ -240,7 +240,7 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             countQuery.setParameter("status", param.getStatus());

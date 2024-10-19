@@ -88,6 +88,10 @@ export const Archive = () => {
     debouncedSearch(e.target.value);
   };
 
+  const onChangeSearchVoice = (value) => {
+    debouncedSearch(value);
+  };
+
   const onChangeStatus = (e) => {
     setCurrentPage(1);
     setStatus(e);
@@ -206,6 +210,7 @@ export const Archive = () => {
 
       <Filter
         btnAdd={false}
+        onChangeSearchVoice={onChangeSearchVoice}
         onChangeSearch={onChangeSearch}
         keyword={keyword}
         status={status}

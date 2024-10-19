@@ -86,6 +86,10 @@ export const Product = () => {
     debouncedSearch(e.target.value);
   };
 
+  const onChangeSearchVoice = (value) => {
+    debouncedSearch(value);
+  };
+
   const onChangeStatus = (e) => {
     setCurrentPage(1);
     setStatus(e);
@@ -186,6 +190,7 @@ export const Product = () => {
       </Grid>
 
       <Filter
+        onChangeSearchVoice={onChangeSearchVoice}
         btnAdd={true}
         onChangeSearch={onChangeSearch}
         keyword={keyword}

@@ -5,6 +5,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import Input from "@mui/joy/Input";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   Button,
   FormControl,
@@ -13,9 +14,42 @@ import {
   Select,
   Typography,
 } from "@mui/joy";
+import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
+import MicOffOutlinedIcon from "@mui/icons-material/MicOffOutlined";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import { useRef, useState } from "react";
 
 export const Filter = (props) => {
+  const [isOpenMicrophone, setIsOpenMicrophone] = useState(true);
+  const [value, setValue] = useState("");
   const navigate = useNavigate();
+  const { transcript, resetTranscript } = useSpeechRecognition();
+
+  const timeoutId = useRef(null);
+
+  const handleStartListening = () => {
+    setIsOpenMicrophone(!isOpenMicrophone);
+    resetTranscript();
+    SpeechRecognition.startListening({ continuous: true, language: "vi-VN" });
+    toast.warning("Bắt đầu lắm nghe");
+    timeoutId.current = setTimeout(() => {
+      handleStopListening();
+    }, 5000);
+  };
+
+  const handleStopListening = () => {
+    clearTimeout(timeoutId.current);
+    toast.warning("Ngừng lắng nghe");
+    setValue("");
+    setIsOpenMicrophone(!isOpenMicrophone);
+    SpeechRecognition.stopListening();
+    const cleanedTranscript = transcript.replace(/\./g, "");
+    setValue(cleanedTranscript);
+    props.onChangeSearchVoice(cleanedTranscript);
+  };
+
   return (
     <>
       <Grid
@@ -72,10 +106,26 @@ export const Filter = (props) => {
                 <FormControl>
                   <FormLabel>Tìm kiếm</FormLabel>
                   <Input
+                    value={value}
                     type="search"
                     placeholder="Tìm kiếm…"
                     startDecorator={<SearchIcon />}
-                    onChange={props.onChangeSearch}
+                    endDecorator={
+                      isOpenMicrophone ? (
+                        <MicNoneOutlinedIcon
+                          onClick={() => handleStartListening()}
+                        />
+                      ) : (
+                        <MicOffOutlinedIcon
+                          color="error"
+                          onClick={() => handleStopListening()}
+                        />
+                      )
+                    }
+                    onChange={(e) => {
+                      props.onChangeSearch(e);
+                      setValue(e.target.value);
+                    }}
                   />
                 </FormControl>
               </Grid>

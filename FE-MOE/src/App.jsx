@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import 'regenerator-runtime/runtime';
 import Signin from "~/pages/auth/Signin";
 import { Header_Admin } from "./components/layout/Header_Admin";
 import { Sidebar_Admin } from "./components/layout/Sidebar_Admin";
