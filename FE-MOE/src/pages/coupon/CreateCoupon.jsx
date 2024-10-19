@@ -10,6 +10,8 @@ import CouponImage from '~/components/common/CouponImage';
 import { fetchAllCustomer } from '~/apis/customerApi';
 import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
+import { CircularProgress } from '@mui/material';
+
 
 const CreateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, control } = useForm();
@@ -22,6 +24,8 @@ const CreateCoupon = () => {
     const [discountTypeError, setDiscountTypeError] = useState('');
     const [imagesError, setImagesError] = useState('');
     const [selectedCustomersError, setSelectedCustomersError] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     const type = watch('type', 'PUBLIC');
     const formatDate = (dateString, time = "00:00:00") => {
@@ -87,6 +91,7 @@ const CreateCoupon = () => {
         };
 
         try {
+            setLoading(true);
             const response = await postCoupon(coupon);
 
             let formData = new FormData();
@@ -397,12 +402,10 @@ const CreateCoupon = () => {
                             </Grid>
 
 
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Button type="submit" className='w-100' variant="contained" color="primary" >
-                                        Thêm mới
-                                    </Button>
-                                </Grid>
+                            <Grid item xs={6}>
+                                <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
+                                    {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
+                                </Button>
                             </Grid>
                         </Box>
                     </Grid>

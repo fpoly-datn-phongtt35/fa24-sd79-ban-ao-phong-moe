@@ -22,6 +22,10 @@ import sd79.service.CouponService;
 import sd79.utils.CloudinaryUploadCoupon;
 import sd79.utils.Email;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CouponServiceImpl implements CouponService {
@@ -57,6 +61,7 @@ public class CouponServiceImpl implements CouponService {
         if (this.couponRepo.existsCouponByAttribute(couponRequest.getCode())) {
             throw new EntityExistsException("Mã phiếu giảm giá đã tồn tại!");
         }
+
         Coupon coupon = Coupon.builder()
                 .code(couponRequest.getCode())
                 .name(couponRequest.getName())
@@ -70,13 +75,16 @@ public class CouponServiceImpl implements CouponService {
                 .endDate(couponRequest.getEndDate())
                 .description(couponRequest.getDescription())
                 .build();
+
         coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
         coupon = couponRepo.save(coupon);
+
         if (couponRequest.getType() == TodoType.PERSONAL) {
             if (couponRequest.getCustomerIds() == null || couponRequest.getCustomerIds().isEmpty()) {
                 throw new IllegalArgumentException("ID khách hàng không có");
             }
+
             for (Long customerId : couponRequest.getCustomerIds()) {
                 Customer customer = this.customerRepository.findById(customerId)
                         .orElseThrow(() -> new EntityNotFoundException("ID khách hàng là: " + customerId));
@@ -85,42 +93,62 @@ public class CouponServiceImpl implements CouponService {
                 couponShare.setCustomer(customer);
                 couponShare.setIsDeleted(false);
                 couponShareRepo.save(couponShare);
-                try {
-                    String subject = "Thông Báo Phiếu Giảm Giá";
-                    String body = String.format(
-                            "<div class=\"email-container\">" +
-                                    "<h1>Bạn có một phiếu giảm giá: %s</h1>" +
-                                    "<p>Xin chào %s,</p>" +
-                                    "<p>Bạn vừa nhận được một phiếu giảm giá đặc biệt. Hãy sử dụng nó để nhận ưu đãi!</p>" +
-                                    "<div class=\"voucher\">Mã giảm giá: <span>%s</span></div>" +
-                                    "<p>Giá trị: %s %s</p>" +
-                                    "<p>Ngày bắt đầu: %s</p>" +
-                                    "<p>Ngày hết hạn: %s</p>" +
-                                    "</div>",
-                            coupon.getName(), customer.getFirstName(), coupon.getCode(),
-                            coupon.getDiscountValue(), coupon.getDiscountType(),
-                            coupon.getStartDate(), coupon.getEndDate()
-                    );
-                 email.sendEmail(customer.getUser().getEmail(), subject, body);
-                } catch (Exception e) {
-                    System.out.println("THAT BAI");
-                }
             }
         }
+
         return coupon.getId();
     }
 
+    private void sendCouponEmail(Coupon coupon, Customer customer) {
+        try {
+            // Lấy hình ảnh mỗi lần gửi cho khách hàng mới
+            CouponImage couponImage = findByImage(coupon.getId());
+            String imageUrl = couponImage.getImageUrl();  // Đảm bảo lấy lại URL ảnh cho từng người nhận
+
+            String subject = "Thông Báo Phiếu Giảm Giá";
+            String body = String.format(
+                    "<div style=\"font-family:Arial, sans-serif; background-color:#f8f8f8; padding:20px; text-align:center;\">" +
+                            "<h2 style=\"color:#f37021;\">Bạn có một phiếu giảm giá: %s</h2>" +
+                            "<div style=\"background-color:white; padding:20px; max-width:600px; margin:auto; border-radius:10px;\">" +
+                            "<h3 style=\"color:#333;\">Thông Báo Phiếu Giảm Giá</h3>" +
+                            "<p style=\"color:#666;\">Xin chào %s,</p>" +
+                            "<p style=\"color:#666;\">Chúng tôi vô cùng vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt.</p>" +
+                            "<div style=\"background-image: url('%s'); " +
+                            "background-size: cover; padding:40px; border-radius:8px; font-size:16px; color:#333;\">" +
+                            "<strong>Giảm %s%% Có hiệu lực từ: %s đến %s</strong>" +
+                            "</div>" +
+                            "<p style=\"color:#666;\">Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
+                            "<a href=\"#\" style=\"display:inline-block; padding:10px 20px; background-color:#333; color:white; text-decoration:none; border-radius:5px;\">Xem Chi Tiết</a>" +
+                            "<p style=\"color:#999; font-size:12px;\">Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
+                            "</div>" +
+                            "</div>",
+                    coupon.getName(), customer.getFirstName(), imageUrl,
+                    coupon.getDiscountValue(), coupon.getStartDate(), coupon.getEndDate()
+            );
+
+            email.sendEmail(customer.getUser().getEmail(), subject, body);
+        } catch (Exception e) {
+            System.out.println("THAT BAI: " + e.getMessage());
+        }
+    }
+
+
+    public CouponImage findByImage(Long couponId) {
+        return this.couponImageRepo.findByCouponId(couponId)
+                .orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
+    }
 
     @Transactional
     @Override
     public void storeCouponImages(CouponImageReq req) {
-
         Coupon coupon = this.findCouponById(req.getCouponID());
         CouponImage couponImage = coupon.getCouponImage();
+
         if (couponImage != null && couponImage.getPublicId() != null) {
             cloudinaryUploadCoupon.delete(couponImage.getPublicId());
             couponImageRepo.delete(couponImage);
         }
+
         String imageUrl = cloudinaryUploadCoupon.upload(req.getImages());
         String publicId = extractPublicId(imageUrl);
         CouponImage newCouponImage = new CouponImage();
@@ -128,7 +156,16 @@ public class CouponServiceImpl implements CouponService {
         newCouponImage.setImageUrl(imageUrl);
         newCouponImage.setPublicId(publicId);
         couponImageRepo.save(newCouponImage);
+
+        if (coupon.getType() == TodoType.PERSONAL) {
+            List<CouponShare> sharedCoupons = couponShareRepo.findByCoupon(coupon);
+            for (CouponShare couponShare : sharedCoupons) {
+                Customer customer = couponShare.getCustomer();
+                sendCouponEmail(coupon, customer);
+            }
+        }
     }
+
 
     private String extractPublicId(String url) {
         String[] parts = url.split("/upload/");
@@ -149,8 +186,13 @@ public class CouponServiceImpl implements CouponService {
 
     @Transactional
     @Override
-    public long updateCoupon(Long id, CouponRequest couponRequest) { // sua phieu giam gia
-        Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+    public long updateCoupon(Long id, CouponRequest couponRequest) {
+        Coupon coupon = couponRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        if (!coupon.getCode().equals(couponRequest.getCode()) &&
+                couponRepo.existsCouponByAttribute(couponRequest.getCode())) {
+            throw new EntityExistsException("Mã phiếu giảm giá đã tồn tại!");
+        }
         coupon.setCode(couponRequest.getCode());
         coupon.setName(couponRequest.getName());
         coupon.setDiscountValue(couponRequest.getDiscountValue());
@@ -162,10 +204,27 @@ public class CouponServiceImpl implements CouponService {
         coupon.setStartDate(couponRequest.getStartDate());
         coupon.setEndDate(couponRequest.getEndDate());
         coupon.setDescription(couponRequest.getDescription());
-        coupon.setCreatedBy(getUserById(couponRequest.getUserId()));
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
+        if (couponRequest.getType() == TodoType.PERSONAL) {
+            if (couponRequest.getCustomerIds() == null || couponRequest.getCustomerIds().isEmpty()) {
+                throw new IllegalArgumentException("ID khách hàng không có");
+            }
+            couponShareRepo.deleteAll(couponShareRepo.findByCoupon(coupon));
+            for (Long customerId : couponRequest.getCustomerIds()) {
+                Customer customer = this.customerRepository.findById(customerId)
+                        .orElseThrow(() -> new EntityNotFoundException("ID khách hàng là: " + customerId));
+                CouponShare couponShare = new CouponShare();
+                couponShare.setCoupon(coupon);
+                couponShare.setCustomer(customer);
+                couponShare.setIsDeleted(false);
+                couponShareRepo.save(couponShare);
+            }
+        } else {
+            couponShareRepo.deleteAll(couponShareRepo.findByCoupon(coupon));
+        }
         return couponRepo.save(coupon).getId();
     }
+
 
 
     @Transactional
@@ -189,7 +248,28 @@ public class CouponServiceImpl implements CouponService {
 
 
     private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach
-        return CouponResponse.builder().id(coupon.getId()).code(coupon.getCode()).name(coupon.getName()).type(coupon.getType()).discountType(coupon.getDiscountType()).discountValue(coupon.getDiscountValue()).maxValue(coupon.getMaxValue()).quantity(coupon.getQuantity()).conditions(coupon.getConditions()).startDate(coupon.getStartDate()).endDate(coupon.getEndDate()).status(coupon.getStatus()).description(coupon.getDescription()).imageUrl(convertToUrl(coupon.getCouponImage())).build();
+
+        List<Customer> customers = coupon.getCouponShares().stream()
+                .map(CouponShare::getCustomer)
+                .collect(Collectors.toList());
+
+        return CouponResponse.builder()
+                .id(coupon.getId())
+                .code(coupon.getCode())
+                .name(coupon.getName())
+                .type(coupon.getType())
+                .discountType(coupon.getDiscountType())
+                .discountValue(coupon.getDiscountValue())
+                .maxValue(coupon.getMaxValue())
+                .quantity(coupon.getQuantity())
+                .conditions(coupon.getConditions())
+                .startDate(coupon.getStartDate())
+                .endDate(coupon.getEndDate())
+                .status(coupon.getStatus())
+                .description(coupon.getDescription())
+                .imageUrl(convertToUrl(coupon.getCouponImage()))
+                .customers(customers)
+                .build();
     }
 
     private User getUserById(Long id) {
