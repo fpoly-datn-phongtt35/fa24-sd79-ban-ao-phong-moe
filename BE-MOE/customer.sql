@@ -17,7 +17,6 @@ CREATE TABLE customer_address (
     ward varchar(255),
     district varchar(255),
     city varchar(255),
-    country varchar(255)
 );
 
 -- ALTER TABLE customer_address ADD CONSTRAINT fk_customer_address FOREIGN KEY (customer_id) REFERENCES customers(id);
@@ -28,19 +27,25 @@ ALTER TABLE customers
 
 
 
-INSERT INTO `customer_address` (`street_name`, `ward`, `district`, `city`, `country`)
+INSERT INTO customer_address (street_name, ward, district, city)
 VALUES
-    ('123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
-    ('456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
-    ('789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
-    ('101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
-    ('202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
+    ('123 Baker Street', 'Marylebone', 'Central London', 'London'),
+    ('1600 Pennsylvania Avenue', 'Northwest', 'Washington D.C.', 'Washington'),
+    ('Champs-Élysées', '8th arrondissement', 'Paris', 'Île-de-France'),
+    ('Friedrichstraße', 'Mitte', 'Berlin', 'Berlin'),
+    ('Shibuya Crossing', 'Shibuya', 'Tokyo', 'Tokyo Metropolis'),
+    ('Queen Street', 'CBD', 'Auckland', 'Auckland');
 
 
-INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `address_id`, `created_at`, `updated_at`)
+
+
+INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, address_id, created_at, updated_at)
 VALUES
-    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', 1, NOW(), NOW()),
-    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', 2, NOW(), NOW()),
-    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', 3, NOW(), NOW()),
-    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', 4, NOW(), NOW()),
-    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', 5, NOW(), NOW());
+    ('John', 'Doe', '07123456789', 'MALE', '1980-04-15', 'johndoe.jpg', 1, NOW(), NOW()),
+    ('Jane', 'Smith', '12025550123', 'FEMALE', '1985-08-20', 'janesmith.jpg', 2, NOW(), NOW()),
+    ('Pierre', 'Dubois', '0601234567', 'MALE', '1990-11-05', 'pierredubois.jpg', 3, NOW(), NOW()),
+    ('Anna', 'Schmidt', '03012345678', 'FEMALE', '1983-02-18', 'annaschmidt.jpg', 4, NOW(), NOW()),
+    ('Kenji', 'Tanaka', '09012345678', 'MALE', '1995-06-30', 'kenjitanaka.jpg', 5, NOW(), NOW()),
+    ('Liam', 'Brown', '0210123456', 'MALE', '1992-12-12', 'liambrown.jpg', 6, NOW(), NOW());
+
+

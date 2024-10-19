@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.MaterialRequest;
+import sd79.dto.requests.productRequests.MaterialRequest;
 import sd79.dto.response.ResponseData;
 import sd79.service.MaterialService;
 
@@ -23,8 +23,8 @@ public class MaterialController {
             description = "Get all material from database"
     )
     @GetMapping
-    public ResponseData<?> getAllMaterials() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials());
+    public ResponseData<?> getAllMaterials(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials(keyword));
     }
 
     @Operation(

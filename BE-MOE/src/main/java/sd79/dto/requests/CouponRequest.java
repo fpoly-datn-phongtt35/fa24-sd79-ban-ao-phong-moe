@@ -4,18 +4,25 @@ import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
+import sd79.model.Customer;
 
+import javax.swing.plaf.MenuBarUI;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
+@Setter
 @Builder
 public class CouponRequest {
 
     @NotEmpty(message = "Code cannot be empty")
     @Size(max = 12, message = "Code should not exceed 12 characters")
+
     private String code;
 
     @NotEmpty(message = "Name cannot be empty")
@@ -53,9 +60,9 @@ public class CouponRequest {
     @Size(max = 255, message = "Description should not exceed 255 characters")
     private String description;
 
-    @Size(max = 255, message = "Image should not exceed 255 characters")
-    private String image;
-
     @NotNull(message = "User id must be not null!")
     private Long userId;
+
+    private List<Long> customerIds;
+
 }

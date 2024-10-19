@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.CategoryRequest;
+import sd79.dto.requests.productRequests.CategoryRequest;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
 
@@ -22,8 +22,8 @@ public class CategoryController {
             description = "Get all Category from database"
     )
     @GetMapping
-    public ResponseData<?> getAllCategories() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories());
+    public ResponseData<?> getAllCategories(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories(keyword));
     }
 
     @Operation(

@@ -1,71 +1,114 @@
-import {
-  Container, Grid, Box, Typography, IconButton, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Button, TextField, Select, MenuItem
-} from '@mui/material';
 import React, { useState, useEffect } from 'react';
-import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/customerApi';
+import {
+  Container, Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Pagination,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
+import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Link } from 'react-router-dom';
-import swal from 'sweetalert';
+import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { toast } from 'react-toastify';
+import swal from 'sweetalert';
+import { FormLabel } from 'react-bootstrap';
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalPages, setTotalPages] = useState(0);
   const [keyword, setKeyword] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [gender, setGender] = useState('');
+  const [birth, setBirth] = useState('');
+  const [loading, setLoading] = useState(false);
+
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  const mapGender = (gender) => {
+    switch (gender) {
+      case 'MALE':
+        return 'Nam';
+      case 'FEMALE':
+        return 'Nữ';
+      case 'OTHER':
+        return 'Khác';
+      default:
+        return ''; // or return 'Không xác định' for undefined genders
+    }
+  };
+
+  const handleSetCustomer = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchAllCustomer(page - 1, pageSize);
+      setCustomers(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      toast.error('Failed to fetch customers.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleSearchKeywordAndDate = async () => {
+    try {
+      setLoading(true);
+      const res = await searchKeywordAndDate(keyword || '', gender || '', birth || '');
+      setCustomers(res.data.content);
+      setTotalPages(res.data.totalPages);
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
 
   useEffect(() => {
     handleSetCustomer();
-  }, []);
+  }, [page]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       handleSearchKeywordAndDate();
     }, 1000);
     return () => clearTimeout(delayDebounceFn);
-  }, [keyword, startDate, endDate]);
+  }, [keyword, gender, birth]);
 
-  const handleSetCustomer = async () => {
-    try {
-      const response = await fetchAllCustomer();
-      setCustomers(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch customers.');
-    }
-  };
-  const handleSearchKeywordAndDate = async () => {
-    try {
-      const res = await searchKeywordAndDate(keyword || '', startDate || '', endDate || '');
-      setCustomers(res.data);
-    } catch (error) {
-      console.error('Error during search:', error);
-    }
-  };
   const handleClear = () => {
-
     setKeyword('');
-    setStartDate('');
-    setEndDate('');
-
-
-    handleSetCoupon();
+    setGender('');
+    setBirth('');
+    setPage(1);
+    handleSetCustomer();
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteCustomer(id);
-      await handleSetCustomer();
-      // handleSetCustomer;
+      handleSetCustomer();
     } catch (error) {
       console.error('Failed to delete customer', error);
       swal('Error', 'Failed to delete customer', 'error');
     }
   };
 
-  const onDelete = async (id) => {
+  const onDelete = (id) => {
     swal({
       title: 'Xác nhận xóa',
       text: 'Bạn có chắc chắn muốn xóa khách hàng này?',
@@ -79,10 +122,12 @@ export const Customer = () => {
     });
   };
 
-
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
 
   return (
-    <Container maxWidth="max-width" className="bg-white" style={{ height: '100%', marginTop: '15px' }}>
+    <Container maxWidth="lg" className="bg-white" style={{ marginTop: '15px' }}>
       <Grid container spacing={2} alignItems="center" bgcolor={'#1976d2'} height={'50px'}>
         <Typography xs={4} margin={'4px'} variant="h6" gutterBottom color="#fff">
           Quản lý khách hàng
@@ -101,38 +146,38 @@ export const Customer = () => {
             />
           </Grid>
           <Grid item xs={12} sm={4}>
+            <FormControl fullWidth variant="standard" size="small">
+              <InputLabel>Giới tính</InputLabel>
+              <Select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                label="Giới tính"
+              >
+                <MenuItem value="MALE">Nam</MenuItem>
+                <MenuItem value="FEMALE">Nữ</MenuItem>
+                <MenuItem value="OTHER">Khác</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          {/* <Grid item xs={12} sm={4}>
             <TextField
-              label="Từ ngày"
+              label="Ngày sinh"
               type="date"
               variant="standard"
-              InputLabelProps={{ shrink: true }}
               fullWidth
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              value={birth}
+              onChange={(e) => setBirth(e.target.value)}
               size="small"
             />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              label="Đến ngày"
-              type="date"
-              variant="standard"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              size="small"
-            />
-          </Grid>
+          </Grid> */}
         </Grid>
-        
- 
         <Grid container spacing={2} style={{ marginTop: '10px' }} justifyContent="flex-end">
-        <Grid item xs={6} sm={2}>
-      <Button variant="outlined" color="secondary" onClick={handleClear} fullWidth size="small">
-        Clear
-      </Button>
-    </Grid>
+          <Grid item xs={6} sm={2}>
+            <Button variant="outlined" color="secondary" onClick={handleClear} fullWidth size="small">
+              Clear
+            </Button>
+          </Grid>
           <Grid item xs={6} sm={2}>
             <Button variant="contained" color="success" component={Link} to="/customer/add" fullWidth size="small">
               + Tạo mới
@@ -140,7 +185,6 @@ export const Customer = () => {
           </Grid>
         </Grid>
       </Box>
-
       <TableContainer component={Paper}>
         <Table aria-label="customer table">
           <TableHead>
@@ -162,13 +206,13 @@ export const Customer = () => {
             {customers.length > 0 ? (
               customers.map((customer, index) => (
                 <TableRow key={customer.id}>
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{index + 1 + (page - 1) * pageSize}</TableCell>
                   <TableCell>{customer.firstName}</TableCell>
                   <TableCell>{customer.lastName}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
-                  <TableCell>{customer.gender}</TableCell>
-                  <TableCell>{customer.dateOfBirth}</TableCell>
-                  <TableCell>{customer.customerAddress}</TableCell>
+                  <TableCell>{mapGender(customer.gender)} </TableCell>
+                  <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
+                  <TableCell>{customer.city}, {customer.district}, {customer.ward}, {customer.streetName}</TableCell>
                   <TableCell>{customer.image}</TableCell>
                   <TableCell>{customer.createdAt}</TableCell>
                   <TableCell>{customer.updatedAt}</TableCell>
@@ -184,12 +228,20 @@ export const Customer = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10}>No customer found</TableCell>
+                <TableCell colSpan={11}>Không có khách hàng nào được tìm thấy.</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
+      <Pagination
+        count={totalPages}
+        page={page}
+        onChange={handlePageChange}
+        color="primary"
+        style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
+      />
+
     </Container>
   );
 };

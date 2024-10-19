@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sd79.dto.requests.SignInRequest;
+import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.response.ResponseData;
-import sd79.dto.response.TokenResponse;
+import sd79.dto.response.auth.TokenResponse;
 import sd79.service.AuthenticationService;
 
 @Slf4j

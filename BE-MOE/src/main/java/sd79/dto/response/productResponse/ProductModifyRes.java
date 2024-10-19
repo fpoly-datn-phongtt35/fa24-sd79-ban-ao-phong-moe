@@ -13,7 +13,7 @@ public class ProductModifyRes {
 
     private String origin;
 
-    private List<String> imageUrl;
+    private List<ImageResponse> imageUrl;
 
     private BrandResponse brand;
 

@@ -1,10 +1,12 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.ColorRequest;
+import sd79.dto.requests.productRequests.ColorRequest;
 import sd79.dto.response.productResponse.ColorResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.NotAllowedDeleteEntityException;
 import sd79.model.Color;
 import sd79.model.User;
 import sd79.repositories.products.ColorRepository;
@@ -12,6 +14,7 @@ import sd79.repositories.auth.UserRepository;
 import sd79.service.ColorService;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +25,15 @@ public class ColorServiceImpl implements ColorService {
     private final UserRepository userRepository;
 
     @Override
-    public List<ColorResponse> getAllColors() {
-        return this.colorRepository.findByIsDeletedFalse().stream().map(this::convertToResponse).toList();
+    public List<ColorResponse> getAllColors(String keyword) {
+        return this.colorRepository.findColorsByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToResponse).toList();
     }
 
     @Override
     public int storeColor(ColorRequest req) {
+        if (this.colorRepository.existsColorByName(req.getName().trim())) {
+            throw new EntityExistsException("Màu này " + req.getName() + " đã tồn tại trong hệ thống");
+        }
         User user = getUserById(req.getUserId());
         Color color = new Color();
         color.setName(req.getName());
@@ -41,6 +47,11 @@ public class ColorServiceImpl implements ColorService {
     public void updateColor(ColorRequest req, int id) {
         User user = getUserById(req.getUserId());
         Color color = getColorById(id);
+        if (!Objects.equals(req.getName(), color.getName().trim())) {
+            if (this.colorRepository.existsColorByName(req.getName().trim())) {
+                throw new EntityExistsException("Màu này " + req.getName() + " đã tồn tại trong hệ thống");
+            }
+        }
         color.setName(req.getName());
         color.setHexColorCode(req.getHex_code());
         color.setUpdatedBy(user);
@@ -50,8 +61,11 @@ public class ColorServiceImpl implements ColorService {
     @Override
     public void isDeleteColor(int id) {
         Color color = getColorById(id);
-        color.setIsDeleted(true);
-        this.colorRepository.save(color);
+        try {
+            this.colorRepository.delete(color);
+        } catch (Exception e) {
+            throw new NotAllowedDeleteEntityException("Không thể xóa màu này!");
+        }
     }
 
     private Color getColorById(int id) {

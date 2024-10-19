@@ -33,8 +33,5 @@ public class CustomerAddress {
     @Column(name = "city")
     private String city;
 
-    @Size(max = 255)
-    @Column(name = "country")
-    private String country;
 
 }

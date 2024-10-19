@@ -36,8 +36,16 @@ public class CustomerReq {
     @NotEmpty(message = "Image cannot be empty")
     private String image;
 
-
     @NotEmpty(message = "City cannot be empty")
     private String city;
+
+    @NotEmpty(message = "District cannot be empty")
+    private String district;
+
+    @NotEmpty(message = "Ward cannot be empty")
+    private String ward;
+
+    @NotEmpty(message = "StreetName cannot be empty")
+    private String streetName;
 
 }

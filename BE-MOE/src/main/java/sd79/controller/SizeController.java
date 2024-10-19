@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.SizeRequest;
+import sd79.dto.requests.productRequests.SizeRequest;
 import sd79.dto.response.ResponseData;
 import sd79.service.SizeService;
 
@@ -23,8 +23,8 @@ public class SizeController {
             description = "Get all size from database"
     )
     @GetMapping
-    public ResponseData<?> getAllSizes(){
-        return new ResponseData<>(HttpStatus.OK.value(), "Get success", this.sizeService.getAllSizes());
+    public ResponseData<?> getAllSizes(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get success", this.sizeService.getAllSizes(keyword));
     }
 
     @Operation(
@@ -32,7 +32,7 @@ public class SizeController {
             description = "New size into database"
     )
     @PostMapping
-    public ResponseData<?> storeSize(@Valid @RequestBody SizeRequest request){
+    public ResponseData<?> storeSize(@Valid @RequestBody SizeRequest request) {
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công", this.sizeService.storeSize(request));
     }
 
@@ -41,7 +41,7 @@ public class SizeController {
             description = "Update size into database"
     )
     @PutMapping("/edit/{id}")
-    public ResponseData<?> updateSize(@Valid @RequestBody SizeRequest request, @PathVariable int id){
+    public ResponseData<?> updateSize(@Valid @RequestBody SizeRequest request, @PathVariable int id) {
         this.sizeService.updateSize(request, id);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
     }
@@ -51,7 +51,7 @@ public class SizeController {
             description = "Set is delete of size to true and hidde from from"
     )
     @PatchMapping("/is-delete/{id}")
-    public ResponseData<?> deleteSize(@PathVariable Integer id){
+    public ResponseData<?> deleteSize(@PathVariable Integer id) {
         this.sizeService.isDeleteSize(id);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
     }
