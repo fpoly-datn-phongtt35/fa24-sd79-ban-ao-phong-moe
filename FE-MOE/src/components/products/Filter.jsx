@@ -33,10 +33,10 @@ export const Filter = (props) => {
     setIsOpenMicrophone(!isOpenMicrophone);
     resetTranscript();
     SpeechRecognition.startListening({ continuous: true, language: "vi-VN" });
-    toast.warning("Bắt đầu lắm nghe");
+    toast.warning("Bắt đầu lắng nghe");
     timeoutId.current = setTimeout(() => {
       handleStopListening();
-    }, 5000);
+    }, 10000);
   };
 
   const handleStopListening = () => {
@@ -46,6 +46,11 @@ export const Filter = (props) => {
     setIsOpenMicrophone(!isOpenMicrophone);
     SpeechRecognition.stopListening();
     const cleanedTranscript = transcript.replace(/\./g, "");
+    if (cleanedTranscript.toLowerCase().includes("trạng thái") && cleanedTranscript.toLowerCase().includes(" hết hàng")) {
+      setValue("");
+      props.onChangeSearchVoice(cleanedTranscript);
+      return;
+    }
     setValue(cleanedTranscript);
     props.onChangeSearchVoice(cleanedTranscript);
   };

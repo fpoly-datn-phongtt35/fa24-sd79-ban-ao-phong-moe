@@ -21,6 +21,7 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
+import { speacker } from "~/utils/speak";
 
 export const Product = () => {
   const [products, setProducts] = useState([]);
@@ -87,7 +88,15 @@ export const Product = () => {
   };
 
   const onChangeSearchVoice = (value) => {
-    debouncedSearch(value);
+    if (value.toLowerCase().includes("trạng thái") && value.toLowerCase().includes(" hết hàng")) {
+      speacker("Dưới đây là một số kết quả của sản phẩm với trạng thái hết hàng")
+      onChangeStatus("OUT_OF_STOCK");
+      setKeyword("");
+    } else {
+      speacker(`Dưới đây là kết quả tìm kiếm ${value}`);
+      clearFilter();
+      debouncedSearch(value);
+    }
   };
 
   const onChangeStatus = (e) => {
