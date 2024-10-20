@@ -3,6 +3,7 @@ package sd79.utils;
 import org.springframework.stereotype.Service;
 import javax.mail.*;
 import javax.mail.internet.*;
+import java.io.File;
 import java.util.Properties;
 
 @Service
@@ -45,4 +46,6 @@ public class Email {
             System.out.println("Failed to send email to " + toEmail + ": " + e.getMessage());
         }
     }
+
 }
+

@@ -10,6 +10,7 @@ import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPercent, faDollarSign, faCamera } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
+import { fetchAllCustomer } from '~/apis/customerApi';
 
 const UpdateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
@@ -20,6 +21,9 @@ const UpdateCoupon = () => {
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
     const [storedImageUrl, setStoredImageUrl] = useState('');
+    const [selectedCustomers, setSelectedCustomers] = useState([]);
+    const [customers, setCustomers] = useState([]);
+    const type = watch('type', 'public');
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -29,11 +33,15 @@ const UpdateCoupon = () => {
         return `${day}/${month}/${year} | ${time}`;
     };
 
+    useEffect(() => {
+        handleSetCustomer();
+    }, []);
+
     const handleImagesUpload = (files) => {
         setImages(files);
     };
 
-    // Submit form data
+
     const onSubmit = async (data) => {
         const coupon = {
             code: data.code,
@@ -53,25 +61,23 @@ const UpdateCoupon = () => {
         console.log(coupon);
 
         await updateCoupon(id, coupon).then(async (response) => {
-            console.log(response)
-            await deleteCouponImage(response)
+            console.log(response);
+            await deleteCouponImage(response);
             let formData = new FormData();
             formData.append("couponID", response);
             formData.append("images", images[0]);
-            console.log(images)
+            console.log(images);
             await postCouponImage(formData);
             navigate("/coupon");
         });
     };
-    // Fetch coupon details to populate the form
+
     useEffect(() => {
         const fetchCouponDetail = async () => {
             try {
                 const coupon = await detailCoupon(id);
-                const couponData = coupon.data;
-
-                console.log("Fetched coupon data: ", couponData);
-
+                const couponData = coupon.data;           
+                console.log("Fetched coupon data:", couponData);         
                 setValue('code', couponData.code);
                 setValue('name', couponData.name);
                 setValue('discountValue', couponData.discountValue);
@@ -83,7 +89,15 @@ const UpdateCoupon = () => {
                 setCouponType(couponData.type);
                 setValue('description', couponData.description);
                 setDiscountType(couponData.discountType);
-                setStoredImageUrl(couponData.imageUrl || '');
+                setStoredImageUrl(couponData.imageUrl || '');       
+                if (Array.isArray(couponData.customers)) {
+                    const customerIds = couponData.customers.map(customer => customer.id);
+                    setSelectedCustomers(customerIds);
+                    console.log("Selected Customers:", customerIds);
+                } else {
+                    setSelectedCustomers([]);
+                    console.log("No customers found, Selected Customers is empty.");
+                }
 
             } catch (error) {
                 console.error("Error fetching coupon details: ", error);
@@ -91,20 +105,53 @@ const UpdateCoupon = () => {
         };
 
         fetchCouponDetail();
+        handleSetCustomer(); 
+
     }, [id, setValue]);
 
-    // Customers list
-    const customers = [
-        { name: 'Nguyễn Văn Nhật', phone: '0261748212', email: 'nhatnguyendzpro@gmail.com', dob: '01-01-1990' },
-        { name: 'Anh Lê', phone: '0562718362', email: 'anhle@gmail.com', dob: '20-12-2001' },
-        { name: 'Tường Triệu', phone: '0253718362', email: 'tuongtrieu@gmail.com', dob: '20-12-2000' },
-        { name: 'Quỳnh Trang', phone: '0452716362', email: 'quynhtrang123@gmail.com', dob: '20-12-2001' },
-        { name: 'Nguyễn Thị Thùy Dương', phone: '0647536475', email: 'nguyenthithuyduong948@gmail.com', dob: '20-12-2023' },
-    ];
 
-    const type = watch('type', 'public');
-    const filteredCustomers = customers.filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const formatDateCustomer = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB');
+    };
+
+
+    const handleSetCustomer = async () => {
+        const response = await fetchAllCustomer();
+        setCustomers(response.data.content);
+    };
+
+    const handleSelectAll = (event) => {
+        if (event.target.checked) {
+            const allCustomerIds = customers.map(customer => customer.id);
+            setSelectedCustomers(allCustomerIds);
+        } else {
+            setSelectedCustomers([]);
+        }
+    };
+
+    const handleSelectCustomer = (customerId) => {
+        console.log('Selecting customer ID:', customerId);
+        setSelectedCustomers((prevSelected) => {
+            if (prevSelected.includes(customerId)) {
+                return prevSelected.filter(id => id !== customerId);
+            } else {
+                return [...prevSelected, customerId];
+            }
+        });
+    };
+
+
+    const isSelected = (customerId) => {
+        const selected = selectedCustomers.includes(customerId);
+        return selected;
+    };
+
+
+    const filteredCustomers = customers.filter((customer) =>
+        customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phoneNumber.includes(searchTerm)
     );
 
     return (
@@ -293,7 +340,7 @@ const UpdateCoupon = () => {
 
                     {/* Customer List */}
                     <Grid item xs={6}>
-                        <Typography variant="h4">Danh Sách Khách Hàng</Typography>
+
                         <TextField
                             variant="outlined"
                             label="Tìm kiếm khách hàng"
@@ -307,7 +354,10 @@ const UpdateCoupon = () => {
                             <thead className="table-dark">
                                 <tr>
                                     <th>
-                                        <Checkbox />
+                                        <Checkbox
+                                            checked={selectedCustomers.length === customers.length && customers.length > 0}
+                                            onChange={handleSelectAll}
+                                        />
                                     </th>
                                     <th>Tên</th>
                                     <th>Số điện thoại</th>
@@ -316,23 +366,32 @@ const UpdateCoupon = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredCustomers.map((customer, index) => (
-                                    <tr key={index}>
-                                        <td className="text-center">
-                                            <Checkbox />
-                                        </td>
-                                        <td>{customer.name}</td>
-                                        <td>{customer.phone}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{customer.dob}</td>
+                                {filteredCustomers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} align="center">Không tìm thấy khách hàng!</td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredCustomers.map((customer, index) => (
+                                        <tr key={index}>
+                                            <td>
+                                                <Checkbox
+                                                    checked={isSelected(customer.id)}
+                                                    onChange={() => handleSelectCustomer(customer.id)}
+                                                />
+                                            </td>
+                                            <td>{customer.firstName}</td>
+                                            <td>{customer.phoneNumber}</td>
+                                            <td>{customer.email}</td>
+                                            <td>{formatDateCustomer(customer.dateOfBirth)}</td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </Grid>
                 </Grid>
             </Box>
-        </Container>
+        </Container >
     );
 };
 
