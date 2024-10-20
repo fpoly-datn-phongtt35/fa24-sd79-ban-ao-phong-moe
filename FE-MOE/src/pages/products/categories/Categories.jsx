@@ -23,6 +23,7 @@ import {
   Sheet,
   Table,
 } from "@mui/joy";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
@@ -60,17 +61,7 @@ export const Categories = () => {
     handleSetCategories();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
   if (!categories) {
     return (
@@ -85,7 +76,7 @@ export const Categories = () => {
       </Box>
     );
   }
-  
+
   return (
     <Container
       maxWidth="max-width"
@@ -161,12 +152,16 @@ export const Categories = () => {
                         id={category.id}
                         handleSubmit={handleEditCategory}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(category.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa danh mục này?"
+                        event={() => ondelete(category.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

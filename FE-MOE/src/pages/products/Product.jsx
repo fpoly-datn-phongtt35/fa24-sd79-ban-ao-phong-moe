@@ -22,6 +22,7 @@ import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
 import { speacker } from "~/utils/speak";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Product = () => {
   const [products, setProducts] = useState([]);
@@ -88,15 +89,7 @@ export const Product = () => {
   };
 
   const onChangeSearchVoice = (value) => {
-    if (value.toLowerCase().includes("trạng thái") && value.toLowerCase().includes(" hết hàng")) {
-      speacker("Dưới đây là một số kết quả của sản phẩm với trạng thái hết hàng")
-      onChangeStatus("OUT_OF_STOCK");
-      setKeyword("");
-    } else {
-      speacker(`Dưới đây là kết quả tìm kiếm ${value}`);
-      clearFilter();
-      debouncedSearch(value);
-    }
+    debouncedSearch(value);
   };
 
   const onChangeStatus = (e) => {
@@ -136,19 +129,9 @@ export const Product = () => {
   };
 
   const onMoveToBin = (id) => {
-    swal({
-      title: "Xác nhận",
-      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        moveToBin(id).then(() => {
-          setCurrentPage(1);
-          handleSetProducts();
-        });
-      }
+    moveToBin(id).then(() => {
+      setCurrentPage(1);
+      handleSetProducts();
     });
   };
 
@@ -170,11 +153,30 @@ export const Product = () => {
     );
   }
 
+  const method = {
+    onChangeSearchVoice,
+    btnAdd: true,
+    onChangeSearch,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+    onChangeStatus,
+    onChangeCategory,
+    onChangeBrand,
+    onChangeMaterial,
+    onChangeOrigin,
+    clearFilter,
+    attributes,
+  };
+
   return (
     <Container
       maxWidth="max-width"
       sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
+      <MoeAlert />
       <Grid
         container
         spacing={2}
@@ -198,24 +200,7 @@ export const Product = () => {
         </Breadcrumbs>
       </Grid>
 
-      <Filter
-        onChangeSearchVoice={onChangeSearchVoice}
-        btnAdd={true}
-        onChangeSearch={onChangeSearch}
-        keyword={keyword}
-        status={status}
-        category={category}
-        brand={brand}
-        material={material}
-        attributes={attributes}
-        origin={origin}
-        onChangeStatus={onChangeStatus}
-        onChangeCategory={onChangeCategory}
-        onChangeBrand={onChangeBrand}
-        onChangeMaterial={onChangeMaterial}
-        onChangeOrigin={onChangeOrigin}
-        clearFilter={clearFilter}
-      />
+      <Filter method={method} />
 
       <TableData
         restore={false}

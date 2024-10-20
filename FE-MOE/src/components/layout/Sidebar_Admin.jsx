@@ -10,6 +10,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/MainLogo.jpg";
 import { useEffect, useState } from "react";
+import { MoeAlert } from "../other/MoeAlert";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
@@ -27,19 +28,9 @@ export const Sidebar_Admin = (props) => {
     return roleCookie ? roleCookie.split("=")[1] : "";
   };
 
-  const handleLogout = () => {
-    swal({
-      title: "Cảnh báo",
-      text: "Bạn có muốn đăng xuất không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then(async (confirm) => {
-      if (confirm) {
-        await handleLogoutAPI();
-        navigate("/");
-      }
-    });
+  const handleLogout = async () => {
+    await handleLogoutAPI();
+    navigate("/");
   };
 
   return (
@@ -142,7 +133,10 @@ export const Sidebar_Admin = (props) => {
                 </Typography>
               </MenuItem>
             </SubMenu>
-            <MenuItem disabled={ADMIN} component={<Link to="/product/archive" />}>
+            <MenuItem
+              disabled={ADMIN}
+              component={<Link to="/product/archive" />}
+            >
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Kho lưu trữ
               </Typography>
@@ -184,14 +178,18 @@ export const Sidebar_Admin = (props) => {
             color: "#657d8d",
           }}
         >
-          <MenuItem
-            icon={<LogoutIcon style={{ color: "#0071bd" }} />}
-            onClick={handleLogout}
-          >
-            <Typography sx={{ color: "#32383e" }} level="body-md">
-              Đăng xuất
-            </Typography>
-          </MenuItem>
+          <MoeAlert
+            title="Đăng xuất"
+            message="Bạn có muốn đăng xuất không?"
+            event={handleLogout}
+            button={
+              <MenuItem icon={<LogoutIcon style={{ color: "#0071bd" }} />}>
+                <Typography sx={{ color: "#32383e" }} level="body-md">
+                  Đăng xuất
+                </Typography>
+              </MenuItem>
+            }
+          />
         </Menu>
       </Sidebar>
     </Box>

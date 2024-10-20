@@ -23,6 +23,7 @@ import {
   postBrand,
   putBrand,
 } from "~/apis/brandsApi";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Brand = () => {
   const [brands, setBrands] = useState(null);
@@ -60,17 +61,7 @@ export const Brand = () => {
     handleSetBrands();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa thương hiệu này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
   if (!brands) {
     return (
@@ -85,7 +76,7 @@ export const Brand = () => {
       </Box>
     );
   }
-  
+
   return (
     <Container
       maxWidth="max-width"
@@ -161,12 +152,16 @@ export const Brand = () => {
                         id={brand.id}
                         handleSubmit={handleEditBrand}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(brand.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa thương hiệu này?"
+                        event={() => ondelete(brand.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

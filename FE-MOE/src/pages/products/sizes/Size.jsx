@@ -18,6 +18,7 @@ import {
 import { deleteSize, fetchAllSizes, postSize, putSize } from "~/apis/sizesApi";
 import { DialogIconUpdate } from "~/components/sizes/DialogIconUpdate";
 import { DialogStore } from "~/components/sizes/DialogStore";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Size = () => {
   const [sizes, setSizes] = useState(null);
@@ -55,17 +56,7 @@ export const Size = () => {
     handleSetSizes();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa size này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
 
   if (!sizes) {
@@ -136,13 +127,13 @@ export const Size = () => {
             </thead>
 
             <tbody>
-            {sizes?.length === 0 && (
-              <tr>
-                <td colSpan={7} align="center">
-                  Không tìm thấy sản phẩm!
-                </td>
-              </tr>
-            )}
+              {sizes?.length === 0 && (
+                <tr>
+                  <td colSpan={7} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {sizes &&
                 sizes.map((sizes, index) => (
                   <tr key={index}>
@@ -165,12 +156,16 @@ export const Size = () => {
                         id={sizes.id}
                         handleSubmit={handleEditSize}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(sizes.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa size này?"
+                        event={() => ondelete(sizes.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
