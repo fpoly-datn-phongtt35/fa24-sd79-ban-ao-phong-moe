@@ -38,10 +38,10 @@ export const StoreAttributeDetail = (props) => {
   }, []);
 
   const fetchColors = async () => {
-    await fetchAllColors().then((res) => setColors(res.data));
+    await fetchAllColors("").then((res) => setColors(res.data));
   };
   const fetchSizes = async () => {
-    await fetchAllSizes().then((res) => setSizes(res.data));
+    await fetchAllSizes("").then((res) => setSizes(res.data));
   };
 
   const {

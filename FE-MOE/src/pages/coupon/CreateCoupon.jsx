@@ -1,38 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { TextField, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment } from '@mui/material';
+import { useForm, Controller } from 'react-hook-form';
+import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { postCoupon, postCouponImage } from '~/apis/couponApi';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
 import { fetchAllCustomer } from '~/apis/customerApi';
+import { Breadcrumbs } from '@mui/joy';
+import HomeIcon from "@mui/icons-material/Home";
+import { CircularProgress } from '@mui/material';
 
 
 const CreateCoupon = () => {
-    const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
+    const { register, handleSubmit, watch, formState: { errors }, control } = useForm();
     const [discountType, setDiscountType] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCustomers, setSelectedCustomers] = useState([]);
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
     const [customers, setCustomers] = useState([]);
+    const [selectedCustomers, setSelectedCustomers] = useState([]);
     const [discountTypeError, setDiscountTypeError] = useState('');
     const [imagesError, setImagesError] = useState('');
+    const [selectedCustomersError, setSelectedCustomersError] = useState('');
+    const [loading, setLoading] = useState(false);
 
+
+    const type = watch('type', 'PUBLIC');
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); 
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
     };
 
     useEffect(() => {
         handleSetCustomer();
-      }, []);
-    
+    }, []);
+
 
     const handleDiscountTypeChange = (type) => {
         setDiscountType(type);
@@ -44,34 +51,34 @@ const CreateCoupon = () => {
         setImagesError('');
     };
 
-    const handleSetCustomer = async () => {
-        const response = await fetchAllCustomer();
-        setCustomers(response.data);
-    };
-
     const onSubmit = async (data) => {
         let isValid = true;
-
-        // Kiểm tra discountType
+    
         if (!discountType) {
             setDiscountTypeError('Discount type is required');
             isValid = false;
         } else {
             setDiscountTypeError('');
         }
-
-        // Kiểm tra images
-        if (!images || images.length === 0) {
-            setImagesError('Images must not be null!');
+    
+        if (data.type === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
+            setSelectedCustomersError('At least one customer must be selected for PERSONAL coupons.');
+            isValid = false;
+        } else {
+            setSelectedCustomersError('');
+        }
+    
+        if (data.type === 'PERSONAL' && (!images || images.length === 0)) {
+            setImagesError('Images are required for PERSONAL coupons.');
             isValid = false;
         } else {
             setImagesError('');
         }
-
+    
         if (!isValid) {
             return;
         }
-
+    
         const coupon = {
             code: data.code,
             name: data.name,
@@ -85,38 +92,66 @@ const CreateCoupon = () => {
             type: data.type,
             description: data.description,
             userId: localStorage.getItem("userId"),
+            customerIds: data.type === 'PERSONAL' ? selectedCustomers : null,
         };
-
-        // Gọi API để tạo coupon
+    
         try {
+            setLoading(true);
             const response = await postCoupon(coupon);
-            let formData = new FormData();
-            formData.append("couponID", response);
-            formData.append("images", images[0]);
-            await postCouponImage(formData);
+            if (data.type === 'PERSONAL' && images && images.length > 0) {
+                let formData = new FormData();
+                formData.append("couponID", response);
+    
+                images.forEach((image, index) => {
+                    formData.append("images", image);
+                });
+    
+                await postCouponImage(formData);
+            }
+    
             navigate("/coupon");
         } catch (error) {
-            console.error(error);
+            console.error("Error creating coupon or uploading images:", error);
+        } finally {
+            setLoading(false);
         }
     };
+    
+    
+
 
     const formatDateCustomer = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-GB');
-      };
+    };
 
-    const type = watch('type', 'public');
-    // const filteredCustomers = customers.filter(customer =>
-    //     customer.name.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
-
-    const handleCustomerSelect = (index) => {
-        setSelectedCustomers(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
+    const handleSetCustomer = async () => {
+        const response = await fetchAllCustomer();
+        setCustomers(response.data.content);
+        console.log(response)
     };
 
     const handleSelectAll = (event) => {
-        setSelectedCustomers(event.target.checked ? filteredCustomers.map((_, index) => index) : []);
+        if (event.target.checked) {
+            const allCustomerIds = customers.map(customer => customer.id);
+            setSelectedCustomers(allCustomerIds);
+        } else {
+            setSelectedCustomers([]);
+        }
     };
+    const handleSelectCustomer = (customerId) => {
+        setSelectedCustomers((prevSelected) => {
+            if (prevSelected.includes(customerId)) {
+                return prevSelected.filter(id => id !== customerId);
+            } else {
+                return [...prevSelected, customerId];
+            }
+        });
+    };
+
+
+
+    const isSelected = (customerId) => selectedCustomers.includes(customerId);
 
     return (
         <Container
@@ -124,13 +159,34 @@ const CreateCoupon = () => {
             className="bg-white"
             style={{ height: "100%", marginTop: "15px" }}
         >
+            <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+                <Link
+                    underline="hover"
+                    sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                    color="inherit"
+                    onClick={() => navigate("/")}
+                >
+                    <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                    Trang chủ
+                </Link>
+                <Link
+                    underline="hover"
+                    sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                    color="inherit"
+                    onClick={() => navigate("/coupon")}
+                >
+                    Quản lý phiếu giảm giá
+                </Link>
+                <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+                    Thêm phiếu giảm giá
+                </Typography>
+            </Breadcrumbs>
             <Box p={4}>
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <Box display="flex" alignItems="center" mb={2}>
-                            <Typography variant="h4" mr={2}>Tạo Phiếu Giảm Giá</Typography>
-                        </Box>
 
+                        </Box>
 
                         <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2} >
 
@@ -158,11 +214,11 @@ const CreateCoupon = () => {
                                 variant="outlined"
                                 label="Tên phiếu giảm giá"
                                 {...register('name', {
-                                    required: 'Name cannot be empty',     
+                                    required: 'Name cannot be empty',
                                     minLength: {
                                         value: 5,
                                         message: 'Name min 5 characters',
-                                    },                            
+                                    },
                                     maxLength: {
                                         value: 50,
                                         message: 'Name should not exceed 50 characters',
@@ -193,14 +249,14 @@ const CreateCoupon = () => {
                                             endAdornment: (
                                                 <InputAdornment position="end">
                                                     <IconButton
-                                                        onClick={() => handleDiscountTypeChange('percentage')}
-                                                        color={discountType === 'percentage' ? 'primary' : 'default'}
+                                                        onClick={() => handleDiscountTypeChange('PERCENTAGE')}
+                                                        color={discountType === 'PERCENTAGE' ? 'primary' : 'default'}
                                                     >
                                                         <FontAwesomeIcon icon={faPercent} />
                                                     </IconButton>
                                                     <IconButton
-                                                        onClick={() => handleDiscountTypeChange('fixed_amount')}
-                                                        color={discountType === 'fixed_amount' ? 'primary' : 'default'}
+                                                        onClick={() => handleDiscountTypeChange('FIXED_AMOUNT')}
+                                                        color={discountType === 'FIXED_AMOUNT' ? 'primary' : 'default'}
                                                     >
                                                         <FontAwesomeIcon icon={faDollarSign} />
                                                     </IconButton>
@@ -294,20 +350,44 @@ const CreateCoupon = () => {
                                 fullWidth
                             />
 
-
-                            <FormControl component="fieldset" error={!!errors.type}>
-                                <FormLabel component="legend">Kiểu</FormLabel>
-                                <RadioGroup {...register('type', { required: 'Type is required' })} defaultValue="public">
-                                    <div className='flex'>
-                                        <FormControlLabel value="public" control={<Radio />} label="Công khai" />
-                                        <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
-                                    </div>
-                                </RadioGroup>
-                                {errors.type && (
-                                    <Typography color="error">{errors.type.message}</Typography>
-                                )}
-                            </FormControl>
-
+                            <Box
+                                sx={{
+                                    border: '1px solid #ccc',
+                                    borderRadius: '8px',
+                                    padding: '10px',
+                                    marginTop: '10px', // Fix margin top value
+                                }}
+                            >
+                                <Grid container alignItems="center" spacing={2}>
+                                    <Grid item style={{ marginRight: '320px' }}>
+                                        <FormControl component="fieldset" error={!!errors.type}>
+                                            <FormLabel component="legend">Kiểu</FormLabel>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item>
+                                        <Controller
+                                            name="type"
+                                            control={control}
+                                            defaultValue="PUBLIC"
+                                            rules={{ required: 'Type is required' }}
+                                            render={({ field }) => (
+                                                <RadioGroup
+                                                    {...field}
+                                                    row
+                                                >
+                                                    <FormControlLabel value="PUBLIC" control={<Radio />} label="Công khai" />
+                                                    <FormControlLabel value="PERSONAL" control={<Radio />} label="Cá nhân" />
+                                                </RadioGroup>
+                                            )}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        {errors.type && (
+                                            <Typography color="error">{errors.type.message}</Typography>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            </Box>
 
                             <TextField
                                 variant="outlined"
@@ -326,31 +406,19 @@ const CreateCoupon = () => {
                             />
 
 
-                            <Grid item xs={12}>
-                                <CouponImage onImagesUpload={handleImagesUpload} />
-                                {imagesError && (
-                                    <Typography color="error">{imagesError}</Typography>
-                                )}
+                          
+
+                            <Grid item xs={6}>
+                                <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
+                                    {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
+                                </Button>
                             </Grid>
 
-
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Link to={'/coupon'} className='btn btn-danger w-100' type="submit" variant="contained" >
-                                        Quay lại
-                                    </Link>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Button type="submit" className='w-100' variant="contained" color="primary" >
-                                        Thêm mới
-                                    </Button>
-                                </Grid>
-                            </Grid>
                         </Box>
                     </Grid>
 
                     <Grid item xs={6}>
-                        <Typography variant="h4" >Danh Sách Khách Hàng</Typography>
+
                         <TextField
                             variant="outlined"
                             label="Tìm kiếm khách hàng"
@@ -361,16 +429,19 @@ const CreateCoupon = () => {
                         />
 
                         <table className="table table-bordered table-hover">
-                            <thead className="table-dark">
+                            <thead className="table-primary text-center">
                                 <tr>
-                                    <th>
-                                        {type === 'personal' && (
+
+                                    {type === 'PERSONAL' ? (
+                                        <th>
                                             <Checkbox
-                                                checked={selectedCustomers.length === filteredCustomers.length && selectedCustomers.length > 0}
+                                                checked={selectedCustomers.length === customers.length && customers.length > 0}
                                                 onChange={handleSelectAll}
                                             />
-                                        )}
-                                    </th>
+                                        </th>
+                                    ) : (
+                                        <th style={{ width: '1%' }}></th>
+                                    )}
                                     <th>Tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Email</th>
@@ -378,16 +449,25 @@ const CreateCoupon = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {customers.map((customer, index) => (
-                                    <tr key={index}>
-                                        <td className="text-center">
-                                            {type === 'personal' && (
-                                                <Checkbox
-                                                    checked={selectedCustomers.includes(index)}
-                                                    onChange={() => handleCustomerSelect(index)}
-                                                />
-                                            )}
+                                {customers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} align="center">
+                                            Không tìm thấy khách hàng!
                                         </td>
+                                    </tr>
+                                )}
+                                {customers && customers.map((customer, index) => (
+                                    <tr key={index}>
+                                        {type === 'PERSONAL' ? (
+                                            <td>
+                                                <Checkbox
+                                                    checked={isSelected(customer.id)}
+                                                    onChange={() => handleSelectCustomer(customer.id)}
+                                                />
+                                            </td>
+                                        ) : (
+                                            <td></td>
+                                        )}
                                         <td>{customer.firstName}</td>
                                         <td>{customer.phoneNumber}</td>
                                         <td>{customer.email}</td>
@@ -396,6 +476,16 @@ const CreateCoupon = () => {
                                 ))}
                             </tbody>
                         </table>
+
+                        {type === 'PERSONAL' && (
+                                <Grid item xs={12}>
+                                    <CouponImage onImagesUpload={handleImagesUpload} />
+                                    {imagesError && (
+                                        <Typography color="error">{imagesError}</Typography>
+                                    )}
+                                </Grid>
+                            )}
+
                     </Grid>
                 </Grid>
             </Box>

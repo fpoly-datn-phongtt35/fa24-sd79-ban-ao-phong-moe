@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;
@@ -38,19 +39,19 @@ public class CouponCustomizeQuery {
     private static final String LIKE_FORMAT = "%%%s%%";
 
 
-    public PageableResponse getAllCoupons(Integer pageNo, Integer pageSize, String keyword, TodoType type, TodoDiscountType discountType, String startDateStr, String endDateStr, String status, String sort, String direction) {
-        log.info("Executing query coupon with keyword={}", keyword);
+    public PageableResponse getAllCoupons(CouponParamFilter param) {
+        log.info("Executing query coupon with keyword={}", param.getKeyword());
 
         // Convert the date format if necessary
         Date startDate = null;
         Date endDate = null;
         SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            if (StringUtils.hasLength(startDateStr)) {
-                startDate = inputFormat.parse(startDateStr);
+            if (StringUtils.hasLength(param.getStartDate())) {
+                startDate = inputFormat.parse(param.getStartDate());
             }
-            if (StringUtils.hasLength(endDateStr)) {
-                endDate = inputFormat.parse(endDateStr);
+            if (StringUtils.hasLength(param.getEndDate())) {
+                endDate = inputFormat.parse(param.getEndDate());
             }
         } catch (ParseException e) {
             log.error("Error parsing dates: {}", e.getMessage());
@@ -59,32 +60,32 @@ public class CouponCustomizeQuery {
         StringBuilder sql = new StringBuilder("SELECT c FROM Coupon c WHERE c.isDeleted = false");
 
         // Keyword filtering
-        if (StringUtils.hasLength(keyword)) {
+        if (StringUtils.hasLength(param.getKeyword())) {
             sql.append(" AND lower(c.name) like lower(:keyword) OR lower(c.code) like lower(:keyword)");
         }
 
         // Status filtering
-        if ("PENDING".equals(status)) {
+        if ("PENDING".equals(param.getStatus())) {
             sql.append(" AND c.startDate > CURRENT_DATE");
-        } else if ("START".equals(status)) {
+        } else if ("START".equals(param.getStatus())) {
             sql.append(" AND c.startDate <= CURRENT_DATE AND c.endDate >= CURRENT_DATE");
-        } else if ("END".equals(status)) {
+        } else if ("END".equals(param.getStatus())) {
             sql.append(" AND c.endDate < CURRENT_DATE");
         }
 
         // Type filtering
-        if (type == TodoType.PUBLIC) {
+        if (param.getType() == TodoType.PUBLIC) {
             sql.append(" AND c.type = 'PUBLIC'");
-        } else if (type == TodoType.PERSONAL) {
+        } else if (param.getType() == TodoType.PERSONAL) {
             sql.append(" AND c.type = 'PERSONAL'");
         } else {
             sql.append(" AND (c.type = 'PUBLIC' OR c.type = 'PERSONAL')");
         }
 
         // Discount Type filtering
-        if (discountType == TodoDiscountType.PERCENTAGE) {
+        if (param.getDiscountType() == TodoDiscountType.PERCENTAGE) {
             sql.append(" AND c.discountType = 'PERCENTAGE'");
-        } else if (discountType == TodoDiscountType.FIXED_AMOUNT) {
+        } else if (param.getDiscountType() == TodoDiscountType.FIXED_AMOUNT) {
             sql.append(" AND c.discountType = 'FIXED_AMOUNT'");
         } else {
             sql.append(" AND (c.discountType = 'PERCENTAGE' OR c.discountType = 'FIXED_AMOUNT')");
@@ -96,8 +97,8 @@ public class CouponCustomizeQuery {
         }
 
         // Sorting (sort by column and direction)
-        if (StringUtils.hasLength(sort) && StringUtils.hasLength(direction)) {
-            sql.append(" ORDER BY c.").append(sort).append(" ").append(direction.toUpperCase());
+        if (StringUtils.hasLength(param.getSort()) && StringUtils.hasLength(param.getDirection())) {
+            sql.append(" ORDER BY c.").append(param.getSort()).append(" ").append(param.getDirection().toUpperCase());
         } else {
             // Default sorting if not provided: sort by startDate, then by endDate
             sql.append(" ORDER BY c.startDate ASC, c.endDate ASC");
@@ -106,8 +107,8 @@ public class CouponCustomizeQuery {
         TypedQuery<Coupon> query = entityManager.createQuery(sql.toString(), Coupon.class);
 
         // Set parameters
-        if (StringUtils.hasLength(keyword)) {
-            query.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+        if (StringUtils.hasLength(param.getKeyword())) {
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
         }
         if (startDate != null && endDate != null) {
             query.setParameter("startDate", startDate);
@@ -115,15 +116,15 @@ public class CouponCustomizeQuery {
         }
 
         // Pagination settings
-        query.setFirstResult((pageNo - 1) * pageSize);
-        query.setMaxResults(pageSize);
+        query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
+        query.setMaxResults(param.getPageSize());
 
         List<CouponResponse> data = query.getResultList().stream().map(this::convertCouponResponse).toList();
 
 
         // Count query for pagination
         StringBuilder countPage = new StringBuilder("SELECT count(c) FROM Coupon c WHERE c.isDeleted = false");
-        if (StringUtils.hasLength(keyword)) {
+        if (StringUtils.hasLength(param.getKeyword())) {
             countPage.append(" AND lower(c.name) like lower(:keyword) OR lower(c.code) like lower(:keyword)");
         }
         if (startDate != null && endDate != null) {
@@ -131,8 +132,8 @@ public class CouponCustomizeQuery {
         }
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
-        if (StringUtils.hasLength(keyword)) {
-            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
         }
         if (startDate != null && endDate != null) {
             countQuery.setParameter("startDate", startDate);
@@ -140,12 +141,12 @@ public class CouponCustomizeQuery {
         }
         Long totalElements = countQuery.getSingleResult();
 
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<?> page = new PageImpl<>(data, pageable, totalElements);
 
         return PageableResponse.builder()
-                .pageNumber(pageNo)
-                .pageSize(pageSize)
+                .pageNumber(param.getPageNo())
+                .pageSize(param.getPageSize())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
                 .content(data)

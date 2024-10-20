@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface SizeRepository extends JpaRepository<Size, Integer> {
 
-    @Query("FROM Size WHERE isDeleted = false AND name like %:keyword%")
+    @Query("FROM Size WHERE isDeleted = false AND name like %:keyword% ORDER BY id DESC")
     List<Size> findSizesByNameAndIsDeletedIsFalse(String keyword);
 
     boolean existsSizeByName(String name);

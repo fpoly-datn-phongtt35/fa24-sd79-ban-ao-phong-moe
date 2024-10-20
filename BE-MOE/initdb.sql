@@ -84,7 +84,7 @@ CREATE TABLE customer_address (
 -- Product
 CREATE TABLE categories(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -94,7 +94,7 @@ CREATE TABLE categories(
 
 CREATE TABLE brands(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -130,7 +130,7 @@ CREATE TABLE products(
 
 CREATE TABLE sizes(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	length FLOAT,
 	width FLOAT,
 	sleeve FLOAT,
@@ -143,7 +143,7 @@ CREATE TABLE sizes(
 
 CREATE TABLE colors(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	hex_color_code VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
@@ -196,6 +196,15 @@ CREATE TABLE coupon_images(
   image_url VARCHAR(255),
   public_id VARCHAR(100),
   CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
+);
+
+CREATE TABLE coupon_share(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  coupon_id BIGINT,
+  customer_id BIGINT,
+  is_deleted BIT DEFAULT 0,
+  CONSTRAINT fk_coupon_share FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  CONSTRAINT fk_customer_share FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
 -- promotions
@@ -698,3 +707,10 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
 (9, 'https://example.com/images/coupon09.jpg', 'yz567'),
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
+
+INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
+    (1, 1, 0),  
+    (2, 2, 0), 
+    (3, 3, 0),  
+    (4, 4, 0),  
+    (5, 5, 0);  

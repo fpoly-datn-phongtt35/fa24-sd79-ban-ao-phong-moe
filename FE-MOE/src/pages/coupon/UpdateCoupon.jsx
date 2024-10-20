@@ -8,8 +8,11 @@ import {
 } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPercent, faDollarSign, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
+import { fetchAllCustomer } from '~/apis/customerApi';
+import { CircularProgress } from '@mui/material';
+
 
 const UpdateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
@@ -20,6 +23,13 @@ const UpdateCoupon = () => {
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
     const [storedImageUrl, setStoredImageUrl] = useState('');
+    const [selectedCustomers, setSelectedCustomers] = useState([]);
+    const [customers, setCustomers] = useState([]);
+    const [discountTypeError, setDiscountTypeError] = useState('');
+    const type = watch('type', 'public');
+    const [selectedCustomersError, setSelectedCustomersError] = useState('');
+    const [imagesError, setImagesError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -29,82 +39,144 @@ const UpdateCoupon = () => {
         return `${day}/${month}/${year} | ${time}`;
     };
 
+    useEffect(() => {
+        fetchCouponDetail();
+        handleSetCustomer();
+    }, []);
+
     const handleImagesUpload = (files) => {
         setImages(files);
     };
 
-    // Submit form data
     const onSubmit = async (data) => {
+        let isValid = true;
+
+        if (!discountType) {
+            setDiscountTypeError('Discount type is required');
+            isValid = false;
+        } else {
+            setDiscountTypeError('');
+        }
+
+        if (!isValid) {
+            return;
+        }
+
         const coupon = {
             code: data.code,
             name: data.name,
             discountValue: data.discountValue,
-            discountType: discountType === 'percentage' ? 'percentage' : 'fixed_amount',
+            discountType: discountType,
             maxValue: data.maxValue,
             quantity: data.quantity,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
             endDate: formatDate(data.endDate),
-            type: data.type === 'public' ? 'public' : 'personal',
+            type: couponType,
             description: data.description,
             userId: localStorage.getItem("userId"),
+            customerIds: selectedCustomers,
         };
 
-        console.log(coupon);
 
-        await updateCoupon(id, coupon).then(async (response) => {
-            console.log(response)
-            await deleteCouponImage(response)
+        try {
+            setLoading(true);
+            const response = await updateCoupon(id, coupon);
+            await deleteCouponImage(response);
             let formData = new FormData();
             formData.append("couponID", response);
-            formData.append("images", images[0]);
-            console.log(images)
+
+            images.forEach((image, index) => {
+                formData.append("images", image);
+            });
+
             await postCouponImage(formData);
+
+
             navigate("/coupon");
+        } catch (error) {
+            console.error("Error creating coupon or uploading images:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+
+    const fetchCouponDetail = async () => {
+        try {
+            const coupon = await detailCoupon(id);
+            const couponData = coupon.data;
+            setValue('code', couponData.code);
+            setValue('name', couponData.name);
+            setValue('discountValue', couponData.discountValue);
+            setValue('maxValue', couponData.maxValue);
+            setValue('quantity', couponData.quantity);
+            setValue('conditions', couponData.conditions);
+            setValue('startDate', couponData.startDate.split(' ')[0]);
+            setValue('endDate', couponData.endDate.split(' ')[0]);
+            setValue('description', couponData.description);
+            setCouponType(couponData.type); // Ensure type is set
+            setDiscountType(couponData.discountType);
+            setStoredImageUrl(couponData.imageUrl || '');
+
+            if (couponData.type === 'PERSONAL') {
+                const customerIds = couponData.customers.map(customer => customer.id);
+                setSelectedCustomers(customerIds);
+            } else {
+                setSelectedCustomers([]);
+            }
+
+            if (couponData.images && couponData.images.length > 0) {
+                setImages(couponData.images);
+            } else {
+                setImages([]);
+            }
+        } catch (error) {
+            console.error("Error fetching coupon details:", error);
+        }
+    };
+
+
+
+
+    const formatDateCustomer = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB');
+    };
+
+    const handleSetCustomer = async () => {
+        const response = await fetchAllCustomer();
+        setCustomers(response.data.content);
+        console.log(response)
+    };
+
+    const handleSelectAll = (event) => {
+        if (event.target.checked) {
+            const allCustomerIds = customers.map(customer => customer.id);
+            setSelectedCustomers(allCustomerIds);
+        } else {
+            setSelectedCustomers([]);
+        }
+    };
+    const handleSelectCustomer = (customerId) => {
+        setSelectedCustomers((prevSelected) => {
+            if (prevSelected.includes(customerId)) {
+                return prevSelected.filter(id => id !== customerId);
+            } else {
+                return [...prevSelected, customerId];
+            }
         });
     };
-    // Fetch coupon details to populate the form
-    useEffect(() => {
-        const fetchCouponDetail = async () => {
-            try {
-                const coupon = await detailCoupon(id);
-                const couponData = coupon.data;
 
-                console.log("Fetched coupon data: ", couponData);
 
-                setValue('code', couponData.code);
-                setValue('name', couponData.name);
-                setValue('discountValue', couponData.discountValue);
-                setValue('maxValue', couponData.maxValue);
-                setValue('quantity', couponData.quantity);
-                setValue('conditions', couponData.conditions);
-                setValue('startDate', couponData.startDate.split(' ')[0]);
-                setValue('endDate', couponData.endDate.split(' ')[0]);
-                setCouponType(couponData.type);
-                setValue('description', couponData.description);
-                setDiscountType(couponData.discountType);
-                setStoredImageUrl(couponData.imageUrl || '');
 
-            } catch (error) {
-                console.error("Error fetching coupon details: ", error);
-            }
-        };
+    const isSelected = (customerId) => selectedCustomers.includes(customerId);
 
-        fetchCouponDetail();
-    }, [id, setValue]);
-
-    // Customers list
-    const customers = [
-        { name: 'Nguyễn Văn Nhật', phone: '0261748212', email: 'nhatnguyendzpro@gmail.com', dob: '01-01-1990' },
-        { name: 'Anh Lê', phone: '0562718362', email: 'anhle@gmail.com', dob: '20-12-2001' },
-        { name: 'Tường Triệu', phone: '0253718362', email: 'tuongtrieu@gmail.com', dob: '20-12-2000' },
-        { name: 'Quỳnh Trang', phone: '0452716362', email: 'quynhtrang123@gmail.com', dob: '20-12-2001' },
-        { name: 'Nguyễn Thị Thùy Dương', phone: '0647536475', email: 'nguyenthithuyduong948@gmail.com', dob: '20-12-2023' },
-    ];
-
-    const type = watch('type', 'public');
     const filteredCustomers = customers.filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase())
+        customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phoneNumber.includes(searchTerm)
     );
 
     return (
@@ -156,19 +228,19 @@ const UpdateCoupon = () => {
                                                 <Box display="flex" alignItems="center">
                                                     <IconButton
                                                         onClick={() => {
-                                                            setDiscountType('percentage');
+                                                            setDiscountType('PERCENTAGE');
                                                             setValue('discountValue', 10);
                                                         }}
-                                                        color={discountType === 'percentage' ? 'primary' : 'default'}
+                                                        color={discountType === 'PERCENTAGE' ? 'primary' : 'default'}
                                                     >
                                                         <FontAwesomeIcon icon={faPercent} />
                                                     </IconButton>
                                                     <IconButton
                                                         onClick={() => {
-                                                            setDiscountType('fixed_amount');
+                                                            setDiscountType('FIXED_AMOUNT');
                                                             setValue('discountValue', 500);
                                                         }}
-                                                        color={discountType === 'fixed_amount' ? 'primary' : 'default'}
+                                                        color={discountType === 'FIXED_AMOUNT' ? 'primary' : 'default'}
                                                     >
                                                         <FontAwesomeIcon icon={faDollarSign} />
                                                     </IconButton>
@@ -247,11 +319,10 @@ const UpdateCoupon = () => {
                                     </Grid>
                                     <Grid item xs={6}>
                                         <RadioGroup value={couponType} onChange={(e) => setCouponType(e.target.value)}>
-                                            <div className='flex'>
-                                                <FormControlLabel value="public" control={<Radio />} label="Công khai" />
-                                                <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
-                                            </div>
+                                            <FormControlLabel value="PUBLIC" control={<Radio />} label="Công khai" />
+                                            <FormControlLabel value="PERSONAL" control={<Radio />} label="Cá nhân" />
                                         </RadioGroup>
+
                                     </Grid>
                                 </Grid>
                             </FormControl>
@@ -268,14 +339,6 @@ const UpdateCoupon = () => {
                                 InputLabelProps={{ shrink: true }}
                             />
 
-                            <Grid item xs={12}>
-                                <CouponImage
-                                    onImagesUpload={handleImagesUpload}
-                                    initialImages={[]}
-                                    storedImageUrl={storedImageUrl}
-                                />
-                            </Grid>
-
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <Link to={'/coupon'} className='btn btn-danger w-100' type="submit" variant="contained" >
@@ -283,8 +346,8 @@ const UpdateCoupon = () => {
                                     </Link>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Button type="submit" className='w-100' variant="contained" color="primary" >
-                                        Sửa dữ liệu
+                                    <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
+                                        {loading ? <CircularProgress size={24} /> : 'Sửa dữ liệu'}
                                     </Button>
                                 </Grid>
                             </Grid>
@@ -293,7 +356,7 @@ const UpdateCoupon = () => {
 
                     {/* Customer List */}
                     <Grid item xs={6}>
-                        <Typography variant="h4">Danh Sách Khách Hàng</Typography>
+
                         <TextField
                             variant="outlined"
                             label="Tìm kiếm khách hàng"
@@ -304,11 +367,18 @@ const UpdateCoupon = () => {
                         />
 
                         <table className="table table-bordered table-hover">
-                            <thead className="table-dark">
+                            <thead className="table-primary text-center">
                                 <tr>
-                                    <th>
-                                        <Checkbox />
-                                    </th>
+
+                                    {couponType === 'PERSONAL' && (
+                                        <th>
+                                            <Checkbox
+                                                checked={selectedCustomers.length === customers.length && customers.length > 0}
+                                                onChange={handleSelectAll}
+                                            />
+                                        </th>
+                                    )}
+
                                     <th>Tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Email</th>
@@ -316,23 +386,47 @@ const UpdateCoupon = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredCustomers.map((customer, index) => (
-                                    <tr key={index}>
-                                        <td className="text-center">
-                                            <Checkbox />
+                                {customers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} align="center">
+                                            Không tìm thấy khách hàng!
                                         </td>
-                                        <td>{customer.name}</td>
-                                        <td>{customer.phone}</td>
+                                    </tr>
+                                )}
+                                {customers && customers.map((customer, index) => (
+                                    <tr key={index}>
+                                        {couponType === 'PERSONAL' && (
+                                            <td>
+                                                <Checkbox
+                                                    checked={isSelected(customer.id)}
+                                                    onChange={() => handleSelectCustomer(customer.id)}
+                                                />
+                                            </td>
+                                        )}
+
+                                        <td>{customer.firstName}</td>
+                                        <td>{customer.phoneNumber}</td>
                                         <td>{customer.email}</td>
-                                        <td>{customer.dob}</td>
+                                        <td>{formatDateCustomer(customer.dateOfBirth)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+
+                        {couponType === 'PERSONAL' && (
+                            <Grid item xs={12}>
+                                <CouponImage
+                                    onImagesUpload={handleImagesUpload}
+                                    initialImages={images || []}
+                                    storedImageUrl={storedImageUrl}
+                                />
+                            </Grid>
+                        )}
+
                     </Grid>
                 </Grid>
             </Box>
-        </Container>
+        </Container >
     );
 };
 

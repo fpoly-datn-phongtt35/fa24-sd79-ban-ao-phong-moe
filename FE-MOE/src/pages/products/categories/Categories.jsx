@@ -16,13 +16,14 @@ import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButt
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
+  CircularProgress,
   FormControl,
   FormLabel,
   Input,
-  LinearProgress,
   Sheet,
   Table,
 } from "@mui/joy";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Categories = () => {
   const [categories, setCategories] = useState(null);
@@ -60,18 +61,21 @@ export const Categories = () => {
     handleSetCategories();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa danh mục này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
+  if (!categories) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container
@@ -119,21 +123,24 @@ export const Categories = () => {
                 <th className="text-center">STT</th>
                 <th className="text-center">Tên danh mục</th>
                 <th className="text-center">Sản phẩm</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody>
+              {categories?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {categories &&
                 categories.map((category, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
                     <td className="text-center">{category.name}</td>
                     <td className="text-center">{category.productCount}</td>
-                    <td className="text-center">{category.createdAt}</td>
-                    <td className="text-center">{category.updatedAt}</td>
                     <td className="text-center">{category.createdBy}</td>
                     <td className="text-center">
                       <DialogModifyIconButton
@@ -145,18 +152,21 @@ export const Categories = () => {
                         id={category.id}
                         handleSubmit={handleEditCategory}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(category.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa danh mục này?"
+                        event={() => ondelete(category.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

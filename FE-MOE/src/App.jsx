@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import 'regenerator-runtime/runtime';
 import Signin from "~/pages/auth/Signin";
 import { Header_Admin } from "./components/layout/Header_Admin";
 import { Sidebar_Admin } from "./components/layout/Sidebar_Admin";
@@ -20,9 +21,14 @@ import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
+import { AddPromotion } from "./pages/promotions/AddPromotion";
+import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
+
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
 import { useState } from "react";
+import { Home } from "./pages/clients/Home";
+import Header_Client from "./components/layout/Header_Client";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -55,6 +61,22 @@ const ProtectedRoutes = () => {
   );
 };
 
+const PublicRoutes = () => {
+  return (
+    <div className="layout_client">
+      <div className="main-area_client">
+        <div>
+          <Header_Client/>
+        </div>
+
+        <div className="content-area_client">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const UnauthorizedRoutes = () => {
   const accessToken = localStorage.getItem("accessToken");
   if (accessToken) {
@@ -70,35 +92,38 @@ const UnauthorizedRoutes = () => {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace={true} />} />
+      <Route path="/home" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
         <Route path="/login" element={<Signin />} />
+      </Route>
+      <Route element={<PublicRoutes />}>
+        <Route path="/" element={<Home />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/product/categories" element={<Categories />} />
+        <Route path="/product/brand" element={<Brand />} />
+        <Route path="/product/material" element={<Material />} />
+        <Route path="/product/size" element={<Size />} />
+        <Route path="/product/color" element={<Color />} />
+        <Route path="/product/new" element={<ProductStore />} />
+        <Route path="/product/view/:id" element={<ProductDetail />} />
+        <Route path="/product/archive" element={<Archive />} />
         <Route path="/customer" element={<Customer />} />
         <Route path="/customer/add" element={<AddCustomer />} />
         <Route path="/customer/:id" element={<CustomerDetailPage />} />
         <Route path="/coupon" element={<Coupon />} />
         <Route path="/coupon/create" element={<CreateCoupon />} />
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
-        <Route path="/categories" element={<Categories />} />
         <Route path="/promotions" element={<Promotion />} />
-        <Route path="/brand" element={<Brand />} />
-        <Route path="/material" element={<Material />} />
-        <Route path="/size" element={<Size />} />
-        <Route path="/color" element={<Color />} />
-        <Route path="/product/new" element={<ProductStore />} />
-        <Route path="/product/view/:id" element={<ProductDetail />} />
-        <Route path="/product/archive" element={<Archive />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
-        {/* { <Route path="/promotion/add" element={<AddPromotion />} /> } */}
-        {/* <Route path="/promotion/:id" element={<UpdatePromotion />} /> */}
+        <Route path="/promotions/add" element={<AddPromotion />} />
+        <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
       </Route>
     </Routes>
   );

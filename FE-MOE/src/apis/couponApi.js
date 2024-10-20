@@ -17,7 +17,6 @@ export const fetchAllCoupon = async (
   let uri = "/coupon?";
   let queryParams = [];
 
-  console.log(pageNo)
   if (pageNo !== null && pageNo !== undefined) {
     queryParams.push(`pageNo=${pageNo}`);
   }
@@ -101,8 +100,5 @@ export const deleteCoupon = async (id) => {
 export const deleteCouponImage = async (id) => {
   return await authorizedAxiosInstance
     .delete(`${API_ROOT}/coupon/delete/images/${id}`)
-    .then((res) => {
-      toast.success(res.data.message);
-    })
 };
 

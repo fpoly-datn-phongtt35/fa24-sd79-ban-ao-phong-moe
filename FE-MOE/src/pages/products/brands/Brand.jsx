@@ -10,10 +10,10 @@ import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButt
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
+  CircularProgress,
   FormControl,
   FormLabel,
   Input,
-  LinearProgress,
   Sheet,
   Table,
 } from "@mui/joy";
@@ -23,6 +23,7 @@ import {
   postBrand,
   putBrand,
 } from "~/apis/brandsApi";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Brand = () => {
   const [brands, setBrands] = useState(null);
@@ -60,18 +61,21 @@ export const Brand = () => {
     handleSetBrands();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa thương hiệu này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
+  if (!brands) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container
@@ -119,21 +123,24 @@ export const Brand = () => {
                 <th className="text-center">STT</th>
                 <th className="text-center">Tên thương hiệu</th>
                 <th className="text-center">Sản phẩm</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody>
+              {brands?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {brands &&
                 brands.map((brand, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
                     <td className="text-center">{brand.name}</td>
                     <td className="text-center">{brand.productCount}</td>
-                    <td className="text-center">{brand.createdAt}</td>
-                    <td className="text-center">{brand.updatedAt}</td>
                     <td className="text-center">{brand.createdBy}</td>
                     <td className="text-center">
                       <DialogModifyIconButton
@@ -145,18 +152,21 @@ export const Brand = () => {
                         id={brand.id}
                         handleSubmit={handleEditBrand}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(brand.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa thương hiệu này?"
+                        event={() => ondelete(brand.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

@@ -8,10 +8,10 @@ import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
 import {
+  CircularProgress,
   FormControl,
   FormLabel,
   Input,
-  LinearProgress,
   Sheet,
   Table,
 } from "@mui/joy";
@@ -23,6 +23,7 @@ import {
 } from "~/apis/colorApi";
 import { DialogStore } from "~/components/colors/DialogStore";
 import { DialogIconUpdate } from "~/components/colors/DialogIconUpdate";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Color = () => {
   const [colors, setColors] = useState(null);
@@ -60,18 +61,22 @@ export const Color = () => {
     handleSetColors();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa color này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
+
+  if (!colors) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container
@@ -119,22 +124,25 @@ export const Color = () => {
                 <th className="text-center">STT</th>
                 <th className="text-center">Tên màu</th>
                 <th className="text-center">Hex code</th>
-                <th className="text-center">Ngày tạo</th>
-                <th className="text-center">Ngày sửa</th>
                 <th className="text-center">Người tạo</th>
                 <th className="text-center">Thao tác</th>
               </tr>
             </thead>
 
             <tbody>
+              {colors?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {colors &&
                 colors.map((color, index) => (
                   <tr key={index}>
                     <td className="text-center">{index + 1}</td>
                     <td className="text-center">{color.name}</td>
                     <td className="text-center">{color.hex_code}</td>
-                    <td className="text-center">{color.createdAt}</td>
-                    <td className="text-center">{color.updatedAt}</td>
                     <td className="text-center">{color.createdBy}</td>
                     <td className="text-center">
                       <DialogIconUpdate
@@ -142,22 +150,26 @@ export const Color = () => {
                         title="Chỉnh sửa color"
                         label="Nhập tên color"
                         color="warning"
-                        value={color}
+                        name={color.name}
+                        hex_code={color.hex_code}
                         id={color.id}
                         handleSubmit={handleEditColor}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(color.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa color này?"
+                        event={() => ondelete(color.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
             </tbody>
           </Table>
-          <LinearProgress color="primary" size="sm" value={50} variant="soft" />
         </Sheet>
       </Box>
     </Container>

@@ -520,6 +520,7 @@ export const ProductStore = () => {
                 minRows={3}
                 maxRows={10}
                 placeholder="Nhập mô tả..."
+                {...register("description", { required: false })}
               ></Textarea>
             </FormControl>
           </Grid>

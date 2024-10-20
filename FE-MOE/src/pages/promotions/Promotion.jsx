@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Container, Button, Row, Col, Table, Form, Pagination } from "react-bootstrap";
-import { fetchAllDiscounts, postDiscount, deleteDiscount, putDiscount } from "~/apis/discountApi";
-import { useForm } from "react-hook-form";
-import { useNavigate  } from "react-router-dom";
+import { Container, Button, Row, Col, Table, Pagination, Form } from "react-bootstrap";
+import { fetchAllDiscounts, deleteDiscount } from "~/apis/discountApi";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 export const Promotion = () => {
@@ -10,26 +9,9 @@ export const Promotion = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchStartDate, setSearchStartDate] = useState("");
   const [searchEndDate, setSearchEndDate] = useState("");
-  const [selectedDiscount, setSelectedDiscount] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // State quản lý trang hiện tại
-  const itemsPerPage = 5; // Số lượng mục hiển thị mỗi trang
-
-  const formatDate = (dateString, time = "00:00:00") => {
-    const date = new Date(dateString);
-    const day = String(date.getDate() + 1).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year} | ${time}`;
-  };
-  
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     handleSetDiscounts();
@@ -39,38 +21,7 @@ export const Promotion = () => {
     const res = await fetchAllDiscounts();
     setDiscounts(res.data);
   };
-
-  const onSubmit = async (data) => {
-    try {
-      if (selectedDiscount) {
-        await putDiscount({
-          name: data.name,
-          promotionValue: data.promotionValue,
-          startDate: formatDate(data.startDate),
-          endDate: formatDate(data.endDate),
-          description: data.description,
-        }, selectedDiscount.id);
-        Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
-      } else {
-        await postDiscount({
-          name: data.name,
-          promotionValue: data.promotionValue,
-          startDate: formatDate(data.startDate),
-          endDate: formatDate(data.endDate),
-          description: data.description,
-          userId: localStorage.getItem("userId"),
-        });
-        Swal.fire("Thành công", "Đợt giảm giá đã được thêm!", "success");
-      }
-
-      handleSetDiscounts();
-      reset();
-      setSelectedDiscount(null);
-    } catch (error) {
-      console.error("Failed to add/update discount", error);
-      Swal.fire("Lỗi", "Không thể thêm hoặc cập nhật đợt giảm giá", "error");
-    }
-  };
+  
 
   const onDelete = async (id) => {
     try {
@@ -94,23 +45,12 @@ export const Promotion = () => {
     }
   };
 
-  const onEdit = (discount) => {
-    setSelectedDiscount(discount);
-    setValue("name", discount.name);
-    setValue("promotionType", discount.promotionType);
-    setValue("promotionValue", discount.promotionValue);
-    setValue("startDate", discount.startDate.split(" ")[0]);
-    setValue("endDate", discount.endDate.split(" ")[0]);
-    setValue("description", discount.description);
-  };
-
-  // Lọc danh sách đợt giảm giá dựa trên tên và khoảng thời gian
+  // Lọc danh sách đợt giảm giá
   const filteredDiscounts = discounts.filter((discount) => {
     const discountStartDate = new Date(discount.startDate).setHours(0, 0, 0, 0);
     const discountEndDate = new Date(discount.endDate).setHours(0, 0, 0, 0);
 
     const isNameMatched = discount.name.toLowerCase().includes(searchTerm.toLowerCase());
-
     const isWithinDateRange =
       (!searchStartDate || new Date(searchStartDate).setHours(0, 0, 0, 0) <= discountEndDate) &&
       (!searchEndDate || new Date(searchEndDate).setHours(0, 0, 0, 0) >= discountStartDate);
@@ -131,22 +71,13 @@ export const Promotion = () => {
     setCurrentPage(pageNumber);
   };
 
-  const handleReset = () => {
-    setSearchTerm("");
-    setSearchStartDate("");
-    setSearchEndDate("");
-    setSelectedDiscount(null);
-    reset();
-    handleSetDiscounts();
-    setCurrentPage(1); // Đặt lại trang về 1 sau khi reset
-  };
-
   return (
     <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: "15px" }}>
       <div className="fs-3 mb-4">
-        <span className="fw-bold">
-          {selectedDiscount ? "Chỉnh sửa đợt giảm giá" : "Quản lý đợt giảm giá"}
-        </span>
+        <span className="fw-bold">Quản lý đợt giảm giá</span>
+        <Button className="float-end" onClick={() => navigate("/promotions/add")}>
+          Thêm mới
+        </Button>
       </div>
 
       <Row className="mb-4">
@@ -175,108 +106,6 @@ export const Promotion = () => {
           />
         </Col>
       </Row>
-      
-      <Row className="mb-5">
-        <Col>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Row className="g-2">
-              {/* Form input fields */}
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Tên đợt giảm giá</Form.Label>
-                  <Form.Control
-                    type="text"
-                    {...register("name", { required: true })}
-                    placeholder="Nhập tên đợt giảm giá"
-                    isInvalid={errors.name}
-                  />
-                  {errors.name && (
-                    <Form.Control.Feedback type="invalid">
-                      Vui lòng nhập tên đợt giảm giá.
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Tỷ lệ giảm giá (%)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    {...register("promotionValue", { required: true, min: 1, max: 100 })}
-                    placeholder="Nhập tỷ lệ giảm giá"
-                    isInvalid={errors.promotionValue}
-                  />
-                  {errors.promotionValue && (
-                    <Form.Control.Feedback type="invalid">
-                      Vui lòng nhập tỷ lệ giảm giá từ 1 đến 100.
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Ngày bắt đầu</Form.Label>
-                  <Form.Control
-                    type="date"
-                    {...register("startDate", { required: true })}
-                    isInvalid={errors.startDate}
-                  />
-                  {errors.startDate && (
-                    <Form.Control.Feedback type="invalid">
-                      Vui lòng chọn ngày bắt đầu.
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Ngày kết thúc</Form.Label>
-                  <Form.Control
-                    type="date"
-                    {...register("endDate", { required: true })}
-                    isInvalid={errors.endDate}
-                  />
-                  {errors.endDate && (
-                    <Form.Control.Feedback type="invalid">
-                      Vui lòng chọn ngày kết thúc.
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
-              </Col>
-
-              <Col md={12}>
-                <Form.Group>
-                  <Form.Label>Mô tả</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    {...register("description", { required: true })}
-                    placeholder="Nhập mô tả"
-                    isInvalid={errors.description}
-                  />
-                  {errors.description && (
-                    <Form.Control.Feedback type="invalid">
-                      Vui lòng nhập mô tả.
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
-              </Col>
-
-              <Col md={12}>
-                <Button type="submit" className="me-2">
-                  {selectedDiscount ? "Cập nhật" : "Thêm mới"}
-                </Button>
-                <Button variant="secondary" onClick={handleReset}>
-                  Reset
-                </Button>
-              </Col>
-            </Row>
-          </form>
-        </Col>
-      </Row>
 
       <div className="table-responsive">
         <Table className="table table-hover table-striped">
@@ -302,7 +131,11 @@ export const Promotion = () => {
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
                   <td>{discount.description}</td>
                   <td>
-                    <Button variant="warning" className="me-2" onClick={() => onEdit(discount)}>
+                    <Button
+                      variant="warning" 
+                      className="me-2"
+                      onClick={() => navigate(`/promotions/update/${discount.id}`)}
+                    >
                       <i className="fa-solid fa-square-pen"></i>
                     </Button>
                     <Button variant="danger" onClick={() => onDelete(discount.id)}>
@@ -320,16 +153,9 @@ export const Promotion = () => {
         </Table>
       </div>
 
-      {/* Pagination Component */}
       <Pagination className="justify-content-center">
-        <Pagination.First
-          onClick={() => handlePageChange(1)}
-          disabled={currentPage === 1}
-        />
-        <Pagination.Prev
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        />
+        <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
+        <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
         {[...Array(totalPages).keys()].map((number) => (
           <Pagination.Item
             key={number + 1}
@@ -339,14 +165,8 @@ export const Promotion = () => {
             {number + 1}
           </Pagination.Item>
         ))}
-        <Pagination.Next
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        />
-        <Pagination.Last
-          onClick={() => handlePageChange(totalPages)}
-          disabled={currentPage === totalPages}
-        />
+        <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+        <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
       </Pagination>
     </Container>
   );
