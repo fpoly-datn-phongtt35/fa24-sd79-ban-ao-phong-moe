@@ -15,16 +15,17 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
+import { MoeAlert } from '~/components/other/MoeAlert';
 
 const Coupon = () => {
-  const [coupons, setCoupons] = useState([]); 
+  const [coupons, setCoupons] = useState([]);
   const [pageNo, setPage] = useState(1);
-  const [pageSize, setSize] = useState(5); 
+  const [pageSize, setSize] = useState(5);
   const [keyword, setKeyword] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [discountType, setDiscountType] = useState('');
-  const [type, setType] = useState(''); 
+  const [type, setType] = useState('');
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState('desc');
   const [sortBy, setSortBy] = useState('');
@@ -100,17 +101,7 @@ const Coupon = () => {
   };
 
   const onDelete = async (id) => {
-    swal({
-      title: 'Xác nhận xóa',
-      text: 'Bạn có chắc chắn muốn xóa phiếu giảm giá này?',
-      icon: 'warning',
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
 
   return (
@@ -342,13 +333,15 @@ const Coupon = () => {
                       >
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        onClick={() => onDelete(coupon.id)}
-                        color="secondary"
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <MoeAlert title="Cảnh báo" message="Bạn có muốn xóa phiếu giảm giá này?"
+                        event={() => onDelete(coupon.id)}
+                        button={<IconButton
+                          color="secondary"
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

@@ -22,7 +22,7 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 
 export const Archive = () => {
   const [products, setProducts] = useState([]);
@@ -129,36 +129,16 @@ export const Archive = () => {
   };
 
   const handleDeleteForerver = (id) => {
-    swal({
-      title: "Xác nhận",
-      text: "Xóa vĩnh viễn sản phẩm này không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        deleteForever(id).then(() => {
-          setCurrentPage(1);
-          handleSetProducts();
-        });
-      }
+    deleteForever(id).then(() => {
+      setCurrentPage(1);
+      handleSetProducts();
     });
   };
 
   const handleRestoreProduct = (id) => {
-    swal({
-      title: "Xác nhận",
-      text: "Bạn có muốn khôi phục sản phẩm này không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        productRestore(id).then(() => {
-          setCurrentPage(1);
-          handleSetProducts();
-        });
-      }
+    productRestore(id).then(() => {
+      setCurrentPage(1);
+      handleSetProducts();
     });
   };
 
@@ -179,6 +159,24 @@ export const Archive = () => {
       </Box>
     );
   }
+
+  const method = {
+    onChangeSearchVoice,
+    btnAdd: false,
+    onChangeSearch,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+    onChangeStatus,
+    onChangeCategory,
+    onChangeBrand,
+    onChangeMaterial,
+    onChangeOrigin,
+    clearFilter,
+    attributes,
+  };
 
   return (
     <Container
@@ -208,24 +206,7 @@ export const Archive = () => {
         </Breadcrumbs>
       </Grid>
 
-      <Filter
-        btnAdd={false}
-        onChangeSearchVoice={onChangeSearchVoice}
-        onChangeSearch={onChangeSearch}
-        keyword={keyword}
-        status={status}
-        category={category}
-        brand={brand}
-        material={material}
-        attributes={attributes}
-        origin={origin}
-        onChangeStatus={onChangeStatus}
-        onChangeCategory={onChangeCategory}
-        onChangeBrand={onChangeBrand}
-        onChangeMaterial={onChangeMaterial}
-        onChangeOrigin={onChangeOrigin}
-        clearFilter={clearFilter}
-      />
+      <Filter method={method} />
 
       <TableData
         restore={true}

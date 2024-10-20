@@ -111,16 +111,8 @@ public class CouponController {
     )
     @DeleteMapping("/delete/images/{couponId}")
     public ResponseData<?> deleteCouponImage(@PathVariable Long couponId) {
-        try {
             couponService.deleteCouponImage(couponId);
             return new ResponseData<>(HttpStatus.OK.value(), "Coupon image deleted successfully");
-        } catch (RuntimeException e) {
-            log.error("Error deleting coupon image: {}", e.getMessage());
-            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), "Coupon image not found");
-        } catch (Exception e) {
-            log.error("Error: {}", e.getMessage());
-            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to delete coupon image");
-        }
     }
 
 }
