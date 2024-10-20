@@ -1,7 +1,5 @@
 import {
   Box,
-  DialogContent,
-  DialogTitle,
   IconButton,
   LinearProgress,
   Modal,
@@ -10,18 +8,36 @@ import {
   Typography,
 } from "@mui/joy";
 import MicTwoToneIcon from "@mui/icons-material/MicTwoTone";
-import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { speacker } from "~/utils/speak";
 import chatbot from "~/assert/chatbot.png";
+import { useEffect, useState } from "react";
 
 export const Microphone = ({ method }) => {
   const { transcript, resetTranscript } = useSpeechRecognition();
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (transcript) {
+      if (transcript.includes("xin chào")) {
+        SpeechRecognition.stopListening();
+        speacker("Chào bạn, bạn muốn tìm kiếm gì").then(() => {
+          resetTranscript();
+          SpeechRecognition.startListening({
+            continuous: true,
+            language: "vi-VN",
+          });
+        });
+      }
+      setMessage(transcript.replace(/\./g, ""));
+    }
+  }, [transcript]);
 
   const handleStartListening = () => {
     method.setOpen(true);
+    setMessage("");
     speacker("Bắt đầu lắng nghe").then(() => {
       resetTranscript();
       SpeechRecognition.startListening({ continuous: true, language: "vi-VN" });
@@ -30,15 +46,30 @@ export const Microphone = ({ method }) => {
 
   const handleStopListening = () => {
     SpeechRecognition.stopListening();
-    const result = transcript.replace(/\./g, "");
+    const result = transcript.replace(/\./g, "").replace(/tôi muốn tìm kiếm/gi, "");
     const response =
       result.trim().length > 0
         ? "Đang tìm kiếm kết quả"
         : "Xin lỗi tôi không nghe rõ bạn nói gì";
     speacker(`${response} ${result}`).then(() => {
       method.setOpen(false);
-      if (result.trim().length > 0) {
+
+      if (result.toLowerCase().includes("trạng thái")) {
+        if (result.toLowerCase().includes("hết hàng")) {
+          method.method.onChangeStatus("OUT_OF_STOCK");
+          method.handleKeywordVoice("");
+        } else if (result.toLowerCase().includes("ngừng hoạt động")) {
+          method.method.onChangeStatus("INACTIVE");
+        } else if (result.toLowerCase().includes("hoạt động")) {
+          method.method.onChangeStatus("ACTIVE");
+          method.handleKeywordVoice("");
+        } else {
+          method.method.onChangeStatus("ALL");
+          method.handleKeywordVoice("");
+        }
+      } else if (result.trim().length > 0) {
         method.handleKeywordVoice(result);
+        method.method.clearFilter();
       }
     });
   };
@@ -64,6 +95,9 @@ export const Microphone = ({ method }) => {
           <Box>
             <LinearProgress thickness={1} />
           </Box>
+          <Typography color="white" level="body-md">
+            {message}
+          </Typography>
         </ModalDialog>
       </Modal>
     </Box>
