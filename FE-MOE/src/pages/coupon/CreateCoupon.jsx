@@ -53,27 +53,32 @@ const CreateCoupon = () => {
 
     const onSubmit = async (data) => {
         let isValid = true;
+    
         if (!discountType) {
             setDiscountTypeError('Discount type is required');
             isValid = false;
         } else {
             setDiscountTypeError('');
         }
-        if (!images || images.length === 0) {
-            setImagesError('Images must not be null!');
-            isValid = false;
-        } else {
-            setImagesError('');
-        }
+    
         if (data.type === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
             setSelectedCustomersError('At least one customer must be selected for PERSONAL coupons.');
             isValid = false;
         } else {
             setSelectedCustomersError('');
         }
+    
+        if (data.type === 'PERSONAL' && (!images || images.length === 0)) {
+            setImagesError('Images are required for PERSONAL coupons.');
+            isValid = false;
+        } else {
+            setImagesError('');
+        }
+    
         if (!isValid) {
             return;
         }
+    
         const coupon = {
             code: data.code,
             name: data.name,
@@ -89,23 +94,30 @@ const CreateCoupon = () => {
             userId: localStorage.getItem("userId"),
             customerIds: data.type === 'PERSONAL' ? selectedCustomers : null,
         };
-
+    
         try {
             setLoading(true);
             const response = await postCoupon(coupon);
-
-            let formData = new FormData();
-            formData.append("couponID", response);
-            images.forEach((image, index) => {
-                formData.append("images", images[0]);
-            });
-            await postCouponImage(formData);
+            if (data.type === 'PERSONAL' && images && images.length > 0) {
+                let formData = new FormData();
+                formData.append("couponID", response);
+    
+                images.forEach((image, index) => {
+                    formData.append("images", image);
+                });
+    
+                await postCouponImage(formData);
+            }
+    
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
+        } finally {
+            setLoading(false);
         }
     };
-
+    
+    
 
 
     const formatDateCustomer = (dateString) => {
@@ -394,19 +406,14 @@ const CreateCoupon = () => {
                             />
 
 
-                            <Grid item xs={12}>
-                                <CouponImage onImagesUpload={handleImagesUpload} />
-                                {imagesError && (
-                                    <Typography color="error">{imagesError}</Typography>
-                                )}
-                            </Grid>
-
+                          
 
                             <Grid item xs={6}>
                                 <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
                                     {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
                                 </Button>
                             </Grid>
+
                         </Box>
                     </Grid>
 
@@ -422,14 +429,19 @@ const CreateCoupon = () => {
                         />
 
                         <table className="table table-bordered table-hover">
-                            <thead className="table-dark">
+                            <thead className="table-primary text-center">
                                 <tr>
-                                    <th>
-                                        <Checkbox
-                                            checked={selectedCustomers.length === customers.length && customers.length > 0}
-                                            onChange={handleSelectAll}
-                                        />
-                                    </th>
+
+                                    {type === 'PERSONAL' ? (
+                                        <th>
+                                            <Checkbox
+                                                checked={selectedCustomers.length === customers.length && customers.length > 0}
+                                                onChange={handleSelectAll}
+                                            />
+                                        </th>
+                                    ) : (
+                                        <th style={{ width: '1%' }}></th>
+                                    )}
                                     <th>Tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Email</th>
@@ -439,19 +451,23 @@ const CreateCoupon = () => {
                             <tbody>
                                 {customers.length === 0 && (
                                     <tr>
-                                        <td colSpan={9} align="center">
+                                        <td colSpan={5} align="center">
                                             Không tìm thấy khách hàng!
                                         </td>
                                     </tr>
                                 )}
                                 {customers && customers.map((customer, index) => (
                                     <tr key={index}>
-                                        <td>
-                                            <Checkbox
-                                                checked={isSelected(customer.id)}
-                                                onChange={() => handleSelectCustomer(customer.id)}
-                                            />
-                                        </td>
+                                        {type === 'PERSONAL' ? (
+                                            <td>
+                                                <Checkbox
+                                                    checked={isSelected(customer.id)}
+                                                    onChange={() => handleSelectCustomer(customer.id)}
+                                                />
+                                            </td>
+                                        ) : (
+                                            <td></td>
+                                        )}
                                         <td>{customer.firstName}</td>
                                         <td>{customer.phoneNumber}</td>
                                         <td>{customer.email}</td>
@@ -460,6 +476,16 @@ const CreateCoupon = () => {
                                 ))}
                             </tbody>
                         </table>
+
+                        {type === 'PERSONAL' && (
+                                <Grid item xs={12}>
+                                    <CouponImage onImagesUpload={handleImagesUpload} />
+                                    {imagesError && (
+                                        <Typography color="error">{imagesError}</Typography>
+                                    )}
+                                </Grid>
+                            )}
+
                     </Grid>
                 </Grid>
             </Box>
