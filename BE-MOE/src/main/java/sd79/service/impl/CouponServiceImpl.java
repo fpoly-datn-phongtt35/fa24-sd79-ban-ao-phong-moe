@@ -189,10 +189,14 @@ public class CouponServiceImpl implements CouponService {
     public long updateCoupon(Long id, CouponRequest couponRequest) {
         Coupon coupon = couponRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+
+        // Check if the coupon code is being updated and if it already exists in the system
         if (!coupon.getCode().equals(couponRequest.getCode()) &&
                 couponRepo.existsCouponByAttribute(couponRequest.getCode())) {
             throw new EntityExistsException("Mã phiếu giảm giá đã tồn tại!");
         }
+
+        // Update coupon attributes
         coupon.setCode(couponRequest.getCode());
         coupon.setName(couponRequest.getName());
         coupon.setDiscountValue(couponRequest.getDiscountValue());
@@ -205,14 +209,21 @@ public class CouponServiceImpl implements CouponService {
         coupon.setEndDate(couponRequest.getEndDate());
         coupon.setDescription(couponRequest.getDescription());
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
+
+        // Check if the type is PERSONAL
         if (couponRequest.getType() == TodoType.PERSONAL) {
             if (couponRequest.getCustomerIds() == null || couponRequest.getCustomerIds().isEmpty()) {
                 throw new IllegalArgumentException("ID khách hàng không có");
             }
+
+            // Remove existing CouponShare records for the coupon
             couponShareRepo.deleteAll(couponShareRepo.findByCoupon(coupon));
+
+            // Add new CouponShare records for each customer in the request
             for (Long customerId : couponRequest.getCustomerIds()) {
-                Customer customer = this.customerRepository.findById(customerId)
+                Customer customer = customerRepository.findById(customerId)
                         .orElseThrow(() -> new EntityNotFoundException("ID khách hàng là: " + customerId));
+
                 CouponShare couponShare = new CouponShare();
                 couponShare.setCoupon(coupon);
                 couponShare.setCustomer(customer);
@@ -220,8 +231,11 @@ public class CouponServiceImpl implements CouponService {
                 couponShareRepo.save(couponShare);
             }
         } else {
-            couponShareRepo.deleteAll(couponShareRepo.findByCoupon(coupon));
+            // If type is not PERSONAL (assumed PUBLIC), execute deleteCouponShare
+            deleteCouponShare(coupon.getId());
         }
+
+        // Save the updated coupon and return its ID
         return couponRepo.save(coupon).getId();
     }
 
@@ -232,6 +246,13 @@ public class CouponServiceImpl implements CouponService {
     public void deleteCoupon(Long id) {//xoa phieu giam gia
         Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
         couponRepo.delete(coupon);
+    }
+
+    public void deleteCouponShare(Long couponId) {
+        Coupon coupon = couponRepo.findById(couponId)
+                .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        List<CouponShare> couponShares = couponShareRepo.findByCoupon(coupon);
+        couponShareRepo.deleteAll(couponShares);
     }
 
     @Override
