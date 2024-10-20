@@ -1,4 +1,4 @@
-package sd79.dto.requests;
+package sd79.dto.requests.productRequests;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -6,13 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
-
 import java.util.Date;
-
 @Getter
 @Builder
-public class CustomerReq {
-
+public class CustomerRequest {
     @Size(max = 25)
     @NotEmpty(message = "FirstName cannot be empty")
     private String firstName;
@@ -32,28 +29,20 @@ public class CustomerReq {
     @NotNull(message = "DateOfBirth cannot be null")
     private Date dateOfBirth;
 
-
-//    @NotEmpty(message = "Image cannot be empty")
     private String image;
 
-//    @NotEmpty(message = "City cannot be empty")
+
     private String city;
 
-//    @NotEmpty(message = "District cannot be empty")
+
     private String district;
 
-//    @NotEmpty(message = "Ward cannot be empty")
+
     private String ward;
 
-//    @NotEmpty(message = "StreetName cannot be empty")
+
     private String streetName;
 
     @NotEmpty(message = "Email cannot be empty")
     private String email;
-
-    @NotEmpty(message = "UserName cannot be empty")
-    private String username;
-
-    @NotEmpty(message = "Password cannot be empty")
-    private String password;
 }

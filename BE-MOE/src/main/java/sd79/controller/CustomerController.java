@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CustomerReq;
+import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.enums.Gender;
@@ -77,8 +78,8 @@ public class CustomerController {
             description = "Update customer information in the database"
     )
     @PutMapping("/update/{id}")
-    public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerReq customerReq) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Customer updated successfully", customerService.updateCustomer(id, customerReq));
+    public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest customerRequest) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Customer updated successfully", customerService.updateCustomer(id, customerRequest));
     }
 
     // Xóa khách hàng
