@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell,
+  Container, Grid, Box, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, IconButton, Pagination,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { toast } from 'react-toastify';
 import swal from 'sweetalert';
-import { FormLabel } from 'react-bootstrap';
+import HomeIcon from "@mui/icons-material/Home";
+import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Select, Typography } from '@mui/joy';
+import { useNavigate } from 'react-router-dom';
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -27,6 +23,8 @@ export const Customer = () => {
   const [gender, setGender] = useState('');
   const [birth, setBirth] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate()
 
 
   const formatDate = (dateString) => {
@@ -46,7 +44,7 @@ export const Customer = () => {
       case 'OTHER':
         return 'Khác';
       default:
-        return ''; // or return 'Không xác định' for undefined genders
+        return '';
     }
   };
 
@@ -63,7 +61,6 @@ export const Customer = () => {
     }
   };
 
-
   const handleSearchKeywordAndDate = async () => {
     try {
       setLoading(true);
@@ -77,8 +74,6 @@ export const Customer = () => {
     }
   };
 
-
-
   useEffect(() => {
     handleSetCustomer();
   }, [page]);
@@ -89,14 +84,6 @@ export const Customer = () => {
     }, 1000);
     return () => clearTimeout(delayDebounceFn);
   }, [keyword, gender, birth]);
-
-  const handleClear = () => {
-    setKeyword('');
-    setGender('');
-    setBirth('');
-    setPage(1);
-    handleSetCustomer();
-  };
 
   const handleDelete = async (id) => {
     try {
@@ -126,79 +113,92 @@ export const Customer = () => {
     setPage(newPage);
   };
 
+  const handleClear = () => {
+    setKeyword('');
+    setGender('');
+    setBirth('');
+    setPage(1);
+    handleSetCustomer();
+  };
   return (
-    <Container maxWidth="lg" className="bg-white" style={{ marginTop: '15px' }}>
-      <Grid container spacing={2} alignItems="center" bgcolor={'#1976d2'} height={'50px'}>
-        <Typography xs={4} margin={'4px'} variant="h6" gutterBottom color="#fff">
-          Quản lý khách hàng
-        </Typography>
+    <Container maxWidth="max-width"
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        marginBottom={2}
+        height={"50px"}
+      >
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Quản lý khách hàng
+          </Typography>
+        </Breadcrumbs>
       </Grid>
-      <Box className="mb-5" style={{ marginTop: '50px' }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <TextField
-              label="Tìm kiếm"
-              variant="standard"
-              fullWidth
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              size="small"
-            />
+      <Box>
+        <Grid container spacing={2}>
+          <Grid item xs={9}>
+            <FormControl>
+              <FormLabel>Tìm kiếm</FormLabel>
+              <Input
+                value={keyword}
+                placeholder='Tìm kiếm'
+                fullWidth
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </FormControl>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth variant="standard" size="small">
-              <InputLabel>Giới tính</InputLabel>
-              <Select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                label="Giới tính"
-              >
-                <MenuItem value="MALE">Nam</MenuItem>
-                <MenuItem value="FEMALE">Nữ</MenuItem>
-                <MenuItem value="OTHER">Khác</MenuItem>
+          <Grid item xs={3}>
+            <FormControl>
+              <FormLabel>Giới tính</FormLabel>
+              <Select value={gender} onChange={(event, value) => setGender(value)}>
+                <Option value="" disabled={false}>--Chọn giới tính--</Option>
+                <Option value="MALE">Nam</Option>
+                <Option value="FEMALE">Nữ</Option>
+                <Option value="OTHER">Khác</Option>
               </Select>
             </FormControl>
           </Grid>
-          {/* <Grid item xs={12} sm={4}>
-            <TextField
-              label="Ngày sinh"
-              type="date"
-              variant="standard"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={birth}
-              onChange={(e) => setBirth(e.target.value)}
-              size="small"
-            />
-          </Grid> */}
         </Grid>
-        <Grid container spacing={2} style={{ marginTop: '10px' }} justifyContent="flex-end">
-          <Grid item xs={6} sm={2}>
-            <Button variant="outlined" color="secondary" onClick={handleClear} fullWidth size="small">
-              Clear
+        <Grid container spacing={2}>
+          <Grid item xs={12} marginTop={2} justifyContent='end' display='flex'>
+            <Button size="sm" variant="solid" onClick={handleClear} startDecorator={<RefreshIcon />} color="danger" className='me-3'>
+              Làm mới
             </Button>
-          </Grid>
-          <Grid item xs={6} sm={2}>
-            <Button variant="contained" color="success" component={Link} to="/customer/add" fullWidth size="small">
-              + Tạo mới
+            <Button size="sm" variant="solid" onClick={() => navigate("/customer/add")} startDecorator={<AddIcon />} >
+              Tạo mới
             </Button>
           </Grid>
         </Grid>
       </Box>
-      <TableContainer component={Paper}>
+      <Box marginBottom={2}>
+        <Typography color="neutral" level="title-lg" noWrap variant="plain">
+          Danh sách sản phẩm
+        </Typography>
+      </Box>
+      <TableContainer sx={{ border: '1px solid #38383e78' }} component={Paper}>
         <Table aria-label="customer table">
           <TableHead>
             <TableRow>
-              <TableCell>STT</TableCell>
+              <TableCell>Ảnh</TableCell>
+              <TableCell>Tên tài khoản</TableCell>
               <TableCell>Tên</TableCell>
               <TableCell>Họ</TableCell>
+              <TableCell>Email</TableCell>
               <TableCell>Số điện thoại</TableCell>
               <TableCell>Giới tính</TableCell>
               <TableCell>Ngày sinh</TableCell>
               <TableCell>Địa chỉ</TableCell>
-              <TableCell>Ảnh</TableCell>
-              <TableCell>Ngày tạo</TableCell>
-              <TableCell>Ngày cập nhật</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -206,16 +206,15 @@ export const Customer = () => {
             {customers.length > 0 ? (
               customers.map((customer, index) => (
                 <TableRow key={customer.id}>
-                  <TableCell>{index + 1 + (page - 1) * pageSize}</TableCell>
+                  <TableCell>{customer.image}</TableCell>
+                  <TableCell>{customer.username}</TableCell>
                   <TableCell>{customer.firstName}</TableCell>
                   <TableCell>{customer.lastName}</TableCell>
+                  <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
                   <TableCell>{customer.city}, {customer.district}, {customer.ward}, {customer.streetName}</TableCell>
-                  <TableCell>{customer.image}</TableCell>
-                  <TableCell>{customer.createdAt}</TableCell>
-                  <TableCell>{customer.updatedAt}</TableCell>
                   <TableCell>
                     <IconButton component={Link} to={`/customer/${customer.id}`}>
                       <EditIcon />

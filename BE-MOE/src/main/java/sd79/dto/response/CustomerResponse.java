@@ -17,6 +17,7 @@ public class CustomerResponse {
     private String username;
     private String phoneNumber;
     private String email;
+//    private String password;
     private String gender;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date dateOfBirth;
