@@ -32,33 +32,46 @@ import Authentication from "./pages/auth/Authentication";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [hasAuthenticated, setHasAuthenticated] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
 
   const onCollapsed = () => {
     setCollapsed(!collapsed);
   };
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
+  } else if (getAuthority() === "ADMIN") {
+    return (
+      <div className="layout">
+        <div className="sidebar">
+          <Sidebar_Admin collapsed={collapsed} />
+        </div>
+
+        <div className="main-area">
+          <div className="header">
+            <div className="header-left"></div>
+            <Header_Admin onCollapsed={onCollapsed} collapsed={collapsed} />
+          </div>
+
+          <div className="content-area">
+            <Outlet />
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return <Navigate to="/" replace={true} />;
   }
-  return (
-    <div className="layout">
-      <div className="sidebar">
-        <Sidebar_Admin collapsed={collapsed} />
-      </div>
-
-      <div className="main-area">
-        <div className="header">
-          <div className="header-left"></div>
-          <Header_Admin onCollapsed={onCollapsed} collapsed={collapsed} />
-        </div>
-
-        <div className="content-area">
-          <Outlet />
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const PublicRoutes = () => {

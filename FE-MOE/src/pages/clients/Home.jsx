@@ -48,8 +48,8 @@ export const Home = () => {
       {/* <UserCard /> */}
       <Grid marginTop={5} container spacing={1}>
         {products &&
-          products?.content?.map((product) => (
-            <Grid size={3}>
+          products?.content?.map((product, index) => (
+            <Grid key={index} size={3}>
               <BasicCard product={product} />
             </Grid>
           ))}
