@@ -32,7 +32,7 @@ import static sd79.configuration.Endpoints.ADMIN_ENDPOINTS;
 @RequiredArgsConstructor
 public class AppConfig {
 
-    private final String[] WHITE_LIST = {"/api/*/auth/**"};
+    private final String[] WHITE_LIST = {"/api/*/auth/**", "/api/*/client/**"};
 
     private final PreFilter preFilter;
 

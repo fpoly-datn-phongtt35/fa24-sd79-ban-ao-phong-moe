@@ -60,14 +60,14 @@ const Header_Client = () => {
               onClose={handleMenuClose}
               className="menu_account_client"
             >
-              <MenuItem onClick={handleMenuClose}>Đăng Ký</MenuItem>
+              <MenuItem onClick={handleMenuClose}>Đang cập nhật!</MenuItem>
               <MenuItem onClick={singIn}>Đăng Nhập</MenuItem>
             </Menu>
           </div>
         </Toolbar>
 
         {/* Navbar dưới cùng */}
-        <Toolbar className="navbar_client">
+        {/* <Toolbar className="navbar_client">
           <Tabs aria-label="nav tabs">
             <Tab label="Trang Chủ" onClick={() => navigate("/")} />
             <Tab label="Giới Thiệu" onClick={() => navigate("/")} />
@@ -77,7 +77,7 @@ const Header_Client = () => {
             <Tab label="Tuyển Dụng" onClick={() => navigate("/")} />
             <Tab label="Tin Tức" onClick={() => navigate("/")} />
           </Tabs>
-        </Toolbar>
+        </Toolbar> */}
       </AppBar>
     </>
   );
