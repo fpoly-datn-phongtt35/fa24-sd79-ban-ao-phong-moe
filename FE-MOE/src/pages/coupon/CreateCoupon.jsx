@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment, Stack, Pagination } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { postCoupon, postCouponImage } from '~/apis/couponApi';
 import { useNavigate } from 'react-router-dom';
 import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
-import { fetchAllCustomer } from '~/apis/customerApi';
+import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import { CircularProgress } from '@mui/material';
@@ -16,7 +16,6 @@ import { CircularProgress } from '@mui/material';
 const CreateCoupon = () => {
     const { register, handleSubmit, watch, formState: { errors }, control } = useForm();
     const [discountType, setDiscountType] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
     const [customers, setCustomers] = useState([]);
@@ -25,7 +24,12 @@ const CreateCoupon = () => {
     const [imagesError, setImagesError] = useState('');
     const [selectedCustomersError, setSelectedCustomersError] = useState('');
     const [loading, setLoading] = useState(false);
-
+    const [totalPages, setTotalPages] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    const [keyword, setKeyword] = useState('');
+    const [gender, setGender] = useState('');
+    const [birth, setBirth] = useState('');
 
     const type = watch('type', 'PUBLIC');
     const formatDate = (dateString, time = "00:00:00") => {
@@ -38,7 +42,15 @@ const CreateCoupon = () => {
 
     useEffect(() => {
         handleSetCustomer();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            handleSearch();
+        }, 1000);
+        return () => clearTimeout(delayDebounceFn);
+    }, [page, keyword, gender, birth]);
+
+    const handlePageChange = (event, newPage) => {
+        setPage(newPage);
+    };
 
 
     const handleDiscountTypeChange = (type) => {
@@ -51,34 +63,48 @@ const CreateCoupon = () => {
         setImagesError('');
     };
 
+    const handleSearch = async () => {
+        try {
+            setLoading(true);
+            const res = await searchKeywordAndDate(keyword || '', gender || '', birth || '');
+            setCustomers(res.data.content);
+            setTotalPages(res.data.totalPages);
+        } catch (error) {
+            console.error('Error during search:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const onSubmit = async (data) => {
         let isValid = true;
-    
+
         if (!discountType) {
-            setDiscountTypeError('Discount type is required');
+            setDiscountTypeError('Chưa chọn loại giảm giá.');
             isValid = false;
         } else {
             setDiscountTypeError('');
         }
-    
-        if (data.type === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
-            setSelectedCustomersError('At least one customer must be selected for PERSONAL coupons.');
-            isValid = false;
-        } else {
-            setSelectedCustomersError('');
-        }
-    
+
         if (data.type === 'PERSONAL' && (!images || images.length === 0)) {
-            setImagesError('Images are required for PERSONAL coupons.');
+            setImagesError('Chưa chọn ảnh.');
             isValid = false;
         } else {
             setImagesError('');
         }
-    
+
+        if (data.type === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
+            setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
+            isValid = false;
+        } else {
+            setSelectedCustomersError('');
+        }
+
         if (!isValid) {
             return;
         }
-    
+
+
         const coupon = {
             code: data.code,
             name: data.name,
@@ -94,21 +120,21 @@ const CreateCoupon = () => {
             userId: localStorage.getItem("userId"),
             customerIds: data.type === 'PERSONAL' ? selectedCustomers : null,
         };
-    
+
         try {
             setLoading(true);
             const response = await postCoupon(coupon);
             if (data.type === 'PERSONAL' && images && images.length > 0) {
                 let formData = new FormData();
                 formData.append("couponID", response);
-    
+
                 images.forEach((image, index) => {
                     formData.append("images", image);
                 });
-    
+
                 await postCouponImage(formData);
             }
-    
+
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
@@ -116,9 +142,6 @@ const CreateCoupon = () => {
             setLoading(false);
         }
     };
-    
-    
-
 
     const formatDateCustomer = (dateString) => {
         const date = new Date(dateString);
@@ -126,29 +149,47 @@ const CreateCoupon = () => {
     };
 
     const handleSetCustomer = async () => {
-        const response = await fetchAllCustomer();
-        setCustomers(response.data.content);
-        console.log(response)
+        try {
+            const response = await fetchAllCustomer(page - 1, pageSize);
+            setCustomers(response.data.content);
+            setTotalPages(response.data.totalPages);
+            console.log(response);
+        } catch (error) {
+            console.error("Failed to fetch customers:", error);
+        }
     };
 
     const handleSelectAll = (event) => {
+
         if (event.target.checked) {
             const allCustomerIds = customers.map(customer => customer.id);
             setSelectedCustomers(allCustomerIds);
+            setSelectedCustomersError('');
         } else {
             setSelectedCustomers([]);
+            setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
         }
     };
+
     const handleSelectCustomer = (customerId) => {
+
         setSelectedCustomers((prevSelected) => {
+            let updatedSelected;
             if (prevSelected.includes(customerId)) {
-                return prevSelected.filter(id => id !== customerId);
+                updatedSelected = prevSelected.filter(id => id !== customerId);
             } else {
-                return [...prevSelected, customerId];
+                updatedSelected = [...prevSelected, customerId];
             }
+
+            if (updatedSelected.length > 0) {
+                setSelectedCustomersError('');
+            } else {
+                setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
+            }
+
+            return updatedSelected;
         });
     };
-
 
 
     const isSelected = (customerId) => selectedCustomers.includes(customerId);
@@ -194,15 +235,17 @@ const CreateCoupon = () => {
                                 variant="outlined"
                                 label="Mã phiếu giảm giá"
                                 {...register('code', {
-                                    required: 'Code cannot be empty',
+                                    required: 'Chưa nhập mã giảm giá',
                                     minLength: {
                                         value: 5,
-                                        message: 'Code min 5 characters',
+                                        message: 'Mã phải có ít nhất 5 ký tự',
+
 
                                     },
                                     maxLength: {
-                                        value: 12,
-                                        message: 'Code should not exceed 12 characters',
+                                        value: 10,
+                                        message: 'Mã không được quá 10 ký tự',
+
                                     },
                                 })}
                                 error={!!errors.code}
@@ -214,14 +257,16 @@ const CreateCoupon = () => {
                                 variant="outlined"
                                 label="Tên phiếu giảm giá"
                                 {...register('name', {
-                                    required: 'Name cannot be empty',
+                                    required: 'Chưa nhập tên phiếu giảm giá',
                                     minLength: {
                                         value: 5,
-                                        message: 'Name min 5 characters',
+                                        message: 'Tên phải có ít nhất 5 ký tự',
+
                                     },
                                     maxLength: {
-                                        value: 50,
-                                        message: 'Name should not exceed 50 characters',
+                                        value: 100,
+                                        message: 'Tên không được quá 100 ký tự',
+
                                     },
                                 })}
                                 error={!!errors.name}
@@ -236,10 +281,11 @@ const CreateCoupon = () => {
                                         label="Giá trị"
                                         type="number"
                                         {...register('discountValue', {
-                                            required: 'Discount value is required',
+                                            required: 'Chưa nhập giá trị giảm',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Discount value must be greater than zero',
+                                                message: 'Giá trị phải lớn hơn 0',
+
                                             },
                                         })}
                                         error={!!errors.discountValue}
@@ -272,13 +318,13 @@ const CreateCoupon = () => {
                                 <Grid item xs={6}>
                                     <TextField
                                         variant="outlined"
-                                        label="Giá trị tối thiểu cho đơn hàng"
+                                        label="Giá trị giảm tối đa cho đơn hàng"
                                         type="number"
                                         {...register('maxValue', {
-                                            required: 'Minimum order value is required',
+                                            required: 'Chưa nhập giá trị tối đa',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Minimum order value must be greater than zero',
+                                                message: 'Giá trị tổi đa phải lớn hơn 0',
                                             },
                                         })}
                                         error={!!errors.maxValue}
@@ -295,10 +341,10 @@ const CreateCoupon = () => {
                                         label="Số lượng"
                                         type="number"
                                         {...register('quantity', {
-                                            required: 'Quantity is required',
+                                            required: 'Chưa nhập số lượng sử dụng',
                                             min: {
                                                 value: 1,
-                                                message: 'Quantity must be at least 1',
+                                                message: 'Số lượng sử dụng phải lớn hơn 0',
                                             },
                                         })}
                                         error={!!errors.quantity}
@@ -313,25 +359,28 @@ const CreateCoupon = () => {
                                         label="Điều kiện"
                                         type="number"
                                         {...register('conditions', {
-                                            required: 'Conditions order value is required',
+                                            required: 'Chưa nhập điều kiện để thực hiện sử dụng',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Minimum order value must be greater than zero',
+                                                message: 'Điều kiện giảm phải lớn 0',
                                             },
+                                            validate: value =>
+                                                parseFloat(value) >= parseFloat(watch('maxValue')) ||
+                                                'Điều kiện phải lớn hơn giá trị giảm tối đa',
                                         })}
                                         error={!!errors.conditions}
                                         helperText={errors.conditions?.message}
                                         fullWidth
                                     />
-
                                 </Grid>
+
                             </Grid>
 
                             <TextField
                                 variant="outlined"
                                 label="Từ ngày"
                                 type="date"
-                                {...register('startDate', { required: 'Start date is required' })}
+                                {...register('startDate', { required: 'Chưa nhập ngày bắt đầu' })}
                                 error={!!errors.startDate}
                                 helperText={errors.startDate?.message}
                                 InputLabelProps={{ shrink: true }}
@@ -343,7 +392,11 @@ const CreateCoupon = () => {
                                 variant="outlined"
                                 label="Đến ngày"
                                 type="date"
-                                {...register('endDate', { required: 'End date is required' })}
+                                {...register('endDate', {
+                                    required: 'Chưa nhập ngày kết thúc',
+                                    validate: value =>
+                                        new Date(value) > new Date(watch('startDate')) || 'Ngày kết thúc phải lớn hơn ngày bắt đầu',
+                                })}
                                 error={!!errors.endDate}
                                 helperText={errors.endDate?.message}
                                 InputLabelProps={{ shrink: true }}
@@ -355,11 +408,11 @@ const CreateCoupon = () => {
                                     border: '1px solid #ccc',
                                     borderRadius: '8px',
                                     padding: '10px',
-                                    marginTop: '10px', // Fix margin top value
+                                    marginTop: '10px',
                                 }}
                             >
                                 <Grid container alignItems="center" spacing={2}>
-                                    <Grid item style={{ marginRight: '320px' }}>
+                                    <Grid item style={{ marginRight: '40%' }}>
                                         <FormControl component="fieldset" error={!!errors.type}>
                                             <FormLabel component="legend">Kiểu</FormLabel>
                                         </FormControl>
@@ -369,7 +422,7 @@ const CreateCoupon = () => {
                                             name="type"
                                             control={control}
                                             defaultValue="PUBLIC"
-                                            rules={{ required: 'Type is required' }}
+                                            rules={{ required: 'Chưa chọn kiểu dữ liệu' }}
                                             render={({ field }) => (
                                                 <RadioGroup
                                                     {...field}
@@ -395,7 +448,7 @@ const CreateCoupon = () => {
                                 {...register('description', {
                                     maxLength: {
                                         value: 255,
-                                        message: 'Description should not exceed 255 characters',
+                                        message: 'Mô tả không quá 255 ký tự',
                                     },
                                 })}
                                 error={!!errors.description}
@@ -404,14 +457,28 @@ const CreateCoupon = () => {
                                 rows={3}
                                 fullWidth
                             />
+                            {imagesError && (
+                                <Typography color="error">{imagesError}</Typography>
+                            )}
 
+                            {type === 'PERSONAL' && (
+                                <Grid item xs={12} container justifyContent="center">
 
-                          
+                                    <CouponImage onImagesUpload={handleImagesUpload} />
+                                </Grid>
+                            )}
 
-                            <Grid item xs={6}>
-                                <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
-                                    {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
-                                </Button>
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <Button onClick={() => navigate("/coupon")} className='w-100' type="submit" variant="contained" color="error" >
+                                        Quay lại
+                                    </Button>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
+                                        {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
+                                    </Button>
+                                </Grid>
                             </Grid>
 
                         </Box>
@@ -419,13 +486,15 @@ const CreateCoupon = () => {
 
                     <Grid item xs={6}>
 
+
+
                         <TextField
                             variant="outlined"
                             label="Tìm kiếm khách hàng"
                             fullWidth
                             margin="normal"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
                         />
 
                         <table className="table table-bordered table-hover">
@@ -476,15 +545,23 @@ const CreateCoupon = () => {
                                 ))}
                             </tbody>
                         </table>
-
-                        {type === 'PERSONAL' && (
-                                <Grid item xs={12}>
-                                    <CouponImage onImagesUpload={handleImagesUpload} />
-                                    {imagesError && (
-                                        <Typography color="error">{imagesError}</Typography>
-                                    )}
-                                </Grid>
+                        {selectedCustomersError && (
+                            <Typography color="error">{selectedCustomersError}</Typography>
+                        )}
+                        <Box mt={2} display="flex" justifyContent="center" >
+                            {totalPages > 1 && (
+                                <Stack spacing={2}>
+                                    <Pagination
+                                        count={totalPages}
+                                        page={page}
+                                        onChange={handlePageChange}
+                                        variant="outlined"
+                                        shape="rounded"
+                                    />
+                                </Stack>
                             )}
+                        </Box>
+
 
                     </Grid>
                 </Grid>

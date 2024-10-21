@@ -253,6 +253,9 @@ const Coupon = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>
+                    STT
+                  </TableCell>
+                  <TableCell>
                     <TableSortLabel
                       active={sortBy === 'name'}
                       direction={sortBy === 'name' ? sort : 'asc'}
@@ -311,8 +314,9 @@ const Coupon = () => {
                     </td>
                   </tr>
                 )}
-                {coupons && coupons.map((coupon) => (
+                {coupons && coupons.map((coupon, index) => (
                   <TableRow key={coupon.id}>
+                 <TableCell>{(pageNo - 1) * pageSize + index + 1}</TableCell>
                     <TableCell>{coupon.name}</TableCell>
                     <TableCell align="left">{coupon.code}</TableCell>
                     <TableCell align="left">{coupon.quantity}</TableCell>

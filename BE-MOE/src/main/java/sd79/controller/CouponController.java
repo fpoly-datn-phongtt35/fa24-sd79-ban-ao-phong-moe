@@ -14,8 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.response.CouponResponse;
+import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
+import sd79.model.Coupon;
+import sd79.model.Customer;
 import sd79.service.CouponService;
+import sd79.service.CustomerService;
 import sd79.utils.CloudinaryUtils;
 
 import java.util.HashMap;
@@ -30,6 +35,7 @@ public class CouponController {
     private static final Logger log = LoggerFactory.getLogger(CouponController.class);
     private final CouponService couponService;
     private final CloudinaryUtils cloudinaryUpload;
+    private final CustomerService customerService;
 
     // Lấy danh sách coupon
     @Operation(
@@ -105,6 +111,12 @@ public class CouponController {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added coupon images");
     }
 
+    @PostMapping("/upload/v2")
+    public ResponseData<?> uploadFileV2(@ModelAttribute CouponImageReq request) {
+        this.couponService.storeCouponImages(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added coupon images");
+    }
+
     @Operation(
             summary = "Delete Coupon Image",
             description = "Delete a coupon image from Cloudinary and remove the record from the database"
@@ -114,5 +126,20 @@ public class CouponController {
             couponService.deleteCouponImage(couponId);
             return new ResponseData<>(HttpStatus.OK.value(), "Coupon image deleted successfully");
     }
+
+    @Operation(
+            summary = "Send Coupon Email",
+            description = "Send a coupon email to a customer"
+    )
+    @PostMapping("/send/email")
+    public ResponseData<?> sendEmail(@RequestParam Long couponId, @RequestParam Long customerId) {
+            Coupon coupon = couponService.findCouponById(couponId);
+            Customer customer = couponService.findCustomerById(customerId);
+            couponService.sendCouponEmail(coupon, customer);
+            return new ResponseData<>(HttpStatus.OK.value(), "Coupon email sent successfully");
+    }
+
+
+
 
 }
