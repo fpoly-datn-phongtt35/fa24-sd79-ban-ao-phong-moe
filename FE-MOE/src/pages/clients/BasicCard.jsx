@@ -7,12 +7,12 @@ import IconButton from '@mui/joy/IconButton';
 import Typography from '@mui/joy/Typography';
 import BookmarkAdd from '@mui/icons-material/BookmarkAddOutlined';
 
-export default function BasicCard() {
+export default function BasicCard({product}) {
   return (
     <Card sx={{ width: 320 }}>
       <div>
-        <Typography level="title-lg">Ảnh sản phẩm minh họa</Typography>
-        <Typography level="body-sm">Đang cập nhật!</Typography>
+        <Typography level="title-lg">{product.name}</Typography>
+        <Typography level="body-sm">{product.brand}</Typography>
         <IconButton
           aria-label="bookmark Bahamas Islands"
           variant="plain"
@@ -25,8 +25,8 @@ export default function BasicCard() {
       </div>
       <AspectRatio minHeight="120px" maxHeight="200px">
         <img
-          src="https://images.unsplash.com/photo-1527549993586-dff825b37782?auto=format&fit=crop&w=286"
-          srcSet="https://images.unsplash.com/photo-1527549993586-dff825b37782?auto=format&fit=crop&w=286&dpr=2 2x"
+          src={product.imageUrl[0]}
+          srcSet={product.imageUrl[0]}
           loading="lazy"
           alt=""
         />

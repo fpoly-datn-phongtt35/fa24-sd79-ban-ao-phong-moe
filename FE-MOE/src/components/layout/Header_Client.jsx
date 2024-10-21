@@ -1,14 +1,47 @@
-import React from "react";
-import { AppBar, IconButton, Menu, MenuItem, Tab, Tabs, Toolbar } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  AppBar,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tab,
+  Tabs,
+  Toolbar,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import logo from "~/assert/MainLogo.jpg";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@mui/joy";
+import { handleLogoutAPI } from "~/apis";
 
 const Header_Client = () => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const [hasAuthenticated, setHasAuthenticated] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    const getAuthority = () => {
+      const roleCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("role="));
+
+      return roleCookie ? roleCookie.split("=")[1] : "";
+    };
+    if (accessToken) {
+      setHasAuthenticated(true);
+      if (getAuthority() !== "USER") {
+        setIsManager(true);
+      } else {
+        setIsManager(false);
+      }
+    } else {
+      setHasAuthenticated(false);
+    }
+  }, []);
 
   const navigate = useNavigate();
 
@@ -21,6 +54,11 @@ const Header_Client = () => {
   };
 
   const singIn = () => {
+    navigate("/login");
+  };
+
+  const handleLogout = async () => {
+    await handleLogoutAPI();
     navigate("/login");
   };
 
@@ -60,14 +98,24 @@ const Header_Client = () => {
               onClose={handleMenuClose}
               className="menu_account_client"
             >
-              <MenuItem onClick={handleMenuClose}>Đăng Ký</MenuItem>
-              <MenuItem onClick={singIn}>Đăng Nhập</MenuItem>
+              <MenuItem onClick={handleMenuClose}>Đang cập nhật!</MenuItem>
+              {isManager && (
+                <MenuItem onClick={() => navigate("/dashboard")}>
+                  Trang quản Lý
+                </MenuItem>
+              )}
+              {hasAuthenticated && (
+                <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+              )}
+              {!hasAuthenticated && (
+                <MenuItem onClick={singIn}>Đăng nhập</MenuItem>
+              )}
             </Menu>
           </div>
         </Toolbar>
 
         {/* Navbar dưới cùng */}
-        <Toolbar className="navbar_client">
+        {/* <Toolbar className="navbar_client">
           <Tabs aria-label="nav tabs">
             <Tab label="Trang Chủ" onClick={() => navigate("/")} />
             <Tab label="Giới Thiệu" onClick={() => navigate("/")} />
@@ -77,7 +125,7 @@ const Header_Client = () => {
             <Tab label="Tuyển Dụng" onClick={() => navigate("/")} />
             <Tab label="Tin Tức" onClick={() => navigate("/")} />
           </Tabs>
-        </Toolbar>
+        </Toolbar> */}
       </AppBar>
     </>
   );

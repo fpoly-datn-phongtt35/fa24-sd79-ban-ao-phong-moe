@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import 'regenerator-runtime/runtime';
-import Signin from "~/pages/auth/Signin";
+import "regenerator-runtime/runtime";
 import { Header_Admin } from "./components/layout/Header_Admin";
 import { Sidebar_Admin } from "./components/layout/Sidebar_Admin";
 import { Product } from "./pages/products/Product";
@@ -29,36 +28,50 @@ import { ProductStore } from "./pages/products/main/ProductStore";
 import { useState } from "react";
 import { Home } from "./pages/clients/Home";
 import Header_Client from "./components/layout/Header_Client";
+import Authentication from "./pages/auth/Authentication";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [hasAuthenticated, setHasAuthenticated] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
 
   const onCollapsed = () => {
     setCollapsed(!collapsed);
   };
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
   if (!accessToken) {
     return <Navigate to="/login" replace={true} />;
+  } else if (getAuthority() === "ADMIN") {
+    return (
+      <div className="layout">
+        <div className="sidebar">
+          <Sidebar_Admin collapsed={collapsed} />
+        </div>
+
+        <div className="main-area">
+          <div className="header">
+            <div className="header-left"></div>
+            <Header_Admin onCollapsed={onCollapsed} collapsed={collapsed} />
+          </div>
+
+          <div className="content-area">
+            <Outlet />
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return <Navigate to="/" replace={true} />;
   }
-  return (
-    <div className="layout">
-      <div className="sidebar">
-        <Sidebar_Admin collapsed={collapsed} />
-      </div>
-
-      <div className="main-area">
-        <div className="header">
-          <div className="header-left"></div>
-          <Header_Admin onCollapsed={onCollapsed} collapsed={collapsed} />
-        </div>
-
-        <div className="content-area">
-          <Outlet />
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const PublicRoutes = () => {
@@ -66,7 +79,7 @@ const PublicRoutes = () => {
     <div className="layout_client">
       <div className="main-area_client">
         <div>
-          <Header_Client/>
+          <Header_Client />
         </div>
 
         <div className="content-area_client">
@@ -95,7 +108,7 @@ function App() {
       <Route path="/home" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
-        <Route path="/login" element={<Signin />} />
+        <Route path="/login" element={<Authentication />} />
       </Route>
       <Route element={<PublicRoutes />}>
         <Route path="/" element={<Home />} />

@@ -50,6 +50,7 @@ export const Product = () => {
     brand,
     material,
     origin,
+    setCurrentPage
   ]);
 
   useEffect(() => {

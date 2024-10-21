@@ -22,7 +22,6 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 export const Archive = () => {
   const [products, setProducts] = useState([]);

@@ -8,25 +8,12 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import logo from "~/assert/MainLogo.jpg";
-import { useEffect, useState } from "react";
 import { MoeAlert } from "../other/MoeAlert";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
-  const [ADMIN, setAdmin] = useState(false);
-
-  useEffect(() => {
-    setAdmin(getAuthority() == "USER");
-  }, []);
-
-  const getAuthority = () => {
-    const roleCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("role="));
-
-    return roleCookie ? roleCookie.split("=")[1] : "";
-  };
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -79,23 +66,30 @@ export const Sidebar_Admin = (props) => {
               Trang chủ
             </Typography>
           </MenuItem>
+          <MenuItem
+            icon={<StorefrontIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/" />}
+          >
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Cửa hàng
+            </Typography>
+          </MenuItem>
           <SubMenu
             label="Bán hàng"
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
           >
             <MenuItem component={<Link to="/dashboard?offline" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Offline
+                Bán tại quầy
               </Typography>
             </MenuItem>
             <MenuItem>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Online
+                Đơn đặt hàng
               </Typography>
             </MenuItem>
           </SubMenu>
           <SubMenu
-            disabled={ADMIN}
             label="Sản phẩm"
             icon={
               <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>
@@ -133,10 +127,7 @@ export const Sidebar_Admin = (props) => {
                 </Typography>
               </MenuItem>
             </SubMenu>
-            <MenuItem
-              disabled={ADMIN}
-              component={<Link to="/product/archive" />}
-            >
+            <MenuItem component={<Link to="/product/archive" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Kho lưu trữ
               </Typography>
