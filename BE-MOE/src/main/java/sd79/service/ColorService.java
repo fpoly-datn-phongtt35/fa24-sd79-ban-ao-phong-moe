@@ -1,7 +1,7 @@
 package sd79.service;
 
-import sd79.dto.requests.ColorRequest;
-import sd79.dto.response.ColorResponse;
+import sd79.dto.requests.productRequests.ColorRequest;
+import sd79.dto.response.productResponse.ColorResponse;
 
 import java.util.List;
 

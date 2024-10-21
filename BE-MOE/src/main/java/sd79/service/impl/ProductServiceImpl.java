@@ -1,18 +1,27 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sd79.dto.requests.ProductDetailRequest;
-import sd79.dto.requests.ProductRequest;
-import sd79.dto.response.ProductResponse;
+import sd79.dto.requests.productRequests.ProductDetailModify;
+import sd79.dto.requests.productRequests.ProductDetailRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
+import sd79.dto.requests.productRequests.ProductRequest;
+import sd79.dto.requests.common.ProductParamFilter;
+import sd79.dto.response.PageableResponse;
+import sd79.dto.response.productResponse.*;
+import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
-import sd79.repositories.*;
+import sd79.repositories.customQuery.ProductCustomizeQuery;
+import sd79.repositories.products.*;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUpload;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,9 +50,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final CloudinaryUpload cloudinaryUpload;
 
+    private final ProductCustomizeQuery productCustomizeQuery;
+
     @Override
-    public List<ProductResponse> getAllProducts() {
-        return this.productRepository.findByIsDeletedFalse().stream().map(this::convertToProductResponse).toList();
+    public PageableResponse getAllProducts(ProductParamFilter param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.productCustomizeQuery.getAllProducts(param);
     }
 
     @Override
@@ -66,16 +80,8 @@ public class ProductServiceImpl implements ProductService {
 
         product = this.productRepository.save(product);
 
-        // Images
-        for (MultipartFile file : req.getImages()){
-            ProductImage productImage = new ProductImage();
-            productImage.setProduct(product);
-            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
-            this.productImageRepository.save(productImage);
-        }
-
         // Product details
-        for (ProductDetailRequest prd : req.getProductDetails()){
+        for (ProductDetailRequest prd : req.getProductDetails()) {
             ProductDetail productDetail = new ProductDetail();
             productDetail.setProduct(product);
             productDetail.setRetailPrice(prd.getRetailPrice());
@@ -90,6 +96,88 @@ public class ProductServiceImpl implements ProductService {
         return product.getId();
     }
 
+    @Override
+    public void storeProductImages(ProductImageReq req) {
+        Product product = this.getProductById(req.getProductId());
+        for (MultipartFile file : req.getImages()) {
+            ProductImage productImage = new ProductImage();
+            productImage.setProduct(product);
+            productImage.setImageUrl(this.cloudinaryUpload.upload(file));
+            this.productImageRepository.save(productImage);
+        }
+    }
+
+    @Override
+    public void setProductStatus(long id, ProductStatus status) {
+        Product product = this.getProductById(id);
+        product.setStatus(status);
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public void moveToBin(Long id) {
+        Product product = this.getProductById(id);
+        product.setIsDeleted(true);
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public ProductModifyRes getProductInfo(long id) {
+        return convertToProductResponse(this.getProductById(id));
+    }
+
+    @Override
+    public void updateProduct(ProductRequest req, long id) {
+        User user = getUserById(req.getUserId());
+
+        // Products
+        Product product = this.getProductById(id);
+        product.setName(req.getName());
+        product.setDescription(req.getDescription());
+
+        product.setCategory(this.categoryRepository.findById(req.getCategoryId()).orElseThrow(() -> new EntityNotFoundException("Invalid category")));
+        product.setBrand(this.brandRepository.findById(req.getBrandId()).orElseThrow(() -> new EntityNotFoundException("Invalid brand")));
+        product.setMaterial(this.materialRepository.findById(req.getMaterialId()).orElseThrow(() -> new EntityNotFoundException("Invalid material")));
+
+        product.setOrigin(req.getOrigin());
+        product.setUpdatedBy(user);
+
+        this.productRepository.save(product);
+    }
+
+    @Override
+    public void setProductDetailStatus(long id, boolean status) {
+        ProductDetail prd = this.getProductDetailById(id);
+        prd.setStatus(status ? ProductStatus.ACTIVE : ProductStatus.INACTIVE);
+        this.productDetailRepository.save(prd);
+    }
+
+    @Override
+    public void updateAttributeProductDetail(List<ProductDetailModify> items) {
+        items.forEach(i -> {
+            ProductDetail prd = this.getProductDetailById(i.getId());
+            prd.setQuantity(i.getQuantity());
+            prd.setRetailPrice(i.getPrice());
+            this.productDetailRepository.save(prd);
+        });
+    }
+
+    @Override
+    public long storeProductDetailAttribute(ProductDetailRequest request) {
+        if(this.productDetailRepository.existsDetailByAttribute(request.getId(), request.getColorId(), request.getSizeId())){
+            throw new EntityExistsException("Thuộc tính đã tồn tại!");
+        }
+        return 0;
+    }
+
+    private Product getProductById(long id) {
+        return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    }
+
+    private ProductDetail getProductDetailById(long id) {
+        return this.productDetailRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product detail not found"));
+    }
+
     private Size getSizeById(int id) {
         return this.sizeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Size not found"));
     }
@@ -98,24 +186,38 @@ public class ProductServiceImpl implements ProductService {
         return this.colorRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Color not found"));
     }
 
-    private ProductResponse convertToProductResponse(Product product) {
-        return ProductResponse.builder()
-                .id(product.getId())
-                .imageUrl(convertToUrl(product.getProductImages()))
+    private ProductModifyRes convertToProductResponse(Product product) {
+        return ProductModifyRes.builder()
                 .name(product.getName())
                 .description(product.getDescription())
-                .status(product.getStatus())
-                .category(product.getCategory().getName())
-                .brand(product.getBrand().getName())
-                .material(product.getMaterial().getName())
+                .category(CategoryResponse.builder().id(product.getCategory().getId()).name(product.getCategory().getName()).build())
+                .brand(BrandResponse.builder().id(product.getBrand().getId()).name(product.getBrand().getName()).build())
+                .material(MaterialResponse.builder().id(product.getMaterial().getId()).name(product.getMaterial().getName()).build())
                 .origin(product.getOrigin())
-                .createdBy(product.getCreatedBy().getUsername())
-                .updatedBy(product.getUpdatedBy().getUsername())
-                .createdAt(product.getCreateAt())
-                .updatedAt(product.getUpdateAt())
-                .productQuantity(this.productDetailRepository.countByProductId(product.getId()))
+                .imageUrl(convertToUrl(product.getProductImages()))
+                .created_by(product.getCreatedBy().getUsername())
+                .modified_by(product.getUpdatedBy().getUsername())
+                .created_at(product.getCreateAt())
+                .modified_at(product.getUpdateAt())
+                .details(convertToProductDetailResponse(product.getProductDetails()))
                 .build();
     }
+
+    private List<ProductDetailResponse> convertToProductDetailResponse(List<ProductDetail> productDetails) {
+        List<ProductDetailResponse> productDetailResponses = new ArrayList<>();
+        productDetails.forEach(productDetail -> {
+            productDetailResponses.add(ProductDetailResponse.builder()
+                    .id(productDetail.getId())
+                    .color(productDetail.getColor().getName())
+                    .size(productDetail.getSize().getName())
+                    .price(productDetail.getRetailPrice())
+                    .quantity(productDetail.getQuantity())
+                    .status(productDetail.getStatus())
+                    .build());
+        });
+        return productDetailResponses;
+    }
+
 
     private List<String> convertToUrl(List<ProductImage> images) {
         return images.stream()

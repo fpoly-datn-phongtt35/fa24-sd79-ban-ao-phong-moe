@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Container, Form, Button } from 'react-bootstrap';
+import { Container, Box, Grid, TextField, FormControl, InputLabel, Select, MenuItem, Button, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
-import { postCustomer } from '~/apis/customerApi'; // Adjust the import path as necessary
+import { postCustomer } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
 
 export const AddCustomer = () => {
@@ -9,7 +9,7 @@ export const AddCustomer = () => {
   const formatDate = (dateString, time = "00:00:00") => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year} | ${time}`;
   };
@@ -20,12 +20,13 @@ export const AddCustomer = () => {
     phoneNumber: '',
     gender: '',
     dateOfBirth: '',
+    customerAddress: '',
     image: '',
-    createdAt: new Date(), 
+    createdAt: new Date(),
     updatedAt: new Date()
   });
 
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,100 +39,114 @@ export const AddCustomer = () => {
 
     const customerWithTimestamps = {
       ...customerData,
-      dateOfBirth: formatDate(customerData.dateOfBirth), 
+      dateOfBirth: formatDate(customerData.dateOfBirth),
       createdAt: currentDate,
       updatedAt: currentDate,
     };
 
     try {
-      await postCustomer(customerWithTimestamps); 
+      await postCustomer(customerWithTimestamps);
       toast.success('Customer added successfully!');
-      navigate('/customer'); 
-      console.log(customerWithTimestamps)
+      navigate('/customer');
     } catch (error) {
       toast.error('There was an error adding the customer');
     }
   };
 
   return (
-    <Container>
-      <h2>Add New Customer</h2>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="firstName">
-          <Form.Label>First Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="firstName"
-            value={customerData.firstName}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="lastName">
-          <Form.Label>Last Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="lastName"
-            value={customerData.lastName}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="phoneNumber">
-          <Form.Label>Phone Number</Form.Label>
-          <Form.Control
-            type="text"
-            name="phoneNumber"
-            value={customerData.phoneNumber}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="gender">
-          <Form.Label>Gender</Form.Label>
-          <Form.Control
-            as="select"
-            name="gender"
-            value={customerData.gender}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId="dateOfBirth">
-          <Form.Label>Date of Birth</Form.Label>
-          <Form.Control
-            type="date"
-            name="dateOfBirth"
-            value={customerData.dateOfBirth}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-
-        <Form.Group controlId="image">
-          <Form.Label>Image URL</Form.Label>
-          <Form.Control
-            type="text"
-            name="image"
-            value={customerData.image}
-            onChange={handleChange}
-          />
-        </Form.Group>
-
-        <br />
-        <Button variant="primary" type="submit">
-          Add Customer
-        </Button>
-      </Form>
+    <Container maxWidth="md">
+      <Box mt={4}>
+        <Typography variant="h4" gutterBottom>
+          Add New Customer
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Tên"
+                name="firstName"
+                value={customerData.firstName}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Họ"
+                name="lastName"
+                value={customerData.lastName}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Số điện thoại"
+                name="phoneNumber"
+                value={customerData.phoneNumber}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Giới tính</InputLabel>
+                <Select
+                  name="gender"
+                  value={customerData.gender}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">Select Gender</MenuItem>
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ngày sinh"
+                name="dateOfBirth"
+                type="date"
+                value={customerData.dateOfBirth}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ảnh"
+                name="image"
+                value={customerData.image}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Địa chỉ"  
+                name="city"
+                value={customerData.city}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+            </Grid>
+          </Grid>
+          <Box mt={3}>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Add Customer
+            </Button>
+          </Box>
+        </Box>
+      </Box>
     </Container>
   );
 };

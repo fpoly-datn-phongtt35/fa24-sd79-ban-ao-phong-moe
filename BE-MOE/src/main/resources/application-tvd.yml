@@ -37,3 +37,7 @@ openapi:
     serverName: JavaTech
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
+cloudinary:
+      cloud-name: dqqacbtbw
+      api-secret: tyOtNb5v9EwHwe8JXJV78Pqn6cI
+      api-key: 853888581129913

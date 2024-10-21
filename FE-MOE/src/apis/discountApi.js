@@ -23,3 +23,4 @@ export const deleteDiscount = async (id) => {
 export const putDiscount = async (promotionData, id) => {
   return await authorizedAxiosInstance.put(`${API_ROOT}/promotion/update/${id}`, promotionData);
 };
+

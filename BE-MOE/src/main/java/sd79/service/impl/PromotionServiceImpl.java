@@ -2,11 +2,16 @@ package sd79.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.PromotionRequest;
 import sd79.dto.response.PromotionResponse;
+import sd79.exception.EntityNotFoundException;
 import sd79.model.Promotion;
+import sd79.model.User;
 import sd79.repositories.PromotionRepo;
+import sd79.repositories.auth.UserRepository;
 import sd79.service.PromotionService;
 
 import java.util.Date;
@@ -17,6 +22,7 @@ import java.util.List;
 
 public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepo promotionRepo;
+    private final UserRepository userRepository;
 
     @Override
     public List<PromotionResponse> getAllPromotion() { //tra ra danh dach phieu giam gia
@@ -52,6 +58,31 @@ public class PromotionServiceImpl implements PromotionService {
         promotionRepo.delete(promotion);
     }
 
+    @Transactional
+    @Override
+    public Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable) {
+        Page<Promotion> promotions = promotionRepo.searchPromotions(startDate, endDate, name, pageable);
+        return promotions.map(this::convertCPromotionResponse);  // Convert entity to response DTO
+    }
+
+    @Override
+    public Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
+                                                     String status, Pageable pageable) {
+        Page<Promotion> promotions;
+
+        // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
+        if ((keyword == null || keyword.isEmpty()) && startDate == null && endDate == null &&
+                 (status == null || status.isEmpty())) {
+            promotions = promotionRepo.findAll(pageable);  // Lấy toàn bộ danh sách với phân trang
+        } else {
+            // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
+            promotions = promotionRepo.findByKeywordAndDate(keyword, startDate, endDate, status, pageable);
+        }
+
+        // Chuyển đổi từ entity Coupon sang DTO CouponResponse
+        return promotions.map(this::convertCPromotionResponse);
+    }
+
 //    public Promotion updatePromotion(Promotion promotion, Integer id) {
 //        Optional<Promotion> optional = this.promotionRepo.findById(id);
 //        return optional.map(o -> {
@@ -69,7 +100,6 @@ public class PromotionServiceImpl implements PromotionService {
     private void populatePromotionData(Promotion promotion, PromotionRequest promotionRequest) {//lay du lieu phieu giam gia request de them
         promotion.setName(promotionRequest.getName());
         promotion.setPromotionValue(promotionRequest.getPromotionValue());
-        promotion.setPromotionType(promotionRequest.getPromotionType());
         promotion.setStartDate(promotionRequest.getStartDate());
         promotion.setEndDate(promotionRequest.getEndDate());
         promotion.setDescription(promotionRequest.getDescription());
@@ -80,11 +110,14 @@ public class PromotionServiceImpl implements PromotionService {
                 .id(promotion.getId())
                 .name(promotion.getName())
                 .promotionValue(promotion.getPromotionValue())
-                .promotionType(promotion.getPromotionType())
                 .startDate(promotion.getStartDate())
                 .endDate(promotion.getEndDate())
                 .description(promotion.getDescription())
                 .build();
+    }
+
+    private User getUserById(Long id) {
+        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
 }

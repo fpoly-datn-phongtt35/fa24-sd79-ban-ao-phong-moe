@@ -1,7 +1,7 @@
 package sd79.service;
 
-import sd79.dto.requests.SizeRequest;
-import sd79.dto.response.SizeResponse;
+import sd79.dto.requests.productRequests.SizeRequest;
+import sd79.dto.response.productResponse.SizeResponse;
 
 import java.util.List;
 

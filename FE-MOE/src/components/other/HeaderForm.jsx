@@ -6,10 +6,12 @@ export const HeardForm = (props) => {
       container
       spacing={2}
       alignItems="center"
-      bgcolor={"#1976d2"}
-      height={"50px"}
+      bgcolor={"#2378cb"}
+      height={"40px"}
+      paddingLeft={2}
+      borderRadius={1}
     >
-      <Typography xs={4} margin={"4px"} variant="h6" gutterBottom color="#fff">
+      <Typography xs={4} variant="h6" color="#fff">
         {props.title}
       </Typography>
     </Grid>

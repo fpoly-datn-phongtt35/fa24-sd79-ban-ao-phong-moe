@@ -1,30 +1,205 @@
-import { Container, Grid, Typography, Box } from "@mui/material";
+import {
+  Container,
+  Box,
+  Stack,
+  Pagination,
+  CircularProgress,
+  Breadcrumbs,
+  Link,
+  Typography,
+  Grid,
+} from "@mui/material";
 import { useEffect, useState } from "react";
-import { fetchAllProducts } from "~/apis/productApi";
+import HomeIcon from "@mui/icons-material/Home";
+import {
+  fetchAllProducts,
+  moveToBin,
+  changeStatus,
+  attributeProducts,
+} from "~/apis/productApi";
 import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
-import { HeardForm } from "~/components/other/HeaderForm";
+import debounce from "lodash.debounce";
+import { useNavigate } from "react-router-dom";
 
 export const Product = () => {
   const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
+  const [status, setStatus] = useState("ALL");
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [material, setMaterial] = useState("");
+  const [origin, setOrigin] = useState("");
+
+  const [attributes, setAttribute] = useState(null);
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     handleSetProducts();
+  }, [currentPage, keyword, status, category, brand, material, origin]);
+
+  useEffect(() => {
+    fetchAttributes();
   }, []);
 
+  const fetchAttributes = async () => {
+    const res = await attributeProducts();
+    setAttribute(res);
+  };
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
   const handleSetProducts = async () => {
-    const res = await fetchAllProducts();
+    const res = await fetchAllProducts(currentPage, keyword, status, category, brand, material, origin);
     setProducts(res.data);
   };
+
+  const debouncedSearch = debounce((value) => {
+    setKeyword(value);
+    setCurrentPage(1);
+  }, 300);
+
+  const onChangeSearch = (e) => {
+    debouncedSearch(e.target.value);
+  };
+
+  const onChangeStatus = (e) => {
+    setCurrentPage(1);
+    setStatus(e);
+  };
+
+  const onChangeCategory = (e) => {
+    setCurrentPage(1);
+    setCategory(e);
+  };
+  const onChangeBrand = (e) => {
+    setCurrentPage(1);
+    setBrand(e);
+  };
+  const onChangeMaterial = (e) => {
+    setCurrentPage(1);
+    setMaterial(e);
+  };
+  const onChangeOrigin = (e) => {
+    setCurrentPage(1);
+    setOrigin(e);
+  };
+
+  const clearFilter = () => {
+    setCurrentPage(1);
+    setKeyword("");
+    setStatus("ALL");
+    setCategory("");
+    setBrand("");
+    setMaterial("");
+    setOrigin("");
+  }
+
+  const onMoveToBin = (id) => {
+    swal({
+      title: "Xác nhận",
+      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((confirm) => {
+      if (confirm) {
+        handleSetProducts();
+        moveToBin(id);
+      }
+    });
+  };
+
+  const onSetStatus = (id, status) => {
+    changeStatus(id, !status ? "ACTIVE" : "INACTIVE");
+  };
+
+  if (!products?.content) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="80vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container
       maxWidth="max-width"
-      className="bg-white"
-      style={{ height: "100%", marginTop: "15px" }}
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
-      <HeardForm title="Quản lý sản phẩm"/>
-      <Filter />
-      <TableData data={products}/>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        marginBottom={2}
+        height={"50px"}
+      >
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Quản lý sản phẩm
+          </Typography>
+        </Breadcrumbs>
+      </Grid>
+
+      <Filter
+        onChangeSearch={onChangeSearch}
+        keyword={keyword}
+        status={status}
+        category={category}
+        brand={brand}
+        material={material}
+        attributes={attributes}
+        origin={origin}
+        onChangeStatus={onChangeStatus}
+        onChangeCategory={onChangeCategory}
+        onChangeBrand={onChangeBrand}
+        onChangeMaterial={onChangeMaterial}
+        onChangeOrigin={onChangeOrigin}
+        clearFilter={clearFilter}
+      />
+
+      <TableData
+        data={products.content}
+        onMoveToBin={onMoveToBin}
+        onSetStatus={onSetStatus}
+      />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        padding={3}
+      >
+        {products.totalPages > 1 && (
+          <Stack spacing={2}>
+            <Pagination
+              count={products.totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              variant="outlined"
+              shape="rounded"
+            />
+          </Stack>
+        )}
+      </Box>
     </Container>
   );
 };
