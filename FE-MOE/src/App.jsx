@@ -25,14 +25,13 @@ import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
 
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
-import { useState } from "react";
 import { Home } from "./pages/clients/Home";
 import Header_Client from "./components/layout/Header_Client";
 import Authentication from "./pages/auth/Authentication";
+import { useState } from "react";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [hasAuthenticated, setHasAuthenticated] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
 

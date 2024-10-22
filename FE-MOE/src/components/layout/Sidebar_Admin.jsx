@@ -88,6 +88,11 @@ export const Sidebar_Admin = (props) => {
                 Đơn đặt hàng
               </Typography>
             </MenuItem>
+            <MenuItem>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Hóa đơn
+              </Typography>
+            </MenuItem>
           </SubMenu>
           <SubMenu
             label="Sản phẩm"

@@ -8,6 +8,10 @@ import {
   Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useNavigate } from "react-router-dom";
+import { handleLogoutAPI } from "~/apis";
+import { MoeAlert } from "../other/MoeAlert";
+import { Typography } from "@mui/joy";
 
 export const Header_Admin = (props) => {
   const [username, setUsername] = useState("Unknown");
@@ -25,6 +29,13 @@ export const Header_Admin = (props) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await handleLogoutAPI();
+    navigate("/");
   };
 
   return (
@@ -65,8 +76,21 @@ export const Header_Admin = (props) => {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
+            <MenuItem onClick={handleClose}>Username</MenuItem>
+            <MenuItem onClick={handleClose}>Thông tin tài khoản</MenuItem>
+            <MenuItem onClick={handleClose}>Cài đặt</MenuItem>
+            <MoeAlert
+              title="Đăng xuất"
+              message="Bạn có muốn đăng xuất không?"
+              event={handleLogout}
+              button={
+                <MenuItem>
+                  <Typography sx={{ color: "#32383e" }} level="body-md">
+                    Đăng xuất
+                  </Typography>
+                </MenuItem>
+              }
+            />
           </Menu>
         </Box>
       </div>
