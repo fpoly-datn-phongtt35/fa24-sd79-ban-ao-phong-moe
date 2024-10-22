@@ -160,7 +160,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .id(customer.getId())
                 .firstName(customer.getFirstName())
                 .lastName(customer.getLastName())
-                .fullName(String.format("%s %s", customer.getFirstName(), customer.getLastName()))
+                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
                 .phoneNumber(customer.getPhoneNumber())
                 .username(customer.getUser().getUsername())
                 .email(customer.getUser().getEmail())
