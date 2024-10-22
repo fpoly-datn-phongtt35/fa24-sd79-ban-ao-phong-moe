@@ -1,13 +1,16 @@
-import { Box, Grid } from "@mui/joy";
+import { Box, Divider, Grid, Typography } from "@mui/joy";
 import BasicCard from "./BasicCard";
 import UserCard from "./UserCard";
 import { useEffect, useState } from "react";
 import { fetchAllProducts } from "~/apis/client/productApiClient";
+import SlideSlideShowHeader from "~/components/events/SlideShowEventHeader";
+import { ProductCard } from "~/components/cards/ProductCard";
+import TopProductCard from "~/components/cards/TopProductCard";
 
-export const Home = () => {
+const Home = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("ACTIVE");
   const [category, setCategory] = useState("");
@@ -45,15 +48,44 @@ export const Home = () => {
 
   return (
     <Box>
-      {/* <UserCard /> */}
-      <Grid marginTop={5} container spacing={1}>
-        {products &&
-          products?.content?.map((product, index) => (
-            <Grid key={index} size={3}>
-              <BasicCard product={product} />
-            </Grid>
-          ))}
-      </Grid>
+      <Box>
+        <SlideSlideShowHeader />
+      </Box>
+      <Box
+        sx={{
+          padding: 4,
+        }}
+      >
+        <Typography level="title-lg">Sản Phẩm Bán Chạy</Typography>
+        <Divider sx={{ my: 1, width: "100%", maxWidth: "100%" }} />
+        <Grid marginTop={2} container spacing={2}>
+          {products &&
+            products?.content?.map((product, index) => (
+              <Grid key={index} size={1}>
+                <TopProductCard product={product} />
+              </Grid>
+            ))}
+        </Grid>
+      </Box>
+      <Box
+        sx={{
+          padding: 4,
+          marginTop: 2,
+        }}
+      >
+        <Typography level="title-lg">Sản Phẩm Nổi Bật</Typography>
+        <Divider sx={{ my: 1, width: "100%", maxWidth: "100%" }} />
+        <Grid marginTop={2} container spacing={2}>
+          {products &&
+            products?.content?.map((product, index) => (
+              <Grid key={index} size={1}>
+                <ProductCard product={product} />
+              </Grid>
+            ))}
+        </Grid>
+      </Box>
     </Box>
   );
 };
+
+export default Home;

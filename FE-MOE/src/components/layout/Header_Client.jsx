@@ -13,7 +13,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import logo from "~/assert/MainLogo.jpg";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@mui/joy";
+import { Badge, Input, Typography } from "@mui/joy";
 import { handleLogoutAPI } from "~/apis";
 
 const Header_Client = () => {
@@ -21,6 +21,7 @@ const Header_Client = () => {
 
   const [hasAuthenticated, setHasAuthenticated] = useState(false);
   const [isManager, setIsManager] = useState(false);
+  const [value, setValue] = useState(0);
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -62,6 +63,13 @@ const Header_Client = () => {
     navigate("/login");
   };
 
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+    if (newValue === 0) navigate("/");
+    if (newValue === 1) navigate("/");
+    if (newValue === 2) navigate("/about");
+    if (newValue === 3) navigate("/");
+  };
   return (
     <>
       <AppBar position="static" className="header_container_client">
@@ -84,7 +92,9 @@ const Header_Client = () => {
           </div>
           <div className="header_icons_client">
             <IconButton className="icon_cart_client">
-              <ShoppingCartIcon />
+              <Badge badgeContent={1}>
+                <Typography sx={{ fontSize: "xl" }}>🛒</Typography>
+              </Badge>
             </IconButton>
             <IconButton
               className="icon_account_client"
@@ -114,18 +124,14 @@ const Header_Client = () => {
           </div>
         </Toolbar>
 
-        {/* Navbar dưới cùng */}
-        {/* <Toolbar className="navbar_client">
-          <Tabs aria-label="nav tabs">
-            <Tab label="Trang Chủ" onClick={() => navigate("/")} />
-            <Tab label="Giới Thiệu" onClick={() => navigate("/")} />
-            <Tab label="Sản Phẩm" onClick={() => navigate("/")} />
-            <Tab label="Cửa Hàng" onClick={() => navigate("/")} />
-            <Tab label="Liên Hệ" onClick={() => navigate("/")} />
-            <Tab label="Tuyển Dụng" onClick={() => navigate("/")} />
-            <Tab label="Tin Tức" onClick={() => navigate("/")} />
+        <Toolbar className="navbar_client">
+          <Tabs value={value} onChange={handleChange} aria-label="nav tabs">
+            <Tab label="Trang Chủ" />
+            <Tab label="Sản Phẩm" />
+            <Tab label="Giới Thiệu" />
+            <Tab label="Liên Hệ" />
           </Tabs>
-        </Toolbar> */}
+        </Toolbar>
       </AppBar>
     </>
   );
