@@ -43,14 +43,8 @@ const UpdateCoupon = () => {
     const [gender, setGender] = useState('');
     const [birth, setBirth] = useState('');
 
-    const formatDate = (dateString, time = "00:00:00") => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year} | ${time}`;
-    };
-
+    
+    //Gọi chạy hàm
     useEffect(() => {
         fetchCouponDetail();
         handleSetCustomer();
@@ -60,10 +54,7 @@ const UpdateCoupon = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [page, keyword, gender, birth]);
 
-    const handlePageChange = (event, newPage) => {
-        setPage(newPage);
-    };
-
+    //Xử lý tìm kiếm khách hàng
     const handleSearch = async () => {
         try {
             setLoading(true);
@@ -77,18 +68,25 @@ const UpdateCoupon = () => {
         }
     };
 
+    //Xử lý phân trang
+    const handlePageChange = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    //Xử lý tải ảnh lên
     const handleImagesUpload = (files) => {
         setImages(files);
         setImagesError('');
     };
 
+    //Xử lý cập nhật phiếu giảm giá
     const onSubmit = async (data) => {
         let isValid = true;
-    
+
         if (!isValid) {
             return;
         }
-    
+
         const coupon = {
             code: data.code,
             name: data.name,
@@ -104,33 +102,33 @@ const UpdateCoupon = () => {
             userId: localStorage.getItem("userId"),
             customerIds: selectedCustomers,
         };
-    
+
         try {
             setLoading(true);
             const response = await updateCoupon(id, coupon);
-            let formData = new FormData();
-            formData.append("couponID", response);
-    
-            // Kiểm tra xem ảnh mới có khác với ảnh lưu trữ không
-            const isImageChanged = images.length > 0 && storedImageUrl && 
-                                   (images.length !== storedImageUrl.length || 
-                                    images.some((image, index) => image.name !== storedImageUrl[index]?.name));
-    
-            if (!isImageChanged) {
-                // Trường hợp ảnh không thay đổi
-                const customerId = Array.isArray(selectedCustomers) ? selectedCustomers[0] : selectedCustomers;
-                await sendCouponEmail(response, customerId);
-            } else {
-                // Trường hợp ảnh thay đổi
-                await deleteCouponImage(response);
-    
-                images.forEach((image, index) => {
-                    formData.append("images", image);
-                });
-    
-                await postCouponImage(formData);
+
+            if (couponType === 'PERSONAL') {
+                // console.log("Data", response)
+                let formData = new FormData();
+                formData.append("couponID", response);
+
+                const isImageChanged = images.length > 0 && storedImageUrl &&
+                    (images.length !== storedImageUrl.length ||
+                        images.some((image, index) => image.name !== storedImageUrl[index]?.name));
+
+                if (!isImageChanged) {
+                    const customerId = Array.isArray(selectedCustomers) ? selectedCustomers[0] : selectedCustomers;
+                    await sendCouponEmail(response, customerId);
+                } else {
+                    await deleteCouponImage(response);
+
+                    images.forEach((image, index) => {
+                        formData.append("images", image);
+                    });
+
+                    await postCouponImage(formData);
+                }
             }
-    
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
@@ -138,10 +136,8 @@ const UpdateCoupon = () => {
             setLoading(false);
         }
     };
-    
 
-
-
+    //Hiển thị dữ liệu coupon
     const fetchCouponDetail = async () => {
         try {
             const coupon = await detailCoupon(id);
@@ -156,7 +152,7 @@ const UpdateCoupon = () => {
             setValue('startDate', couponData.startDate.split(' ')[0]);
             setValue('endDate', couponData.endDate.split(' ')[0]);
             setValue('description', couponData.description);
-            setCouponType(couponData.type); // Ensure type is set
+            setCouponType(couponData.type);
             setDiscountType(couponData.discountType);
             setStoredImageUrl(couponData.imageUrl || '');
 
@@ -177,11 +173,22 @@ const UpdateCoupon = () => {
         }
     };
 
+    //Xử lý thông tin ngày của phiếu giảm giá
+    const formatDate = (dateString, time = "00:00:00") => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year} | ${time}`;
+    };
+
+    //Xử lý thông tin ngày sinh khách hàng
     const formatDateCustomer = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-GB');
     };
 
+    //Hiển thị dữ liệu khách hàng
     const handleSetCustomer = async () => {
         try {
             const response = await fetchAllCustomer(page - 1, pageSize);
@@ -193,6 +200,7 @@ const UpdateCoupon = () => {
         }
     };
 
+    //Chọn click số lượng lớn
     const handleSelectAll = (event) => {
 
         if (event.target.checked) {
@@ -205,6 +213,7 @@ const UpdateCoupon = () => {
         }
     };
 
+    //Chọn click số lượng nhỏ
     const handleSelectCustomer = (customerId) => {
 
         setSelectedCustomers((prevSelected) => {
@@ -224,8 +233,6 @@ const UpdateCoupon = () => {
             return updatedSelected;
         });
     };
-
-
 
     const isSelected = (customerId) => selectedCustomers.includes(customerId);
 
@@ -325,6 +332,11 @@ const UpdateCoupon = () => {
                                                 message: 'Giá trị phải lớn hơn 0',
 
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị phải nhỏ hơn 999999999999999',
+
+                                            },
                                         })}
                                         InputLabelProps={{ shrink: true }}
                                         error={!!errors.discountValue}
@@ -365,6 +377,11 @@ const UpdateCoupon = () => {
                                                 value: 0.01,
                                                 message: 'Giá trị tổi đa phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị phải nhỏ hơn 999999999999999',
+
+                                            },
                                         })}
                                         InputLabelProps={{ shrink: true }}
                                         error={!!errors.maxValue}
@@ -386,6 +403,11 @@ const UpdateCoupon = () => {
                                                 value: 1,
                                                 message: 'Số lượng sử dụng phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 99999999,
+                                                message: 'Số lượng phải nhỏ hơn 99999999',
+
+                                            },
                                         })}
                                         InputLabelProps={{ shrink: true }}
                                         error={!!errors.quantity}
@@ -404,6 +426,11 @@ const UpdateCoupon = () => {
                                             min: {
                                                 value: 0.01,
                                                 message: 'Điều kiện giảm phải lớn 0',
+                                            },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Điều kiện phải nhỏ hơn 999999999999999',
+
                                             },
                                             validate: value =>
                                                 parseFloat(value) >= parseFloat(watch('maxValue')) ||
