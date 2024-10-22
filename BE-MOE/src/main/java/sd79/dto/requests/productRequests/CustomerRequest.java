@@ -29,8 +29,6 @@ public class CustomerRequest {
     @NotNull(message = "DateOfBirth cannot be null")
     private Date dateOfBirth;
 
-    private String image;
-
 
     private String city;
 

@@ -58,4 +58,8 @@ public class Customer {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Size(max = 200)
+    @Column(name = "publicId", length = 200)
+    private String publicId;
+
 }

@@ -67,6 +67,7 @@ CREATE TABLE customers (
     gender enum('MALE', 'FEMALE', 'OTHER'),
     date_of_birth date,
     image varchar(200),
+    publicId varchar(200),
     address_id bigint UNIQUE,
     user_id BIGINT,
     created_at datetime,
