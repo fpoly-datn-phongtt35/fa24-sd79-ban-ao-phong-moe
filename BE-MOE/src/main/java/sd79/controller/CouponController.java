@@ -8,138 +8,108 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.CouponParamFilter;
-import sd79.dto.response.CouponResponse;
-import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.CouponService;
-import sd79.service.CustomerService;
 import sd79.utils.CloudinaryUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("api/${api.version}/coupon")
-@Tag(name = "Coupon Controller", description = "Manage adding, editing, and deleting product coupon")
+@Tag(name = "Coupon Controller", description = "Quản lý thêm, sửa, xóa phiếu giảm giá sản phẩm")
 @RequiredArgsConstructor
 public class CouponController {
 
     private static final Logger log = LoggerFactory.getLogger(CouponController.class);
     private final CouponService couponService;
     private final CloudinaryUtils cloudinaryUpload;
-    private final CustomerService customerService;
 
-    // Lấy danh sách coupon
+    // Lấy danh sách phiếu giảm giá
     @Operation(
-            summary = "Get Coupon",
-            description = "Get all coupons from the database"
+            summary = "Lấy danh sách phiếu giảm giá",
+            description = "Lấy tất cả phiếu giảm giá từ cơ sở dữ liệu"
     )
     @GetMapping
     public ResponseData<?> getAllCoupons(CouponParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon list", this.couponService.getAllCoupon(param));
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm giá thành công", this.couponService.getAllCoupon(param));
     }
 
-
-    // Lấy thông tin coupon theo ID
+    // Lấy thông tin phiếu giảm giá theo ID
     @GetMapping("/detail/{id}")
     public ResponseData<?> getCouponById(@PathVariable Long id) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Coupon details", couponService.getCouponById(id));
+        return new ResponseData<>(HttpStatus.OK.value(), "Chi tiết phiếu giảm giá", couponService.getCouponById(id));
     }
 
-    // Thêm mới coupon
+    // Thêm mới phiếu giảm giá
     @Operation(
-            summary = "New Coupon",
-            description = "New coupon into database"
+            summary = "Thêm mới phiếu giảm giá",
+            description = "Thêm phiếu giảm giá vào cơ sở dữ liệu"
     )
     @PostMapping("/store")
     public ResponseData<?> addCoupon(@Valid @RequestBody CouponRequest couponRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation errors", formatValidationErrors(bindingResult));
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
         }
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Coupon created successfully", couponService.storeCoupon(couponRequest));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới phiếu giảm giá thành công", couponService.storeCoupon(couponRequest));
     }
 
-    // Cập nhật coupon
+    // Cập nhật  phiếu giảm giá
     @Operation(
-            summary = "Update Coupon",
-            description = "Update coupon into database"
+            summary = "Cập nhật phiếu giảm giá",
+            description = "Cập nhật phiếu giảm giá vào cơ sở dữ liệu"
     )
     @PutMapping("/update/{id}")
     public ResponseData<?> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponRequest couponRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation errors", formatValidationErrors(bindingResult));
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
         }
-        return new ResponseData<>(HttpStatus.OK.value(), "Coupon updated successfully", couponService.updateCoupon(id, couponRequest));
+        return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật phiếu giảm giá thành công", couponService.updateCoupon(id, couponRequest));
     }
 
-    // Xóa coupon
+    // Xóa  phiếu giảm giá
     @Operation(
-            summary = "Delete Coupon",
-            description = "Set is delete of coupon to true and hide it from view"
+            summary = "Xóa phiếu giảm giá",
+            description = "Đánh dấu phiếu giảm giá đã bị xóa và ẩn nó khỏi giao diện"
     )
     @DeleteMapping("/delete/{id}")
     public ResponseData<?> deleteCoupon(@PathVariable Long id) {
         couponService.deleteCoupon(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Coupon deleted successfully");
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa phiếu giảm giá thành công");
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", formatValidationErrors(ex.getBindingResult()));
-    }
-
-    private Map<String, String> formatValidationErrors(BindingResult bindingResult) {
-        Map<String, String> errors = new HashMap<>();
-        for (FieldError error : bindingResult.getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
-        }
-        return errors;
-    }
-
+    // Tải hình ảnh phiếu giảm giá lên
     @PostMapping("/upload")
     public ResponseData<?> uploadFile(@ModelAttribute CouponImageReq request) {
         this.couponService.storeCouponImages(request);
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added coupon images");
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm hình ảnh phiếu giảm giá thành công");
     }
 
-    @PostMapping("/upload/v2")
-    public ResponseData<?> uploadFileV2(@ModelAttribute CouponImageReq request) {
-        this.couponService.storeCouponImages(request);
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added coupon images");
-    }
-
+    // Xóa hình ảnh coupon
     @Operation(
-            summary = "Delete Coupon Image",
-            description = "Delete a coupon image from Cloudinary and remove the record from the database"
+            summary = "Xóa hình ảnh phiếu giảm giá",
+            description = "Xóa hình ảnh phiếu giảm giá từ Cloudinary và xóa bản ghi khỏi cơ sở dữ liệu"
     )
     @DeleteMapping("/delete/images/{couponId}")
     public ResponseData<?> deleteCouponImage(@PathVariable Long couponId) {
-            couponService.deleteCouponImage(couponId);
-            return new ResponseData<>(HttpStatus.OK.value(), "Coupon image deleted successfully");
+        couponService.deleteCouponImage(couponId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa hình ảnh phiếu giảm giá thành công");
     }
 
+    // Gửi email phiếu giảm giá
     @Operation(
-            summary = "Send Coupon Email",
-            description = "Send a coupon email to a customer"
+            summary = "Gửi email phiếu giảm giá",
+            description = "Gửi email phiếu giảm giá cho khách hàng"
     )
     @PostMapping("/send/email")
     public ResponseData<?> sendEmail(@RequestParam Long couponId, @RequestParam Long customerId) {
-            Coupon coupon = couponService.findCouponById(couponId);
-            Customer customer = couponService.findCustomerById(customerId);
-            couponService.sendCouponEmail(coupon, customer);
-            return new ResponseData<>(HttpStatus.OK.value(), "Coupon email sent successfully");
+        Coupon coupon = couponService.findCouponById(couponId);
+        Customer customer = couponService.findCustomerById(customerId);
+        couponService.sendCouponEmail(coupon, customer);
+        return new ResponseData<>(HttpStatus.OK.value(), "Gửi email phiếu giảm giá thành công");
     }
-
-
-
 
 }
