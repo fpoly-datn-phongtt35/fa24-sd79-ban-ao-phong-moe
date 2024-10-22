@@ -8,5 +8,9 @@ public class Endpoints {
             "/api/*/brand/**",
             "/api/*/material/**",
             "/api/*/categories/**",
+            "/api/*/coupon/**",
+            "/api/*/customer/**",
+            "/api/*/employee/**",
+            "/api/*/promotion/**",
     };
 }

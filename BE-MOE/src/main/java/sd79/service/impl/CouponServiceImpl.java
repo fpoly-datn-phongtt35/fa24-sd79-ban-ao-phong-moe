@@ -8,6 +8,7 @@ import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponResponse;
+import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
@@ -99,11 +100,11 @@ public class CouponServiceImpl implements CouponService {
         return coupon.getId();
     }
 
-    private void sendCouponEmail(Coupon coupon, Customer customer) {
+    @Override
+    public void sendCouponEmail(Coupon coupon, Customer customer) {
         try {
-            // Lấy hình ảnh mỗi lần gửi cho khách hàng mới
             CouponImage couponImage = findByImage(coupon.getId());
-            String imageUrl = couponImage.getImageUrl();  // Đảm bảo lấy lại URL ảnh cho từng người nhận
+            String imageUrl = couponImage.getImageUrl();
 
             String subject = "Thông Báo Phiếu Giảm Giá";
             String body = String.format(
@@ -143,14 +144,13 @@ public class CouponServiceImpl implements CouponService {
     public void storeCouponImages(CouponImageReq req) {
         Coupon coupon = this.findCouponById(req.getCouponID());
         CouponImage couponImage = coupon.getCouponImage();
-
         if (couponImage != null && couponImage.getPublicId() != null) {
             cloudinaryUploadCoupon.delete(couponImage.getPublicId());
             couponImageRepo.delete(couponImage);
         }
-
         String imageUrl = cloudinaryUploadCoupon.upload(req.getImages());
         String publicId = extractPublicId(imageUrl);
+
         CouponImage newCouponImage = new CouponImage();
         newCouponImage.setCoupon(coupon);
         newCouponImage.setImageUrl(imageUrl);
@@ -159,12 +159,15 @@ public class CouponServiceImpl implements CouponService {
 
         if (coupon.getType() == TodoType.PERSONAL) {
             List<CouponShare> sharedCoupons = couponShareRepo.findByCoupon(coupon);
+
+
             for (CouponShare couponShare : sharedCoupons) {
                 Customer customer = couponShare.getCustomer();
                 sendCouponEmail(coupon, customer);
             }
         }
     }
+
 
 
     private String extractPublicId(String url) {
@@ -179,9 +182,14 @@ public class CouponServiceImpl implements CouponService {
         }
     }
 
-
+    @Override
     public Coupon findCouponById(Long id) {
         return this.couponRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
+    }
+
+    @Override
+    public Customer findCustomerById(Long id) {
+        return this.customerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
     }
 
     @Transactional
@@ -190,13 +198,11 @@ public class CouponServiceImpl implements CouponService {
         Coupon coupon = couponRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
 
-        // Check if the coupon code is being updated and if it already exists in the system
         if (!coupon.getCode().equals(couponRequest.getCode()) &&
                 couponRepo.existsCouponByAttribute(couponRequest.getCode())) {
             throw new EntityExistsException("Mã phiếu giảm giá đã tồn tại!");
         }
 
-        // Update coupon attributes
         coupon.setCode(couponRequest.getCode());
         coupon.setName(couponRequest.getName());
         coupon.setDiscountValue(couponRequest.getDiscountValue());
@@ -210,16 +216,13 @@ public class CouponServiceImpl implements CouponService {
         coupon.setDescription(couponRequest.getDescription());
         coupon.setUpdatedBy(getUserById(couponRequest.getUserId()));
 
-        // Check if the type is PERSONAL
         if (couponRequest.getType() == TodoType.PERSONAL) {
             if (couponRequest.getCustomerIds() == null || couponRequest.getCustomerIds().isEmpty()) {
                 throw new IllegalArgumentException("ID khách hàng không có");
             }
 
-            // Remove existing CouponShare records for the coupon
             couponShareRepo.deleteAll(couponShareRepo.findByCoupon(coupon));
 
-            // Add new CouponShare records for each customer in the request
             for (Long customerId : couponRequest.getCustomerIds()) {
                 Customer customer = customerRepository.findById(customerId)
                         .orElseThrow(() -> new EntityNotFoundException("ID khách hàng là: " + customerId));
@@ -231,11 +234,8 @@ public class CouponServiceImpl implements CouponService {
                 couponShareRepo.save(couponShare);
             }
         } else {
-            // If type is not PERSONAL (assumed PUBLIC), execute deleteCouponShare
             deleteCouponShare(coupon.getId());
         }
-
-        // Save the updated coupon and return its ID
         return couponRepo.save(coupon).getId();
     }
 
@@ -300,6 +300,5 @@ public class CouponServiceImpl implements CouponService {
     private String convertToUrl(CouponImage image) {
         return (image != null) ? image.getImageUrl() : null;
     }
-
 
 }

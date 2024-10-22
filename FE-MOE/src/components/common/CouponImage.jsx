@@ -62,7 +62,7 @@ export default function CouponImage({ onImagesUpload, initialImages = [], stored
             {uploadedImages.length > 0 ? (
                 <ImageList sx={{ width: "100%", height: 150, marginTop: 2 }} cols={4} rowHeight={120}               >
                     {uploadedImages.map((item, index) => (
-                        <ImageListItem key={index} sx={{ width: "100%", aspectRatio: "10 / 2", margin: "5px" }}>
+                        <ImageListItem key={index} sx={{ width: "100%", aspectRatio: "10 / 5", margin: "5px" }}>
                             <img src={item.img} alt={item.title} loading="lazy" style={{ objectFit: "cover", width: "100%", height: "100%" }} />
                         </ImageListItem>
                     ))}
@@ -71,7 +71,7 @@ export default function CouponImage({ onImagesUpload, initialImages = [], stored
                 <div >
                     <ImageList sx={{ width: "100%", height: 150, marginTop: 2 }} cols={4} rowHeight={120}>
                         <ImageListItem
-                            sx={{ width: "100%", aspectRatio: "10 / 2", margin: "5px" }}                      >
+                            sx={{ width: "100%", aspectRatio: "10 / 5", margin: "5px" }}                      >
                             <Image
                                 src={storedImageUrl || "https://flysunrise.com/wp-content/uploads/2024/03/featured-image-placeholder.jpg"}
                                 loading="lazy" style={{ objectFit: "cover", width: "100%", height: "100%", }}
