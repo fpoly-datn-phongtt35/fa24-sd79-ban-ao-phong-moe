@@ -24,7 +24,7 @@ export const postCustomer = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/customer/store`, data)
     .then((res) => {
-      toast.success(res.data.message);
+      return res.data.data;
     });
 };
 export const deleteCustomer = async (id) => {
@@ -34,11 +34,16 @@ export const deleteCustomer = async (id) => {
 };
 export const putCustomer = async (data, id) => {
   return await authorizedAxiosInstance
-    .put(`${API_ROOT}/customer/update/${id}`, data)
-    .then((res) => {
-      toast.success(res.data.message);
-    });
+    .put(`${API_ROOT}/customer/update/${id}`, data);
 }
+
+export const postcustomerImage = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/customer/upload`, data)
+    .then((res) => {
+      return res.data.data
+    });
+};
 export const searchKeywordAndDate = async (keyword, gender, birth) => {
   try {
     const params = {};

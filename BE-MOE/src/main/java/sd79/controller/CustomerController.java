@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CustomerReq;
 import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.enums.Gender;
@@ -128,15 +129,25 @@ public class CustomerController {
         return new ResponseData<>(HttpStatus.OK.value(), "Search results (paginated)", customers);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+//    }
+
+    @Operation(
+            summary = "Upload image",
+            description = "Upload the image to cloudinary and return the url to save to the database"
+    )
+    @PostMapping("/upload")
+    public ResponseData<?> uploadFile(@Valid @ModelAttribute ProductImageReq request) {
+        this.customerService.updateImage(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added customer images");
     }
 }
