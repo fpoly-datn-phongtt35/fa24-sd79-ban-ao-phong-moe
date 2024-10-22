@@ -287,6 +287,11 @@ const CreateCoupon = () => {
                                                 message: 'Giá trị phải lớn hơn 0',
 
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị phải nhỏ hơn 999999999999999',
+
+                                            },
                                         })}
                                         error={!!errors.discountValue}
                                         helperText={errors.discountValue?.message}
@@ -326,6 +331,11 @@ const CreateCoupon = () => {
                                                 value: 0.01,
                                                 message: 'Giá trị tổi đa phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị giảm tối đa phải nhỏ hơn 999999999999999',
+
+                                            },
                                         })}
                                         error={!!errors.maxValue}
                                         helperText={errors.maxValue?.message}
@@ -346,6 +356,11 @@ const CreateCoupon = () => {
                                                 value: 1,
                                                 message: 'Số lượng sử dụng phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 99999999,
+                                                message: 'Số lượng phải nhỏ hơn 99999999',
+
+                                            },
                                         })}
                                         error={!!errors.quantity}
                                         helperText={errors.quantity?.message}
@@ -363,6 +378,11 @@ const CreateCoupon = () => {
                                             min: {
                                                 value: 0.01,
                                                 message: 'Điều kiện giảm phải lớn 0',
+                                            },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Điều kiện phải nhỏ hơn 999999999999999',
+
                                             },
                                             validate: value =>
                                                 parseFloat(value) >= parseFloat(watch('maxValue')) ||

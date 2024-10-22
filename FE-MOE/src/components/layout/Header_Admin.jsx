@@ -5,13 +5,15 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { handleLogoutAPI } from "~/apis";
 import { MoeAlert } from "../other/MoeAlert";
-import { Typography } from "@mui/joy";
+import { Tooltip, Typography } from "@mui/joy";
 
 export const Header_Admin = (props) => {
   const [username, setUsername] = useState("Unknown");
@@ -57,7 +59,7 @@ export const Header_Admin = (props) => {
             onClick={handleMenu}
             color="inherit"
           >
-            <Tooltip title={username}>
+            <Tooltip variant="plain" title={username}>
               <Avatar alt={username} src={avatar} />
             </Tooltip>
           </IconButton>
@@ -65,7 +67,7 @@ export const Header_Admin = (props) => {
             id="menu-appbar"
             anchorEl={anchorEl}
             anchorOrigin={{
-              vertical: "top",
+              vertical: "bottom",
               horizontal: "right",
             }}
             keepMounted
@@ -76,15 +78,41 @@ export const Header_Admin = (props) => {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>Username</MenuItem>
-            <MenuItem onClick={handleClose}>Thông tin tài khoản</MenuItem>
-            <MenuItem onClick={handleClose}>Cài đặt</MenuItem>
+            <MenuItem
+              sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}
+            >
+              <Avatar src={avatar} alt={username} />
+              <Typography level="title-md">{username}</Typography>
+            </MenuItem>
+            <hr />
+            <MenuItem
+              onClick={handleClose}
+              sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}
+            >
+              <AccountCircleIcon />
+              <Typography level="body-md">Thông tin tài khoản</Typography>
+            </MenuItem>
+            <MenuItem
+              onClick={handleClose}
+              sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}
+            >
+              <SettingsIcon />
+              <Typography level="body-md">Cài đặt</Typography>
+            </MenuItem>
             <MoeAlert
               title="Đăng xuất"
               message="Bạn có muốn đăng xuất không?"
               event={handleLogout}
               button={
-                <MenuItem>
+                <MenuItem
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    p: 1.5,
+                  }}
+                >
+                  <LogoutIcon />
                   <Typography sx={{ color: "#32383e" }} level="body-md">
                     Đăng xuất
                   </Typography>
