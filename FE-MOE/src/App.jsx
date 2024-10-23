@@ -28,9 +28,10 @@ import { ProductStore } from "./pages/products/main/ProductStore";
 import Header_Client from "./components/layout/Header_Client";
 import Authentication from "./pages/auth/Authentication";
 import { useState } from "react";
-import { AboutUs } from "./pages/clients/AboutUs";
 import Home from "./pages/clients/Home";
 import FooterClient from "./components/layout/FooterClient";
+import AboutUs from "./pages/clients/AboutUs";
+import { Contact } from "./pages/clients/Contact";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -114,6 +115,7 @@ function App() {
       <Route element={<PublicRoutes />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>
