@@ -11,10 +11,11 @@ import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import { CircularProgress } from '@mui/material';
+import CustomerTableCreate from '~/components/coupon/CustomerTableCreate';
 
 
 const CreateCoupon = () => {
-    const { register, handleSubmit, watch, formState: { errors }, control } = useForm();
+    const { register, handleSubmit, watch, getValues, clearErrors, formState: { errors }, control, setValue } = useForm();
     const [discountType, setDiscountType] = useState('');
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
@@ -30,31 +31,44 @@ const CreateCoupon = () => {
     const [keyword, setKeyword] = useState('');
     const [gender, setGender] = useState('');
     const [birth, setBirth] = useState('');
-
+    const conditions = watch('conditions');
     const type = watch('type', 'PUBLIC');
-    const formatDate = (dateString, time = "00:00:00") => {
-        const date = new Date(dateString);
+    const formatDate = (dateTimeString) => {
+        const date = new Date(dateTimeString);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year} | ${time}`;
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
     };
 
     useEffect(() => {
         handleSetCustomer();
+    }, [page]);
+
+    useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             handleSearch();
         }, 1000);
         return () => clearTimeout(delayDebounceFn);
-    }, [page, keyword, gender, birth]);
+    }, [keyword, gender, birth]);
+
+    useEffect(() => {
+        clearErrors('conditions');
+    }, [discountType, conditions, clearErrors]);
 
     const handlePageChange = (event, newPage) => {
         setPage(newPage);
     };
 
-
     const handleDiscountTypeChange = (type) => {
         setDiscountType(type);
+        if (type === 'FIXED_AMOUNT') {
+            setValue('maxValue', 0);
+        }
         setDiscountTypeError('');
     };
 
@@ -110,7 +124,7 @@ const CreateCoupon = () => {
             name: data.name,
             discountValue: data.discountValue,
             discountType: discountType,
-            maxValue: data.maxValue,
+            maxValue: data.maxValue || 0,
             quantity: data.quantity,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
@@ -153,18 +167,28 @@ const CreateCoupon = () => {
             const response = await fetchAllCustomer(page - 1, pageSize);
             setCustomers(response.data.content);
             setTotalPages(response.data.totalPages);
-            console.log(response);
         } catch (error) {
             console.error("Failed to fetch customers:", error);
         }
     };
 
-    const handleSelectAll = (event) => {
+    const handleSelectAll = async (event) => {
+        if (!isAllSelected) {
+            try {
+                let allCustomers = [];
+                const response = await fetchAllCustomer(0, pageSize);
+                const totalPages = response.data.totalPages;
+                for (let i = 0; i < totalPages; i++) {
+                    const pageResponse = await fetchAllCustomer(i, pageSize);
+                    allCustomers = allCustomers.concat(pageResponse.data.content);
+                }
 
-        if (event.target.checked) {
-            const allCustomerIds = customers.map(customer => customer.id);
-            setSelectedCustomers(allCustomerIds);
-            setSelectedCustomersError('');
+                const allCustomerIds = allCustomers.map(customer => customer.id);
+                setSelectedCustomers(allCustomerIds);
+                setSelectedCustomersError('');
+            } catch (error) {
+                console.error("Failed to fetch all customers:", error);
+            }
         } else {
             setSelectedCustomers([]);
             setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
@@ -172,7 +196,6 @@ const CreateCoupon = () => {
     };
 
     const handleSelectCustomer = (customerId) => {
-
         setSelectedCustomers((prevSelected) => {
             let updatedSelected;
             if (prevSelected.includes(customerId)) {
@@ -191,8 +214,10 @@ const CreateCoupon = () => {
         });
     };
 
-
     const isSelected = (customerId) => selectedCustomers.includes(customerId);
+
+    const isAllSelected = customers.length > 0 && customers.every(customer => selectedCustomers.includes(customer.id));
+
 
     return (
         <Container
@@ -226,11 +251,8 @@ const CreateCoupon = () => {
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <Box display="flex" alignItems="center" mb={2}>
-
                         </Box>
-
                         <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2} >
-
                             <TextField
                                 variant="outlined"
                                 label="Mã phiếu giảm giá"
@@ -239,20 +261,15 @@ const CreateCoupon = () => {
                                     minLength: {
                                         value: 5,
                                         message: 'Mã phải có ít nhất 5 ký tự',
-
-
                                     },
                                     maxLength: {
                                         value: 10,
                                         message: 'Mã không được quá 10 ký tự',
-
                                     },
                                 })}
                                 error={!!errors.code}
                                 helperText={errors.code?.message}
                             />
-
-
                             <TextField
                                 variant="outlined"
                                 label="Tên phiếu giảm giá"
@@ -261,19 +278,15 @@ const CreateCoupon = () => {
                                     minLength: {
                                         value: 5,
                                         message: 'Tên phải có ít nhất 5 ký tự',
-
                                     },
                                     maxLength: {
                                         value: 100,
                                         message: 'Tên không được quá 100 ký tự',
-
                                     },
                                 })}
                                 error={!!errors.name}
                                 helperText={errors.name?.message}
                             />
-
-
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <TextField
@@ -285,13 +298,17 @@ const CreateCoupon = () => {
                                             min: {
                                                 value: 0.01,
                                                 message: 'Giá trị phải lớn hơn 0',
-
                                             },
                                             max: {
                                                 value: 999999999999999,
                                                 message: 'Giá trị phải nhỏ hơn 999999999999999',
-
                                             },
+                                            validate: value => {
+                                                if (discountType === 'PERCENTAGE' && value > 100) {
+                                                    return 'Giá trị phần trăm không thể lớn hơn 100';
+                                                }
+                                                return true;
+                                            }
                                         })}
                                         error={!!errors.discountValue}
                                         helperText={errors.discountValue?.message}
@@ -322,28 +339,37 @@ const CreateCoupon = () => {
                                 </Grid>
                                 <Grid item xs={6}>
                                     <TextField
+                                        disabled={discountType === 'FIXED_AMOUNT'}
                                         variant="outlined"
                                         label="Giá trị giảm tối đa cho đơn hàng"
                                         type="number"
                                         {...register('maxValue', {
                                             required: 'Chưa nhập giá trị tối đa',
-                                            min: {
+                                            min: discountType === 'PERCENTAGE' ? {
                                                 value: 0.01,
-                                                message: 'Giá trị tổi đa phải lớn hơn 0',
-                                            },
+                                                message: 'Giá trị tối đa phải lớn hơn 0',
+                                            } : undefined,
                                             max: {
                                                 value: 999999999999999,
                                                 message: 'Giá trị giảm tối đa phải nhỏ hơn 999999999999999',
-
+                                            },
+                                            validate: value => {
+                                                if (discountType === 'PERCENTAGE') {
+                                                    const discountValue = getValues('discountValue');
+                                                    if (value < discountValue) {
+                                                        return 'Giá trị giảm tối đa phải lớn hơn hoặc bằng giá trị giảm';
+                                                    }
+                                                }
+                                                return true;
                                             },
                                         })}
+                                        InputLabelProps={{ shrink: true }}
                                         error={!!errors.maxValue}
                                         helperText={errors.maxValue?.message}
                                         fullWidth
                                     />
                                 </Grid>
                             </Grid>
-
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <TextField
@@ -377,51 +403,64 @@ const CreateCoupon = () => {
                                             required: 'Chưa nhập điều kiện để thực hiện sử dụng',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Điều kiện giảm phải lớn 0',
+                                                message: 'Điều kiện phải lớn hơn 0',
                                             },
                                             max: {
                                                 value: 999999999999999,
                                                 message: 'Điều kiện phải nhỏ hơn 999999999999999',
-
                                             },
-                                            validate: value =>
-                                                parseFloat(value) >= parseFloat(watch('maxValue')) ||
-                                                'Điều kiện phải lớn hơn giá trị giảm tối đa',
+                                            validate: (value) => {
+                                                const discountValue = getValues('discountValue');
+                                                const numericalValue = parseFloat(value);
+
+                                                if (discountType === 'FIXED_AMOUNT' && numericalValue < discountValue) {
+                                                    return 'Điều kiện phải lớn hơn hoặc bằng giá trị giảm';
+                                                } else if (discountType === 'PERCENTAGE' && numericalValue < (discountValue / 100) * 10000) {
+                                                    return 'Điều kiện phải lớn hơn hoặc bằng giá trị giảm (tính theo phần trăm)';
+                                                }
+                                                return true;
+                                            }
                                         })}
+                                        InputLabelProps={{ shrink: true }}
                                         error={!!errors.conditions}
                                         helperText={errors.conditions?.message}
                                         fullWidth
                                     />
                                 </Grid>
-
                             </Grid>
-
-                            <TextField
-                                variant="outlined"
-                                label="Từ ngày"
-                                type="date"
-                                {...register('startDate', { required: 'Chưa nhập ngày bắt đầu' })}
-                                error={!!errors.startDate}
-                                helperText={errors.startDate?.message}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
-
-
-                            <TextField
-                                variant="outlined"
-                                label="Đến ngày"
-                                type="date"
-                                {...register('endDate', {
-                                    required: 'Chưa nhập ngày kết thúc',
-                                    validate: value =>
-                                        new Date(value) > new Date(watch('startDate')) || 'Ngày kết thúc phải lớn hơn ngày bắt đầu',
-                                })}
-                                error={!!errors.endDate}
-                                helperText={errors.endDate?.message}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
+                            <Grid container spacing={2} >
+                                <Grid item xs={6}>
+                                    <TextField
+                                        variant="outlined"
+                                        label="Thời gian bắt đầu"
+                                        type="datetime-local"
+                                        {...register('startDate', { required: 'Chưa nhập ngày bắt đầu' })}
+                                        error={!!errors.startDate}
+                                        helperText={errors.startDate?.message}
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <TextField
+                                        variant="outlined"
+                                        label="Thời gian kết thúc"
+                                        type="datetime-local"
+                                        {...register('endDate', {
+                                            required: 'Chưa nhập ngày kết thúc',
+                                            validate: (value) => {
+                                                const startDate = new Date(watch('startDate'));
+                                                const endDate = new Date(value);
+                                                return endDate > startDate || 'Ngày và giờ kết thúc phải lớn hơn ngày và giờ bắt đầu';
+                                            },
+                                        })}
+                                        error={!!errors.endDate}
+                                        helperText={errors.endDate?.message}
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            </Grid>
 
                             <Box
                                 sx={{
@@ -504,86 +543,21 @@ const CreateCoupon = () => {
                         </Box>
                     </Grid>
 
-                    <Grid item xs={6}>
-
-
-
-                        <TextField
-                            variant="outlined"
-                            label="Tìm kiếm khách hàng"
-                            fullWidth
-                            margin="normal"
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                        />
-
-                        <table className="table table-bordered table-hover">
-                            <thead className="table-primary text-center">
-                                <tr>
-
-                                    {type === 'PERSONAL' ? (
-                                        <th>
-                                            <Checkbox
-                                                checked={selectedCustomers.length === customers.length && customers.length > 0}
-                                                onChange={handleSelectAll}
-                                            />
-                                        </th>
-                                    ) : (
-                                        <th style={{ width: '1%' }}></th>
-                                    )}
-                                    <th>Tên</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Email</th>
-                                    <th>Ngày sinh</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {customers.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} align="center">
-                                            Không tìm thấy khách hàng!
-                                        </td>
-                                    </tr>
-                                )}
-                                {customers && customers.map((customer, index) => (
-                                    <tr key={index}>
-                                        {type === 'PERSONAL' ? (
-                                            <td>
-                                                <Checkbox
-                                                    checked={isSelected(customer.id)}
-                                                    onChange={() => handleSelectCustomer(customer.id)}
-                                                />
-                                            </td>
-                                        ) : (
-                                            <td></td>
-                                        )}
-                                        <td>{customer.firstName}</td>
-                                        <td>{customer.phoneNumber}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{formatDateCustomer(customer.dateOfBirth)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {selectedCustomersError && (
-                            <Typography color="error">{selectedCustomersError}</Typography>
-                        )}
-                        <Box mt={2} display="flex" justifyContent="center" >
-                            {totalPages > 1 && (
-                                <Stack spacing={2}>
-                                    <Pagination
-                                        count={totalPages}
-                                        page={page}
-                                        onChange={handlePageChange}
-                                        variant="outlined"
-                                        shape="rounded"
-                                    />
-                                </Stack>
-                            )}
-                        </Box>
-
-
-                    </Grid>
+                    <CustomerTableCreate
+                        keyword={keyword}
+                        setKeyword={setKeyword}
+                        customers={customers}
+                        type={type}
+                        isAllSelected={isAllSelected}
+                        handleSelectAll={handleSelectAll}
+                        isSelected={isSelected}
+                        handleSelectCustomer={handleSelectCustomer}
+                        formatDateCustomer={formatDateCustomer}
+                        selectedCustomersError={selectedCustomersError}
+                        totalPages={totalPages}
+                        page={page}
+                        handlePageChange={handlePageChange}
+                    />
                 </Grid>
             </Box>
         </Container>

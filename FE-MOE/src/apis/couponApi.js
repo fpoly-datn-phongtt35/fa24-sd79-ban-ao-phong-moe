@@ -105,13 +105,6 @@ export const deleteCouponImage = async (id) => {
 export const sendCouponEmail = async (couponId, customerId) => {
   const url = `${API_ROOT}/coupon/send/email?couponId=${couponId}&customerId=${customerId}`;
   const response = await authorizedAxiosInstance.post(url);
-  
-  if (response.data && response.data.message) {
-      toast.success(response.data.message);
-  } else {
-      toast.error("Failed to send coupon email.");
-  }
-
   return response.data;
 };
 
