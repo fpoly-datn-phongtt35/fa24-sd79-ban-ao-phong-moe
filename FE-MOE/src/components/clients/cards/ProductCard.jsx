@@ -1,18 +1,21 @@
 import React, { useState } from "react";
-import { Card, CardContent, Button, Typography } from "@mui/material";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Card, CardContent, Typography } from "@mui/material";
+import { formatCurrencyVND } from "~/utils/format";
+import { useNavigate } from "react-router-dom";
 
 export const ProductCard = ({ product }) => {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
+
+  const handleViewDetail = () => {
+    navigate(`/view/${product.productId}`);
+  };
 
   return (
     <Card
       sx={{
-        width: 300,
+        width: 350,
         maxWidth: "100%",
-        minHeight: "550px",
-        maxHeight: "550px",
         position: "relative",
         overflow: "hidden",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -24,45 +27,46 @@ export const ProductCard = ({ product }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Image section */}
-      <div style={{ position: "relative", overflow: "hidden" }}>
+      <div
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <img
-          src={product.imageUrl[0]}
+          src={product.imageUrl}
           alt={product.name}
-          style={{ width: "300px", height: "300px" }}
+          style={{
+            width: "250px",
+            height: "250px",
+            objectFit: "cover",
+            transition: "filter 0.3s ease",
+            filter: hovered ? "blur(4px)" : "none",
+          }}
         />
-        <div
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}
-        >
-          <FavoriteBorderIcon style={{ color: "#555" }} />
-          <VisibilityIcon style={{ color: "#555" }} />
-        </div>
 
-        {/* Add to Cart button - only visible on hover */}
-        <Button
-          variant="contained"
-          color="primary"
+        <Typography
+          onClick={handleViewDetail}
           style={{
             position: "absolute",
-            bottom: "0",
-            width: "100%",
-            backgroundColor: hovered ? "#000" : "transparent",
-            color: hovered ? "#fff" : "transparent",
-            transition: "background-color 0.3s ease, color 0.3s ease",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            color: "#fff",
+            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            opacity: hovered ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            cursor: "pointer",
+            zIndex: 1,
           }}
         >
-          Thêm vào giỏ hàng
-        </Button>
+          Xem chi tiết
+        </Typography>
       </div>
-
-      {/* Discount Badge */}
       <div
         style={{
           position: "absolute",
@@ -74,17 +78,18 @@ export const ProductCard = ({ product }) => {
           fontSize: "12px",
           fontWeight: "bold",
           borderRadius: "5px",
+          zIndex: 2,
         }}
       >
-        -10%
+        -50%
       </div>
 
-      {/* Product details */}
       <CardContent>
         <Typography
           variant="h6"
           component="div"
           style={{ fontWeight: "bold", marginBottom: "10px" }}
+          noWrap
         >
           {product.name}
         </Typography>
@@ -94,19 +99,18 @@ export const ProductCard = ({ product }) => {
           color="text.secondary"
           style={{ textDecoration: "line-through", color: "#aaa" }}
         >
-          200.000 VNĐ
+          {formatCurrencyVND(product.retailPrice)}
         </Typography>
         <Typography variant="h6" component="div" style={{ color: "#ff0000" }}>
-          100.000 VNĐ
+          {formatCurrencyVND(product.discountPrice)}
         </Typography>
-
-        {/* Rating and reviews */}
         <Typography
           variant="body2"
           color="text.secondary"
           style={{ display: "flex", alignItems: "center", marginTop: "10px" }}
         >
-          <span style={{ color: "#ffcc00", marginRight: "5px" }}>★★★★★</span>(13k lượt đánh giá)
+          <span style={{ color: "#ffcc00", marginRight: "5px" }}>★★★★★</span>((
+          {product.rateCount}) lượt đánh giá)
         </Typography>
       </CardContent>
     </Card>

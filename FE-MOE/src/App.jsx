@@ -32,6 +32,7 @@ import Home from "./pages/clients/Home";
 import FooterClient from "./components/layout/FooterClient";
 import AboutUs from "./pages/clients/AboutUs";
 import { Contact } from "./pages/clients/Contact";
+import { ViewDetail } from "./pages/clients/ViewDetail";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -85,7 +86,7 @@ const PublicRoutes = () => {
         </div>
         <div className="content-area_client">
           <Outlet />
-          <FooterClient/>
+          <FooterClient />
         </div>
       </div>
     </div>
@@ -116,6 +117,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/view/:id" element={<ViewDetail />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>

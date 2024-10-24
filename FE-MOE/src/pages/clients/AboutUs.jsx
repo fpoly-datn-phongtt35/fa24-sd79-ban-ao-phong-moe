@@ -7,7 +7,9 @@ import {
   CardContent,
   Avatar,
   Button,
+  Divider,
 } from "@mui/joy";
+import Features from "~/components/clients/other/Features";
 
 const AboutUs = () => {
   return (
@@ -149,93 +151,143 @@ const AboutUs = () => {
         </Grid>
       </Grid>
 
-      {/* Team Section */}
       <Typography level="h4" fontWeight="bold" mt={6} mb={4}>
-  Đội Ngũ Của Chúng Tôi
-</Typography>
-<Grid container spacing={4}>
-  <Grid xs={12} md={4}>
-    <Card variant="outlined" sx={{ boxShadow: 2 }}>
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 2 }}>
-        <Avatar
-          src="https://avatars.githubusercontent.com/u/117331143?v=4"
-          alt="Founder"
-          sx={{ width: 120, height: 120, mb: 2, border: '2px solid #1976d2' }}
-        />
-        <CardContent sx={{ textAlign: "center" }}>
-          <Typography level="h5" fontWeight="bold">Nông Hoàng Vũ</Typography>
-          <Typography level="body2" color="text.secondary">Người sáng lập & Chủ tịch</Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IG
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              FB
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IN
-            </Button>
-          </Box>
-        </CardContent>
-      </Box>
-    </Card>
-  </Grid>
+        Đội Ngũ Của Chúng Tôi
+      </Typography>
+      <Grid container spacing={4}>
+        <Grid xs={12} md={4}>
+          <Card variant="outlined" sx={{ boxShadow: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: 2,
+              }}
+            >
+              <Avatar
+                src="https://avatars.githubusercontent.com/u/117331143?v=4"
+                alt="Founder"
+                sx={{
+                  width: 120,
+                  height: 120,
+                  mb: 2,
+                  border: "2px solid #1976d2",
+                }}
+              />
+              <CardContent sx={{ textAlign: "center" }}>
+                <Typography level="h5" fontWeight="bold">
+                  Nông Hoàng Vũ
+                </Typography>
+                <Typography level="body2" color="text.secondary">
+                  Người sáng lập & Chủ tịch
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IG
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    FB
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IN
+                  </Button>
+                </Box>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
 
-  <Grid xs={12} md={4}>
-    <Card variant="outlined" sx={{ boxShadow: 2 }}>
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 2 }}>
-        <Avatar
-          src="https://scontent.fhan2-5.fna.fbcdn.net/v/t39.30808-6/457097707_1294496031931867_3245612015580574624_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=TQ5gjZgM7UMQ7kNvgHv1uw-&_nc_ht=scontent.fhan2-5.fna&_nc_gid=AGu184gIBF4VT7SZ3BUk45t&oh=00_AYAUDXpooFXa-UtkjF7FzKpqrDWhtVIj7DNAM-pjpHN_4g&oe=671E5176"
-          alt="Managing Director"
-          sx={{ width: 120, height: 120, mb: 2, border: '2px solid #1976d2' }}
-        />
-        <CardContent sx={{ textAlign: "center" }}>
-          <Typography level="h5" fontWeight="bold">Khương Văn Thành</Typography>
-          <Typography level="body2" color="text.secondary">Giám đốc điều hành</Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IG
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              FB
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IN
-            </Button>
-          </Box>
-        </CardContent>
-      </Box>
-    </Card>
-  </Grid>
+        <Grid xs={12} md={4}>
+          <Card variant="outlined" sx={{ boxShadow: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: 2,
+              }}
+            >
+              <Avatar
+                src="https://scontent.fhan2-5.fna.fbcdn.net/v/t39.30808-6/457097707_1294496031931867_3245612015580574624_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=TQ5gjZgM7UMQ7kNvgHv1uw-&_nc_ht=scontent.fhan2-5.fna&_nc_gid=AGu184gIBF4VT7SZ3BUk45t&oh=00_AYAUDXpooFXa-UtkjF7FzKpqrDWhtVIj7DNAM-pjpHN_4g&oe=671E5176"
+                alt="Managing Director"
+                sx={{
+                  width: 120,
+                  height: 120,
+                  mb: 2,
+                  border: "2px solid #1976d2",
+                }}
+              />
+              <CardContent sx={{ textAlign: "center" }}>
+                <Typography level="h5" fontWeight="bold">
+                  Khương Văn Thành
+                </Typography>
+                <Typography level="body2" color="text.secondary">
+                  Giám đốc điều hành
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IG
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    FB
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IN
+                  </Button>
+                </Box>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
 
-  <Grid xs={12} md={4}>
-    <Card variant="outlined" sx={{ boxShadow: 2 }}>
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 2 }}>
-        <Avatar
-          src="./src/assert/MainLogo.jpg"
-          alt="Product Designer"
-          sx={{ width: 120, height: 120, mb: 2, border: '2px solid #1976d2' }}
-        />
-        <CardContent sx={{ textAlign: "center" }}>
-          <Typography level="h5" fontWeight="bold">MOE</Typography>
-          <Typography level="body2" color="text.secondary">Thiết kế sản phẩm</Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IG
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              FB
-            </Button>
-            <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-              IN
-            </Button>
-          </Box>
-        </CardContent>
+        <Grid xs={12} md={4}>
+          <Card variant="outlined" sx={{ boxShadow: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: 2,
+              }}
+            >
+              <Avatar
+                src="./src/assert/MainLogo.jpg"
+                alt="Product Designer"
+                sx={{
+                  width: 120,
+                  height: 120,
+                  mb: 2,
+                  border: "2px solid #1976d2",
+                }}
+              />
+              <CardContent sx={{ textAlign: "center" }}>
+                <Typography level="h5" fontWeight="bold">
+                  MOE
+                </Typography>
+                <Typography level="body2" color="text.secondary">
+                  Thiết kế sản phẩm
+                </Typography>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IG
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    FB
+                  </Button>
+                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
+                    IN
+                  </Button>
+                </Box>
+              </CardContent>
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+      <Box marginTop={5}>
+        <Divider sx={{ my: 1, width: "100%" }} />
+        <Features />
       </Box>
-    </Card>
-  </Grid>
-</Grid>
-
     </Box>
   );
 };
