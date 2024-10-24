@@ -197,7 +197,6 @@ export const Customer = () => {
               <TableCell>Số điện thoại</TableCell>
               <TableCell>Giới tính</TableCell>
               <TableCell>Ngày sinh</TableCell>
-              {/* <TableCell>Địa chỉ</TableCell> */}
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -212,7 +211,6 @@ export const Customer = () => {
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
-                  {/* <TableCell>{customer.city}, {customer.district}, {customer.ward}, {customer.streetName}</TableCell> */}
                   <TableCell>
                     <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
                       <EditIcon />
