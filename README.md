@@ -7,6 +7,14 @@
 </p>
 
 <div align="center" style="display: inline-block; margin: 20px; border: 1px solid #4CAF50; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); overflow: hidden; background-color: #f9f9f9;">
+  <img src="https://raw.githubusercontent.com/fpoly-datn-phongtt35/fa24-sd79-ban-ao-phong-moe/refs/heads/product/FE-MOE/src/assert/images/AI_Demo.png" alt="Chat bot" width="100%" />
+  <div style="padding: 10px; text-align: left;">
+    <h3 style="color: #4CAF50;">ChatBot</h3>
+    <p style="color: #555;">ChatBot support for product management page.</p>
+  </div>
+</div>
+
+<div align="center" style="display: inline-block; margin: 20px; border: 1px solid #4CAF50; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); overflow: hidden; background-color: #f9f9f9;">
   <img src="https://raw.githubusercontent.com/fpoly-datn-phongtt35/fa24-sd79-ban-ao-phong-moe/refs/heads/product/FE-MOE/src/assert/images/Demo1.png" alt="Home Page" width="100%" />
   <div style="padding: 10px; text-align: left;">
     <h3 style="color: #4CAF50;">Figure 1: Homepage</h3>
