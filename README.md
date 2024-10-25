@@ -2,7 +2,11 @@
 
 <h1 align="center">DEMO</h1>
 
-<p align="center">
+<p style="text-align: start;">
+  Welcome to the demo project showcasing the homepage and product details page of our website.
+</p>
+
+<p align="center" style="border-radius: 10px; overflow: hidden; border: 2px solid #ddd; display: inline-block;">
   <img src="https://raw.githubusercontent.com/fpoly-datn-phongtt35/fa24-sd79-ban-ao-phong-moe/refs/heads/product/FE-MOE/src/assert/images/Demo1.png" alt="Home Page" width="80%" />
 </p>
 
@@ -10,7 +14,7 @@
   <b>Figure 1: Homepage</b> – The main interface where users can browse the collection of products.
 </p>
 
-<p align="center">
+<p align="center" style="border-radius: 10px; overflow: hidden; border: 2px solid #ddd; display: inline-block;">
   <img src="https://raw.githubusercontent.com/fpoly-datn-phongtt35/fa24-sd79-ban-ao-phong-moe/refs/heads/product/FE-MOE/src/assert/images/Demo2.png" alt="Product Details Page" width="80%" />
 </p>
 
