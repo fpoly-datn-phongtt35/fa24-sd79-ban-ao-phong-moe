@@ -68,7 +68,7 @@ export const Customer = () => {
       setCustomers(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
-      console.error('Error during search:', error);
+      console.error('Lỗi khi tìm kiếm:', error);
     } finally {
       setLoading(false);
     }
@@ -90,8 +90,8 @@ export const Customer = () => {
       await deleteCustomer(id);
       handleSetCustomer();
     } catch (error) {
-      console.error('Failed to delete customer', error);
-      swal('Error', 'Failed to delete customer', 'error');
+      console.error('Xóa không thành công', error);
+      swal('Error', 'Xóa không thành công', 'error');
     }
   };
 

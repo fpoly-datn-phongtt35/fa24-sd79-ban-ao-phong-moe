@@ -80,7 +80,7 @@ export const CustomerDetailPage = () => {
     setIsLoading(true);
     await putCustomer(updatedCustomer, id).then(async (res) => {
       if (imageObject === null) {
-        toast.success('Thêm thành công');
+        toast.success('Sửa thành công');
         setIsLoading(false);
         navigate('/customer');
         return;
@@ -258,7 +258,7 @@ export const CustomerDetailPage = () => {
 
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Thành phố</FormLabel>
+                        <FormLabel >Thành phố</FormLabel>
                         <Input
                           name="city"
                           value={customerData.city}
@@ -269,7 +269,7 @@ export const CustomerDetailPage = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Quận/Huyện</FormLabel>
+                        <FormLabel >Quận/Huyện</FormLabel>
                         <Input
                           name="district"
                           value={customerData.district}
@@ -280,7 +280,7 @@ export const CustomerDetailPage = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Phường/Xã</FormLabel>
+                        <FormLabel >Phường/Xã</FormLabel>
                         <Input
                           name="ward"
                           value={customerData.ward}
@@ -291,7 +291,7 @@ export const CustomerDetailPage = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Tên đường</FormLabel>
+                        <FormLabel>Tên đường</FormLabel>
                         <Input
                           name="streetName"
                           value={customerData.streetName}

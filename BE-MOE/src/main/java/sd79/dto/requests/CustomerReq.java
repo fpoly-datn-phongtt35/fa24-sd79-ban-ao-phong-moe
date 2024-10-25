@@ -15,22 +15,22 @@ import java.util.Date;
 public class CustomerReq {
 
     @Size(max = 25)
-    @NotEmpty(message = "FirstName cannot be empty")
+    @NotEmpty(message = "Tên không được để trống")
     private String firstName;
 
     @Size(max = 50)
-    @NotEmpty(message = "LastName cannot be empty")
+    @NotEmpty(message = "Họ không được để trống")
     private String lastName;
 
     @Size(max = 20)
-    @NotEmpty(message = "PhoneNumber cannot be empty")
+    @NotEmpty(message = "Số điện thoại không được để trống")
     private String phoneNumber;
 
 
-    @NotEmpty(message = "Gender cannot be empty")
+    @NotEmpty(message = "Giới tính không được để trống")
     private String gender;
 
-    @NotNull(message = "DateOfBirth cannot be null")
+    @NotNull(message = "Không được để trống ngày sinh")
     private Date dateOfBirth;
 
 
@@ -49,12 +49,12 @@ public class CustomerReq {
 //    @NotEmpty(message = "StreetName cannot be empty")
     private String streetName;
 
-    @NotEmpty(message = "Email cannot be empty")
+    @NotEmpty(message = "Email không được để trống")
     private String email;
 
-    @NotEmpty(message = "UserName cannot be empty")
+    @NotEmpty(message = "Tên tài khoản không được để trống")
     private String username;
 
-    @NotEmpty(message = "Password cannot be empty")
+    @NotEmpty(message = "Mật khẩu không được để trống")
     private String password;
 }

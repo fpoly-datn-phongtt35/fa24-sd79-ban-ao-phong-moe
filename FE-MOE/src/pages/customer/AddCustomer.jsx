@@ -277,7 +277,7 @@ export const AddCustomer = () => {
 
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Thành phố</FormLabel>
+                        <FormLabel >Thành phố</FormLabel>
                         <Input
                           name="city"
                           value={customerData.address.city}
@@ -289,7 +289,7 @@ export const AddCustomer = () => {
 
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Quận/Huyện</FormLabel>
+                        <FormLabel >Quận/Huyện</FormLabel>
                         <Input
                           name="district"
                           value={customerData.address.district}
@@ -300,7 +300,7 @@ export const AddCustomer = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Phường/Xã</FormLabel>
+                        <FormLabel >Phường/Xã</FormLabel>
                         <Input
                           name="ward"
                           value={customerData.address.ward}
@@ -311,7 +311,7 @@ export const AddCustomer = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Tên đường</FormLabel>
+                        <FormLabel>Tên đường</FormLabel>
                         <Input
                           name="streetName"
                           value={customerData.address.streetName}
