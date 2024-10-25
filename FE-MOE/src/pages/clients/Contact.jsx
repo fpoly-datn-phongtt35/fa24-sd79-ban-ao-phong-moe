@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,62 +9,73 @@ import {
   Typography,
   Grid,
   IconButton,
-  Divider
-} from '@mui/joy';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
+  Divider,
+} from "@mui/joy";
+import PhoneIcon from "@mui/icons-material/Phone";
+import EmailIcon from "@mui/icons-material/Email";
+import { ScrollToTop } from "~/utils/defaultScroll";
 
 export const Contact = () => {
+  ScrollToTop();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form data submitted:', formData);
+    console.log("Form data submitted:", formData);
   };
 
   return (
     <Grid container spacing={4} sx={{ padding: 3 }}>
-      {/* Phần thông tin liên hệ */}
       <Grid item xs={12} sm={4}>
         <Box
           sx={{
             padding: 3,
-            backgroundColor: '#f9f9f9',
+            backgroundColor: "#f9f9f9",
             borderRadius: 8,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            border: '1px solid #e0e0e0'
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            border: "1px solid #e0e0e0",
           }}
         >
-          <Typography level="h6" startDecorator={<PhoneIcon />} sx={{ marginBottom: 2, fontWeight: 'bold' }}>
+          <Typography
+            level="h6"
+            startDecorator={<PhoneIcon />}
+            sx={{ marginBottom: 2, fontWeight: "bold" }}
+          >
             Gọi cho chúng tôi
           </Typography>
-          <Typography level="body2">Chúng tôi hoạt động 24/7, 7 ngày trong tuần.</Typography>
-          <Typography level="body2" sx={{ fontWeight: 'bold', marginTop: 1 }}>
+          <Typography level="body2">
+            Chúng tôi hoạt động 24/7, 7 ngày trong tuần.
+          </Typography>
+          <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
             Điện thoại: +84 999 999
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography level="h6" startDecorator={<EmailIcon />} sx={{ marginBottom: 2, fontWeight: 'bold' }}>
+          <Typography
+            level="h6"
+            startDecorator={<EmailIcon />}
+            sx={{ marginBottom: 2, fontWeight: "bold" }}
+          >
             Viết thư cho chúng tôi
           </Typography>
           <Typography level="body2">
             Điền vào form và chúng tôi sẽ liên hệ lại trong vòng 24 giờ.
           </Typography>
-          <Typography level="body2" sx={{ fontWeight: 'bold', marginTop: 1 }}>
+          <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
             Email: supportmoestore@moe.vn
           </Typography>
         </Box>
@@ -76,13 +87,13 @@ export const Contact = () => {
           onSubmit={handleSubmit}
           sx={{
             padding: 3,
-            backgroundColor: '#fff',
+            backgroundColor: "#fff",
             borderRadius: 8,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            border: '1px solid #e0e0e0'
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            border: "1px solid #e0e0e0",
           }}
         >
-          <Typography level="h6" sx={{ marginBottom: 3, fontWeight: 'bold' }}>
+          <Typography level="h6" sx={{ marginBottom: 3, fontWeight: "bold" }}>
             Liên hệ với chúng tôi
           </Typography>
           <Grid container spacing={3}>
@@ -95,8 +106,8 @@ export const Contact = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   sx={{
-                    borderColor: '#d0d0d0',
-                    '&:hover': { borderColor: '#b0b0b0' }
+                    borderColor: "#d0d0d0",
+                    "&:hover": { borderColor: "#b0b0b0" },
                   }}
                 />
               </FormControl>
@@ -111,8 +122,8 @@ export const Contact = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   sx={{
-                    borderColor: '#d0d0d0',
-                    '&:hover': { borderColor: '#b0b0b0' }
+                    borderColor: "#d0d0d0",
+                    "&:hover": { borderColor: "#b0b0b0" },
                   }}
                 />
               </FormControl>
@@ -126,8 +137,8 @@ export const Contact = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   sx={{
-                    borderColor: '#d0d0d0',
-                    '&:hover': { borderColor: '#b0b0b0' }
+                    borderColor: "#d0d0d0",
+                    "&:hover": { borderColor: "#b0b0b0" },
                   }}
                 />
               </FormControl>
@@ -142,8 +153,8 @@ export const Contact = () => {
                   value={formData.message}
                   onChange={handleInputChange}
                   sx={{
-                    borderColor: '#d0d0d0',
-                    '&:hover': { borderColor: '#b0b0b0' }
+                    borderColor: "#d0d0d0",
+                    "&:hover": { borderColor: "#b0b0b0" },
                   }}
                 />
               </FormControl>

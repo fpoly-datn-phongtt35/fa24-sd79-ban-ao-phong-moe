@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
-import sd79.dto.response.clients.product.BestSellingProductResponse;
+import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 import sd79.model.Product;
@@ -275,16 +275,16 @@ public class ProductCustomizeQuery {
                 .build();
     }
 
-    public List<BestSellingProductResponse> getExploreOurProducts(Integer page) {
-        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
-
+    public List<ProductClientResponse> getExploreOurProducts(Integer page) {
+        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
+        query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
         query.append(" ORDER BY prd.updateAt DESC");
         TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
         execute.setFirstResult((page -  1) * 10);
         execute.setMaxResults(10);
 
         return execute.getResultList().stream()
-                .map(s -> BestSellingProductResponse.builder()
+                .map(s -> ProductClientResponse.builder()
                         .productId(s.getId())
                         .imageUrl(s.getProductImages().getFirst().getImageUrl())
                         .name(s.getName())
@@ -296,15 +296,15 @@ public class ProductCustomizeQuery {
                 ).toList();
     }
 
-    public List<BestSellingProductResponse> getBestSellingProducts() {
-        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
-
+    public List<ProductClientResponse> getBestSellingProducts() {
+        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
+        query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
         query.append(" ORDER BY prd.updateAt DESC");
         TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
         execute.setMaxResults(6);
 
         return execute.getResultList().stream()
-                .map(s -> BestSellingProductResponse.builder()
+                .map(s -> ProductClientResponse.builder()
                         .productId(s.getId())
                         .imageUrl(s.getProductImages().getFirst().getImageUrl())
                         .name(s.getName())

@@ -18,3 +18,9 @@ export const fetchCategories = async () => {
     .get(`${API_ROOT}/client/category`)
     .then((res) => res.data);
 };
+
+export const fetchProduct = async (id) => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/${id}`)
+    .then((res) => res.data);
+};
