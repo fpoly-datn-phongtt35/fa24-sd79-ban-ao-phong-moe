@@ -1,8 +1,10 @@
 import { Box, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import AddIcon from "@mui/icons-material/Add";
 import Input from "@mui/joy/Input";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   FormControl,
@@ -11,8 +13,26 @@ import {
   Select,
   Typography,
 } from "@mui/joy";
+import { useState } from "react";
+import { Microphone } from "./Microphone";
 
-export const Filter = (props) => {
+export const Filter = ({ method }) => {
+  const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleKeywordVoice = (keyword) => {
+    setValue(keyword);
+    method.onChangeSearchVoice(keyword);
+  };
+
+  const medthod = {
+    setOpen,
+    open,
+    setValue,
+    handleKeywordVoice,
+    method
+  };
   return (
     <>
       <Grid
@@ -30,21 +50,35 @@ export const Filter = (props) => {
             level="title-lg"
             noWrap
             variant="plain"
-            alignItems="center"
+            sx={{ display: "flex", alignItems: "center" }}
           >
-            <FilterAltIcon size="sm" />
+            <FilterAltOutlinedIcon
+              sx={{ color: "#32383e", marginRight: 1 }}
+              size="sm"
+            />
             Bộ lọc
           </Typography>
         </Grid>
         <Grid size={6}>
           <Button
-            variant="plain"
+            variant="soft"
             size="sm"
-            onClick={props.clearFilter}
+            onClick={method.clearFilter}
             startDecorator={<RefreshIcon />}
+            sx={{ marginRight: 1 }}
           >
             Làm mới
           </Button>
+          {method.btnAdd && (
+            <Button
+              variant="soft"
+              size="sm"
+              onClick={() => navigate("/product/new")}
+              startDecorator={<AddIcon />}
+            >
+              Thêm sản phẩm
+            </Button>
+          )}
         </Grid>
       </Grid>
       <Box>
@@ -55,11 +89,15 @@ export const Filter = (props) => {
                 <FormControl>
                   <FormLabel>Tìm kiếm</FormLabel>
                   <Input
+                    value={value}
                     type="search"
                     placeholder="Tìm kiếm…"
-                    // value={props.keyword}
                     startDecorator={<SearchIcon />}
-                    onChange={props.onChangeSearch}
+                    endDecorator={<Microphone method={medthod} />}
+                    onChange={(e) => {
+                      method.onChangeSearch(e);
+                      setValue(e.target.value);
+                    }}
                   />
                 </FormControl>
               </Grid>
@@ -68,8 +106,8 @@ export const Filter = (props) => {
                   <FormLabel>Trạng thái</FormLabel>
                   <Select
                     label="Trạng thái"
-                    value={props.status}
-                    onChange={(event, value) => props.onChangeStatus(value)}
+                    value={method.status}
+                    onChange={(event, value) => method.onChangeStatus(value)}
                   >
                     <Option value="ALL">Tất cả</Option>
                     <Option value="ACTIVE">Đang hoạt động</Option>
@@ -87,11 +125,11 @@ export const Filter = (props) => {
                   <FormLabel>Danh mục</FormLabel>
                   <Select
                     label="Danh mục"
-                    value={props.category}
-                    onChange={(event, value) => props.onChangeCategory(value)}
+                    value={method.category}
+                    onChange={(event, value) => method.onChangeCategory(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.categories?.map((value) => (
+                    {method?.attributes?.categories?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -104,11 +142,11 @@ export const Filter = (props) => {
                   <FormLabel>Thương hiệu</FormLabel>
                   <Select
                     label="Thương hiệu"
-                    value={props.brand}
-                    onChange={(event, value) => props.onChangeBrand(value)}
+                    value={method.brand}
+                    onChange={(event, value) => method.onChangeBrand(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.brands?.map((value) => (
+                    {method?.attributes?.brands?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -121,11 +159,11 @@ export const Filter = (props) => {
                   <FormLabel>Chất liệu</FormLabel>
                   <Select
                     label="Chất liệu"
-                    value={props.material}
-                    onChange={(event, value) => props.onChangeMaterial(value)}
+                    value={method.material}
+                    onChange={(event, value) => method.onChangeMaterial(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.materials?.map((value) => (
+                    {method?.attributes?.materials?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -138,11 +176,11 @@ export const Filter = (props) => {
                   <FormLabel>Xuất xứ</FormLabel>
                   <Select
                     label="Xuất sứ"
-                    value={props.origin}
-                    onChange={(event, value) => props.onChangeOrigin(value)}
+                    value={method.origin}
+                    onChange={(event, value) => method.onChangeOrigin(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.origin?.map((value, index) => (
+                    {method?.attributes?.origin?.map((value, index) => (
                       <Option key={index} value={value}>
                         {value}
                       </Option>

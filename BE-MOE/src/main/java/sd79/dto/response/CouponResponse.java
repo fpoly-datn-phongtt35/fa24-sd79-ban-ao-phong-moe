@@ -5,9 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
+import sd79.model.CouponShare;
+import sd79.model.Customer;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Builder
@@ -27,5 +30,7 @@ public class CouponResponse {
     private Date endDate; // ngay ket thuc
     private String status; //trang thai
     private String description;
-    private String image;
+    private String imageUrl;
+    private List<Customer> customers;
+
 }

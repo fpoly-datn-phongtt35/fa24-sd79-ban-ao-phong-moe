@@ -65,7 +65,7 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             query.setParameter("status", param.getStatus());
@@ -120,7 +120,127 @@ public class ProductCustomizeQuery {
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
         if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword()));
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
+        }
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            countQuery.setParameter("status", param.getStatus());
+        }
+        if (StringUtils.hasLength(param.getCategory())) {
+            countQuery.setParameter("category", param.getCategory());
+        }
+
+        if (StringUtils.hasLength(param.getBrand())) {
+            countQuery.setParameter("brand", param.getBrand());
+        }
+
+        if (StringUtils.hasLength(param.getMaterial())) {
+            countQuery.setParameter("material", param.getMaterial());
+        }
+
+        if (StringUtils.hasLength(param.getOrigin())) {
+            countQuery.setParameter("origin", param.getOrigin());
+        }
+        Long totalElements = countQuery.getSingleResult();
+        Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
+        Page<?> page = new PageImpl<>(data, pageable, totalElements);
+        return PageableResponse.builder()
+                .pageNumber(param.getPageNo())
+                .pageNo(param.getPageNo())
+                .pageSize(param.getPageSize())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements()) // Not required
+                .content(data)
+                .build();
+    }
+
+    public PageableResponse getAllProductArchives(ProductParamFilter param) {
+        StringBuilder sql = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = true");
+        if (StringUtils.hasLength(param.getKeyword())) {
+            sql.append(" AND lower(prd.name) like lower(:keyword)");
+        }
+
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            sql.append(" AND prd.status = :status");
+        } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
+            sql.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') < 1)");
+        }
+
+        if (StringUtils.hasLength(param.getCategory())) {
+            sql.append(" AND prd.category.name like :category");
+        }
+
+        if (StringUtils.hasLength(param.getBrand())) {
+            sql.append(" AND prd.brand.name like :brand");
+        }
+
+        if (StringUtils.hasLength(param.getMaterial())) {
+            sql.append(" AND prd.material.name like :material");
+        }
+
+        if (StringUtils.hasLength(param.getOrigin())) {
+            sql.append(" AND prd.origin like :origin");
+        }
+
+        sql.append(" ORDER BY prd.updateAt DESC");
+
+        TypedQuery<Product> query = entityManager.createQuery(sql.toString(), Product.class);
+        if (StringUtils.hasLength(param.getKeyword())) {
+            query.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
+        }
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            query.setParameter("status", param.getStatus());
+        }
+        if (StringUtils.hasLength(param.getCategory())) {
+            query.setParameter("category", param.getCategory());
+        }
+
+        if (StringUtils.hasLength(param.getBrand())) {
+            query.setParameter("brand", param.getBrand());
+        }
+
+        if (StringUtils.hasLength(param.getMaterial())) {
+            query.setParameter("material", param.getMaterial());
+        }
+
+        if (StringUtils.hasLength(param.getOrigin())) {
+            query.setParameter("origin", param.getOrigin());
+        }
+
+        query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
+        query.setMaxResults(param.getPageSize());
+
+        List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
+
+        // TODO count product
+        StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = true");
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countPage.append(" AND lower(prd.name) like lower(:keyword)");
+        }
+
+        if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
+            countPage.append(" AND prd.status = :status");
+        } else if (param.getStatus() == ProductStatus.OUT_OF_STOCK) {
+            countPage.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') < 1)");
+        }
+        if (StringUtils.hasLength(param.getCategory())) {
+            countPage.append(" AND prd.category.name like :category");
+        }
+
+        if (StringUtils.hasLength(param.getBrand())) {
+            countPage.append(" AND prd.brand.name like :brand");
+        }
+
+        if (StringUtils.hasLength(param.getMaterial())) {
+            countPage.append(" AND prd.material.name like :material");
+        }
+
+        if (StringUtils.hasLength(param.getOrigin())) {
+            countPage.append(" AND prd.origin like :origin");
+        }
+
+        TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
         }
         if (param.getStatus() != ProductStatus.ALL && param.getStatus() != ProductStatus.OUT_OF_STOCK) {
             countQuery.setParameter("status", param.getStatus());

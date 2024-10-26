@@ -2,6 +2,7 @@ package sd79.dto.requests;
 
 import lombok.Builder;
 import lombok.Getter;
+import sd79.model.Employee_address;
 
 import java.util.Date;
 
@@ -23,7 +24,7 @@ public class EmployeeReq {
 
     private int salary;
 
-    private String city;
-
     private int positionId;
+
+    private Employee_address address;
 }

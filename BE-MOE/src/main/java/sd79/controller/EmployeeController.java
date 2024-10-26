@@ -93,17 +93,17 @@ public class EmployeeController {
         return new ResponseData<>(HttpStatus.OK.value(), "Employee deleted successfully");
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+//    }
     @GetMapping("/searchNameAndPhone")
     public ResponseData<?> searchNameAndPhone(
             @RequestParam(value = "keyword", required = false) String keyword,

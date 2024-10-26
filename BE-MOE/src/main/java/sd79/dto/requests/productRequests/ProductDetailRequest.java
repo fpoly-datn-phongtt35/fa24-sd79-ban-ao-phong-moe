@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 public class ProductDetailRequest {
-    private long id;
     private int sizeId;
     private int colorId;
     private int quantity;

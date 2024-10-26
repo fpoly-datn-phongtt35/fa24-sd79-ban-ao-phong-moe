@@ -68,6 +68,7 @@ CREATE TABLE customers (
     date_of_birth date,
     image varchar(200),
     address_id bigint UNIQUE,
+    user_id BIGINT,
     created_at datetime,
     updated_at datetime
 );
@@ -77,14 +78,13 @@ CREATE TABLE customer_address (
     street_name varchar(255),
     ward varchar(255),
     district varchar(255),
-    city varchar(255),
-    country varchar(255)
+    city varchar(255)
 );
 
 -- Product
 CREATE TABLE categories(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -94,7 +94,7 @@ CREATE TABLE categories(
 
 CREATE TABLE brands(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
 	create_at DATETIME,
@@ -130,7 +130,7 @@ CREATE TABLE products(
 
 CREATE TABLE sizes(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	length FLOAT,
 	width FLOAT,
 	sleeve FLOAT,
@@ -143,7 +143,7 @@ CREATE TABLE sizes(
 
 CREATE TABLE colors(
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(10),
+	name VARCHAR(100),
 	hex_color_code VARCHAR(100),
 	created_by BIGINT,
 	updated_by BIGINT,
@@ -169,7 +169,7 @@ CREATE TABLE product_details(
 	status ENUM('ACTIVE', 'INACTIVE')
 );
 
--- coupons
+-- Coupons
 CREATE TABLE coupons (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(10) UNIQUE,
@@ -183,12 +183,28 @@ CREATE TABLE coupons (
   start_date DATETIME,
   end_date DATETIME,
   description TEXT,
-  image VARCHAR(255) NULL,
   created_by BIGINT,
   updated_by BIGINT,
   create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   is_deleted BIT DEFAULT 0
+);
+
+CREATE TABLE coupon_images(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  coupon_id BIGINT,
+  image_url VARCHAR(255),
+  public_id VARCHAR(100),
+  CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
+);
+
+CREATE TABLE coupon_share(
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  coupon_id BIGINT,
+  customer_id BIGINT,
+  is_deleted BIT DEFAULT 0,
+  CONSTRAINT fk_coupon_share FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  CONSTRAINT fk_customer_share FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
 -- promotions
@@ -198,7 +214,7 @@ CREATE TABLE promotions(
   promotion_type VARCHAR(50),
   promotion_value DECIMAL(10,2),
   start_date DATE,
-  end_date DATE,	
+  end_date DATE,
   description TEXT
 );
 
@@ -219,6 +235,8 @@ ALTER TABLE employees ADD CONSTRAINT fk_salary_id FOREIGN KEY (salary_id) REFERE
 
 -- Customer
 ALTER TABLE customers ADD CONSTRAINT fk_customer_address FOREIGN KEY (address_id) REFERENCES customer_address(id);
+
+ALTER TABLE customers ADD CONSTRAINT fk_customers_user_id FOREIGN KEY (user_id) REFERENCES users(id);
 
 -- Product
 ALTER TABLE users ADD CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id);
@@ -245,17 +263,37 @@ ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_product_id FOR
 ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_promotion_id FOREIGN KEY (promotion_id) REFERENCES promotions(id);
 
 -- ROLE --
-INSERT INTO roles (name, created_at, updated_at) 
-VALUES 
+INSERT INTO roles (name, created_at, updated_at)
+VALUES
 ('ADMIN', NOW(), NOW()),
 ('USER', NOW(), NOW()),
 ('GUEST', NOW(), NOW());
 
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
-VALUES 
-('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
-('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0),
-('user', 'user@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0);
+VALUES
+    ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
+    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0),
+    ('user', 'user@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vantan', 'vantan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thibich', 'thibich@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('minhtuan', 'minhtuan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('ngochaph', 'ngochaph@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vannam', 'vannam@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('quanghai', 'quanghai@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thimai', 'thimai@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thanhtung', 'thanhtung@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vanduc', 'vanduc@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thilan', 'thilan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thihuong', 'thihuong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thihong', 'thihong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('huuhoang', 'huuhoang@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vanlong', 'vanlong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thiyen', 'thiyen@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vanhung', 'vanhung@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thithuy', 'thithuy@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('minhchau', 'minhchau@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('vancuong', 'vancuong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
+    ('thihong2', 'thihong2@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0);
 
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
@@ -576,24 +614,51 @@ VALUES
 ('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
--- Customer
-INSERT INTO `customer_address` (`street_name`, `ward`, `district`, `city`, `country`)
+INSERT INTO customer_address (street_name, ward, district, city)
 VALUES
-    ('123 Elm Street', 'Ward 1', 'District 1', 'City A', 'Country A'),
-    ('456 Oak Street', 'Ward 2', 'District 2', 'City B', 'Country A'),
-    ('789 Pine Street', 'Ward 3', 'District 3', 'City C', 'Country B'),
-    ('101 Maple Street', 'Ward 4', 'District 4', 'City D', 'Country B'),
-    ('202 Birch Street', 'Ward 5', 'District 5', 'City E', 'Country C');
+    ('Số 1 Đường Thanh Niên', 'Phường Trúc Bạch', 'Quận Ba Đình', 'Hà Nội'),
+    ('Số 2 Đường Kim Mã', 'Phường Ngọc Khánh', 'Quận Ba Đình', 'Hà Nội'),
+    ('Số 3 Đường Hoàng Cầu', 'Phường Ô Chợ Dừa', 'Quận Đống Đa', 'Hà Nội'),
+    ('Số 4 Đường Lê Văn Lương', 'Phường Nhân Chính', 'Quận Thanh Xuân', 'Hà Nội'),
+    ('Số 5 Đường Nguyễn Xiển', 'Phường Đại Kim', 'Quận Hoàng Mai', 'Hà Nội'),
+    ('Số 6 Đường Trần Duy Hưng', 'Phường Trung Hoà', 'Quận Cầu Giấy', 'Hà Nội'),
+    ('Số 7 Đường Giải Phóng', 'Phường Phương Liệt', 'Quận Hoàng Mai', 'Hà Nội'),
+    ('Số 8 Đường Nguyễn Trãi', 'Phường Thanh Xuân Bắc', 'Quận Thanh Xuân', 'Hà Nội'),
+    ('Số 9 Đường Láng', 'Phường Láng Hạ', 'Quận Đống Đa', 'Hà Nội'),
+    ('Số 10 Đường Nguyễn Chí Thanh', 'Phường Láng Thượng', 'Quận Đống Đa', 'Hà Nội'),
+    ('Số 11 Đường Phạm Văn Đồng', 'Phường Cổ Nhuế', 'Quận Bắc Từ Liêm', 'Hà Nội'),
+    ('Số 12 Đường Lạc Long Quân', 'Phường Xuân La', 'Quận Tây Hồ', 'Hà Nội'),
+    ('Số 13 Đường Thụy Khuê', 'Phường Thụy Khuê', 'Quận Tây Hồ', 'Hà Nội'),
+    ('Số 14 Đường Xuân Thủy', 'Phường Dịch Vọng Hậu', 'Quận Cầu Giấy', 'Hà Nội'),
+    ('Số 15 Đường Tôn Đức Thắng', 'Phường Hàng Bột', 'Quận Đống Đa', 'Hà Nội'),
+    ('Số 16 Đường Chùa Bộc', 'Phường Quang Trung', 'Quận Đống Đa', 'Hà Nội'),
+    ('Số 17 Đường Trần Khát Chân', 'Phường Phố Huế', 'Quận Hai Bà Trưng', 'Hà Nội'),
+    ('Số 18 Đường Bạch Mai', 'Phường Bạch Mai', 'Quận Hai Bà Trưng', 'Hà Nội'),
+    ('Số 19 Đường Đại Cồ Việt', 'Phường Lê Đại Hành', 'Quận Hai Bà Trưng', 'Hà Nội'),
+    ('Số 20 Đường Đinh Tiên Hoàng', 'Phường Lý Thái Tổ', 'Quận Hoàn Kiếm', 'Hà Nội');
 
+INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, address_id, user_id, created_at, updated_at) VALUES
+('Văn An', 'Nguyễn', '0905123456', 'MALE', '1985-06-15', 'img1.jpg', 1, 1, NOW(), NOW()),
+('Thị Bích', 'Trần', '0912233445', 'FEMALE', '1990-07-12', 'img2.jpg', 2, 2, NOW(), NOW()),
+('Minh Tuấn', 'Lê', '0987654321', 'MALE', '1983-09-24', 'img3.jpg', 3, 3, NOW(), NOW()),
+('Ngọc Hà', 'Phạm', '0915123123', 'FEMALE', '1995-03-05', 'img4.jpg', 4, 1, NOW(), NOW()),
+('Văn Nam', 'Vũ', '0909121212', 'MALE', '1988-11-30', 'img5.jpg', 5, 2, NOW(), NOW()),
+('Quang Hải', 'Đỗ', '0981122334', 'MALE', '1992-04-14', 'img6.jpg', 6, 3, NOW(), NOW()),
+('Thị Mai', 'Hoàng', '0919123432', 'FEMALE', '1997-01-22', 'img7.jpg', 7, 1, NOW(), NOW()),
+('Thanh Tùng', 'Bùi', '0908112233', 'MALE', '1989-08-08', 'img8.jpg', 8, 2, NOW(), NOW()),
+('Văn Đức', 'Ngô', '0917234123', 'MALE', '1991-05-10', 'img9.jpg', 9, 3, NOW(), NOW()),
+('Thị Lan', 'Phan', '0983123212', 'FEMALE', '1987-10-15', 'img10.jpg', 10, 1, NOW(), NOW()),
+('Thị Hương', 'Đinh', '0907123456', 'FEMALE', '1993-02-28', 'img11.jpg', 11, 2, NOW(), NOW()),
+('Thị Hồng', 'Phạm', '0981112234', 'FEMALE', '1986-09-07', 'img12.jpg', 12, 3, NOW(), NOW()),
+('Hữu Hoàng', 'Nguyễn', '0912123234', 'MALE', '1990-12-19', 'img13.jpg', 13, 13, NOW(), NOW()),
+('Văn Long', 'Trần', '0908123456', 'MALE', '1984-07-18', 'img14.jpg', 14, 14, NOW(), NOW()),
+('Thị Yến', 'Lê', '0989123112', 'FEMALE', '1992-10-23', 'img15.jpg', 15, 15, NOW(), NOW()),
+('Văn Hùng', 'Vũ', '0918234231', 'MALE', '1987-11-11', 'img16.jpg', 16, 16, NOW(), NOW()),
+('Thị Thủy', 'Đỗ', '0901123345', 'FEMALE', '1994-05-16', 'img17.jpg', 17, 17, NOW(), NOW()),
+('Minh Châu', 'Hoàng', '0983123445', 'FEMALE', '1996-06-27', 'img18.jpg', 18, 18, NOW(), NOW()),
+('Văn Cường', 'Bùi', '0917123312', 'MALE', '1991-03-03', 'img19.jpg', 19, 19, NOW(), NOW()),
+('Thị Hồng', 'Ngô', '0906123234', 'FEMALE', '1995-09-29', 'img20.jpg', 20, 20, NOW(), NOW());
 
-INSERT INTO `customers` (`first_name`, `last_name`, `phone_number`, `gender`, `date_of_birth`, `image`, `address_id`, `created_at`, `updated_at`)
-VALUES
-    ('John', 'Doe', '123456789', 'MALE', '1985-05-15', 'john_doe.jpg', 1, NOW(), NOW()),
-    ('Jane', 'Smith', '987654321', 'FEMALE', '1990-08-25', 'jane_smith.jpg', 2, NOW(), NOW()),
-    ('Mike', 'Johnson', '555123456', 'MALE', '1979-11-30', 'mike_johnson.jpg', 3, NOW(), NOW()),
-    ('Emily', 'Davis', '444987654', 'FEMALE', '1995-03-10', 'emily_davis.jpg', 4, NOW(), NOW()),
-    ('Chris', 'Wilson', '333654789', 'OTHER', '1988-07-22', 'chris_wilson.jpg', 5, NOW(), NOW());
-	
 -- promotions
 INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)
 VALUES
@@ -619,15 +684,33 @@ VALUES
     (2, 2, 2, '2024-07-01', 100.00);
 
 -- Coupons
-INSERT INTO `coupons` (`code`, `name`, `discount_type`, `discount_value`, `max_value`, `conditions`, `quantity`, `type`, `start_date`, `end_date`, `description`, image, `created_by`, `updated_by`, `create_at`, `update_at`, `is_deleted`)
-VALUES
-('CODE5892', 'Coupon 1', 'FIXED_AMOUNT', 57.95, 489.77, 123.04, 38, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-03 06:42:47', 'This is description for Coupon 1', 'image_1.png', 9, 3, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE7309', 'Coupon 2', 'FIXED_AMOUNT', 85.12, 106.05, 14.56, 24, 'PUBLIC', '2024-10-03 06:42:47', '2025-07-09 06:42:47', 'This is description for Coupon 2', 'image_2.png', 1, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
-('CODE9879', 'Coupon 3', 'PERCENTAGE', 21.37, 69.60, 116.24, 3, 'PERSONAL', '2024-10-03 06:42:47', '2025-01-27 06:42:47', 'This is description for Coupon 3', 'image_3.png', 8, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE6860', 'Coupon 4', 'FIXED_AMOUNT', 58.65, 134.11, 57.17, 66, 'PUBLIC', '2024-10-03 06:42:47', '2024-12-10 06:42:47', 'This is description for Coupon 4', 'image_4.png', 5, 6, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE3542', 'Coupon 5', 'PERCENTAGE', 43.87, 395.30, 197.18, 60, 'PUBLIC', '2024-10-03 06:42:47', '2025-02-04 06:42:47', 'This is description for Coupon 5', 'image_5.png', 9, 2, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE7612', 'Coupon 6', 'PERCENTAGE', 55.79, 370.94, 105.59, 4, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-30 06:42:47', 'This is description for Coupon 6', 'image_6.png', 2, 9, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE3354', 'Coupon 7', 'FIXED_AMOUNT', 68.56, 104.59, 17.24, 74, 'PERSONAL', '2024-10-03 06:42:47', '2025-05-03 06:42:47', 'This is description for Coupon 7', 'image_7.png', 7, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 0),
-('CODE1771', 'Coupon 8', 'PERCENTAGE', 79.81, 485.91, 168.22, 97, 'PERSONAL', '2024-10-03 06:42:47', '2025-08-16 06:42:47', 'This is description for Coupon 8', 'image_8.png', 1, 8, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE1117', 'Coupon 9', 'FIXED_AMOUNT', 64.88, 331.88, 72.62, 99, 'PERSONAL', '2024-10-03 06:42:47', '2025-03-02 06:42:47', 'This is description for Coupon 9', 'image_9.png', 9, 7, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1),
-('CODE5308', 'Coupon 10', 'FIXED_AMOUNT', 53.34, 449.04, 113.73, 56, 'PERSONAL', '2024-10-03 06:42:47', '2025-02-28 06:42:47', 'This is description for Coupon 10', 'image_10.png', 7, 10, '2024-10-03 06:42:47', '2024-10-03 06:42:47', 1);
+INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, created_by, updated_by) VALUES
+('COUP01', 'Summer Sale', 'PERCENTAGE', 10, 5000, 100, 100, 'PUBLIC', '2024-06-01 00:00:00', '2024-07-01 00:00:00', '10% off summer sale', 1, 1),
+('COUP02', 'Winter Offer', 'FIXED_AMOUNT', 500, 5000, 1000, 50, 'PERSONAL', '2024-12-01 00:00:00', '2024-12-31 00:00:00', '500 off winter offer', 2, 2),
+('COUP03', 'Black Friday', 'PERCENTAGE', 20, 10000, 500, 200, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 00:00:00', '20% off Black Friday', 3, 3),
+('COUP04', 'New Year Discount', 'FIXED_AMOUNT', 1000, 10000, 2000, 150, 'PERSONAL', '2024-12-31 00:00:00', '2025-01-01 23:59:59', '1000 off New Year Discount', 4, 4),
+('COUP05', 'Flash Sale', 'PERCENTAGE', 15, 8000, 300, 500, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-16 00:00:00', '15% off Flash Sale', 5, 5),
+('COUP06', 'Holiday Offer', 'FIXED_AMOUNT', 200, 2000, 1000, 300, 'PERSONAL', '2024-12-20 00:00:00', '2024-12-25 00:00:00', '200 off Holiday Offer', 6, 6),
+('COUP07', 'Exclusive Discount', 'PERCENTAGE', 5, 3000, 500, 50, 'PERSONAL', '2024-11-01 00:00:00', '2024-11-10 00:00:00', '5% Exclusive Discount', 7, 7),
+('COUP08', 'Limited Offer', 'FIXED_AMOUNT', 1500, 6000, 2000, 100, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-30 00:00:00', '1500 off Limited Offer', 8, 8),
+('COUP09', 'Birthday Special', 'PERCENTAGE', 25, 7000, 500, 50, 'PERSONAL', '2024-11-20 00:00:00', '2024-11-25 00:00:00', '25% off Birthday Special', 9, 9),
+('COUP10', 'Anniversary Deal', 'FIXED_AMOUNT', 300, 2000, 800, 50, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-10 00:00:00', '300 off Anniversary Deal', 10, 10);
+
+INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
+(1, 'https://example.com/images/coupon01.jpg', 'abc123'),
+(2, 'https://example.com/images/coupon02.jpg', 'def456'),
+(3, 'https://example.com/images/coupon03.jpg', 'ghi789'),
+(4, 'https://example.com/images/coupon04.jpg', 'jkl012'),
+(5, 'https://example.com/images/coupon05.jpg', 'mno345'),
+(6, 'https://example.com/images/coupon06.jpg', 'pqr678'),
+(7, 'https://example.com/images/coupon07.jpg', 'stu901'),
+(8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
+(9, 'https://example.com/images/coupon09.jpg', 'yz567'),
+(10, 'https://example.com/images/coupon10.jpg', 'abc890');
+
+INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
+    (1, 1, 0),  
+    (2, 2, 0), 
+    (3, 3, 0),  
+    (4, 4, 0),  
+    (5, 5, 0);  

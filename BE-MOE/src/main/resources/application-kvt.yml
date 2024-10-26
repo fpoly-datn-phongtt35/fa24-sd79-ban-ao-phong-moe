@@ -20,7 +20,7 @@ spring:
       port: 6379
   config:
     activate:
-      on-profile: kvt
+      on-profile:
 jwt:
   expiryMinute: 10
   expiryDay: 3
@@ -38,6 +38,7 @@ openapi:
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
 cloudinary:
-  cloud-name: https://console.cloudinary.com/pm/c-695fb1101b72230a274a40b4627840/developer-dashboard
-  api-secret: https://console.cloudinary.com/settings/c-695fb1101b72230a274a40b4627840/api-keys
-  api-key: https://console.cloudinary.com/settings/c-695fb1101b72230a274a40b4627840/api-keys
+  cloud-name: dp0odec5s
+  api-secret: PSGqD-Qw_sVwEIvyH2HcBKU2DZo
+  api-key: 217587662777593
+

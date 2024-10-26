@@ -1,92 +1,137 @@
-import React, { useEffect, useState } from 'react'
-import { getEmployee, postEmployee, getAllPositions } from "~/apis/employeeApi";
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { getEmployee, postEmployee, getAllPositions } from '~/apis/employeeApi';
+import { getAllProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from '~/apis/addressEmployeeApi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from "react-toastify";
 
-const EmployeesCreate = () => {
+const EmployeeForm = () => {
     const [data, setData] = useState(null);
-
     const [first_name, setFirst_name] = useState('');
     const [last_name, setLast_name] = useState('');
     const [phone_number, setPhone_number] = useState('');
     const [gender, setGender] = useState('');
-    //    const[date_of_birth,setDate_of_birth] = useState('')
     const [salary, setSalary] = useState('');
-    const [city, setCity] = useState('');
     const [positionId, setPositionId] = useState([]);
     const [selectedPositionId, setSelectedPositionId] = useState('');
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
     const navigartor = useNavigate();
     const { id } = useParams();
 
-    const [errors, setErros] = useState({
+    const [errors, setErrors] = useState({
         first_name: '',
         last_name: '',
         phone_number: '',
         salary: '',
-        city: '',
         positionId: ''
-    })
+    });
 
     useEffect(() => {
-        handleSetPositions();
-    }, []);
+        fetchPositions();
+        fetchProvinces();
+        if (id) {
+            fetchEmployeeData(id);
+        }
+    }, [id]);
 
-    const handleSetPositions = async () => {
+    const fetchPositions = async () => {
         try {
             const res = await getAllPositions();
-            setPositionId(res.data); // Cập nhật danh sách chức vụ
+            setPositionId(res.data);
         } catch (error) {
             console.error('Failed to fetch positions', error);
         }
     };
 
-    useEffect(() => {
-        handleSetPositions();
-        if (id) {
-            getEmployee(id)
-                .then((response) => {
-                setData(response);
-                console.log(response);
-                setFirst_name(response.data.first_name);
-                setLast_name(response.data.last_name);
-                setPhone_number(response.data.phone_number);
-                setGender(response.data.gender);
-                setSalary(response.data.salaries);
-                setCity(response.data.employee_address);
-                const position = response.data.position || '';
-                setSelectedPositionId(position);
-                console.log("Fetched position from API: ", position)
-                })
-                .catch(error => {
-                    console.error(error);
-                    toast.error('Failed to fetch employee data');
-                });
+    const fetchProvinces = async () => {
+        try {
+            const data = await getAllProvinces();
+            setProvinces(data);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            toast.error('Không thể tải tỉnh/thành phố. Vui lòng thử lại sau.');
         }
-    }, [id]);
+    };
 
-    
+    const fetchEmployeeData = async (employeeId) => {
+        try {
+            const response = await getEmployee(employeeId);
+            setData(response);
+            setFirst_name(response.data.first_name);
+            setLast_name(response.data.last_name);
+            setPhone_number(response.data.phone_number);
+            setGender(response.data.gender);
+            setSalary(response.data.salaries);
+            const position = response.data.position || '';
+            setSelectedPositionId(position);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to fetch employee data');
+        }
+    };
+
+    const handleProvinceChange = async (event) => {
+        const provinceId = event.target.value;
+        setSelectedProvince(provinceId);
+        setSelectedDistrict('');
+        setWards([]);
+
+        if (provinceId) {
+            try {
+                const data = await getDistrictsByProvinceId(provinceId);
+                setDistricts(data);
+            } catch (error) {
+                console.error('Error fetching districts:', error);
+                toast.error('Không thể tải quận/huyện. Vui lòng thử lại sau.');
+            }
+        }
+    };
+
+    const handleDistrictChange = async (event) => {
+        const districtId = event.target.value;
+        setSelectedDistrict(districtId);
+        setWards([]);
+
+        if (districtId) {
+            try {
+                const data = await getWardsByDistrictId(districtId);
+                setWards(data);
+            } catch (error) {
+                console.error('Error fetching wards:', error);
+                toast.error('Không thể tải xã/phường. Vui lòng thử lại sau.');
+            }
+        }
+    };
+
     const saveEmployee = (e) => {
         e.preventDefault();
         if (validateForm()) {
             const employee = {
-                first_name: first_name,
-                last_name: last_name,
-                phone_number: phone_number,
-                gender: gender,
-                salary: salary,
-                city: city,
-                positionId: selectedPositionId // Sử dụng selectedPosition ở đây
-            }
-            console.log(employee);
-            postEmployee(employee).then((response) => {
-                // console.log(response.data);
-                navigartor('/employee')
+                first_name,
+                last_name,
+                phone_number,
+                gender,
+                salary,
+                positionId: selectedPositionId,
+                address: {
+                    province: selectedProvince,
+                    district: selectedDistrict,
+                    ward: selectedWard,
+                }
+            };
+            postEmployee(employee).then(() => {
+                navigartor('/employee');
             });
         }
-    }
+    };
 
-    function validateForm() {
+    const validateForm = () => {
         let valid = true;
-        const errorsCopy = { ...errors }
+        const errorsCopy = { ...errors };
 
         if (first_name.trim()) {
             errorsCopy.first_name = '';
@@ -116,131 +161,164 @@ const EmployeesCreate = () => {
             valid = false;
         }
 
-        if (city.trim()) {
-            errorsCopy.city = '';
-        } else {
-            errorsCopy.city = 'Không được trống thành phố';
-            valid = false;
-        }
-
-        setErros(errorsCopy);
+        setErrors(errorsCopy);
         return valid;
-    }
+    };
+
     const pageTitle = () => {
-        if (id) {
-            return <h2 className='text-center'>Sửa nhân viên</h2>;
-        } else {
-            return <h2 className='text-center'>Thêm nhân viên</h2>;
-        }
+        return id ? <h2 className='text-center'>Sửa nhân viên</h2> : <h2 className='text-center'>Thêm nhân viên</h2>;
     };
 
     return (
-        <div>
-            <div className='container'>
-                <div className='card col-md-8 offset-md-2 offset-md-2'>
-                    {pageTitle()}
-                    <div className='card-body'>
-                        <form action="">
-                            <div className='form-group mb-2'>
-                                <label className='form-label'> Tên </label>
+        <div className='container'>
+            <div className='card col-md-8 offset-md-2'>
+                {pageTitle()}
+                <div className='card-body'>
+                    <form onSubmit={saveEmployee}>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'> Tên </label>
+                            <input
+                                type="text"
+                                placeholder='Nhập tên'
+                                value={first_name}
+                                className={`form-control ${errors.first_name ? 'is-invalid' : ''}`}
+                                onChange={(e) => setFirst_name(e.target.value)}
+                            />
+                            {errors.first_name && <div className='invalid-feedback'>{errors.first_name}</div>}
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Tên Đệm</label>
+                            <input type="text" placeholder='Nhập tên đệm'
+                                value={last_name}
+                                className={`form-control ${errors.last_name ? 'is-invalid' : ''}`}
+                                onChange={(e) => setLast_name(e.target.value)} />
+                            {errors.last_name && <div className='invalid-feedback'>{errors.last_name}</div>}
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Sđt</label>
+                            <input type="text" placeholder='Nhập số điện thoại'
+                                value={phone_number} className={`form-control ${errors.phone_number ? 'is-invalid' : ''}`}
+                                onChange={(e) => setPhone_number(e.target.value)} />
+                            {errors.phone_number && <div className='invalid-feedback'>{errors.phone_number}</div>}
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Giới Tính</label>
+                            <div className='form-check form-check-inline'>
                                 <input
-                                    type="text"
-                                    placeholder='Nhập tên'
-                                    name='first_name'
-                                    value={first_name}
-                                    className={`form-control ${errors.first_name ? 'is-invalid' : ''}`}
-                                    onChange={(e) => setFirst_name(e.target.value)}
+                                    name='gender'
+                                    className='form-check-input'
+                                    type='radio'
+                                    id='MALE'
+                                    checked={gender === 'MALE'}
+                                    onChange={() => setGender('MALE')}
                                 />
-                                {errors.first_name && <div className='invalid-feedback'>{errors.first_name}</div>}
+                                <label className="form-check-label" htmlFor="MALE">Nam</label>
                             </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Tên Đệm</label>
-                                <input type="text" placeholder='nhập tên đệm' name='last_name'
-                                    value={last_name}
-                                    className={`form-control ${errors.last_name ? 'is-invalid' : ''}`} onChange={(e) => setLast_name(e.target.value)} />
-                                {errors.last_name && <div className='invalid-feedback'>{errors.last_name}</div>}
+                            <div className='form-check form-check-inline'>
+                                <input
+                                    name='gender'
+                                    className='form-check-input'
+                                    type='radio'
+                                    id='FEMALE'
+                                    checked={gender === 'FEMALE'}
+                                    onChange={() => setGender('FEMALE')}
+                                />
+                                <label className="form-check-label" htmlFor="FEMALE">Nữ</label>
                             </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Sđt</label>
-                                <input type="text" placeholder='nhập số điện thoại' name='phone_number'
-                                    value={phone_number} className={`form-control ${errors.phone_number ? 'is-invalid' : ''}`} onChange={(e) => setPhone_number(e.target.value)} />
-                                {errors.phone_number && <div className='invalid-feedback'>{errors.phone_number}</div>}
+                            <div className='form-check form-check-inline'>
+                                <input
+                                    name='gender'
+                                    className='form-check-input'
+                                    type='radio'
+                                    id='OTHER'
+                                    checked={gender === 'OTHER'}
+                                    onChange={() => setGender('OTHER')}
+                                />
+                                <label className="form-check-label" htmlFor="OTHER">Khác</label>
                             </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Giới Tính</label>
+                        </div>
+                        <div className='form-group mb-2'>
+                            <label className='form-label'>Lương</label>
+                            <input type="text" placeholder='Nhập lương'
+                                value={salary} className={`form-control ${errors.salary ? 'is-invalid' : ''}`}
+                                onChange={(e) => setSalary(e.target.value)} />
+                            {errors.salary && <div className='invalid-feedback'>{errors.salary}</div>}
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="position">Chức vụ</label>
+                            <select
+                                className="form-control"
+                                value={selectedPositionId}
+                                onChange={(e) => setSelectedPositionId(e.target.value)}
+                            >
+                                <option value="">--Chọn chức vụ--</option>
+                                {positionId.map((position) => (
+                                    <option key={position.id} value={position.id}>
+                                        {position.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='MALE'
-                                        checked={gender === 'MALE'} // Kiểm tra xem gender có phải là 'MALE' không
-                                        onChange={() => setGender('MALE')} // Cập nhật gender khi chọn 'MALE'
-                                    />
-                                    <label className="form-check-label" htmlFor="MALE">Nam</label>
-                                </div>
+                        <div className="form-group">
+                            <label htmlFor="province">Tỉnh/Thành phố</label>
+                            <select
+                                id="province"
+                                className="form-control"
+                                value={selectedProvince}
+                                onChange={handleProvinceChange}
+                            >
+                                <option value="">Chọn Tỉnh/Thành Phố</option>
+                                {provinces.map((province) => (
+                                    <option key={province.ProvinceID} value={province.ProvinceID}>
+                                        {province.ProvinceName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='FEMALE'
-                                        checked={gender === 'FEMALE'} // Kiểm tra xem gender có phải là 'FEMALE' không
-                                        onChange={() => setGender('FEMALE')} // Cập nhật gender khi chọn 'FEMALE'
-                                    />
-                                    <label className="form-check-label" htmlFor="FEMALE">Nữ</label>
-                                </div>
+                        <div className="form-group">
+                            <label htmlFor="district">Quận/Huyện</label>
+                            <select
+                                id="district"
+                                className="form-control"
+                                value={selectedDistrict}
+                                onChange={handleDistrictChange}
+                            >
+                                <option value="">--Chọn quận/huyện--</option>
+                                {districts.map((district) => (
+                                    <option key={district.DistrictID} value={district.DistrictID}>
+                                        {district.DistrictName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='OTHER'
-                                        checked={gender === 'OTHER'} // Kiểm tra xem gender có phải là 'OTHER' không
-                                        onChange={() => setGender('OTHER')} // Cập nhật gender khi chọn 'OTHER'
-                                    />
-                                    <label className="form-check-label" htmlFor="OTHER">Khác</label>
-                                </div>
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="ward">Xã/Phường</label>
+                            <select
+                                id="ward"
+                                className="form-control"
+                                value={selectedWard}
+                                onChange={(e) => setSelectedWard(e.target.value)}
+                            >
+                                <option value="">Chọn Xã/Phường</option>
+                                {wards.map((ward) => (
+                                    <option key={ward.WardCode} value={ward.WardCode}>
+                                        {ward.WardName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Lương</label>
-                                <input type="text" placeholder='nhập lương' name='salary'
-                                    value={salary} className={`form-control ${errors.salary ? 'is-invalid' : ''}`} onChange={(e) => setSalary(e.target.value)} />
-                                {errors.salary && <div className='invalid-feedback'>{errors.salary}</div>}
-                            </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Địa chỉ</label>
-                                <input type="text" placeholder='nhập địa chỉ' name='employee_address'
-                                    value={city} className={`form-control ${errors.city ? 'is-invalid' : ''}`} onChange={(e) => setCity(e.target.value)} />
-                                {errors.city && <div className='invalid-feedback'>{errors.city}</div>}
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="position">Chức vụ</label>
-                                <select
-                                    className="form-control"
-                                    id="position"
-                                    value={selectedPositionId} // Giá trị của combobox
-                                    onChange={(e) => setSelectedPositionId(e.target.value)}
-                                >
-                                    <option value="">Chọn chức vụ</option>
-                                    {positionId.map((pos) => (
-                                        <option key={pos.id} value={pos.id}>{pos.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <button className='btn btn-primary mt-3 ' onClick={saveEmployee}>Submit</button>
-                        </form>
-                    </div>
+                        <button type="submit" className='btn btn-primary'>
+                            {id ? 'Cập nhật' : 'Thêm mới'}
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-
-export default EmployeesCreate
+export default EmployeeForm;

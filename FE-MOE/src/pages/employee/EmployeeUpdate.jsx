@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { getEmployee, putEmployee, getAllPositions } from "~/apis/employeeApi";
+import { getAllProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from '~/apis/addressEmployeeApi';
 import { useNavigate, useParams } from 'react-router-dom'
 
 const EmployeesUpdate = () => {
     const [data, setData] = useState(null);
-
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
     const [first_name, setFirst_name] = useState('');
     const [last_name, setLast_name] = useState('');
     const [phone_number, setPhone_number] = useState('');
     const [gender, setGender] = useState('');
     //    const[date_of_birth,setDate_of_birth] = useState('')
     const [salary, setSalary] = useState('');
-    const [city, setCity] = useState('');
     const [positionId, setPositionId] = useState([]);
     const [selectedPositionId, setSelectedPositionId] = useState('');
     const navigartor = useNavigate();
@@ -22,12 +27,52 @@ const EmployeesUpdate = () => {
         last_name: '',
         phone_number: '',
         salary: '',
-        city: '',
         positionId: ''
     })
+    const fetchProvinces = async () => {
+        try {
+            const data = await getAllProvinces();
+            setProvinces(data);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            toast.error('Không thể tải tỉnh/thành phố. Vui lòng thử lại sau.');
+        }
+    };
+    const handleProvinceChange = async (event) => {
+        const provinceId = event.target.value;
+        setSelectedProvince(provinceId);
+        setSelectedDistrict('');
+        setWards([]);
 
+        if (provinceId) {
+            try {
+                const data = await getDistrictsByProvinceId(provinceId);
+                setDistricts(data);
+            } catch (error) {
+                console.error('Error fetching districts:', error);
+                toast.error('Không thể tải quận/huyện. Vui lòng thử lại sau.');
+            }
+        }
+    };
+
+    const handleDistrictChange = async (event) => {
+        const districtId = event.target.value;
+        setSelectedDistrict(districtId);
+        setWards([]);
+
+        if (districtId) {
+            try {
+                const data = await getWardsByDistrictId(districtId);
+                setWards(data);
+            } catch (error) {
+                console.error('Error fetching wards:', error);
+                toast.error('Không thể tải xã/phường. Vui lòng thử lại sau.');
+            }
+        }
+    };
     useEffect(() => {
         handleSetPositions();
+        fetchProvinces();
     }, []);
 
     const handleSetPositions = async () => {
@@ -94,48 +139,43 @@ const EmployeesUpdate = () => {
         
     }
 
-    // function validateForm() {
-    //     let valid = true;
-    //     const errorsCopy = { ...errors }
+    function validateForm() {
+        let valid = true;
+        const errorsCopy = { ...errors }
 
-    //     if (first_name.trim()) {
-    //         errorsCopy.first_name = '';
-    //     } else {
-    //         errorsCopy.first_name = 'Không được trống tên';
-    //         valid = false;
-    //     }
+        if (first_name.trim()) {
+            errorsCopy.first_name = '';
+        } else {
+            errorsCopy.first_name = 'Không được trống tên';
+            valid = false;
+        }
 
-    //     if (last_name.trim()) {
-    //         errorsCopy.last_name = '';
-    //     } else {
-    //         errorsCopy.last_name = 'Không được trống tên đệm';
-    //         valid = false;
-    //     }
+        if (last_name.trim()) {
+            errorsCopy.last_name = '';
+        } else {
+            errorsCopy.last_name = 'Không được trống tên đệm';
+            valid = false;
+        }
 
-    //     if (phone_number.trim()) {
-    //         errorsCopy.phone_number = '';
-    //     } else {
-    //         errorsCopy.phone_number = 'Không được trống số điện thoại';
-    //         valid = false;
-    //     }
+        if (phone_number.trim()) {
+            errorsCopy.phone_number = '';
+        } else {
+            errorsCopy.phone_number = 'Không được trống số điện thoại';
+            valid = false;
+        }
 
-    //     if (salary.trim()) {
-    //         errorsCopy.salary = '';
-    //     } else {
-    //         errorsCopy.salary = 'Không được trống lương';
-    //         valid = false;
-    //     }
+        if (salary.trim()) {
+            errorsCopy.salary = '';
+        } else {
+            errorsCopy.salary = 'Không được trống lương';
+            valid = false;
+        }
 
-    //     if (city.trim()) {
-    //         errorsCopy.city = '';
-    //     } else {
-    //         errorsCopy.city = 'Không được trống thành phố';
-    //         valid = false;
-    //     }
 
-    //     setErros(errorsCopy);
-    //     return valid;
-    // }
+
+        setErros(errorsCopy);
+        return valid;
+    }
     const pageTitle = () => {
         if (id) {
             return <h2 className='text-center'>Sửa nhân viên</h2>;
@@ -222,12 +262,56 @@ const EmployeesUpdate = () => {
                                     value={salary} className={`form-control ${errors.salary ? 'is-invalid' : ''}`} onChange={(e) => setSalary(e.target.value)} />
                                 {/* {errors.salary && <div className='invalid-feedback'>{errors.salary}</div>} */}
                             </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Địa chỉ</label>
-                                <input type="text" placeholder='nhập địa chỉ' name='employee_address'
-                                    value={city} className={`form-control ${errors.city ? 'is-invalid' : ''}`} onChange={(e) => setCity(e.target.value)} />
-                                {/* {errors.city && <div className='invalid-feedback'>{errors.city}</div>} */}
-                            </div>
+                            <div className="form-group">
+                            <label htmlFor="province">Tỉnh/Thành phố</label>
+                            <select
+                                id="province"
+                                className="form-control"
+                                value={selectedProvince}
+                                onChange={handleProvinceChange}
+                            >
+                                <option value="">Chọn Tỉnh/Thành Phố</option>
+                                {provinces.map((province) => (
+                                    <option key={province.ProvinceID} value={province.ProvinceID}>
+                                        {province.ProvinceName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="district">Quận/Huyện</label>
+                            <select
+                                id="district"
+                                className="form-control"
+                                value={selectedDistrict}
+                                onChange={handleDistrictChange}
+                            >
+                                <option value="">--Chọn quận/huyện--</option>
+                                {districts.map((district) => (
+                                    <option key={district.DistrictID} value={district.DistrictID}>
+                                        {district.DistrictName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="ward">Xã/Phường</label>
+                            <select
+                                id="ward"
+                                className="form-control"
+                                value={selectedWard}
+                                onChange={(e) => setSelectedWard(e.target.value)}
+                            >
+                                <option value="">Chọn Xã/Phường</option>
+                                {wards.map((ward) => (
+                                    <option key={ward.WardCode} value={ward.WardCode}>
+                                        {ward.WardName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                             <div className="form-group">
                                 <label htmlFor="position">Chức vụ</label>
                                 <select

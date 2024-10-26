@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import { Switch } from "@mui/material";
 import { StoreAttributeDetail } from "./StoreAttributeDetail";
+import { toast } from "react-toastify";
 
 export const TableDetails = (props) => {
   const [details, setDetails] = useState();
@@ -78,7 +79,7 @@ export const TableDetails = (props) => {
     );
 
     if (hasErrors) {
-      console.log("Cannot save: there are errors in the input.");
+      toast.error("Dữ liệu không hợp lệ!");
       return;
     }
 
@@ -108,7 +109,13 @@ export const TableDetails = (props) => {
           ...prev,
           [id]: { ...prev[id], price: "Price must be greater than 100" },
         }));
-      } else {
+      } else if (parsedValue > 90000000){
+        setInputErrors((prev) => ({
+          ...prev,
+          [id]: { ...prev[id], price: "Invalid data" },
+        }));
+      }
+      else {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], price: null },
@@ -120,7 +127,13 @@ export const TableDetails = (props) => {
           ...prev,
           [id]: { ...prev[id], quantity: "Quantity cannot be less than 0" },
         }));
-      } else {
+      }else if (parsedValue > 10000){
+        setInputErrors((prev) => ({
+          ...prev,
+          [id]: { ...prev[id], quantity: "Invalid data" },
+        }));
+      }
+       else {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], quantity: null },
@@ -148,7 +161,7 @@ export const TableDetails = (props) => {
         </Grid>
         <Grid size={6} container spacing={2}>
           <Grid size={6}>
-            <StoreAttributeDetail />
+            <StoreAttributeDetail getProduct={props.getProduct} />
           </Grid>
           {hasChanged && (
             <Grid size={6}>

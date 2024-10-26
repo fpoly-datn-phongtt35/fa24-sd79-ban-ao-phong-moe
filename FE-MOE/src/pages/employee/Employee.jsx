@@ -167,32 +167,34 @@ export const Employee = () => {
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
                                     <TableCell>{emp.gender || 'N/A'}</TableCell>
                                     <TableCell>
-                                        {typeof emp.salaries === 'object' ? 
-                                            (emp.salaries.amount || 'N/A') : 
-                                            (emp.salaries || 'N/A')}
+                                        {typeof emp.salaries === 'object' ? (emp.salaries.amount || 'N/A') : (emp.salaries || 'N/A')}
                                     </TableCell>
                                     <TableCell>
-                                        {typeof emp.employee_address === 'object' ? 
-                                            `${emp.employee_address.city}` : 
-                                            (emp.employee_address || 'N/A')}
+                                        {emp.employee_address && typeof emp.employee_address === 'object' ? (
+                                            <div>
+                                                <div>{emp.employee_address.province || 'N/A'}</div>
+                                                <div>{emp.employee_address.district || 'N/A'}</div>
+                                                <div>{emp.employee_address.ward || 'N/A'}</div>
+                                            </div>
+                                        ) : (
+                                            'N/A'
+                                        )}
                                     </TableCell>
                                     <TableCell>
-                                        {typeof emp.position === 'object' ? 
-                                            (emp.position.name || 'N/A') : 
-                                            (emp.position || 'N/A')}
+                                        {typeof emp.position === 'object' ? (emp.position.name || 'N/A') : (emp.position || 'N/A')}
                                     </TableCell>
                                     <TableCell>
-                                        <Button 
-                                            variant="contained" 
-                                            color="error" 
-                                            onClick={() => removeEmployee(emp.id)} 
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => removeEmployee(emp.id)}
                                             style={{ marginRight: '10px' }}
                                         >
                                             Xóa
                                         </Button>
-                                        <Button 
-                                            variant="contained" 
-                                            color="info" 
+                                        <Button
+                                            variant="contained"
+                                            color="info"
                                             onClick={() => updateEmployee(emp.id)}
                                         >
                                             Sửa

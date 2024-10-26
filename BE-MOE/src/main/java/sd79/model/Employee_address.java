@@ -15,8 +15,8 @@ public class Employee_address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "street_name")
-    private String street_name;
+//    @Column(name = "street_name")
+//    private String street_name;
 
     @Column(name = "ward")
     private String ward;
@@ -24,10 +24,8 @@ public class Employee_address {
     @Column(name = "district")
     private String district;
 
-    @Column(name = "city")
-    private String city;
+    @Column(name = "province")
+    private String province;
 
-    @Column(name = "country")
-    private String country;
 
 }

@@ -20,7 +20,13 @@ export const deleteDiscount = async (id) => {
   return await authorizedAxiosInstance.delete(`${API_ROOT}/promotion/delete/${id}`);
 };
 
-export const putDiscount = async (promotionData, id) => {
+export const putDiscount = async (id, promotionData) => {
   return await authorizedAxiosInstance.put(`${API_ROOT}/promotion/update/${id}`, promotionData);
+};
+
+export const detailDiscount = async (id) => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/promotion/detail/${id}`)
+    .then((res) => res.data)
 };
 

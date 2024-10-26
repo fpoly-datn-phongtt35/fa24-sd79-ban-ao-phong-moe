@@ -1,0 +1,50 @@
+:root {
+  font-family: 'Roboto', sans-serif;  
+} 
+
+body {
+  background-color: #f1efef;
+  margin: 0;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  overflow-y: auto;
+  background-color: #fbfbfb;
+}
+
+.main-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fbfbfb;
+  padding: 0.2rem;
+  width: 100%;
+  z-index: 1000;
+  position: sticky;
+  top: 0;
+  height: 70px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 1px;
+  background-color: #fbfbfb;
+  padding: 20px;
+}

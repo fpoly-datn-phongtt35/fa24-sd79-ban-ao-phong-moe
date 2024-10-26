@@ -26,14 +26,14 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public List<PromotionResponse> getAllPromotion() { //tra ra danh dach phieu giam gia
-        return promotionRepo.findAll().stream().map(this::convertCPromotionResponse).toList();
+        return promotionRepo.findAll().stream().map(this::convertCPromotionResponse).toList().reversed();
     }
 
-//    @Override
-//    public PromotionResponse getPromotionId(Integer id) { // tim kiem id phieu giam gia
-//        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
-//        return convertCPromotionResponse(promotion);
-//    }
+    @Override
+    public PromotionResponse getPromotionId(Integer id) { // tim kiem id phieu giam gia
+        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        return convertCPromotionResponse(promotion);
+    }
 
     @Transactional
     @Override

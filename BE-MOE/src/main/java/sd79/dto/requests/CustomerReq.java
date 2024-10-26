@@ -33,11 +33,27 @@ public class CustomerReq {
     private Date dateOfBirth;
 
 
-    @NotEmpty(message = "Image cannot be empty")
+//    @NotEmpty(message = "Image cannot be empty")
     private String image;
 
-
-    @NotEmpty(message = "City cannot be empty")
+//    @NotEmpty(message = "City cannot be empty")
     private String city;
 
+//    @NotEmpty(message = "District cannot be empty")
+    private String district;
+
+//    @NotEmpty(message = "Ward cannot be empty")
+    private String ward;
+
+//    @NotEmpty(message = "StreetName cannot be empty")
+    private String streetName;
+
+    @NotEmpty(message = "Email cannot be empty")
+    private String email;
+
+    @NotEmpty(message = "UserName cannot be empty")
+    private String username;
+
+    @NotEmpty(message = "Password cannot be empty")
+    private String password;
 }

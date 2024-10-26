@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sd79.model.Employee_address;
 
 
 import java.util.Date;
@@ -29,7 +30,8 @@ public class EmployeeResponse {
 
     private Integer salaries;
 
-    private String employee_address;
+//    private String employee_address;
+    private Employee_address employee_address;
 
     private String position;
 }

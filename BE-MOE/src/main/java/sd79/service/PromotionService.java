@@ -14,9 +14,8 @@ import java.util.List;
 
 public interface PromotionService {
     List<PromotionResponse> getAllPromotion();
-//    PromotionResponse getPromotionId(Integer id);
+    PromotionResponse getPromotionId(Integer id);
     Integer storePromotion(PromotionRequest promotionRequest);
-
     Integer updatePromotion(PromotionRequest req, Integer id);
     void isDeletePromotion(Integer id);
     Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable);

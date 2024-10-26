@@ -21,10 +21,13 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
+import { speacker } from "~/utils/speak";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Product = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("ALL");
   const [category, setCategory] = useState("");
@@ -38,7 +41,17 @@ export const Product = () => {
 
   useEffect(() => {
     handleSetProducts();
-  }, [currentPage, keyword, status, category, brand, material, origin]);
+  }, [
+    currentPage,
+    pageSize,
+    keyword,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+    setCurrentPage
+  ]);
 
   useEffect(() => {
     fetchAttributes();
@@ -54,7 +67,16 @@ export const Product = () => {
   };
 
   const handleSetProducts = async () => {
-    const res = await fetchAllProducts(currentPage, keyword, status, category, brand, material, origin);
+    const res = await fetchAllProducts(
+      currentPage,
+      pageSize,
+      keyword,
+      status,
+      category,
+      brand,
+      material,
+      origin
+    );
     setProducts(res.data);
   };
 
@@ -65,6 +87,10 @@ export const Product = () => {
 
   const onChangeSearch = (e) => {
     debouncedSearch(e.target.value);
+  };
+
+  const onChangeSearchVoice = (value) => {
+    debouncedSearch(value);
   };
 
   const onChangeStatus = (e) => {
@@ -89,6 +115,10 @@ export const Product = () => {
     setOrigin(e);
   };
 
+  const handleSetPageSize = (value) => {
+    setCurrentPage(1);
+    setPageSize(value);
+  };
   const clearFilter = () => {
     setCurrentPage(1);
     setKeyword("");
@@ -97,20 +127,12 @@ export const Product = () => {
     setBrand("");
     setMaterial("");
     setOrigin("");
-  }
+  };
 
   const onMoveToBin = (id) => {
-    swal({
-      title: "Xác nhận",
-      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleSetProducts();
-        moveToBin(id);
-      }
+    moveToBin(id).then(() => {
+      setCurrentPage(1);
+      handleSetProducts();
     });
   };
 
@@ -132,11 +154,30 @@ export const Product = () => {
     );
   }
 
+  const method = {
+    onChangeSearchVoice,
+    btnAdd: true,
+    onChangeSearch,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+    onChangeStatus,
+    onChangeCategory,
+    onChangeBrand,
+    onChangeMaterial,
+    onChangeOrigin,
+    clearFilter,
+    attributes,
+  };
+
   return (
     <Container
       maxWidth="max-width"
       sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
+      <MoeAlert />
       <Grid
         container
         spacing={2}
@@ -160,27 +201,14 @@ export const Product = () => {
         </Breadcrumbs>
       </Grid>
 
-      <Filter
-        onChangeSearch={onChangeSearch}
-        keyword={keyword}
-        status={status}
-        category={category}
-        brand={brand}
-        material={material}
-        attributes={attributes}
-        origin={origin}
-        onChangeStatus={onChangeStatus}
-        onChangeCategory={onChangeCategory}
-        onChangeBrand={onChangeBrand}
-        onChangeMaterial={onChangeMaterial}
-        onChangeOrigin={onChangeOrigin}
-        clearFilter={clearFilter}
-      />
+      <Filter method={method} />
 
       <TableData
+        restore={false}
         data={products.content}
         onMoveToBin={onMoveToBin}
         onSetStatus={onSetStatus}
+        onSetPageSize={handleSetPageSize}
       />
       <Box
         display="flex"
@@ -189,7 +217,7 @@ export const Product = () => {
         padding={3}
       >
         {products.totalPages > 1 && (
-          <Stack spacing={2}>
+          <Stack>
             <Pagination
               count={products.totalPages}
               page={currentPage}

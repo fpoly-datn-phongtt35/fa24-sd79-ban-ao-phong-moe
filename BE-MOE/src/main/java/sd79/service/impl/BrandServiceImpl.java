@@ -1,11 +1,13 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.productRequests.BrandRequest;
 import sd79.dto.response.productResponse.BrandResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.NotAllowedDeleteEntityException;
 import sd79.model.Brand;
 import sd79.model.User;
 import sd79.repositories.products.BrandRepository;
@@ -14,6 +16,7 @@ import sd79.repositories.auth.UserRepository;
 import sd79.service.BrandService;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +29,16 @@ public class BrandServiceImpl implements BrandService {
     private final UserRepository userRepository;
 
     @Override
-    public List<BrandResponse> getAllBrands() {
-        return this.brandRepository.findByIsDeletedFalse().stream().map(this::convertToBrandResponse).toList();
+    public List<BrandResponse> getAllBrands(String keyword) {
+        return this.brandRepository.findBrandsByNameAndIsDeletedIsFalse(keyword).stream().map(this::convertToBrandResponse).toList();
     }
 
     @Transactional
     @Override
     public Integer storeBrand(BrandRequest req) {
+        if (this.brandRepository.existsBrandByName(req.getName().trim())) {
+            throw new EntityExistsException("Thương hiệu " + req.getName() + " đã tồn tại");
+        }
         User user = userRepository.findById(req.getUserId()).orElse(null);
         Brand brand = new Brand();
         brand.setName(req.getName());
@@ -45,6 +51,11 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public void updateBrand(BrandRequest req, Integer id) {
         Brand brand = this.getBrandById(id);
+        if (!Objects.equals(brand.getName(), req.getName().trim())) {
+            if (this.brandRepository.existsBrandByName(req.getName().trim())) {
+                throw new EntityExistsException("Thương hiệu " + req.getName() + " đã tồn tại");
+            }
+        }
         brand.setName(req.getName());
         brand.setUpdatedBy(this.getUserById(req.getUserId()));
         this.brandRepository.save(brand);
@@ -53,8 +64,11 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public void isDeleteBrand(Integer id) {
         Brand brand = this.getBrandById(id);
-        brand.setIsDeleted(true);
-        this.brandRepository.save(brand);
+        try {
+            this.brandRepository.delete(brand);
+        } catch (Exception e) {
+            throw new NotAllowedDeleteEntityException("Không thể xóa thương hiệu này!");
+        }
     }
 
     private Brand getBrandById(Integer id) {
@@ -69,7 +83,7 @@ public class BrandServiceImpl implements BrandService {
         return BrandResponse.builder()
                 .id(brand.getId())
                 .name(brand.getName())
-                .productCount(this.productRepository.countByCategory(brand.getId()))
+                .productCount(this.productRepository.countByBrand(brand.getId()))
                 .createdBy("Admin")
                 .createdAt(brand.getCreateAt())
                 .updatedAt(brand.getUpdateAt())

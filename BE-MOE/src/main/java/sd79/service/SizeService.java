@@ -6,7 +6,7 @@ import sd79.dto.response.productResponse.SizeResponse;
 import java.util.List;
 
 public interface SizeService {
-    List<SizeResponse> getAllSizes();
+    List<SizeResponse> getAllSizes(String keyword);
 
     int storeSize(SizeRequest req);
 
