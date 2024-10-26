@@ -33,6 +33,7 @@ import FooterClient from "./components/layout/FooterClient";
 import AboutUs from "./pages/clients/AboutUs";
 import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
+import LocationSelector from "./pages/other/LocationSelector";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -118,6 +119,7 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>
