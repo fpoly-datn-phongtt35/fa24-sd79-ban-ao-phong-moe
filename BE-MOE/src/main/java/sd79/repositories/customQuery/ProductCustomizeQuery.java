@@ -13,12 +13,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
+import sd79.dto.response.clients.product.BestSellingProductResponse;
 import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 import sd79.model.Product;
 import sd79.model.ProductImage;
 import sd79.repositories.products.ProductDetailRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -271,6 +273,47 @@ public class ProductCustomizeQuery {
                 .totalElements(page.getTotalElements()) // Not required
                 .content(data)
                 .build();
+    }
+
+    public List<BestSellingProductResponse> getExploreOurProducts(Integer page) {
+        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
+
+        query.append(" ORDER BY prd.updateAt DESC");
+        TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
+        execute.setFirstResult((page -  1) * 10);
+        execute.setMaxResults(10);
+
+        return execute.getResultList().stream()
+                .map(s -> BestSellingProductResponse.builder()
+                        .productId(s.getId())
+                        .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                        .name(s.getName())
+                        .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                        .discountPrice(s.getProductDetails().getFirst().getRetailPrice().multiply(BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(0.50))))
+                        .rate(4)
+                        .rateCount(104)
+                        .build()
+                ).toList();
+    }
+
+    public List<BestSellingProductResponse> getBestSellingProducts() {
+        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.isDeleted = false");
+
+        query.append(" ORDER BY prd.updateAt DESC");
+        TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
+        execute.setMaxResults(6);
+
+        return execute.getResultList().stream()
+                .map(s -> BestSellingProductResponse.builder()
+                        .productId(s.getId())
+                        .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                        .name(s.getName())
+                        .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                        .discountPrice(s.getProductDetails().getFirst().getRetailPrice().multiply(BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(0.50))))
+                        .rate(4)
+                        .rateCount(104)
+                        .build()
+                ).toList();
     }
 
     private ProductResponse convertToProductResponse(Product product) {

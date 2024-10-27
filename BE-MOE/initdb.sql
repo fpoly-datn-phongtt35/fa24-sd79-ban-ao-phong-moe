@@ -227,6 +227,48 @@ CREATE TABLE product_promotion(
     promotion_price DECIMAL(10, 2)
 );
 
+-- bill
+CREATE TABLE bill_status (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(55),
+  description TEXT
+);
+
+CREATE TABLE bill (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  customer_id BIGINT,
+  coupon_id BIGINT,
+  bill_status_id INT,
+  shipping_cost DECIMAL(15, 0),
+  total_amount DECIMAL(15, 0),
+  barcode VARCHAR(255),
+  qr_code VARCHAR(255),
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted BIT DEFAULT 0,
+  FOREIGN KEY (customer_id) REFERENCES customers(id),
+  FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
+);
+
+-- tổng tiền của sản phẩm = số lượng * (giá gốc - giá giảm)
+-- giá giảm = giá gốc - (product_promotion_id.promotion_id.promotion_value)
+CREATE TABLE bill_detail (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  product_detail_id BIGINT,
+  bill_id BIGINT,
+  quantity INT, -- số lượng 
+  retail_price DECIMAL(15, 0),  -- giá gốc
+  discount_amount DECIMAL(15, 0), -- giá giảm
+  total_amount_product DECIMAL(15, 0), -- tổng tiền của sản phẩm
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
+  FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
+);
+
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
 
@@ -270,10 +312,15 @@ VALUES
 ('USER', NOW(), NOW()),
 ('GUEST', NOW(), NOW());
 
+-- User System
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES
     ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
-    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0),
+    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0);
+
+-- User customer
+INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
+VALUES
     ('user', 'user@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
     ('vantan', 'vantan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
     ('thibich', 'thibich@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
@@ -617,48 +664,31 @@ VALUES
 
 INSERT INTO customer_address (street_name, ward, district, city)
 VALUES
-    ('Số 1 Đường Thanh Niên', 'Phường Trúc Bạch', 'Quận Ba Đình', 'Hà Nội'),
-    ('Số 2 Đường Kim Mã', 'Phường Ngọc Khánh', 'Quận Ba Đình', 'Hà Nội'),
-    ('Số 3 Đường Hoàng Cầu', 'Phường Ô Chợ Dừa', 'Quận Đống Đa', 'Hà Nội'),
-    ('Số 4 Đường Lê Văn Lương', 'Phường Nhân Chính', 'Quận Thanh Xuân', 'Hà Nội'),
-    ('Số 5 Đường Nguyễn Xiển', 'Phường Đại Kim', 'Quận Hoàng Mai', 'Hà Nội'),
-    ('Số 6 Đường Trần Duy Hưng', 'Phường Trung Hoà', 'Quận Cầu Giấy', 'Hà Nội'),
-    ('Số 7 Đường Giải Phóng', 'Phường Phương Liệt', 'Quận Hoàng Mai', 'Hà Nội'),
-    ('Số 8 Đường Nguyễn Trãi', 'Phường Thanh Xuân Bắc', 'Quận Thanh Xuân', 'Hà Nội'),
-    ('Số 9 Đường Láng', 'Phường Láng Hạ', 'Quận Đống Đa', 'Hà Nội'),
-    ('Số 10 Đường Nguyễn Chí Thanh', 'Phường Láng Thượng', 'Quận Đống Đa', 'Hà Nội'),
-    ('Số 11 Đường Phạm Văn Đồng', 'Phường Cổ Nhuế', 'Quận Bắc Từ Liêm', 'Hà Nội'),
-    ('Số 12 Đường Lạc Long Quân', 'Phường Xuân La', 'Quận Tây Hồ', 'Hà Nội'),
-    ('Số 13 Đường Thụy Khuê', 'Phường Thụy Khuê', 'Quận Tây Hồ', 'Hà Nội'),
-    ('Số 14 Đường Xuân Thủy', 'Phường Dịch Vọng Hậu', 'Quận Cầu Giấy', 'Hà Nội'),
-    ('Số 15 Đường Tôn Đức Thắng', 'Phường Hàng Bột', 'Quận Đống Đa', 'Hà Nội'),
-    ('Số 16 Đường Chùa Bộc', 'Phường Quang Trung', 'Quận Đống Đa', 'Hà Nội'),
-    ('Số 17 Đường Trần Khát Chân', 'Phường Phố Huế', 'Quận Hai Bà Trưng', 'Hà Nội'),
-    ('Số 18 Đường Bạch Mai', 'Phường Bạch Mai', 'Quận Hai Bà Trưng', 'Hà Nội'),
-    ('Số 19 Đường Đại Cồ Việt', 'Phường Lê Đại Hành', 'Quận Hai Bà Trưng', 'Hà Nội'),
-    ('Số 20 Đường Đinh Tiên Hoàng', 'Phường Lý Thái Tổ', 'Quận Hoàn Kiếm', 'Hà Nội');
+    ('81 Trung Kinh', 'Trung Kinh', 'Cau Giay', 'Hà Nội'),
+    ('Lê Duẩn', 'Cửa Nam', 'Hoàn Kiếm', 'Hà Nội'),
+    ('Kim Mã', 'Ngọc Khánh', 'Ba Đình', 'Hà Nội'),
+    ('Nguyễn Trãi', 'Thượng Đình', 'Thanh Xuân', 'Hà Nội'),
+    ('Trần Duy Hưng', 'Trung Hòa', 'Cầu Giấy', 'Hà Nội'),
+    ('Tôn Đức Thắng', 'Hàng Bột', 'Đống Đa', 'Hà Nội'),
+    ('Phạm Văn Đồng', 'Xuân Đỉnh', 'Bắc Từ Liêm', 'Hà Nội'),
+    ('Hoàng Quốc Việt', 'Nghĩa Đô', 'Cầu Giấy', 'Hà Nội'),
+    ('Đội Cấn', 'Cống Vị', 'Ba Đình', 'Hà Nội'),
+    ('Nguyễn Văn Cừ', 'Bồ Đề', 'Long Biên', 'Hà Nội'),
+    ('Lạc Long Quân', 'Xuân La', 'Tây Hồ', 'Hà Nội');
 
-INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, address_id, user_id, created_at, updated_at) VALUES
-('Văn An', 'Nguyễn', '0905123456', 'MALE', '1985-06-15', 'img1.jpg', 1, 1, NOW(), NOW()),
-('Thị Bích', 'Trần', '0912233445', 'FEMALE', '1990-07-12', 'img2.jpg', 2, 2, NOW(), NOW()),
-('Minh Tuấn', 'Lê', '0987654321', 'MALE', '1983-09-24', 'img3.jpg', 3, 3, NOW(), NOW()),
-('Ngọc Hà', 'Phạm', '0915123123', 'FEMALE', '1995-03-05', 'img4.jpg', 4, 1, NOW(), NOW()),
-('Văn Nam', 'Vũ', '0909121212', 'MALE', '1988-11-30', 'img5.jpg', 5, 2, NOW(), NOW()),
-('Quang Hải', 'Đỗ', '0981122334', 'MALE', '1992-04-14', 'img6.jpg', 6, 3, NOW(), NOW()),
-('Thị Mai', 'Hoàng', '0919123432', 'FEMALE', '1997-01-22', 'img7.jpg', 7, 1, NOW(), NOW()),
-('Thanh Tùng', 'Bùi', '0908112233', 'MALE', '1989-08-08', 'img8.jpg', 8, 2, NOW(), NOW()),
-('Văn Đức', 'Ngô', '0917234123', 'MALE', '1991-05-10', 'img9.jpg', 9, 3, NOW(), NOW()),
-('Thị Lan', 'Phan', '0983123212', 'FEMALE', '1987-10-15', 'img10.jpg', 10, 1, NOW(), NOW()),
-('Thị Hương', 'Đinh', '0907123456', 'FEMALE', '1993-02-28', 'img11.jpg', 11, 2, NOW(), NOW()),
-('Thị Hồng', 'Phạm', '0981112234', 'FEMALE', '1986-09-07', 'img12.jpg', 12, 3, NOW(), NOW()),
-('Hữu Hoàng', 'Nguyễn', '0912123234', 'MALE', '1990-12-19', 'img13.jpg', 13, 13, NOW(), NOW()),
-('Văn Long', 'Trần', '0908123456', 'MALE', '1984-07-18', 'img14.jpg', 14, 14, NOW(), NOW()),
-('Thị Yến', 'Lê', '0989123112', 'FEMALE', '1992-10-23', 'img15.jpg', 15, 15, NOW(), NOW()),
-('Văn Hùng', 'Vũ', '0918234231', 'MALE', '1987-11-11', 'img16.jpg', 16, 16, NOW(), NOW()),
-('Thị Thủy', 'Đỗ', '0901123345', 'FEMALE', '1994-05-16', 'img17.jpg', 17, 17, NOW(), NOW()),
-('Minh Châu', 'Hoàng', '0983123445', 'FEMALE', '1996-06-27', 'img18.jpg', 18, 18, NOW(), NOW()),
-('Văn Cường', 'Bùi', '0917123312', 'MALE', '1991-03-03', 'img19.jpg', 19, 19, NOW(), NOW()),
-('Thị Hồng', 'Ngô', '0906123234', 'FEMALE', '1995-09-29', 'img20.jpg', 20, 20, NOW(), NOW());
+INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, address_id, user_id, created_at, updated_at)
+VALUES
+    ('User', 'System', '0123456789', 'Male', '2004-01-12', NULL, 1, 3, NOW(), NOW()),
+    ('Van', 'Tan', '0123456789', 'Male', '1990-05-12', NULL, 2, 4, NOW(), NOW()),
+    ('Thi', 'Bich', '0123456790', 'Female', '1988-07-15', NULL, 11, 5, NOW(), NOW()),
+    ('Minh', 'Tuan', '0123456791', 'Male', '1992-09-20', NULL, 3, 6, NOW(), NOW()),
+    ('Ngo', 'Chaph', '0123456792', 'Female', '1991-12-11', NULL, 4, 7, NOW(), NOW()),
+    ('Van', 'Nam', '0123456793', 'Male', '1993-03-22', NULL, 5, 8, NOW(), NOW()),
+    ('Quang', 'Hai', '0123456794', 'Male', '1987-01-25', NULL, 6, 9, NOW(), NOW()),
+    ('Thi', 'Mai', '0123456795', 'Female', '1995-11-30', NULL, 7, 10, NOW(), NOW()),
+    ('Thanh', 'Tung', '0123456796', 'Male', '1994-08-14', NULL, 8, 11, NOW(), NOW()),
+    ('Van', 'Duc', '0123456797', 'Male', '1989-06-18', NULL, 9, 12, NOW(), NOW()),
+    ('Thi', 'Lan', '0123456798', 'Female', '1997-02-10', NULL, 10, 13, NOW(), NOW());
 
 -- promotions
 INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)
@@ -715,3 +745,30 @@ INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
     (3, 3, 0),  
     (4, 4, 0),  
     (5, 5, 0);  
+    
+-- bill
+INSERT INTO bill_status (name, description) VALUES
+('Đã xác nhận đơn hàng', NULL),
+('Đã bàn giao cho đơn vị vận chuyển', NULL),
+('Đã xác nhận thông tin thanh toán', NULL),
+('Đơn hàng đã được giao thành công', NULL),
+('Đã hủy đơn hàng', NULL),
+('Khác', NULL);
+
+INSERT INTO bill (customer_id, coupon_id, bill_status_id, shipping_cost, total_amount, barcode, qr_code, created_by, updated_by, is_deleted) VALUES
+(1, 1, 1, 30000, 329000, '1234567890', 'QRCODE1', 1, 1, 0),
+(2, 2, 2, 25000, 424000, '2345678901', 'QRCODE2', 2, 2, 0),
+(3, 3, 3, 35000, 229000, '3456789012', 'QRCODE3', 3, 3, 0),
+(4, 4, 4, 20000, 619000, '4567890123', 'QRCODE4', 4, 4, 0),
+(5, 5, 5, 50000, 529000, '5678901234', 'QRCODE5', 5, 5, 0);
+
+INSERT INTO bill_detail (product_detail_id, bill_id, quantity, retail_price, discount_amount, total_amount_product) VALUES
+(1, 1, 2, 299000, 85, 598000), 
+(2, 1, 1, 399000, 100, 399000), 
+(3, 2, 3, 249000, NULL, 747000), 
+(4, 3, 1, 599000, NULL, 599000), 
+(1, 4, 1, 299000, 85, 299000),
+(2, 5, 2, 399000, 100, 798000), 
+(3, 5, 1, 249000, NULL, 249000); 
+
+

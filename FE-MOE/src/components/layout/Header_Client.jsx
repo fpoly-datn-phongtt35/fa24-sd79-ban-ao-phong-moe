@@ -1,24 +1,13 @@
-import React, { useEffect, useState } from "react";
-import {
-  AppBar,
-  IconButton,
-  Menu,
-  MenuItem,
-  Tab,
-  Tabs,
-  Toolbar,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button, Badge, Box } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import logo from "~/assert/MainLogo.jpg";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@mui/joy";
 import { handleLogoutAPI } from "~/apis";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [hasAuthenticated, setHasAuthenticated] = useState(false);
   const [isManager, setIsManager] = useState(false);
 
@@ -28,7 +17,6 @@ const Header_Client = () => {
       const roleCookie = document.cookie
         .split("; ")
         .find((row) => row.startsWith("role="));
-
       return roleCookie ? roleCookie.split("=")[1] : "";
     };
     if (accessToken) {
@@ -59,75 +47,52 @@ const Header_Client = () => {
 
   const handleLogout = async () => {
     await handleLogoutAPI();
+    localStorage.removeItem("accessToken"); // Xóa token khi đăng xuất
     navigate("/login");
   };
 
   return (
-    <>
-      <AppBar position="static" className="header_container_client">
-        <Toolbar className="header_toolbar_client">
-          <div className="header_logo_client">
-            <img src={logo} alt="Logo" />
-          </div>
-          <div className="header_search_client">
-            <Input
-              placeholder="Tìm Kiếm Sản Phẩm..."
-              className="search_input_client"
-            />
-            <IconButton
-              type="submit"
-              aria-label="search"
-              className="search_button_client"
-            >
-              <SearchIcon />
-            </IconButton>
-          </div>
-          <div className="header_icons_client">
-            <IconButton className="icon_cart_client">
-              <ShoppingCartIcon />
-            </IconButton>
-            <IconButton
-              className="icon_account_client"
-              onClick={handleMenuClick}
-            >
-              <AccountCircleIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              className="menu_account_client"
-            >
-              <MenuItem onClick={handleMenuClose}>Đang cập nhật!</MenuItem>
-              {isManager && (
-                <MenuItem onClick={() => navigate("/dashboard")}>
-                  Trang quản Lý
-                </MenuItem>
-              )}
-              {hasAuthenticated && (
-                <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
-              )}
-              {!hasAuthenticated && (
-                <MenuItem onClick={singIn}>Đăng nhập</MenuItem>
-              )}
-            </Menu>
-          </div>
-        </Toolbar>
+    <AppBar position="static" style={{ backgroundColor: "#fff", boxShadow: "none", borderBottom: "1px solid #e0e0e0" }}>
+      <Toolbar style={{ display: "flex", justifyContent: "space-between" }}>
+        {/* Logo */}
+        <Typography variant="h6" style={{ fontWeight: "bold", color: "#000", fontSize: "24px" }}>
+          MOE SHOP
+        </Typography>
 
-        {/* Navbar dưới cùng */}
-        {/* <Toolbar className="navbar_client">
-          <Tabs aria-label="nav tabs">
-            <Tab label="Trang Chủ" onClick={() => navigate("/")} />
-            <Tab label="Giới Thiệu" onClick={() => navigate("/")} />
-            <Tab label="Sản Phẩm" onClick={() => navigate("/")} />
-            <Tab label="Cửa Hàng" onClick={() => navigate("/")} />
-            <Tab label="Liên Hệ" onClick={() => navigate("/")} />
-            <Tab label="Tuyển Dụng" onClick={() => navigate("/")} />
-            <Tab label="Tin Tức" onClick={() => navigate("/")} />
-          </Tabs>
-        </Toolbar> */}
-      </AppBar>
-    </>
+        {/* Navigation links */}
+        <Box display="flex" alignItems="center" gap={3}>
+          <Button onClick={() => navigate("/")} style={{ color: "#000", textTransform: "none" }}>Trang chủ</Button>
+          <Button onClick={() => navigate("/#product")} style={{ color: "#000", textTransform: "none" }}>Sản phẩm</Button>
+          <Button onClick={() => navigate("/contact")} style={{ color: "#000", textTransform: "none" }}>Liên hệ</Button>
+          <Button onClick={() => navigate("/about")} style={{ color: "#000", textTransform: "none" }}>Giới thiệu</Button>
+        </Box>
+
+        {/* Icons section */}
+        <Box display="flex" alignItems="center" gap={2}>
+          <IconButton onClick={hasAuthenticated ? handleMenuClick : singIn}>
+            <AccountCircleIcon style={{ color: "#000" }} />
+          </IconButton>
+          <IconButton>
+            <SearchIcon style={{ color: "#000" }} />
+          </IconButton>
+          <IconButton>
+            <Badge badgeContent={2} color="primary">
+              <ShoppingBagIcon style={{ color: "#000" }} />
+            </Badge>
+          </IconButton>
+        </Box>
+
+        {/* Menu for user actions */}
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+          <MenuItem onClick={handleMenuClose}>Quản lý tài khoản</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Đơn hàng của tôi</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Lịch sử hủy đơn</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Đánh giá của tôi</MenuItem>
+          {isManager && <MenuItem onClick={() => navigate("/dashboard")}>Trang quản lý</MenuItem>}
+          {hasAuthenticated && <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>}
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 
