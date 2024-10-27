@@ -78,7 +78,7 @@ export const Sidebar_Admin = (props) => {
             label="Bán hàng"
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
           >
-            <MenuItem component={<Link to="/dashboard?offline" />}>
+            <MenuItem component={<Link to="/bill" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Bán tại quầy
               </Typography>

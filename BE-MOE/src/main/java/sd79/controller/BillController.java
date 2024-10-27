@@ -4,17 +4,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.BillDetailRequest;
 import sd79.dto.requests.BillRequest;
 import sd79.dto.requests.CouponRequest;
+import sd79.dto.requests.common.BillParamFilter;
+import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.requests.productRequests.BillStoreRequest;
+import sd79.dto.response.PageableResponse;
 import sd79.dto.response.ResponseData;
+import sd79.dto.response.bills.ProductResponse;
 import sd79.model.BillDetail;
 import sd79.service.BillService;
 
@@ -27,6 +30,17 @@ import java.util.List;
 public class BillController {
 
     private final BillService billService;
+
+
+    @Operation(
+            summary = "Get all product listings",
+            description = "Get the entire product list (updating search and pagination functions)"
+    )
+    @GetMapping("/product")
+    public ResponseData<?> getAllBillProduct(BillParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.billService.getAllBillProducts(param));
+    }
+
 
     @Operation(
             summary = "Thêm mới hóa đơn",

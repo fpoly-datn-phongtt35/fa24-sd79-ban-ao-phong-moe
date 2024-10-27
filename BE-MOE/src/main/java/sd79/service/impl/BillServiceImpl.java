@@ -1,18 +1,26 @@
 package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.BillDetailRequest;
 import sd79.dto.requests.BillRequest;
+import sd79.dto.requests.common.BillParamFilter;
+import sd79.dto.requests.common.ProductParamFilter;
+import sd79.dto.response.PageableResponse;
+import sd79.dto.response.bills.ProductResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
 import sd79.repositories.auth.UserRepository;
+import sd79.repositories.customQuery.BillCustomizeQuery;
 import sd79.repositories.products.ProductDetailRepository;
 import sd79.service.BillService;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +33,8 @@ public class BillServiceImpl implements BillService {
     private final ProductDetailRepository productDetailRepository;
     private final BillStatusRepo billStatusRepository;
     private final UserRepository userRepository;
+    private final BillCustomizeQuery billCustomizeQuery;
+
 
     @Override
     public long storeBill(BillRequest billRequest, List<BillDetailRequest> billDetailRequests) {
@@ -68,8 +78,39 @@ public class BillServiceImpl implements BillService {
         return bill.getId();
     }
 
+    @Override
+    public PageableResponse getAllBillProducts(BillParamFilter param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.billCustomizeQuery.getAllBillProducts(param);
+    }
+
+
+
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));
     }
 
+    private ProductResponse convertToBillProductResponse(ProductDetail productDetail) {
+        return ProductResponse.builder()
+                .id(productDetail.getId())
+                .productName(String.format("%s [%s - %s]", productDetail.getProduct().getName(), productDetail.getColor().getName(),  productDetail.getSize().getName()))
+                .imageUrl(convertToUrl(productDetail.getProduct().getProductImages()))
+                .brand(productDetail.getProduct().getBrand().getName())
+                .category(productDetail.getProduct().getCategory().getName())
+                .material(productDetail.getProduct().getMaterial().getName())
+                .color(productDetail.getColor().getName())
+                .size(productDetail.getSize().getName())
+                .origin(productDetail.getProduct().getOrigin())
+                .price(productDetail.getRetailPrice())
+                .quantity(productDetail.getQuantity())
+                .build();
+    }
+
+    private List<String> convertToUrl(List<ProductImage> images) {
+        return images.stream()
+                .map(ProductImage::getImageUrl)
+                .collect(Collectors.toList());
+    }
 }

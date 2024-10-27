@@ -35,6 +35,7 @@ import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
 import LoginPage from "./pages/auth/LoginPage";
 import LocationSelector from "./pages/other/LocationSelector";
+import Bill from "./pages/bill/Bill";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -147,6 +148,7 @@ function App() {
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
+        <Route path="/bill" element={<Bill />} />
       </Route>
     </Routes>
   );
