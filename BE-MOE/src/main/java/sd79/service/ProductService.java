@@ -1,5 +1,6 @@
 package sd79.service;
 
+import sd79.dto.requests.common.ProductParamFilter2;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
@@ -12,6 +13,8 @@ import java.util.List;
 public interface ProductService {
 
     PageableResponse getAllProducts(ProductParamFilter param);
+
+    PageableResponse getAllProductDetails(ProductParamFilter2 param);
 
     long storeProduct(ProductRequest req);
 
