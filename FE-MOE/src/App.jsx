@@ -33,6 +33,7 @@ import FooterClient from "./components/layout/FooterClient";
 import AboutUs from "./pages/clients/AboutUs";
 import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
+import LoginPage from "./pages/auth/LoginPage";
 import LocationSelector from "./pages/other/LocationSelector";
 
 const ProtectedRoutes = () => {
@@ -115,6 +116,7 @@ function App() {
         <Route path="/login" element={<Authentication />} />
       </Route>
       <Route element={<PublicRoutes />}>
+        <Route path="/signin" element={<LoginPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />

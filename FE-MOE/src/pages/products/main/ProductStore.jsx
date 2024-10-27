@@ -31,8 +31,17 @@ import {
 import { useForm } from "react-hook-form";
 import SaveAsOutlinedIcon from "@mui/icons-material/SaveAsOutlined";
 import SvgIcon from "@mui/joy/SvgIcon";
+import AddIcon from "@mui/icons-material/Add";
 import { styled } from "@mui/joy";
 import { toast } from "react-toastify";
+import { postBrand } from "~/apis/brandsApi";
+import { DialogModifyV2 } from "~/components/common/DialogModifyV2";
+import { postCategory } from "~/apis/categoriesApi";
+import { postMaterial } from "~/apis/materialApi";
+import { DialogStoreV2 } from "~/components/colors/DialogStoreV2";
+import { postColor } from "~/apis/colorApi";
+import { postSize } from "~/apis/sizesApi";
+import { DialogStoreSizeV2 } from "~/components/sizes/DialogStoreSizeV2";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -108,7 +117,7 @@ export const ProductStore = () => {
     const updatedDetails = [...details];
     updatedDetails[index][name] = value;
     if (name === "retailPrice") {
-      if (value < 100) {
+      if (value < 10000) {
         setAttributesError((prev) => {
           const newErrors = [...prev];
           newErrors[index] = { ...newErrors[index], retailPrice: true };
@@ -234,6 +243,25 @@ export const ProductStore = () => {
     );
   }
 
+  const handlePostBrand = async (data) => {
+    await postBrand(data).then(() => fetchAttributes());
+  };
+
+  const handlePostCategory = async (data) => {
+    await postCategory(data).then(() => fetchAttributes());
+  };
+
+  const handlePostMaterial = async (data) => {
+    await postMaterial(data).then(() => fetchAttributes());
+  };
+
+  const handlePostColor = async (data) => {
+    await postColor(data).then(() => fetchAttributes());
+  };
+
+  const handlePostSize = async (data) => {
+    await postSize(data).then(() => fetchAttributes());
+  };
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
       <Grid
@@ -324,6 +352,13 @@ export const ProductStore = () => {
                             {brand.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới thương hiệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới thương hiệu"
+                        label="Nhập tên thương hiệu"
+                        handleSubmit={handlePostBrand}
+                      />
                     </Select>
                     {errors.brand && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -346,6 +381,13 @@ export const ProductStore = () => {
                             {value.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới danh mục"
+                        icon={<AddIcon />}
+                        title="Thêm mới danh mục"
+                        label="Nhập tên danh mục"
+                        handleSubmit={handlePostCategory}
+                      />
                     </Select>
                     {errors.category && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -368,6 +410,13 @@ export const ProductStore = () => {
                             {value.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới chất liệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới chất liệu"
+                        label="Nhập tên chất liệu"
+                        handleSubmit={handlePostMaterial}
+                      />
                     </Select>
                     {errors.material && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -380,6 +429,14 @@ export const ProductStore = () => {
                   <FormControl error={colorError}>
                     <FormLabel required>Màu sắc</FormLabel>
                     <Autocomplete
+                      startDecorator={
+                        <DialogStoreV2
+                          buttonTitle="Thêm mới màu sắc"
+                          title="Thêm mới màu sắc"
+                          label="Nhập tên màu sắc"
+                          handleSubmit={handlePostColor}
+                        />
+                      }
                       placeholder="Chọn màu"
                       multiple
                       limitTags={5}
@@ -405,6 +462,14 @@ export const ProductStore = () => {
                   <FormControl error={sizeError}>
                     <FormLabel required>Kích thước</FormLabel>
                     <Autocomplete
+                      startDecorator={
+                        <DialogStoreSizeV2
+                          buttonTitle="Thêm mới kích thước"
+                          title="Thêm mới kích thước"
+                          label="Nhập tên kích thước"
+                          handleSubmit={handlePostSize}
+                        />
+                      }
                       placeholder="Chọn kích thước"
                       multiple
                       limitTags={5}

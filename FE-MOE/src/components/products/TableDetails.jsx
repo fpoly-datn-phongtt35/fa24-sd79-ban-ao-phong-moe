@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@mui/material";
 import { StoreAttributeDetail } from "./StoreAttributeDetail";
 import { toast } from "react-toastify";
+import { formatCurrencyVND } from "~/utils/format";
 
 export const TableDetails = (props) => {
   const [details, setDetails] = useState();
@@ -104,18 +105,17 @@ export const TableDetails = (props) => {
     const parsedValue = Number(value);
 
     if (field === "price") {
-      if (parsedValue <= 100) {
+      if (parsedValue < 10000) {
         setInputErrors((prev) => ({
           ...prev,
-          [id]: { ...prev[id], price: "Price must be greater than 100" },
+          [id]: { ...prev[id], price: "Price must be greater than 10.000" },
         }));
-      } else if (parsedValue > 90000000){
+      } else if (parsedValue > 90000000) {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], price: "Invalid data" },
         }));
-      }
-      else {
+      } else {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], price: null },
@@ -127,13 +127,12 @@ export const TableDetails = (props) => {
           ...prev,
           [id]: { ...prev[id], quantity: "Quantity cannot be less than 0" },
         }));
-      }else if (parsedValue > 10000){
+      } else if (parsedValue > 10000) {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], quantity: "Invalid data" },
         }));
-      }
-       else {
+      } else {
         setInputErrors((prev) => ({
           ...prev,
           [id]: { ...prev[id], quantity: null },
@@ -241,7 +240,7 @@ export const TableDetails = (props) => {
                         }
                       />
                     ) : (
-                      item.price
+                      formatCurrencyVND(item.price)
                     )}
                   </td>
                   <td className="text-center">

@@ -48,7 +48,7 @@ function Authentication() {
     localStorage.setItem("accessToken", res.data.accessToken);
     localStorage.setItem("refreshToken", res.data.refreshToken);
 
-    navigate("/dashboard");
+    navigate("/");
   };
 
   const handleRegisterClick = () => {
