@@ -26,7 +26,6 @@ import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
 import Header_Client from "./components/layout/Header_Client";
-import Authentication from "./pages/auth/Authentication";
 import { useState } from "react";
 import Home from "./pages/clients/Home";
 import FooterClient from "./components/layout/FooterClient";
@@ -54,7 +53,7 @@ const ProtectedRoutes = () => {
   };
 
   if (!accessToken) {
-    return <Navigate to="/login" replace={true} />;
+    return <Navigate to="/signin" replace={true} />;
   } else if (getAuthority() === "ADMIN") {
     return (
       <div className="layout">
@@ -80,6 +79,20 @@ const ProtectedRoutes = () => {
 };
 
 const PublicRoutes = () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
+  if (accessToken && getAuthority() == "ADMIN") {
+    return <Navigate to="/dashboard" replace={true} />;
+  }
+
   return (
     <div className="layout_client">
       <div className="main-area_client">
@@ -101,22 +114,30 @@ const UnauthorizedRoutes = () => {
     return <Navigate to="/dashboard" replace={true} />;
   }
   return (
-    <>
-      <Outlet />
-    </>
+    <div className="layout_client">
+      <div className="main-area_client">
+        <div>
+          <Header_Client />
+        </div>
+        <div className="content-area_client">
+          <Outlet />
+          <FooterClient />
+        </div>
+      </div>
+    </div>
   );
 };
 
 function App() {
   return (
     <Routes>
-      <Route path="/home" element={<Navigate to="/" replace={true} />} />
+      <Route path="*" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
-        <Route path="/login" element={<Authentication />} />
-      </Route>
-      <Route element={<PublicRoutes />}>
         <Route path="/signin" element={<LoginPage />} />
+      </Route>
+
+      <Route element={<PublicRoutes />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />

@@ -9,13 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.auth.TokenResponse;
+import sd79.dto.response.auth.UserResponse;
+import sd79.enums.UserRole;
+import sd79.repositories.auth.UserAuthRepository;
 import sd79.service.AuthenticationService;
 
 @Slf4j
@@ -27,6 +27,9 @@ import sd79.service.AuthenticationService;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+
+    private final UserAuthRepository userAuthRepository;
+
     /**
      * @param request {'username': 'your_username', 'password': 'your_password', 'platform': 'WEB|ANDROID|IOS', 'deviceToken': 'your_deviceToken', 'version': 'your_version'}
      */
@@ -61,5 +64,17 @@ public class AuthenticationController {
         log.info("Request remove token");
         authenticationService.logout(request);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Success");
+    }
+
+    /**
+     * @param request Header: Authorization
+     */
+    @Operation(
+            summary = "Get User",
+            description = "Find user for get info to display data."
+    )
+    @GetMapping("/user")
+    public ResponseData<?> getUser(HttpServletRequest request, UserRole role) {
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Success", this.userAuthRepository.getUser(request, role));
     }
 }

@@ -29,7 +29,6 @@ function Authentication() {
       },
     });
   }, []);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = {
