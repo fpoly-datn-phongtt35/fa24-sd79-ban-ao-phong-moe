@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import swal from 'sweetalert';
-import { fetchAllCoupon, deleteCoupon } from '~/apis/couponApi';
-import {
-  Container, Grid, TextField, Box, Typography, IconButton, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Pagination, Stack, Select, MenuItem, Button, TableSortLabel, Link
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import PublicIcon from '@mui/icons-material/Public';
-import PersonIcon from '@mui/icons-material/Person';
-import PercentIcon from '@mui/icons-material/Percent';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Breadcrumbs } from '@mui/joy';
+import { Grid, Box, Link, Typography, Container } from "@mui/material";
+import CouponPagination from "~/components/coupon/CouponPagination";
+import CouponSearchFilter from "~/components/coupon/CouponSearchFilter";
+import CouponTable from "~/components/coupon/CouponTable";
+import { deleteCoupon, fetchAllCoupon } from '~/apis/couponApi';
 import HomeIcon from "@mui/icons-material/Home";
-import { useNavigate } from "react-router-dom";
-import { MoeAlert } from '~/components/other/MoeAlert';
+import { Breadcrumbs } from '@mui/joy';
+import { useNavigate } from 'react-router-dom';
 
 const Coupon = () => {
+  const navigate = useNavigate();
   const [coupons, setCoupons] = useState([]);
   const [pageNo, setPage] = useState(1);
   const [pageSize, setSize] = useState(5);
@@ -31,19 +23,14 @@ const Coupon = () => {
   const [sortBy, setSortBy] = useState('');
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    setPage(1);
+  }, [keyword, startDate, endDate, discountType, type, status]);
 
   useEffect(() => {
     handleSetCoupon();
   }, [pageNo, pageSize, sortBy, sort, keyword, startDate, endDate, discountType, type, status]);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      handleSetCoupon();
-    }, 1000);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [keyword, startDate, endDate, discountType, type, status]);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -56,25 +43,20 @@ const Coupon = () => {
     setTotalElements(res.data.totalElements);
   };
 
-
-
-  // Hàm thay đổi kích thước trang
   const handleSizeChange = (event) => {
     const newSize = event.target.value;
     setSize(newSize);
-    setPage(1); // Reset to first page on page size change
+    setPage(1);
   };
-
 
   const handleRequestSort = (property) => {
     const isAsc = sortBy === property && sort === 'asc';
     const newSort = isAsc ? 'desc' : 'asc';
 
+    setPage(1);
     setSort(newSort);
     setSortBy(property);
-    setPage(1); // Reset to first page
   };
-
 
   const handleClear = () => {
     setKeyword('');
@@ -86,9 +68,8 @@ const Coupon = () => {
     setPage(1);
     setSort('asc');
     setSortBy('');
-    handleSetCoupon(1, pageSize);
+    handleSetCoupon();
   };
-
 
   const handleDelete = async (id) => {
     try {
@@ -111,7 +92,7 @@ const Coupon = () => {
         spacing={2}
         alignItems="center"
         marginBottom={2}
-        height={"50px"}
+        height={"35px"}
       >
         <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
           <Link
@@ -128,267 +109,49 @@ const Coupon = () => {
           </Typography>
         </Breadcrumbs>
       </Grid>
-      <Box className="mb-5" style={{ marginTop: '50px' }}>
-        {/* First row: Search, Start Date, End Date, Clear */}
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={3}>
-            <TextField
-              label="Tìm phiếu giảm giá"
-              variant="standard"
-              fullWidth
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              size="small"
-              style={{ minHeight: '40px' }}
+      <Box className="mb-5">
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <CouponSearchFilter
+              keyword={keyword}
+              setKeyword={setKeyword}
+              startDate={startDate}
+              setStartDate={setStartDate}
+              endDate={endDate}
+              setEndDate={setEndDate}
+              discountType={discountType}
+              setDiscountType={setDiscountType}
+              type={type}
+              setType={setType}
+              status={status}
+              setStatus={setStatus}
+              handleClear={handleClear}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              label="Từ ngày"
-              type="date"
-              variant="standard"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              size="small"
-              style={{ minHeight: '40px' }}
+          <Grid item xs={12}>
+            <CouponTable
+              coupons={coupons}
+              sortBy={sortBy}
+              sort={sort}
+              handleRequestSort={handleRequestSort}
+              onDelete={onDelete}
+              pageNo={pageNo}
+              pageSize={pageSize}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              label="Đến ngày"
-              type="date"
-              variant="standard"
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              size="small"
-              style={{ minHeight: '40px' }}
+          <Grid item xs={12}>
+            <CouponPagination
+              totalPages={totalPages}
+              pageNo={pageNo}
+              handlePageChange={handlePageChange}
+              couponsLength={coupons.length}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              handleSizeChange={handleSizeChange}
             />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => navigate("/coupon/create")}
-              fullWidth
-              size="small"
-              style={{ height: '40px' }}
-            >
-              Thêm mới
-            </Button>
-          </Grid>
-        </Grid>
-
-        {/* Second row: Kiểu, Loại, Trạng thái, Thêm mới */}
-        <Grid container spacing={2} alignItems="center" style={{ marginTop: '10px' }}>
-          <Grid item xs={12} sm={3}>
-            <Select
-              value={discountType}
-              onChange={(e) => {
-                setDiscountType(e.target.value);
-                handleSetCoupon();
-              }}
-              displayEmpty
-              fullWidth
-              size="small"
-              style={{ height: '40px' }}
-            >
-              <MenuItem value="">Loại</MenuItem>
-              <MenuItem value="PERCENTAGE">Phần trăm</MenuItem>
-              <MenuItem value="FIXED_AMOUNT">Số tiền cố định</MenuItem>
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              displayEmpty
-              fullWidth
-              size="small"
-              style={{ height: '40px' }}
-            >
-              <MenuItem value="">Kiểu</MenuItem>
-              <MenuItem value="PERSONAL">Cá nhân</MenuItem>
-              <MenuItem value="PUBLIC">Công khai</MenuItem>
-            </Select>
-          </Grid>
-
-          <Grid item xs={12} sm={3}>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              displayEmpty
-              fullWidth
-              size="small"
-              style={{ height: '40px' }}
-            >
-              <MenuItem value="">Trạng thái</MenuItem>
-              <MenuItem value="START">Bắt đầu</MenuItem>
-              <MenuItem value="END">Kết thúc</MenuItem>
-              <MenuItem value="PENDING">Chưa bắt đầu</MenuItem>
-            </Select>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleClear}
-              fullWidth
-              size="small"
-              style={{ height: '40px' }}
-            >
-              Xóa lọc
-            </Button>
           </Grid>
         </Grid>
       </Box>
-
-      <Grid container>
-        <Grid item xs={12}>
-          <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    STT
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === 'name'}
-                      direction={sortBy === 'name' ? sort : 'asc'}
-                      onClick={() => handleRequestSort('name')}
-                    >
-                      Tên phiếu giảm giá
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="left">
-                    <TableSortLabel
-                      active={sortBy === 'code'}
-                      direction={sortBy === 'code' ? sort : 'asc'}
-                      onClick={() => handleRequestSort('code')}
-                    >
-                      Mã
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="left">
-                    <TableSortLabel
-                      active={sortBy === 'quantity'}
-                      direction={sortBy === 'quantity' ? sort : 'asc'}
-                      onClick={() => handleRequestSort('quantity')}
-                    >
-                      Số lượng
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="left">Loại</TableCell>
-                  <TableCell align="left">Kiểu</TableCell>
-                  <TableCell align="left">Trạng thái</TableCell>
-                  <TableCell align="left">
-                    <TableSortLabel
-                      active={sortBy === 'startDate'}
-                      direction={sortBy === 'startDate' ? sort : 'asc'}
-                      onClick={() => handleRequestSort('startDate')}
-                    >
-                      Bắt đầu
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="left">
-                    <TableSortLabel
-                      active={sortBy === 'endDate'}
-                      direction={sortBy === 'endDate' ? sort : 'asc'}
-                      onClick={() => handleRequestSort('endDate')}
-                    >
-                      Kết thúc
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="right">Hành động</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {coupons.length === 0 && (
-                  <tr>
-                    <td colSpan={9} align="center">
-                      Không tìm thấy phiếu giảm giá nào!
-                    </td>
-                  </tr>
-                )}
-                {coupons && coupons.map((coupon, index) => (
-                  <TableRow key={coupon.id}>
-                 <TableCell>{(pageNo - 1) * pageSize + index + 1}</TableCell>
-                    <TableCell>{coupon.name}</TableCell>
-                    <TableCell align="left">{coupon.code}</TableCell>
-                    <TableCell align="left">{coupon.quantity}</TableCell>
-                    <TableCell align="left">
-                      {coupon.discountType === 'PERCENTAGE' ? <PercentIcon /> : <AttachMoneyIcon />}
-                    </TableCell>
-                    <TableCell align="left">
-                      {coupon.type === 'PUBLIC' ? <PublicIcon /> : <PersonIcon />}
-                    </TableCell>
-                    <TableCell align="left">{coupon.status}</TableCell>
-                    <TableCell align="left">{coupon.startDate}</TableCell>
-                    <TableCell align="left">{coupon.endDate}</TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        onClick={() => navigate(`/coupon/detail/${coupon.id}`)}
-                        color="primary"
-                        size="small"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <MoeAlert title="Cảnh báo" message="Bạn có muốn xóa phiếu giảm giá này?"
-                        event={() => onDelete(coupon.id)}
-                        button={<IconButton
-                          color="secondary"
-                          size="small"
-                        >
-                          <DeleteIcon />
-                        </IconButton>}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-      </Grid>
-
-      {/* Pagination */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" marginY="10px">
-        <Typography>{`Hiển thị ${coupons.length} trong tổng số ${totalElements} kết quả`}</Typography>
-
-        <Box alignItems="center">
-          {totalPages > 1 && (
-            <Stack spacing={2}>
-              <Pagination
-                count={totalPages}
-                page={pageNo}
-                onChange={handlePageChange}
-                variant="outlined"
-                shape="rounded"
-              />
-            </Stack>
-          )}
-        </Box>
-        <Box display="flex" alignItems="center">
-          <Typography>Hiển thị:</Typography>
-          <Select
-            value={pageSize}
-            onChange={handleSizeChange}
-            size="small"
-            style={{ marginLeft: '10px', width: '80px' }}
-          >
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-          </Select>
-        </Box>
-      </Stack>
-
-
-
     </Container>
   );
 };
