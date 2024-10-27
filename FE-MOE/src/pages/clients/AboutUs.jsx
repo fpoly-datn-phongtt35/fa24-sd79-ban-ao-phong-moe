@@ -10,11 +10,12 @@ import {
   Divider,
 } from "@mui/joy";
 import Features from "~/components/clients/other/Features";
+import { ScrollToTop } from "~/utils/defaultScroll";
 
 const AboutUs = () => {
+  ScrollToTop();
   return (
     <Box sx={{ padding: 4 }}>
-      {/* Our Story Section */}
       <Grid container spacing={2}>
         <Grid xs={12} md={6}>
           <Typography level="h3" fontWeight="bold" gutterBottom>

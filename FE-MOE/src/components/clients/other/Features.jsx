@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Stack, SvgIcon } from "@mui/joy";
+import { Box, Typography, Stack } from "@mui/joy";
 import DeliveryIcon from "~/assert/icon/icon-delivery.svg";
 import CustomerIcon from "~/assert/icon/Icon-Customer service.svg";
 import SecureIcon from "~/assert/icon/Icon-secure.svg";

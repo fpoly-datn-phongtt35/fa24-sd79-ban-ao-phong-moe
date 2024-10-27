@@ -9,7 +9,7 @@ const TopProductCard = ({ product }) => {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
-    navigate(`/view/${product.productId}`);
+    navigate(`/view/${product.productId}#name=${product.name}`);
   };
 
   return (

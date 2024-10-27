@@ -12,7 +12,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { speacker } from "~/utils/speak";
-import chatbot from "~/assert/chatbot.png";
+import chatbot from "~/assert/images/chatbot.png";
 import { useEffect, useState } from "react";
 
 export const Microphone = ({ method }) => {

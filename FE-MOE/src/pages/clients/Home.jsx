@@ -11,6 +11,7 @@ import TopProductCard from "~/components/clients/cards/TopProductCard";
 import { ProductCard } from "~/components/clients/cards/ProductCard";
 import ListCategories from "~/components/clients/attributes/ListCategories";
 import Features from "~/components/clients/other/Features";
+import { ScrollToTop } from "~/utils/defaultScroll";
 
 const Home = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState([]);
@@ -23,6 +24,7 @@ const Home = () => {
   }, [currentPage]);
 
   useEffect(() => {
+    ScrollToTop();
     const res = async () => {
       await fetchBestSellingProducts().then((res) => {
         setBestSellingProducts(res.data);
@@ -112,17 +114,7 @@ const Home = () => {
           <IconButton
             variant="soft"
             color="neutral"
-            onClick={() => {
-              const contentArea = document.querySelector(
-                ".content-area_client"
-              );
-              if (contentArea) {
-                contentArea.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }
-            }}
+            onClick={() => ScrollToTop()}
             sx={{ width: 50, height: 50, borderRadius: "50%" }}
           >
             <ArrowUpwardIcon />

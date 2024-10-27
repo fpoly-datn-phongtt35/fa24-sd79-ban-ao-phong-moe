@@ -21,7 +21,6 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
-import { speacker } from "~/utils/speak";
 import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Product = () => {

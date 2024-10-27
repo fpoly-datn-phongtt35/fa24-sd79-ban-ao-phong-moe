@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
@@ -57,5 +54,14 @@ public class ProductClientController {
     @GetMapping("/category")
     public ResponseData<?> getAllCategories() {
         return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories(""));
+    }
+
+    @Operation(
+            summary = "Get Product",
+            description = "Get product detail"
+    )
+    @GetMapping("/{id}")
+    public ResponseData<?> getProduct(@PathVariable Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientProduct.getProductDetail(id));
     }
 }
