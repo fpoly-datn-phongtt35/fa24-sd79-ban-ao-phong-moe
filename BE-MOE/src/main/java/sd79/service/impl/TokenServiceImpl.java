@@ -6,9 +6,10 @@
  */
 package sd79.service.impl;
 
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sd79.exception.EntityNotFoundException;
+import sd79.exception.AuthenticationException;
 import sd79.model.redis_model.Token;
 import sd79.repositories.auth.TokenRepository;
 import sd79.service.TokenService;
@@ -31,6 +32,6 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public Token getToken(String id) {
-        return this.tokenRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Something went wrong!"));
+        return this.tokenRepository.findById(id).orElseThrow(() -> new AuthenticationException("Something went wrong!"));
     }
 }

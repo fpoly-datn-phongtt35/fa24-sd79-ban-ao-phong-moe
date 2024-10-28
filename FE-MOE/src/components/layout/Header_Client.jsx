@@ -21,7 +21,7 @@ import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
-import { Avatar, Input, Typography } from "@mui/joy";
+import { Avatar, Input, Tooltip, Typography } from "@mui/joy";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -126,11 +126,13 @@ const Header_Client = () => {
               <FavoriteBorderOutlinedIcon />
             </Badge>
           </IconButton>
-          <IconButton>
-            <Badge badgeContent={2} color="primary">
-              <ShoppingCartOutlinedIcon />
-            </Badge>
-          </IconButton>
+          <Tooltip variant="plain" title="Giỏ hàng">
+            <IconButton onClick={() => navigate("/cart")}>
+              <Badge badgeContent={2} color="primary">
+                <ShoppingCartOutlinedIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <IconButton onClick={hasAuthenticated ? handleMenuClick : singIn}>
             <Avatar src={avatar} alt={username} />
           </IconButton>
