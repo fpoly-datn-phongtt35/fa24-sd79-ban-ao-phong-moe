@@ -3,6 +3,7 @@ import { getEmployee, postEmployee, getAllPositions } from '~/apis/employeeApi';
 import { getAllProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from '~/apis/addressEmployeeApi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from "react-toastify";
+import { FormControl, FormLabel, Input } from '@mui/joy';
 
 const EmployeeForm = () => {
     const [data, setData] = useState(null);
@@ -13,12 +14,18 @@ const EmployeeForm = () => {
     const [salary, setSalary] = useState('');
     const [positionId, setPositionId] = useState([]);
     const [selectedPositionId, setSelectedPositionId] = useState('');
+
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
+
     const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedProvinceName, setSelectedProvinceName] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedDistrictName, setSelectedDistrictName] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
+    const [selectedWardName, setSelectedWardName] = useState('');
+
     const navigartor = useNavigate();
     const { id } = useParams();
 
@@ -50,7 +57,7 @@ const EmployeeForm = () => {
     const fetchProvinces = async () => {
         try {
             const data = await getAllProvinces();
-            setProvinces(data);
+            setProvinces(data); // Lưu danh sách tỉnh/thành phố vào state
         } catch (error) {
             console.error('Error fetching provinces:', error);
             toast.error('Không thể tải tỉnh/thành phố. Vui lòng thử lại sau.');
@@ -68,6 +75,11 @@ const EmployeeForm = () => {
             setSalary(response.data.salaries);
             const position = response.data.position || '';
             setSelectedPositionId(position);
+
+            // Gán tên tỉnh, huyện, xã từ dữ liệu nhân viên vào state
+            setSelectedProvinceName(response.data.address.province);
+            setSelectedDistrictName(response.data.address.district);
+            setSelectedWardName(response.data.address.ward);
         } catch (error) {
             console.error(error);
             toast.error('Failed to fetch employee data');
@@ -76,38 +88,50 @@ const EmployeeForm = () => {
 
     const handleProvinceChange = async (event) => {
         const provinceId = event.target.value;
+        const provinceName = event.target.options[event.target.selectedIndex].text; // Lấy tên tỉnh từ dropdown
         setSelectedProvince(provinceId);
-        setSelectedDistrict('');
-        setWards([]);
-
+        setSelectedDistrict(''); // Xóa huyện đã chọn khi thay đổi tỉnh
+        setWards([]); // Xóa danh sách xã khi thay đổi tỉnh
+    
         if (provinceId) {
             try {
                 const data = await getDistrictsByProvinceId(provinceId);
                 setDistricts(data);
+                setSelectedProvinceName(provinceName); // Lưu tên tỉnh đã chọn
             } catch (error) {
                 console.error('Error fetching districts:', error);
                 toast.error('Không thể tải quận/huyện. Vui lòng thử lại sau.');
             }
         }
     };
-
+    
     const handleDistrictChange = async (event) => {
         const districtId = event.target.value;
+        const districtName = event.target.options[event.target.selectedIndex].text; // Lấy tên huyện từ dropdown
         setSelectedDistrict(districtId);
-        setWards([]);
-
+        setWards([]); // Xóa danh sách xã khi thay đổi huyện
+    
         if (districtId) {
             try {
                 const data = await getWardsByDistrictId(districtId);
                 setWards(data);
+                setSelectedDistrictName(districtName); // Lưu tên huyện đã chọn
             } catch (error) {
                 console.error('Error fetching wards:', error);
                 toast.error('Không thể tải xã/phường. Vui lòng thử lại sau.');
             }
         }
     };
+    const handleWardChange = (event) => {
+        const wardId = event.target.value;
+        const wardName = event.target.options[event.target.selectedIndex].text;
 
-    const saveEmployee = (e) => {
+        // Lưu ID và tên xã/phường đã chọn
+        setSelectedWard(wardId);
+        setSelectedWardName(wardName);
+    };
+
+    const saveEmployee = async (e) => {
         e.preventDefault();
         if (validateForm()) {
             const employee = {
@@ -118,17 +142,20 @@ const EmployeeForm = () => {
                 salary,
                 positionId: selectedPositionId,
                 address: {
-                    province: selectedProvince,
-                    district: selectedDistrict,
-                    ward: selectedWard,
+                    province: selectedProvinceName, // Sử dụng tên tỉnh đã chọn
+                    district: selectedDistrictName, // Sử dụng tên huyện đã chọn
+                    ward: selectedWardName, // Sử dụng tên xã/phường đã chọn
                 }
             };
-            postEmployee(employee).then(() => {
-                navigartor('/employee');
-            });
+            try {
+                await postEmployee(employee);
+                navigartor('/employee'); // Chuyển hướng sau khi lưu thành công
+            } catch (error) {
+                console.error('Error saving employee:', error);
+                toast.error('Lưu nhân viên thất bại. Vui lòng thử lại sau.');
+            }
         }
     };
-
     const validateForm = () => {
         let valid = true;
         const errorsCopy = { ...errors };
@@ -175,9 +202,9 @@ const EmployeeForm = () => {
                 {pageTitle()}
                 <div className='card-body'>
                     <form onSubmit={saveEmployee}>
-                        <div className='form-group mb-2'>
-                            <label className='form-label'> Tên </label>
-                            <input
+                        <FormControl >
+                            <FormLabel required > Tên </FormLabel>
+                            <Input
                                 type="text"
                                 placeholder='Nhập tên'
                                 value={first_name}
@@ -185,7 +212,7 @@ const EmployeeForm = () => {
                                 onChange={(e) => setFirst_name(e.target.value)}
                             />
                             {errors.first_name && <div className='invalid-feedback'>{errors.first_name}</div>}
-                        </div>
+                        </FormControl>
                         <div className='form-group mb-2'>
                             <label className='form-label'>Tên Đệm</label>
                             <input type="text" placeholder='Nhập tên đệm'
@@ -300,9 +327,9 @@ const EmployeeForm = () => {
                                 id="ward"
                                 className="form-control"
                                 value={selectedWard}
-                                onChange={(e) => setSelectedWard(e.target.value)}
+                                onChange={handleWardChange}
                             >
-                                <option value="">Chọn Xã/Phường</option>
+                                <option value="">--Chọn xã/phường--</option>
                                 {wards.map((ward) => (
                                     <option key={ward.WardCode} value={ward.WardCode}>
                                         {ward.WardName}

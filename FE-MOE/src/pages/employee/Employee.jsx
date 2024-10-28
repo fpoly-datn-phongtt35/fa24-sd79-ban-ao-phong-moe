@@ -3,13 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Grid, TextField, Typography, Button, Paper,
+    Grid, TextField, Typography, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Pagination
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
-
+import AddIcon from '@mui/icons-material/Add';
+import { Breadcrumbs, Button, Link } from '@mui/joy';
+import HomeIcon from "@mui/icons-material/Home";
+import { formatCurrencyVND } from '~/utils/format';
 export const Employee = () => {
     const [employee, setEmployee] = useState([]);
     const [keyword, setKeyword] = useState('');
@@ -97,9 +100,29 @@ export const Employee = () => {
 
     return (
         <div>
-            <Typography variant="h5" component="span" fontWeight="bold">
-                Quản lý nhân viên
-            </Typography>
+            <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                marginBottom={2}
+                height={"50px"}
+            >
+                <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+                    <Link
+                        underline="hover"
+                        sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                        color="inherit"
+                        onClick={() => navigate("/")}
+                    >
+                        <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                        Trang chủ
+                    </Link>
+                    <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+                        Quản lý nhân viên
+                    </Typography>
+                </Breadcrumbs>
+            </Grid>
+
             <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
                     <TextField
@@ -125,10 +148,9 @@ export const Employee = () => {
 
             <div className="text-end">
                 <Button
-                    variant="contained"
-                    color="primary"
+                    startDecorator={<AddIcon />}
                     onClick={addNewEmployee}
-                    style={{ margin: '20px' }}
+
                 >
                     Thêm nhân viên
                 </Button>
@@ -165,9 +187,14 @@ export const Employee = () => {
                                     <TableCell>{emp.first_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.last_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
-                                    <TableCell>{emp.gender || 'N/A'}</TableCell>
+                                    <TableCell>{emp.gender || 'N/A'}</TableCell>  
                                     <TableCell>
-                                        {typeof emp.salaries === 'object' ? (emp.salaries.amount || 'N/A') : (emp.salaries || 'N/A')}
+                                        {emp.salaries && typeof emp.salaries === 'object' ? (
+                                            formatCurrencyVND(emp.salaries.amount) || 'N/A'
+                                        ) : (
+                                            formatCurrencyVND(emp.salaries) || 'N/A'
+                                        )}
+
                                     </TableCell>
                                     <TableCell>
                                         {emp.employee_address && typeof emp.employee_address === 'object' ? (

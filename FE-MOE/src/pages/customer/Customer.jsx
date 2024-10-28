@@ -11,7 +11,7 @@ import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/c
 import { toast } from 'react-toastify';
 import swal from 'sweetalert';
 import HomeIcon from "@mui/icons-material/Home";
-import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Select, Typography } from '@mui/joy';
+import { Avatar, Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Select, Typography } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
 
 export const Customer = () => {
@@ -191,14 +191,12 @@ export const Customer = () => {
           <TableHead>
             <TableRow>
               <TableCell>Ảnh</TableCell>
-              <TableCell>Tên tài khoản</TableCell>
-              <TableCell>Tên</TableCell>
-              <TableCell>Họ</TableCell>
+              <TableCell>username</TableCell>
+              <TableCell>Họ và tên</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Số điện thoại</TableCell>
               <TableCell>Giới tính</TableCell>
               <TableCell>Ngày sinh</TableCell>
-              <TableCell>Địa chỉ</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -206,17 +204,15 @@ export const Customer = () => {
             {customers.length > 0 ? (
               customers.map((customer, index) => (
                 <TableRow key={customer.id}>
-                  <TableCell>{customer.image}</TableCell>
+                  <TableCell><Avatar src={customer?.image} variant="solid" /></TableCell>
                   <TableCell>{customer.username}</TableCell>
-                  <TableCell>{customer.firstName}</TableCell>
-                  <TableCell>{customer.lastName}</TableCell>
+                  <TableCell>{customer.fullName}</TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
-                  <TableCell>{customer.city}, {customer.district}, {customer.ward}, {customer.streetName}</TableCell>
                   <TableCell>
-                    <IconButton component={Link} to={`/customer/${customer.id}`}>
+                    <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
                       <EditIcon />
                     </IconButton>
                     <IconButton onClick={() => onDelete(customer.id)}>

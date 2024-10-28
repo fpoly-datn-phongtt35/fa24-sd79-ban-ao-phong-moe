@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sd79.dto.requests.CustomerReq;
 import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
 import sd79.enums.Gender;
 import sd79.model.Customer;
@@ -25,4 +26,5 @@ public interface CustomerService {
 
     Page<CustomerResponse> searchCustomers(String keyword, Gender gender,Date birth, Pageable pageable);
 
+    void updateImage(ProductImageReq req);
 }

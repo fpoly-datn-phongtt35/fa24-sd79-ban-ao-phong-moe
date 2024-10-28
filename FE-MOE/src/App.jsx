@@ -22,13 +22,18 @@ import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
 import { AddPromotion } from "./pages/promotions/AddPromotion";
 import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
-
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
-import { useEffect, useState } from "react";
-import { Home } from "./pages/clients/Home";
+import { useState } from "react";
 import Header_Client from "./components/layout/Header_Client";
 import Authentication from "./pages/auth/Authentication";
+import Home from "./pages/clients/Home";
+import FooterClient from "./components/layout/FooterClient";
+import AboutUs from "./pages/clients/AboutUs";
+import { Contact } from "./pages/clients/Contact";
+import { ViewDetail } from "./pages/clients/ViewDetail";
+import LocationSelector from "./pages/other/LocationSelector";
+import { EmployeeStore } from "./pages/employee/EmployeeStore";
 
 const ProtectedRoutes = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -80,9 +85,9 @@ const PublicRoutes = () => {
         <div>
           <Header_Client />
         </div>
-
         <div className="content-area_client">
           <Outlet />
+          <FooterClient />
         </div>
       </div>
     </div>
@@ -111,6 +116,10 @@ function App() {
       </Route>
       <Route element={<PublicRoutes />}>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>
@@ -132,7 +141,8 @@ function App() {
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/promotions" element={<Promotion />} />
         <Route path="/employee" element={<Employee />} />
-        <Route path="/employee/add" element={<EmployeesCreate />} />
+        <Route path="/employee/add" element={<EmployeeStore />} />
+        <Route path="/employee/demo" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />

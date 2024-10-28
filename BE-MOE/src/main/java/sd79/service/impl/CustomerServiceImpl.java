@@ -1,6 +1,8 @@
 package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.CustomerReq;
 import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
 import sd79.enums.Gender;
 import sd79.exception.EntityNotFoundException;
@@ -19,29 +22,31 @@ import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
 import sd79.service.CustomerService;
+import sd79.utils.CloudinaryUtils;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
+    private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final CloudinaryUtils cloudinary;
+
     @Override
-    @Transactional(readOnly = true)
     public Page<CustomerResponse> getAll(Pageable pageable) {  // Modified method to return a paginated response
         Page<Customer> customers = customerRepository.findAll(pageable);
         return customers.map(this::convertCustomerResponse);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CustomerResponse getCustomerById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
@@ -77,7 +82,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .lastName(customerReq.getLastName())
                 .phoneNumber(customerReq.getPhoneNumber())
                 .gender(customerReq.getGender())
-                .image(customerReq.getImage())
                 .user(user)
                 .customerAddress(address)
                 .dateOfBirth(customerReq.getDateOfBirth())
@@ -117,14 +121,29 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteCustomer(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        if (customer.getPublicId() != null) {
+            this.cloudinary.removeByPublicId(customer.getPublicId());
+        }
         customerRepository.delete(customer);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Page<CustomerResponse> searchCustomers(String keyword, Gender gender, Date birth, Pageable pageable) {
         Page<Customer> customers = customerRepository.searchCustomers(keyword, gender, birth, pageable);
         return customers.map(this::convertCustomerResponse);
+    }
+
+    @Override
+    public void updateImage(ProductImageReq req) {
+        Customer customer = this.customerRepository.findById(req.getProductId()).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        if (req.getImages() != null && customer.getPublicId() != null) {
+            this.cloudinary.removeByPublicId(customer.getPublicId());
+        }
+        assert req.getImages() != null;
+        Map<String, String> uploadResult = this.cloudinary.upload(req.getImages()[0]);
+        customer.setImage(uploadResult.get("url"));
+        customer.setPublicId(uploadResult.get("publicId"));
+        customerRepository.save(customer);
     }
 
     private void populateCustomerData(Customer customer, CustomerRequest customerRequest) {
@@ -132,7 +151,6 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setLastName(customerRequest.getLastName());
         customer.setPhoneNumber(customerRequest.getPhoneNumber());
         customer.setGender(customerRequest.getGender());
-        customer.setImage(customerRequest.getImage());
         customer.setDateOfBirth(customerRequest.getDateOfBirth());
         customer.setUpdatedAt(new Date());
     }
@@ -142,6 +160,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .id(customer.getId())
                 .firstName(customer.getFirstName())
                 .lastName(customer.getLastName())
+                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
                 .phoneNumber(customer.getPhoneNumber())
                 .username(customer.getUser().getUsername())
                 .email(customer.getUser().getEmail())

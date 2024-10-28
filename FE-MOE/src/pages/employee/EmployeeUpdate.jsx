@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getEmployee, putEmployee, getAllPositions } from "~/apis/employeeApi";
 import { getAllProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from '~/apis/addressEmployeeApi';
 import { useNavigate, useParams } from 'react-router-dom'
+import { Box, FormControl, FormLabel, Option, Select } from '@mui/joy';
 
 const EmployeesUpdate = () => {
     const [data, setData] = useState(null);
@@ -19,6 +20,8 @@ const EmployeesUpdate = () => {
     const [salary, setSalary] = useState('');
     const [positionId, setPositionId] = useState([]);
     const [selectedPositionId, setSelectedPositionId] = useState('');
+
+    const [positions, setPositions] = useState(null);
     const navigartor = useNavigate();
     const { id } = useParams();
 
@@ -71,72 +74,78 @@ const EmployeesUpdate = () => {
         }
     };
     useEffect(() => {
-        handleSetPositions();
+        // handleSetPositions();
+        fetchPositions()
         fetchProvinces();
     }, []);
 
-    const handleSetPositions = async () => {
-        try {
-            const res = await getAllPositions();
-            setPositionId(res.data); // Cập nhật danh sách chức vụ
-        } catch (error) {
-            console.error('Failed to fetch positions', error);
-        }
-    };
+    // const handleSetPositions = async () => {
+    //     try {
+    //         const res = await getAllPositions();
+    //         setPositionId(res.data); // Cập nhật danh sách chức vụ
+    //     } catch (error) {
+    //         console.error('Failed to fetch positions', error);
+    //     }
+    // };
+
+    const fetchPositions = async () => {
+        await getAllPositions().then(res => {
+            setPositions(res.data)
+        })
+    }
 
     useEffect(() => {
-        handleSetPositions();
-        if (id) {
+        // Gọi API để lấy danh sách chức vụ
+        const loadPositions = async () => {
+            try {
+                const res = await getAllPositions();
+                setPositionId(res.data); // Cập nhật danh sách chức vụ
+            } catch (error) {
+                console.error('Failed to fetch positions', error);
+            }
+        };
+
+        loadPositions();
+    }, []); // Chỉ gọi một lần khi component được mount
+
+    useEffect(() => {
+        if (id && positionId.length > 0) {
             getEmployee(id)
                 .then((response) => {
-                setData(response);
-                console.log(response);
-                setFirst_name(response.data.first_name);
-                setLast_name(response.data.last_name);
-                setPhone_number(response.data.phone_number);
-                setGender(response.data.gender);
-                setSalary(response.data.salaries);
-                setCity(response.data.employee_address);
-                const position = response.data.position || '';
-                setSelectedPositionId(position);
-                console.log("Fetched position from API: ", position)
+                    setData(response);
+                    setFirst_name(response.data.first_name);
+                    setLast_name(response.data.last_name);
+                    setPhone_number(response.data.phone_number);
+                    setGender(response.data.gender);
+                    setSalary(response.data.salaries);
+
+                    setSelectedPositionId(response.data.position.id);
                 })
                 .catch(error => {
                     console.error(error);
-                    toast.error('Failed to fetch employee data');
+                    toast.error('Không thể tải dữ liệu nhân viên');
                 });
         }
-    }, [id]);
+    }, [id, positionId]);
+    // Thêm `positionId` vào dependencies
 
-    getEmployee(id)
-    .then((response) => {
-        const positionName = response.data.position; // Lấy tên vị trí
-        setSelectedPositionId(positionId.find(pos => pos.name === positionName)?.id || ''); // Tìm ID dựa trên tên
-        console.log("Fetched position from API: ", positionName); // Log tên vị trí
-    })
-    .catch(error => {
-        console.error(error);
-        toast.error('Failed to fetch employee data');
-    });
 
     const saveEmployee = (e) => {
         e.preventDefault();
-       
-            const employee = {
-                first_name: first_name,
-                last_name: last_name,
-                phone_number: phone_number,
-                gender: gender,
-                salary: salary,
-                city: city,
-                positionId: selectedPositionId // Sử dụng selectedPosition ở đây
-            }
-            console.log(employee);
-            putEmployee(employee, id).then((response) => {
-                // console.log(response.data);
-                navigartor('/employee')
-            });
-        
+        const employee = {
+            first_name: first_name,
+            last_name: last_name,
+            phone_number: phone_number,
+            gender: gender,
+            salary: salary,
+            positionId: selectedPositionId // Sử dụng selectedPosition ở đây
+        }
+        console.log(employee);
+        putEmployee(employee, id).then((response) => {
+            // console.log(response.data);
+            navigartor('/employee')
+        });
+
     }
 
     function validateForm() {
@@ -183,6 +192,9 @@ const EmployeesUpdate = () => {
             return <h2 className='text-center'>Thêm nhân viên</h2>;
         }
     };
+    // useEffect(() => {
+    //     console.log("Updated Selected Position ID:", selectedPositionId);
+    // }, [selectedPositionId]);
 
     return (
         <div>
@@ -263,70 +275,69 @@ const EmployeesUpdate = () => {
                                 {/* {errors.salary && <div className='invalid-feedback'>{errors.salary}</div>} */}
                             </div>
                             <div className="form-group">
-                            <label htmlFor="province">Tỉnh/Thành phố</label>
-                            <select
-                                id="province"
-                                className="form-control"
-                                value={selectedProvince}
-                                onChange={handleProvinceChange}
-                            >
-                                <option value="">Chọn Tỉnh/Thành Phố</option>
-                                {provinces.map((province) => (
-                                    <option key={province.ProvinceID} value={province.ProvinceID}>
-                                        {province.ProvinceName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="district">Quận/Huyện</label>
-                            <select
-                                id="district"
-                                className="form-control"
-                                value={selectedDistrict}
-                                onChange={handleDistrictChange}
-                            >
-                                <option value="">--Chọn quận/huyện--</option>
-                                {districts.map((district) => (
-                                    <option key={district.DistrictID} value={district.DistrictID}>
-                                        {district.DistrictName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="ward">Xã/Phường</label>
-                            <select
-                                id="ward"
-                                className="form-control"
-                                value={selectedWard}
-                                onChange={(e) => setSelectedWard(e.target.value)}
-                            >
-                                <option value="">Chọn Xã/Phường</option>
-                                {wards.map((ward) => (
-                                    <option key={ward.WardCode} value={ward.WardCode}>
-                                        {ward.WardName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                            <div className="form-group">
-                                <label htmlFor="position">Chức vụ</label>
+                                <label htmlFor="province">Tỉnh/Thành phố</label>
                                 <select
+                                    id="province"
                                     className="form-control"
-                                    id="position"
-                                    value={selectedPositionId} // Giá trị của combobox
-                                    onChange={(e) => setSelectedPositionId(e.target.value)}
+                                    value={selectedProvince}
+                                    onChange={handleProvinceChange}
                                 >
-                                    <option value="">Chọn chức vụ</option>
-                                    {positionId.map((pos) => (
-                                        <option key={pos.id} value={pos.id}>{pos.name}</option>
+                                    <option value="">Chọn Tỉnh/Thành Phố</option>
+                                    {provinces.map((province) => (
+                                        <option key={province.ProvinceID} value={province.ProvinceID}>
+                                            {province.ProvinceName}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
 
+                            <div className="form-group">
+                                <label htmlFor="district">Quận/Huyện</label>
+                                <select
+                                    id="district"
+                                    className="form-control"
+                                    value={selectedDistrict}
+                                    onChange={handleDistrictChange}
+                                >
+                                    <option value="">--Chọn quận/huyện--</option>
+                                    {districts.map((district) => (
+                                        <option key={district.DistrictID} value={district.DistrictID}>
+                                            {district.DistrictName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="ward">Xã/Phường</label>
+                                <select
+                                    id="ward"
+                                    className="form-control"
+                                    value={selectedWard}
+                                    onChange={(e) => setSelectedWard(e.target.value)}
+                                >
+                                    <option value="">Chọn Xã/Phường</option>
+                                    {wards.map((ward) => (
+                                        <option key={ward.WardCode} value={ward.WardCode}>
+                                            {ward.WardName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <Box>
+                                <FormControl>
+                                    <FormLabel required>Chức vụ</FormLabel>
+                                    <Select value={selectedPositionId} placeholder="Chọn chức vụ" onChange={(event, value) => setSelectedPositionId(value)}>
+                                        <Option value={0} disabled>Chức vụ</Option>
+                                        {
+                                            positions && positions.map((item) => (
+                                                <Option key={item.id} value={item.id}>{item.name}</Option>
+                                            ))
+                                        }
+                                    </Select>
+                                </FormControl>
+                            </Box>
                             <button className='btn btn-primary mt-3' onClick={saveEmployee}>Submit</button>
                         </form>
                     </div>

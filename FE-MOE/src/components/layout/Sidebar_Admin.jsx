@@ -9,7 +9,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import logo from "~/assert/MainLogo.jpg";
+import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
 
 export const Sidebar_Admin = (props) => {
@@ -86,6 +86,11 @@ export const Sidebar_Admin = (props) => {
             <MenuItem>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Đơn đặt hàng
+              </Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Hóa đơn
               </Typography>
             </MenuItem>
           </SubMenu>

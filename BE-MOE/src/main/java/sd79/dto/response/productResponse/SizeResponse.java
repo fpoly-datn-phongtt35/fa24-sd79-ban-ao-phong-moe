@@ -16,4 +16,15 @@ public class SizeResponse {
     private String createdBy;
     private Date createdAt;
     private Date updatedAt;
+
+    public SizeResponse(Integer id, String name, float length, float width, float sleeve, String createdBy, Date createdAt, Date updatedAt) {
+        this.id = id;
+        this.name = name;
+        this.length = length;
+        this.width = width;
+        this.sleeve = sleeve;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 }

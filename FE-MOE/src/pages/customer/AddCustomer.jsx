@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Container, Box, Grid, TextField, MenuItem, Typography, Paper, Avatar } from '@mui/material';
+import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
 import { toast } from 'react-toastify';
-import { postCustomer } from '~/apis/customerApi';
+import { postCustomer, postcustomerImage } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Radio, RadioGroup } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 
 export const AddCustomer = () => {
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageObject, setImageObject] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const formatDate = (dateString, time = "00:00:00") => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -60,15 +62,37 @@ export const AddCustomer = () => {
       createdAt: currentDate,
       updatedAt: currentDate,
     };
-
     try {
-      await postCustomer(customerWithTimestamps);
-      toast.success('Customer added successfully!');
-      navigate('/customer');
+      setIsLoading(true);
+      await postCustomer(customerWithTimestamps)
+        .then(async (res) => {
+          if (imageObject === null) {
+            toast.success('Thêm thành công');
+            setIsLoading(false);
+            navigate('/customer');
+            return;
+          }
+          const formData = new FormData();
+          formData.append("images", imageObject)
+          formData.append("productId", res)
+          await postcustomerImage(formData).then(() => {
+            toast.success('Thêm thành công');
+            setIsLoading(false);
+            navigate('/customer');
+          })
+        });
     } catch (error) {
-      toast.error('There was an error adding the customer');
+      setIsLoading(false);
+      toast.error('Thêm thất bại!');
     }
   };
+
+  const handleImageChange = (event) => {
+    var file = event.target.files[0];
+    var url = URL.createObjectURL(file)
+    setImagePreview(url)
+    setImageObject(file)
+  }
 
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
@@ -82,6 +106,7 @@ export const AddCustomer = () => {
         >
           <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
             <Link
+              disabled={isLoading}
               underline="hover"
               sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
               color="inherit"
@@ -91,6 +116,7 @@ export const AddCustomer = () => {
               Trang chủ
             </Link>
             <Link
+              disabled={isLoading}
               underline="hover"
               sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
               color="inherit"
@@ -119,13 +145,14 @@ export const AddCustomer = () => {
                       component="label"
                       color='primary'
                       sx={{ mt: 2 }}
+                      disabled={isLoading}
                     >
                       Chọn Ảnh
                       <input
                         type="file"
                         accept="image/*"
                         hidden
-                      // onChange={handleImageChange}
+                        onChange={handleImageChange}
                       />
                     </Button>
                   </Box>
@@ -295,10 +322,10 @@ export const AddCustomer = () => {
                     </Grid>
                   </Grid>
                   <Grid item xs={6} sx={{ marginTop: 1 }}>
-                    <Button variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
+                    <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                       Thêm Người Dùng
                     </Button>
-                    <Button variant="soft" type="submit" color="danger">
+                    <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>
