@@ -18,11 +18,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 
     @Query("SELECT c FROM Customer c " +
+            "JOIN c.user u " + // Join to access user attributes
             "WHERE (:keyword IS NULL OR c.firstName LIKE %:keyword% " +
             "OR c.lastName LIKE %:keyword% " +
-            "OR c.phoneNumber  LIKE %:keyword%) " +
-            "AND (:gender IS NULL OR c.gender LIKE %:gender%) " +
-            "AND (:dateOfBirth IS NULL OR Date(c.dateOfBirth) = :dateOfBirth)")
+            "OR u.username LIKE %:keyword% " + // Searching by username
+            "OR u.email LIKE %:keyword% " + // Searching by email
+            "OR c.phoneNumber LIKE %:keyword%) " + // Searching by phone number
+            "AND (:gender IS NULL OR c.gender LIKE %:gender%) " + // Exact match for gender
+            "AND (:dateOfBirth IS NULL OR Date(c.dateOfBirth) = :dateOfBirth)") // Exact match for date of birth
     Page<Customer> searchCustomers(@Param("keyword") String keyword,
                                    @Param("gender") Gender gender,
                                    @Param("dateOfBirth") Date dateOfBirth,

@@ -42,7 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     private static final String PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{6,20}$";
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(PASSWORD_REGEX);
 
-    private static final String PHONE_REGEX = "^0\\d{9,12}$";
+    private static final String PHONE_REGEX = "^0\\d{9,11}$";
     private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
 
     private static final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
@@ -223,9 +223,9 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteCustomer(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
-        CustomerAddress address = customerAddressRepository.findById(id)
+        CustomerAddress address = customerAddressRepository.findById(customer.getCustomerAddress().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ khách hàng"));
-        User user = userRepository.findById(id)
+        User user = userRepository.findById(customer.getUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
         if (customer.getPublicId() != null) {
             this.cloudinary.removeByPublicId(customer.getPublicId());

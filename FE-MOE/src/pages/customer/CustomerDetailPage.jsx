@@ -94,8 +94,9 @@ export const CustomerDetailPage = () => {
         setIsLoading(false);
         navigate('/customer');
       })
+     
     });
-
+    
   };
   const handleImageChange = (event) => {
     var file = event.target.files[0];

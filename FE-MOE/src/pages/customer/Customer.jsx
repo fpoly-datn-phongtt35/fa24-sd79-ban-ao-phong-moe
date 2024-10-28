@@ -55,7 +55,7 @@ export const Customer = () => {
       setCustomers(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      toast.error('Failed to fetch customers.');
+      toast.error('Không thể tìm kiếm khách hàng.');
     } finally {
       setLoading(false);
     }
@@ -182,9 +182,7 @@ export const Customer = () => {
         </Grid>
       </Box>
       <Box marginBottom={2}>
-        <Typography color="neutral" level="title-lg" noWrap variant="plain">
-          Danh sách sản phẩm
-        </Typography>
+        
       </Box>
       <TableContainer sx={{ border: '1px solid #38383e78' }} component={Paper}>
         <Table aria-label="customer table">
