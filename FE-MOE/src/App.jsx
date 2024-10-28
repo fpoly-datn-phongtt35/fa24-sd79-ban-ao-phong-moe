@@ -34,8 +34,9 @@ import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
 import LoginPage from "./pages/auth/LoginPage";
 import LocationSelector from "./pages/other/LocationSelector";
+import ShoppingCart from "./pages/clients/ShoppingCart";
 
-const ProtectedRoutes = () => {
+const ProtectedRoutes_ADMIN = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
@@ -69,6 +70,37 @@ const ProtectedRoutes = () => {
 
           <div className="content-area">
             <Outlet />
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return <Navigate to="/" replace={true} />;
+  }
+};
+const ProtectedRoutes_USER = () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
+  if (!accessToken) {
+    return <Navigate to="/signin" replace={true} />;
+  } else if (getAuthority() === "USER") {
+    return (
+      <div className="layout_client">
+        <div className="main-area_client">
+          <div>
+            <Header_Client />
+          </div>
+          <div className="content-area_client">
+            <Outlet />
+            <FooterClient />
           </div>
         </div>
       </div>
@@ -145,7 +177,11 @@ function App() {
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
-      <Route element={<ProtectedRoutes />}>
+      <Route element={<ProtectedRoutes_USER />}>
+        <Route path="/cart" element={<ShoppingCart />} />
+      </Route>
+
+      <Route element={<ProtectedRoutes_ADMIN />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
         <Route path="/product/categories" element={<Categories />} />

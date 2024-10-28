@@ -38,8 +38,6 @@ public class AuthenticationService {
 
     private final JwtService jwtService;
 
-    private final PasswordEncoder passwordEncoder;
-
     private final TokenService tokenService;
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
@@ -86,10 +84,13 @@ public class AuthenticationService {
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
         }
+        try {
+            String username = this.jwtService.extractUsername(authorization, ACCESS_TOKEN);
+            this.tokenService.deleteToken(username);
+            log.info("========== logout successfully ==========");
+        } catch (Exception e) {
+            log.error("The account was logged out with an error={}", e.getMessage());
+        }
 
-//        final String token = authorization.substring("Bearer ".length());
-//        String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-//        this.tokenService.deleteToken(username);
-        log.info("========== logout successfully ==========");
     }
 }
