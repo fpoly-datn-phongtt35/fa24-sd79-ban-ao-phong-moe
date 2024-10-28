@@ -1,10 +1,12 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Box, Card, CardContent, CardCover, Grid, Typography } from "@mui/joy";
 import Button from "@mui/joy/Button";
 import SvgIcon from "@mui/joy/SvgIcon";
 
 import { useState } from "react";
-
-
 
 export const ImageUpload = ({ onImagesUpload }) => {
   const [uploadedImages, setUploadedImages] = useState([]);

@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Autocomplete,
   Box,
@@ -116,37 +120,43 @@ export const ProductStore = () => {
     const { name, value } = event?.target;
     const updatedDetails = [...details];
     updatedDetails[index][name] = value;
-    if (name === "retailPrice") {
-      if (value < 10000) {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], retailPrice: true };
-          return newErrors;
-        });
-      } else {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], retailPrice: false };
-          return newErrors;
-        });
+
+    if (index === 0) {
+      for (let i = 1; i < updatedDetails.length; i++) {
+        updatedDetails[i][name] = value;
       }
     }
 
-    if (name === "quantity") {
-      if (value < 0) {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], quantity: true };
-          return newErrors;
-        });
-      } else {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], quantity: false };
-          return newErrors;
-        });
-      }
+    if (name === "retailPrice") {
+      const isValidPrice = value >= 10000;
+      setAttributesError((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], retailPrice: !isValidPrice };
+
+        if (index === 0) {
+          for (let i = 1; i < newErrors.length; i++) {
+            newErrors[i] = { ...newErrors[i], retailPrice: !isValidPrice };
+          }
+        }
+        return newErrors;
+      });
     }
+
+    if (name === "quantity") {
+      const isValidQuantity = value >= 0;
+      setAttributesError((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], quantity: !isValidQuantity };
+
+        if (index === 0) {
+          for (let i = 1; i < newErrors.length; i++) {
+            newErrors[i] = { ...newErrors[i], quantity: !isValidQuantity };
+          }
+        }
+        return newErrors;
+      });
+    }
+
     setDetails(updatedDetails);
     setValue("productDetails", details);
   };
@@ -194,7 +204,7 @@ export const ProductStore = () => {
   const onSubmit = async (data) => {
     if (colorCount.length > 0 && sizeCount.length > 0) {
       if (
-        attributesError.some((error) => error.retailPrice || error.quantity)
+        attributesError.some((error) => error?.retailPrice || error?.quantity)
       ) {
         return;
       }
