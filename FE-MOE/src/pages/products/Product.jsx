@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Container,
   Box,
@@ -21,7 +25,6 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
-import { speacker } from "~/utils/speak";
 import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Product = () => {

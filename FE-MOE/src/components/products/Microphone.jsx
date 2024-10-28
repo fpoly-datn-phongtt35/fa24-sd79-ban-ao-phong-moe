@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   IconButton,
@@ -12,7 +16,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { speacker } from "~/utils/speak";
-import chatbot from "~/assert/chatbot.png";
+import chatbot from "~/assert/images/chatbot.png";
 import { useEffect, useState } from "react";
 
 export const Microphone = ({ method }) => {

@@ -10,6 +10,7 @@ import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.PageableResponse;
+import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
@@ -23,6 +24,7 @@ import sd79.service.CouponService;
 import sd79.utils.CloudinaryUploadCoupon;
 import sd79.utils.Email;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,7 +48,6 @@ public class CouponServiceImpl implements CouponService {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-
         return this.couponCustomizeQuery.getAllCoupons(param);
     }
 
@@ -105,26 +106,37 @@ public class CouponServiceImpl implements CouponService {
         try {
             CouponImage couponImage = findByImage(coupon.getId());
             String imageUrl = couponImage.getImageUrl();
-
             String subject = "Thông Báo Phiếu Giảm Giá";
+            String discountType = coupon.getDiscountType() == TodoDiscountType.PERCENTAGE ? "%" : "VND";
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            String formattedStartDate = dateFormat.format(coupon.getStartDate());
+            String formattedEndDate = dateFormat.format(coupon.getEndDate());
+
             String body = String.format(
-                    "<div style=\"font-family:Arial, sans-serif; background-color:#f8f8f8; padding:20px; text-align:center;\">" +
-                            "<h2 style=\"color:#f37021;\">Bạn có một phiếu giảm giá: %s</h2>" +
-                            "<div style=\"background-color:white; padding:20px; max-width:600px; margin:auto; border-radius:10px;\">" +
-                            "<h3 style=\"color:#333;\">Thông Báo Phiếu Giảm Giá</h3>" +
-                            "<p style=\"color:#666;\">Xin chào %s,</p>" +
-                            "<p style=\"color:#666;\">Chúng tôi vô cùng vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt.</p>" +
-                            "<div style=\"background-image: url('%s'); " +
-                            "background-size: cover; padding:40px; border-radius:8px; font-size:16px; color:#333;\">" +
-                            "<strong>Giảm %s%% Có hiệu lực từ: %s đến %s</strong>" +
+                    "<div style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;\">" +
+                            "<div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\">" +
+                            "<div style=\"text-align: center;\">" +
+                            "<img src=\"https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg\" alt=\"Logo\" style=\"max-width: 120px; margin-bottom: 20px;\" />" +
+                            "<h1 style=\"font-size: 24px; color: #333; margin: 0 0 10px;\">🎉 Bạn có một phiếu giảm giá đặc biệt! 🎉</h1>" +
+                            "<p style=\"font-size: 18px; color: #ff6f61; margin: 0;\">Thông Tin Phiếu Giảm Giá - %s</p>" +
                             "</div>" +
-                            "<p style=\"color:#666;\">Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
-                            "<a href=\"#\" style=\"display:inline-block; padding:10px 20px; background-color:#333; color:white; text-decoration:none; border-radius:5px;\">Xem Chi Tiết</a>" +
-                            "<p style=\"color:#999; font-size:12px;\">Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
+                            "<p style=\"font-size: 16px; color: #555; line-height: 1.6; text-align: center;\">Xin chào <strong style='color:#ff6f61;'>%s</strong>, chúng tôi rất vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt cho lần mua sắm tiếp theo của mình!</p>" +
+                            "<div style=\"background-image: url('%s'); background-size: cover; padding: 20px; text-align: center; color: white; border-radius: 10px; margin: 20px 0;\">" +
+                            "<strong style=\"font-size: 24px;\">Giảm %s %s</strong><br />" +
+                            "<p style=\"font-size: 16px;\">Mã phiếu giảm giá: <strong style='color:#e74c3c;'>%s</strong></p>" +
+                            "<p style=\"font-size: 16px;\">Có hiệu lực từ <strong>%s</strong> đến <strong>%s</strong></p>" +
+                            "</div>" +
+                            "<p style=\"font-size: 16px; color: #555; text-align: center;\">Hãy sử dụng mã này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
+                            "<div style=\"text-align: center;\">" +
+                            "<a href=\"http://localhost:1004/\" style=\"display: inline-block; padding: 15px 30px; background-color: #ff6f61; color: white; font-size: 18px; border-radius: 8px; text-decoration: none;\">Xem Chi Tiết</a>" +
+                            "</div>" +
+                            "<p style=\"font-size: 14px; color: #aaa; text-align: center; margin-top: 30px;\">Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
                             "</div>" +
                             "</div>",
-                    coupon.getName(), customer.getFirstName(), imageUrl,
-                    coupon.getDiscountValue(), coupon.getStartDate(), coupon.getEndDate()
+                    coupon.getName(),
+                    customer.getFirstName(), imageUrl,
+                    coupon.getDiscountValue(), discountType, coupon.getCode(),
+                    formattedStartDate, formattedEndDate
             );
 
             email.sendEmail(customer.getUser().getEmail(), subject, body);
@@ -167,7 +179,6 @@ public class CouponServiceImpl implements CouponService {
             }
         }
     }
-
 
 
     private String extractPublicId(String url) {
@@ -240,7 +251,6 @@ public class CouponServiceImpl implements CouponService {
     }
 
 
-
     @Transactional
     @Override
     public void deleteCoupon(Long id) {//xoa phieu giam gia
@@ -248,12 +258,6 @@ public class CouponServiceImpl implements CouponService {
         couponRepo.delete(coupon);
     }
 
-    public void deleteCouponShare(Long couponId) {
-        Coupon coupon = couponRepo.findById(couponId)
-                .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
-        List<CouponShare> couponShares = couponShareRepo.findByCoupon(coupon);
-        couponShareRepo.deleteAll(couponShares);
-    }
 
     @Override
     public void deleteCouponImage(Long couponId) {
@@ -267,8 +271,14 @@ public class CouponServiceImpl implements CouponService {
         }
     }
 
+    public void deleteCouponShare(Long couponId) {
+        Coupon coupon = couponRepo.findById(couponId)
+                .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        List<CouponShare> couponShares = couponShareRepo.findByCoupon(coupon);
+        couponShareRepo.deleteAll(couponShares);
+    }
 
-    private CouponResponse convertCouponResponse(Coupon coupon) {//lay du lieu phieu giam gia respone de hien thi danh sach
+    private CouponResponse convertCouponResponse(Coupon coupon) {
 
         List<Customer> customers = coupon.getCouponShares().stream()
                 .map(CouponShare::getCustomer)
@@ -294,7 +304,7 @@ public class CouponServiceImpl implements CouponService {
     }
 
     private User getUserById(Long id) {
-        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));
     }
 
     private String convertToUrl(CouponImage image) {

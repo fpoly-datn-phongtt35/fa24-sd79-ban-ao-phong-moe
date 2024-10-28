@@ -227,6 +227,48 @@ CREATE TABLE product_promotion(
     promotion_price DECIMAL(10, 2)
 );
 
+-- bill
+CREATE TABLE bill_status (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(55),
+  description TEXT
+);
+
+CREATE TABLE bill (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  customer_id BIGINT,
+  coupon_id BIGINT,
+  bill_status_id INT,
+  shipping_cost DECIMAL(15, 0),
+  total_amount DECIMAL(15, 0),
+  barcode VARCHAR(255),
+  qr_code VARCHAR(255),
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted BIT DEFAULT 0,
+  FOREIGN KEY (customer_id) REFERENCES customers(id),
+  FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+  FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
+);
+
+-- tổng tiền của sản phẩm = số lượng * (giá gốc - giá giảm)
+-- giá giảm = giá gốc - (product_promotion_id.promotion_id.promotion_value)
+CREATE TABLE bill_detail (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  product_detail_id BIGINT,
+  bill_id BIGINT,
+  quantity INT, -- số lượng 
+  retail_price DECIMAL(15, 0),  -- giá gốc
+  discount_amount DECIMAL(15, 0), -- giá giảm
+  total_amount_product DECIMAL(15, 0), -- tổng tiền của sản phẩm
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
+  FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
+);
+
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
 
@@ -703,3 +745,30 @@ INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
     (3, 3, 0),  
     (4, 4, 0),  
     (5, 5, 0);  
+    
+-- bill
+INSERT INTO bill_status (name, description) VALUES
+('Đã xác nhận đơn hàng', NULL),
+('Đã bàn giao cho đơn vị vận chuyển', NULL),
+('Đã xác nhận thông tin thanh toán', NULL),
+('Đơn hàng đã được giao thành công', NULL),
+('Đã hủy đơn hàng', NULL),
+('Khác', NULL);
+
+INSERT INTO bill (customer_id, coupon_id, bill_status_id, shipping_cost, total_amount, barcode, qr_code, created_by, updated_by, is_deleted) VALUES
+(1, 1, 1, 30000, 329000, '1234567890', 'QRCODE1', 1, 1, 0),
+(2, 2, 2, 25000, 424000, '2345678901', 'QRCODE2', 2, 2, 0),
+(3, 3, 3, 35000, 229000, '3456789012', 'QRCODE3', 3, 3, 0),
+(4, 4, 4, 20000, 619000, '4567890123', 'QRCODE4', 4, 4, 0),
+(5, 5, 5, 50000, 529000, '5678901234', 'QRCODE5', 5, 5, 0);
+
+INSERT INTO bill_detail (product_detail_id, bill_id, quantity, retail_price, discount_amount, total_amount_product) VALUES
+(1, 1, 2, 299000, 85, 598000), 
+(2, 1, 1, 399000, 100, 399000), 
+(3, 2, 3, 249000, NULL, 747000), 
+(4, 3, 1, 599000, NULL, 599000), 
+(1, 4, 1, 299000, 85, 299000),
+(2, 5, 2, 399000, 100, 798000), 
+(3, 5, 1, 249000, NULL, 249000); 
+
+

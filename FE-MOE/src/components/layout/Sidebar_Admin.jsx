@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { handleLogoutAPI } from "~/apis";
@@ -9,7 +13,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import logo from "~/assert/MainLogo.jpg";
+import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
 
 export const Sidebar_Admin = (props) => {
