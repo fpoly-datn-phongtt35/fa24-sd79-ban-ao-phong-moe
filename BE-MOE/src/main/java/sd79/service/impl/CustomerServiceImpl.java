@@ -70,21 +70,26 @@ public class CustomerServiceImpl implements CustomerService {
     public boolean isValidEmail(String email) {
         return EMAIL_PATTERN.matcher(email).matches();
     }
+
     public boolean isValidUsername(String username) {
         return username != null && username.matches(USERNAME_REGEX);
     }
+
     public boolean isValidPassword(String password) {
         return password != null && PASSWORD_PATTERN.matcher(password).matches();
     }
+
     public boolean isValidPhoneNumber(String phoneNumber) {
         return phoneNumber != null && PHONE_PATTERN.matcher(phoneNumber).matches();
     }
+
     public boolean isValidName(String name) {
-        if (name == null  || name.length() > 50) {
+        if (name == null || name.length() > 50) {
             return false;
         }
         return Character.isUpperCase(name.charAt(0));
     }
+
     public boolean isOldEnough(Date dateOfBirth) {
         if (dateOfBirth == null) {
             throw new EntityExistsException("Ngày sinh không được để trống.");
@@ -109,33 +114,31 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
 
-
-
     @Transactional
     @Override
     public long createCustomer(CustomerReq customerReq) {
 
-        if (!isValidName(customerReq.getLastName())) {
-            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
-        } else if (!isValidName(customerReq.getFirstName())) {
-            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
-        } else if (!this.isValidEmail(customerReq.getEmail())) {
-            throw new EntityExistsException("Email không đúng định dạng.");
-        }else if (!isValidPassword(customerReq.getPassword())) {
-            throw new EntityExistsException("Mật khẩu phải từ 6-20 ký tự, chứa ít nhất một ký tự in hoa và một ký tự đặc biệt.");
-        } else if (!isValidPhoneNumber(customerReq.getPhoneNumber())) {
-            throw new EntityExistsException("Số  điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
-        } else if (!isValidUsername(customerReq.getUsername())) {
-            throw new EntityExistsException("Tên tài khoản phải từ 6 đến 20 ký tự và không chứa ký tự đặc biệt.");
-        } else if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
-            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
-        } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
-            throw new EntityExistsException("Email đã tồn tại.");
-        } else if (this.customerRepository.existsByPhoneNumber(customerReq.getPhoneNumber())) {
-            throw new EntityExistsException("Số điện thoại đã tồn tại.");
-        }else if (!isOldEnough(customerReq.getDateOfBirth())) {
-            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
-        }
+//        if (!isValidName(customerReq.getLastName())) {
+//            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
+//        } else if (!isValidName(customerReq.getFirstName())) {
+//            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
+//        } else if (!this.isValidEmail(customerReq.getEmail())) {
+//            throw new EntityExistsException("Email không đúng định dạng.");
+//        }else if (!isValidPassword(customerReq.getPassword())) {
+//            throw new EntityExistsException("Mật khẩu phải từ 6-20 ký tự, chứa ít nhất một ký tự in hoa và một ký tự đặc biệt.");
+//        } else if (!isValidPhoneNumber(customerReq.getPhoneNumber())) {
+//            throw new EntityExistsException("Số  điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
+//        } else if (!isValidUsername(customerReq.getUsername())) {
+//            throw new EntityExistsException("Tên tài khoản phải từ 6 đến 20 ký tự và không chứa ký tự đặc biệt.");
+//        } else if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
+//            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
+//        } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
+//            throw new EntityExistsException("Email đã tồn tại.");
+//        } else if (this.customerRepository.existsByPhoneNumber(customerReq.getPhoneNumber())) {
+//            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+//        }else if (!isOldEnough(customerReq.getDateOfBirth())) {
+//            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
+//        }
         {
 
 
@@ -144,6 +147,8 @@ public class CustomerServiceImpl implements CustomerService {
                     .district(customerReq.getDistrict())
                     .ward(customerReq.getWard())
                     .streetName(customerReq.getStreetName())
+                    .cityId(customerReq.getCity_id())
+                    .districtId(customerReq.getDistrict_id())
                     .build();
             address = this.customerAddressRepository.save(address);
 
@@ -185,28 +190,30 @@ public class CustomerServiceImpl implements CustomerService {
             customerAddress = new CustomerAddress();
         }
         User user = customer.getUser();
-        if (!isValidName(customerRequest.getLastName())) {
-            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
-        } else if (!isValidName(customerRequest.getFirstName())) {
-            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
-        } else if (!this.isValidEmail(customerRequest.getEmail()) && !user.getEmail().equals(customerRequest.getEmail())) {
-            throw new EntityExistsException("Email không đúng định dạng.");
-        } else if (!isValidPhoneNumber(customerRequest.getPhoneNumber()) && !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
-            throw new EntityExistsException("Số điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
-        }  else if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
-                !user.getEmail().equals(customerRequest.getEmail())) {
-            throw new EntityExistsException("Email đã tồn tại.");
-        } else if (this.customerRepository.existsByPhoneNumber(customerRequest.getPhoneNumber()) &&
-                !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
-            throw new EntityExistsException("Số điện thoại đã tồn tại.");
-        } else if (!isOldEnough(customerRequest.getDateOfBirth())) {
-            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
-        }
+//        if (!isValidName(customerRequest.getLastName())) {
+//            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
+//        } else if (!isValidName(customerRequest.getFirstName())) {
+//            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
+//        } else if (!this.isValidEmail(customerRequest.getEmail()) && !user.getEmail().equals(customerRequest.getEmail())) {
+//            throw new EntityExistsException("Email không đúng định dạng.");
+//        } else if (!isValidPhoneNumber(customerRequest.getPhoneNumber()) && !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
+//            throw new EntityExistsException("Số điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
+//        } else if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
+//                !user.getEmail().equals(customerRequest.getEmail())) {
+//            throw new EntityExistsException("Email đã tồn tại.");
+//        } else if (this.customerRepository.existsByPhoneNumber(customerRequest.getPhoneNumber()) &&
+//                !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
+//            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+//        } else if (!isOldEnough(customerRequest.getDateOfBirth())) {
+//            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
+//        }
         if (user == null) {
             user = new User();
         }
         customerAddress.setCity(customerRequest.getCity());
+        customerAddress.setCityId(customerRequest.getCity_id());
         customerAddress.setDistrict(customerRequest.getDistrict());
+        customerAddress.setDistrictId(customerRequest.getDistrict_id());
         customerAddress.setWard(customerRequest.getWard());
         customerAddress.setStreetName(customerRequest.getStreetName());
         user.setEmail(customerRequest.getEmail());
@@ -275,7 +282,9 @@ public class CustomerServiceImpl implements CustomerService {
                 .dateOfBirth(customer.getDateOfBirth())
                 .gender(customer.getGender())
                 .city(customer.getCustomerAddress().getCity())
+                .city_id(customer.getCustomerAddress().getCityId())
                 .district(customer.getCustomerAddress().getDistrict())
+                .district_id(customer.getCustomerAddress().getDistrictId())
                 .ward(customer.getCustomerAddress().getWard())
                 .streetName(customer.getCustomerAddress().getStreetName())
                 .image(customer.getImage())

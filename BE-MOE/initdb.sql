@@ -79,7 +79,9 @@ CREATE TABLE customer_address (
     street_name varchar(255),
     ward varchar(255),
     district varchar(255),
-    city varchar(255)
+	district_id INT,
+    city varchar(255),
+	city_id INT
 );
 
 -- Product
@@ -317,31 +319,6 @@ INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, cr
 VALUES
     ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
     ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0);
-
--- User customer
-INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
-VALUES
-    ('user', 'user@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vantan', 'vantan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thibich', 'thibich@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('minhtuan', 'minhtuan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('ngochaph', 'ngochaph@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vannam', 'vannam@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('quanghai', 'quanghai@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thimai', 'thimai@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thanhtung', 'thanhtung@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vanduc', 'vanduc@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thilan', 'thilan@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thihuong', 'thihuong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thihong', 'thihong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('huuhoang', 'huuhoang@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vanlong', 'vanlong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thiyen', 'thiyen@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vanhung', 'vanhung@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thithuy', 'thithuy@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('minhchau', 'minhchau@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('vancuong', 'vancuong@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0),
-    ('thihong2', 'thihong2@moe.vn', '$2a$12$DuLq/PsMIVqwvN.63fi23.SODxII67rmoJ/xWoUJI94Anc0Vk9Vbu', 2, 0, 0, NOW(), NOW(), 0);
 
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
@@ -661,34 +638,6 @@ VALUES
 ('John', 'Doe', 1, '0123456789', 'MALE', '1990-01-01', 'john_avatar.jpg', 1, 1, NOW(), NOW()),
 ('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
-
-INSERT INTO customer_address (street_name, ward, district, city)
-VALUES
-    ('81 Trung Kinh', 'Trung Kinh', 'Cau Giay', 'Hà Nội'),
-    ('Lê Duẩn', 'Cửa Nam', 'Hoàn Kiếm', 'Hà Nội'),
-    ('Kim Mã', 'Ngọc Khánh', 'Ba Đình', 'Hà Nội'),
-    ('Nguyễn Trãi', 'Thượng Đình', 'Thanh Xuân', 'Hà Nội'),
-    ('Trần Duy Hưng', 'Trung Hòa', 'Cầu Giấy', 'Hà Nội'),
-    ('Tôn Đức Thắng', 'Hàng Bột', 'Đống Đa', 'Hà Nội'),
-    ('Phạm Văn Đồng', 'Xuân Đỉnh', 'Bắc Từ Liêm', 'Hà Nội'),
-    ('Hoàng Quốc Việt', 'Nghĩa Đô', 'Cầu Giấy', 'Hà Nội'),
-    ('Đội Cấn', 'Cống Vị', 'Ba Đình', 'Hà Nội'),
-    ('Nguyễn Văn Cừ', 'Bồ Đề', 'Long Biên', 'Hà Nội'),
-    ('Lạc Long Quân', 'Xuân La', 'Tây Hồ', 'Hà Nội');
-
-INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, address_id, user_id, created_at, updated_at)
-VALUES
-    ('User', 'System', '0123456789', 'Male', '2004-01-12', NULL, 1, 3, NOW(), NOW()),
-    ('Van', 'Tan', '0123456789', 'Male', '1990-05-12', NULL, 2, 4, NOW(), NOW()),
-    ('Thi', 'Bich', '0123456790', 'Female', '1988-07-15', NULL, 11, 5, NOW(), NOW()),
-    ('Minh', 'Tuan', '0123456791', 'Male', '1992-09-20', NULL, 3, 6, NOW(), NOW()),
-    ('Ngo', 'Chaph', '0123456792', 'Female', '1991-12-11', NULL, 4, 7, NOW(), NOW()),
-    ('Van', 'Nam', '0123456793', 'Male', '1993-03-22', NULL, 5, 8, NOW(), NOW()),
-    ('Quang', 'Hai', '0123456794', 'Male', '1987-01-25', NULL, 6, 9, NOW(), NOW()),
-    ('Thi', 'Mai', '0123456795', 'Female', '1995-11-30', NULL, 7, 10, NOW(), NOW()),
-    ('Thanh', 'Tung', '0123456796', 'Male', '1994-08-14', NULL, 8, 11, NOW(), NOW()),
-    ('Van', 'Duc', '0123456797', 'Male', '1989-06-18', NULL, 9, 12, NOW(), NOW()),
-    ('Thi', 'Lan', '0123456798', 'Female', '1997-02-10', NULL, 10, 13, NOW(), NOW());
 
 -- promotions
 INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)

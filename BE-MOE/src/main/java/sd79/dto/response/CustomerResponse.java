@@ -24,7 +24,9 @@ public class CustomerResponse {
     private Date dateOfBirth;
     private String image;
     private String city;
+    private int city_id;
     private String district;
+    private int district_id;
     private String ward;
     private String streetName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")

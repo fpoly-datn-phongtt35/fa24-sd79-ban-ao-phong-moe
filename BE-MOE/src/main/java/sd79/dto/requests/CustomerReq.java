@@ -40,11 +40,17 @@ public class CustomerReq {
 //    @NotEmpty(message = "City cannot be empty")
     private String city;
 
+    private int city_id;
+
 //    @NotEmpty(message = "District cannot be empty")
     private String district;
 
+    private int district_id;
+
 //    @NotEmpty(message = "Ward cannot be empty")
     private String ward;
+
+//    private int ward_id;
 
 //    @NotEmpty(message = "StreetName cannot be empty")
     private String streetName;
