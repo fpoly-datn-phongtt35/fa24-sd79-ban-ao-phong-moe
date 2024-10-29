@@ -1,9 +1,13 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Box, CircularProgress, IconButton, Switch } from "@mui/material";
 import EditNoteTwoToneIcon from "@mui/icons-material/EditNoteTwoTone";
 import { useEffect, useState } from "react";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import SettingsBackupRestoreOutlinedIcon from "@mui/icons-material/SettingsBackupRestoreOutlined";
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { ImageRotator } from "../common/ImageRotator ";
 import { useNavigate } from "react-router-dom";
 import {
@@ -17,6 +21,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/joy";
+import { MoeAlert } from "../other/MoeAlert";
 
 export const TableData = (props) => {
   const [data, setData] = useState();
@@ -146,25 +151,34 @@ export const TableData = (props) => {
                   )}
                   {props.restore ? (
                     <td className="text-center">
-                      <Tooltip
-                        title="Khôi phục vào danh sách sản phẩm"
-                        variant="plain"
-                      >
-                        <IconButton
-                          color="primary"
-                          onClick={() => props.onRestoreProduct(value.id)}
-                        >
-                          <SettingsBackupRestoreOutlinedIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Xóa vĩnh viễn" variant="plain">
-                        <IconButton
-                          color="error"
-                          onClick={() => props.onDeleteForerver(value.id)}
-                        >
-                          <DeleteOutlinedIcon />
-                        </IconButton>
-                      </Tooltip>
+                      <MoeAlert
+                      title="Cảnh báo"
+                        message="Bạn có muốn khôi phục sản phẩm này không?"
+                        event={() => props.onRestoreProduct(value.id)}
+                        button={
+                          <Tooltip
+                            title="Khôi phục vào danh sách sản phẩm"
+                            variant="plain"
+                          >
+                            <IconButton color="primary">
+                              <SettingsBackupRestoreOutlinedIcon />
+                            </IconButton>
+                          </Tooltip>
+                        }
+                      />
+
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Xóa vĩnh viễn sản phẩm này không?"
+                        event={() => props.onDeleteForerver(value.id)}
+                        button={
+                          <Tooltip title="Xóa vĩnh viễn" variant="plain">
+                            <IconButton color="error">
+                              <DeleteOutlinedIcon />
+                            </IconButton>
+                          </Tooltip>
+                        }
+                      />
                     </td>
                   ) : (
                     <td className="text-center">
@@ -176,14 +190,22 @@ export const TableData = (props) => {
                           <EditNoteTwoToneIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Chuyển vào kho lưu trữ" variant="plain">
-                        <IconButton
-                          color="primary"
-                          onClick={() => props.onMoveToBin(value.id)}
-                        >
-                          <ArchiveIcon />
-                        </IconButton>
-                      </Tooltip>
+
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?"
+                        event={() => props.onMoveToBin(value.id)}
+                        button={
+                          <Tooltip
+                            title="Chuyển vào kho lưu trữ"
+                            variant="plain"
+                          >
+                            <IconButton color="primary">
+                              <ArchiveIcon />
+                            </IconButton>
+                          </Tooltip>
+                        }
+                      />
                     </td>
                   )}
                 </tr>

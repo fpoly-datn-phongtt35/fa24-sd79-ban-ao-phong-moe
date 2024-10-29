@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.service;
 
 import io.micrometer.common.util.StringUtils;
@@ -12,12 +18,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.response.auth.TokenResponse;
+import sd79.dto.response.auth.UserResponse;
 import sd79.exception.InvalidDataException;
 import sd79.model.User;
 import sd79.model.redis_model.Token;
 import sd79.repositories.auth.UserRepository;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static sd79.enums.TokenType.ACCESS_TOKEN;
 import static sd79.enums.TokenType.REFRESH_TOKEN;
 
 @Slf4j
@@ -30,11 +38,9 @@ public class AuthenticationService {
 
     private final JwtService jwtService;
 
-    private final PasswordEncoder passwordEncoder;
-
     private final TokenService tokenService;
 
-    public TokenResponse authenticate(SignInRequest signInRequest){
+    public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         var user = this.userRepository.findByUsername(signInRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Username or password incorrect"));
         String access_token = this.jwtService.generateToken(user);
@@ -54,7 +60,7 @@ public class AuthenticationService {
     }
 
     public TokenResponse refresh(HttpServletRequest request) {
-            String refresh_token = request.getHeader("AUTHORIZATION_REFRESH_TOKEN");
+        String refresh_token = request.getHeader("AUTHORIZATION_REFRESH_TOKEN");
         if (StringUtils.isBlank(refresh_token)) {
             throw new InvalidDataException("Token must be not blank!");
         }
@@ -78,10 +84,13 @@ public class AuthenticationService {
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
         }
+        try {
+            String username = this.jwtService.extractUsername(authorization, ACCESS_TOKEN);
+            this.tokenService.deleteToken(username);
+            log.info("========== logout successfully ==========");
+        } catch (Exception e) {
+            log.error("The account was logged out with an error={}", e.getMessage());
+        }
 
-//        final String token = authorization.substring("Bearer ".length());
-//        String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-//        this.tokenService.deleteToken(username);
-        log.info("========== logout successfully ==========");
     }
 }

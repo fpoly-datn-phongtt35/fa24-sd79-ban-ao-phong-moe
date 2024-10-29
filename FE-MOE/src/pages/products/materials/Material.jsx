@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { useEffect, useState } from "react";
 import debounce from "lodash.debounce";
 import Container from "@mui/material/Container";
@@ -9,13 +13,21 @@ import { DialogModify } from "~/components/common/DialogModify";
 import { DialogModifyIconButton } from "~/components/common/DialogModifyIconButton";
 import { Grid, Box, IconButton } from "@mui/material";
 import { BreadcrumbsAttributeProduct } from "~/components/other/BreadcrumbsAttributeProduct";
-import { CircularProgress, FormControl, FormLabel, Input, Sheet, Table } from "@mui/joy";
+import {
+  CircularProgress,
+  FormControl,
+  FormLabel,
+  Input,
+  Sheet,
+  Table,
+} from "@mui/joy";
 import {
   deleteMaterial,
   fetchAllMaterials,
   postMaterial,
   putMaterial,
 } from "~/apis/materialApi";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Material = () => {
   const [materials, setMaterials] = useState(null);
@@ -53,17 +65,7 @@ export const Material = () => {
     handleSetMaterials();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa chất liệu này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
 
   if (!materials) {
@@ -155,12 +157,16 @@ export const Material = () => {
                         id={material.id}
                         handleSubmit={handleEditMaterial}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(material.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa chất liệu này?"
+                        event={() => ondelete(material.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

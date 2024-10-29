@@ -58,4 +58,22 @@ public class Customer {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Size(max = 200)
+    @Column(name = "publicId", length = 200)
+    private String publicId;
+
+    public void setFirstName(String firstName) {
+        this.firstName = capitalizeFirstLetter(firstName);
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = capitalizeFirstLetter(lastName);
+    }
+
+
+    private String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1).toLowerCase();
+    }
+
 }

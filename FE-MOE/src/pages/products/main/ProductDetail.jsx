@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Breadcrumbs,
   Container,
@@ -13,11 +17,12 @@ import { fetchProduct, postProductImage, removeImage } from "~/apis/productApi";
 import { ModifyProduct } from "~/components/products/ModifyProduct";
 import { TableDetails } from "~/components/products/TableDetails";
 import { IconButton } from "@mui/material";
-import HighlightOffTwoToneIcon from '@mui/icons-material/HighlightOffTwoTone';
+import HighlightOffTwoToneIcon from "@mui/icons-material/HighlightOffTwoTone";
 import BackupOutlinedIcon from "@mui/icons-material/BackupOutlined";
 import { styled } from "@mui/joy";
 import { toast } from "react-toastify";
 import { ZoomImage } from "~/components/products/ZoomImage";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -73,18 +78,8 @@ export const ProductDetail = () => {
     });
   };
 
-  const onRemoveImage = (publicId) => {
-    swal({
-      title: "Cảnh báo",
-      text: "Bạn có muốn xóa ảnh này không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then(async (confirm) => {
-      if (confirm) {
-        await removeImage(publicId).then(() => getProduct());
-      }
-    });
+  const onRemoveImage = async (publicId) => {
+    await removeImage(publicId).then(() => getProduct());
   };
 
   return (
@@ -111,8 +106,8 @@ export const ProductDetail = () => {
           Quản lý sản phẩm
         </Link>
         <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-            Thông tin sản phẩm
-          </Typography>
+          Thông tin sản phẩm
+        </Typography>
       </Breadcrumbs>
       <Box marginTop={3}>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -267,18 +262,24 @@ export const ProductDetail = () => {
                       url={url}
                     />
                     {product?.imageUrl.length > 1 && (
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => onRemoveImage(item.publicId)}
-                        style={{
-                          position: "absolute",
-                          top: -10,
-                          right: 0,
-                          color: "#ffff",
-                        }}
-                      >
-                        <HighlightOffTwoToneIcon  />
-                      </IconButton>
+                      <MoeAlert
+                        title="Xóa ảnh sản phẩm"
+                        message="Bạn có muốn xóa ảnh này không?"
+                        event={() => onRemoveImage(item.publicId)}
+                        button={
+                          <IconButton
+                            aria-label="delete"
+                            style={{
+                              position: "absolute",
+                              top: -10,
+                              right: 0,
+                              color: "#ffff",
+                            }}
+                          >
+                            <HighlightOffTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     )}
                   </ImageListItem>
                 ))}

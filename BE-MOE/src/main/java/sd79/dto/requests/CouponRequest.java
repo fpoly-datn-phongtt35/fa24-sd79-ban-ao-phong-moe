@@ -37,7 +37,6 @@ public class CouponRequest {
     private BigDecimal discountValue;
 
     @NotNull(message = "Minimum order value is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Minimum order value must be greater than zero")
     private BigDecimal maxValue;
 
     @NotNull(message = "Quantity is required")

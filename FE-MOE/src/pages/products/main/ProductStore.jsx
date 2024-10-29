@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Autocomplete,
   Box,
@@ -31,8 +35,17 @@ import {
 import { useForm } from "react-hook-form";
 import SaveAsOutlinedIcon from "@mui/icons-material/SaveAsOutlined";
 import SvgIcon from "@mui/joy/SvgIcon";
+import AddIcon from "@mui/icons-material/Add";
 import { styled } from "@mui/joy";
 import { toast } from "react-toastify";
+import { postBrand } from "~/apis/brandsApi";
+import { DialogModifyV2 } from "~/components/common/DialogModifyV2";
+import { postCategory } from "~/apis/categoriesApi";
+import { postMaterial } from "~/apis/materialApi";
+import { DialogStoreV2 } from "~/components/colors/DialogStoreV2";
+import { postColor } from "~/apis/colorApi";
+import { postSize } from "~/apis/sizesApi";
+import { DialogStoreSizeV2 } from "~/components/sizes/DialogStoreSizeV2";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -107,37 +120,43 @@ export const ProductStore = () => {
     const { name, value } = event?.target;
     const updatedDetails = [...details];
     updatedDetails[index][name] = value;
-    if (name === "retailPrice") {
-      if (value < 100) {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], retailPrice: true };
-          return newErrors;
-        });
-      } else {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], retailPrice: false };
-          return newErrors;
-        });
+
+    if (index === 0) {
+      for (let i = 1; i < updatedDetails.length; i++) {
+        updatedDetails[i][name] = value;
       }
     }
 
-    if (name === "quantity") {
-      if (value < 0) {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], quantity: true };
-          return newErrors;
-        });
-      } else {
-        setAttributesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = { ...newErrors[index], quantity: false };
-          return newErrors;
-        });
-      }
+    if (name === "retailPrice") {
+      const isValidPrice = value >= 10000;
+      setAttributesError((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], retailPrice: !isValidPrice };
+
+        if (index === 0) {
+          for (let i = 1; i < newErrors.length; i++) {
+            newErrors[i] = { ...newErrors[i], retailPrice: !isValidPrice };
+          }
+        }
+        return newErrors;
+      });
     }
+
+    if (name === "quantity") {
+      const isValidQuantity = value >= 0;
+      setAttributesError((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], quantity: !isValidQuantity };
+
+        if (index === 0) {
+          for (let i = 1; i < newErrors.length; i++) {
+            newErrors[i] = { ...newErrors[i], quantity: !isValidQuantity };
+          }
+        }
+        return newErrors;
+      });
+    }
+
     setDetails(updatedDetails);
     setValue("productDetails", details);
   };
@@ -185,7 +204,7 @@ export const ProductStore = () => {
   const onSubmit = async (data) => {
     if (colorCount.length > 0 && sizeCount.length > 0) {
       if (
-        attributesError.some((error) => error.retailPrice || error.quantity)
+        attributesError.some((error) => error?.retailPrice || error?.quantity)
       ) {
         return;
       }
@@ -234,6 +253,25 @@ export const ProductStore = () => {
     );
   }
 
+  const handlePostBrand = async (data) => {
+    await postBrand(data).then(() => fetchAttributes());
+  };
+
+  const handlePostCategory = async (data) => {
+    await postCategory(data).then(() => fetchAttributes());
+  };
+
+  const handlePostMaterial = async (data) => {
+    await postMaterial(data).then(() => fetchAttributes());
+  };
+
+  const handlePostColor = async (data) => {
+    await postColor(data).then(() => fetchAttributes());
+  };
+
+  const handlePostSize = async (data) => {
+    await postSize(data).then(() => fetchAttributes());
+  };
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
       <Grid
@@ -324,6 +362,13 @@ export const ProductStore = () => {
                             {brand.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới thương hiệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới thương hiệu"
+                        label="Nhập tên thương hiệu"
+                        handleSubmit={handlePostBrand}
+                      />
                     </Select>
                     {errors.brand && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -346,6 +391,13 @@ export const ProductStore = () => {
                             {value.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới danh mục"
+                        icon={<AddIcon />}
+                        title="Thêm mới danh mục"
+                        label="Nhập tên danh mục"
+                        handleSubmit={handlePostCategory}
+                      />
                     </Select>
                     {errors.category && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -368,6 +420,13 @@ export const ProductStore = () => {
                             {value.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới chất liệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới chất liệu"
+                        label="Nhập tên chất liệu"
+                        handleSubmit={handlePostMaterial}
+                      />
                     </Select>
                     {errors.material && (
                       <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
@@ -380,6 +439,14 @@ export const ProductStore = () => {
                   <FormControl error={colorError}>
                     <FormLabel required>Màu sắc</FormLabel>
                     <Autocomplete
+                      startDecorator={
+                        <DialogStoreV2
+                          buttonTitle="Thêm mới màu sắc"
+                          title="Thêm mới màu sắc"
+                          label="Nhập tên màu sắc"
+                          handleSubmit={handlePostColor}
+                        />
+                      }
                       placeholder="Chọn màu"
                       multiple
                       limitTags={5}
@@ -405,6 +472,14 @@ export const ProductStore = () => {
                   <FormControl error={sizeError}>
                     <FormLabel required>Kích thước</FormLabel>
                     <Autocomplete
+                      startDecorator={
+                        <DialogStoreSizeV2
+                          buttonTitle="Thêm mới kích thước"
+                          title="Thêm mới kích thước"
+                          label="Nhập tên kích thước"
+                          handleSubmit={handlePostSize}
+                        />
+                      }
                       placeholder="Chọn kích thước"
                       multiple
                       limitTags={5}
@@ -520,6 +595,7 @@ export const ProductStore = () => {
                 minRows={3}
                 maxRows={10}
                 placeholder="Nhập mô tả..."
+                {...register("description", { required: false })}
               ></Textarea>
             </FormControl>
           </Grid>

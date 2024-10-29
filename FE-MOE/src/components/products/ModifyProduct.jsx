@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Modal,
   ModalDialog,
@@ -16,9 +20,14 @@ import {
 import Button from "@mui/joy/Button";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 import { attributeProducts, updateProduct } from "~/apis/productApi";
 import { useForm } from "react-hook-form";
+import { postBrand } from "~/apis/brandsApi";
+import { postCategory } from "~/apis/categoriesApi";
+import { postMaterial } from "~/apis/materialApi";
+import { DialogModifyV2 } from "../common/DialogModifyV2";
 
 export const ModifyProduct = (props) => {
   const [open, setOpen] = useState(false);
@@ -49,6 +58,18 @@ export const ModifyProduct = (props) => {
       setIsLoading(false);
       props.getProduct();
     });
+  };
+
+  const handlePostBrand = async (data) => {
+    await postBrand(data).then(() => fetchAttributes());
+  };
+
+  const handlePostCategory = async (data) => {
+    await postCategory(data).then(() => fetchAttributes());
+  };
+
+  const handlePostMaterial = async (data) => {
+    await postMaterial(data).then(() => fetchAttributes());
   };
   return (
     <>
@@ -116,6 +137,13 @@ export const ModifyProduct = (props) => {
                             {brand.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới thương hiệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới thương hiệu"
+                        label="Nhập tên thương hiệu"
+                        handleSubmit={handlePostBrand}
+                      />
                     </Select>
                   </FormControl>
                 </Grid>
@@ -134,6 +162,13 @@ export const ModifyProduct = (props) => {
                             {category.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới danh mục"
+                        icon={<AddIcon />}
+                        title="Thêm mới danh mục"
+                        label="Nhập tên danh mục"
+                        handleSubmit={handlePostCategory}
+                      />
                     </Select>
                   </FormControl>
                 </Grid>
@@ -152,6 +187,13 @@ export const ModifyProduct = (props) => {
                             {material.name}
                           </Option>
                         ))}
+                      <DialogModifyV2
+                        buttonTitle="Thêm mới chất liệu"
+                        icon={<AddIcon />}
+                        title="Thêm mới chất liệu"
+                        label="Nhập tên chất liệu"
+                        handleSubmit={handlePostMaterial}
+                      />
                     </Select>
                   </FormControl>
                 </Grid>

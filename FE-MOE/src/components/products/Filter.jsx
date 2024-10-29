@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Box, Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
@@ -5,7 +9,6 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import Input from "@mui/joy/Input";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import {
   Button,
   FormControl,
@@ -14,42 +17,26 @@ import {
   Select,
   Typography,
 } from "@mui/joy";
-import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
-import MicOffOutlinedIcon from "@mui/icons-material/MicOffOutlined";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { Microphone } from "./Microphone";
 
-export const Filter = (props) => {
-  const [isOpenMicrophone, setIsOpenMicrophone] = useState(true);
+export const Filter = ({ method }) => {
   const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { transcript, resetTranscript } = useSpeechRecognition();
 
-  const timeoutId = useRef(null);
-
-  const handleStartListening = () => {
-    setIsOpenMicrophone(!isOpenMicrophone);
-    resetTranscript();
-    SpeechRecognition.startListening({ continuous: true, language: "vi-VN" });
-    toast.warning("Bắt đầu lắm nghe");
-    timeoutId.current = setTimeout(() => {
-      handleStopListening();
-    }, 5000);
+  const handleKeywordVoice = (keyword) => {
+    setValue(keyword);
+    method.onChangeSearchVoice(keyword);
   };
 
-  const handleStopListening = () => {
-    clearTimeout(timeoutId.current);
-    toast.warning("Ngừng lắng nghe");
-    setValue("");
-    setIsOpenMicrophone(!isOpenMicrophone);
-    SpeechRecognition.stopListening();
-    const cleanedTranscript = transcript.replace(/\./g, "");
-    setValue(cleanedTranscript);
-    props.onChangeSearchVoice(cleanedTranscript);
+  const medthod = {
+    setOpen,
+    open,
+    setValue,
+    handleKeywordVoice,
+    method
   };
-
   return (
     <>
       <Grid
@@ -80,13 +67,13 @@ export const Filter = (props) => {
           <Button
             variant="soft"
             size="sm"
-            onClick={props.clearFilter}
+            onClick={method.clearFilter}
             startDecorator={<RefreshIcon />}
             sx={{ marginRight: 1 }}
           >
             Làm mới
           </Button>
-          {props.btnAdd && (
+          {method.btnAdd && (
             <Button
               variant="soft"
               size="sm"
@@ -110,20 +97,9 @@ export const Filter = (props) => {
                     type="search"
                     placeholder="Tìm kiếm…"
                     startDecorator={<SearchIcon />}
-                    endDecorator={
-                      isOpenMicrophone ? (
-                        <MicNoneOutlinedIcon
-                          onClick={() => handleStartListening()}
-                        />
-                      ) : (
-                        <MicOffOutlinedIcon
-                          color="error"
-                          onClick={() => handleStopListening()}
-                        />
-                      )
-                    }
+                    endDecorator={<Microphone method={medthod} />}
                     onChange={(e) => {
-                      props.onChangeSearch(e);
+                      method.onChangeSearch(e);
                       setValue(e.target.value);
                     }}
                   />
@@ -134,8 +110,8 @@ export const Filter = (props) => {
                   <FormLabel>Trạng thái</FormLabel>
                   <Select
                     label="Trạng thái"
-                    value={props.status}
-                    onChange={(event, value) => props.onChangeStatus(value)}
+                    value={method.status}
+                    onChange={(event, value) => method.onChangeStatus(value)}
                   >
                     <Option value="ALL">Tất cả</Option>
                     <Option value="ACTIVE">Đang hoạt động</Option>
@@ -153,11 +129,11 @@ export const Filter = (props) => {
                   <FormLabel>Danh mục</FormLabel>
                   <Select
                     label="Danh mục"
-                    value={props.category}
-                    onChange={(event, value) => props.onChangeCategory(value)}
+                    value={method.category}
+                    onChange={(event, value) => method.onChangeCategory(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.categories?.map((value) => (
+                    {method?.attributes?.categories?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -170,11 +146,11 @@ export const Filter = (props) => {
                   <FormLabel>Thương hiệu</FormLabel>
                   <Select
                     label="Thương hiệu"
-                    value={props.brand}
-                    onChange={(event, value) => props.onChangeBrand(value)}
+                    value={method.brand}
+                    onChange={(event, value) => method.onChangeBrand(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.brands?.map((value) => (
+                    {method?.attributes?.brands?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -187,11 +163,11 @@ export const Filter = (props) => {
                   <FormLabel>Chất liệu</FormLabel>
                   <Select
                     label="Chất liệu"
-                    value={props.material}
-                    onChange={(event, value) => props.onChangeMaterial(value)}
+                    value={method.material}
+                    onChange={(event, value) => method.onChangeMaterial(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.materials?.map((value) => (
+                    {method?.attributes?.materials?.map((value) => (
                       <Option key={value.id} value={value.name}>
                         {value.name}
                       </Option>
@@ -204,11 +180,11 @@ export const Filter = (props) => {
                   <FormLabel>Xuất xứ</FormLabel>
                   <Select
                     label="Xuất sứ"
-                    value={props.origin}
-                    onChange={(event, value) => props.onChangeOrigin(value)}
+                    value={method.origin}
+                    onChange={(event, value) => method.onChangeOrigin(value)}
                   >
                     <Option value="">Tất cả</Option>
-                    {props?.attributes?.origin?.map((value, index) => (
+                    {method?.attributes?.origin?.map((value, index) => (
                       <Option key={index} value={value}>
                         {value}
                       </Option>

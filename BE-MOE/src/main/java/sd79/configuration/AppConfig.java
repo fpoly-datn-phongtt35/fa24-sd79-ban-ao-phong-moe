@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.configuration;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +38,7 @@ import static sd79.configuration.Endpoints.ADMIN_ENDPOINTS;
 @RequiredArgsConstructor
 public class AppConfig {
 
-    private final String[] WHITE_LIST = {"/api/*/auth/**"};
+    private final String[] WHITE_LIST = {"/api/*/auth/**", "/api/*/client/**"};
 
     private final PreFilter preFilter;
 

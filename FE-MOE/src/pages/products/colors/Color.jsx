@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { useEffect, useState } from "react";
 import debounce from "lodash.debounce";
 import Container from "@mui/material/Container";
@@ -23,6 +27,7 @@ import {
 } from "~/apis/colorApi";
 import { DialogStore } from "~/components/colors/DialogStore";
 import { DialogIconUpdate } from "~/components/colors/DialogIconUpdate";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Color = () => {
   const [colors, setColors] = useState(null);
@@ -60,17 +65,7 @@ export const Color = () => {
     handleSetColors();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa color này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
 
   if (!colors) {
@@ -139,13 +134,13 @@ export const Color = () => {
             </thead>
 
             <tbody>
-            {colors?.length === 0 && (
-              <tr>
-                <td colSpan={5} align="center">
-                  Không tìm thấy sản phẩm!
-                </td>
-              </tr>
-            )}
+              {colors?.length === 0 && (
+                <tr>
+                  <td colSpan={5} align="center">
+                    Không tìm thấy sản phẩm!
+                  </td>
+                </tr>
+              )}
               {colors &&
                 colors.map((color, index) => (
                   <tr key={index}>
@@ -164,12 +159,16 @@ export const Color = () => {
                         id={color.id}
                         handleSubmit={handleEditColor}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(color.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa color này?"
+                        event={() => ondelete(color.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

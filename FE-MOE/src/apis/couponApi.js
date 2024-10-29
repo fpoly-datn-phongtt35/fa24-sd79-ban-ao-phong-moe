@@ -100,8 +100,11 @@ export const deleteCoupon = async (id) => {
 export const deleteCouponImage = async (id) => {
   return await authorizedAxiosInstance
     .delete(`${API_ROOT}/coupon/delete/images/${id}`)
-    .then((res) => {
-      toast.success(res.data.message);
-    })
+};
+
+export const sendCouponEmail = async (couponId, customerId) => {
+  const url = `${API_ROOT}/coupon/send/email?couponId=${couponId}&customerId=${customerId}`;
+  const response = await authorizedAxiosInstance.post(url);
+  return response.data;
 };
 

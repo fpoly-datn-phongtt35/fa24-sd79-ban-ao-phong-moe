@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { handleLogoutAPI } from "~/apis";
@@ -8,38 +12,16 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
-import logo from "~/assert/MainLogo.jpg";
-import { useEffect, useState } from "react";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import logo from "~/assert/images/MainLogo.jpg";
+import { MoeAlert } from "../other/MoeAlert";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
-  const [ADMIN, setAdmin] = useState(false);
 
-  useEffect(() => {
-    setAdmin(getAuthority() == "USER");
-  }, []);
-
-  const getAuthority = () => {
-    const roleCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("role="));
-
-    return roleCookie ? roleCookie.split("=")[1] : "";
-  };
-
-  const handleLogout = () => {
-    swal({
-      title: "Cảnh báo",
-      text: "Bạn có muốn đăng xuất không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then(async (confirm) => {
-      if (confirm) {
-        await handleLogoutAPI();
-        navigate("/");
-      }
-    });
+  const handleLogout = async () => {
+    await handleLogoutAPI();
+    navigate("/");
   };
 
   return (
@@ -88,23 +70,35 @@ export const Sidebar_Admin = (props) => {
               Trang chủ
             </Typography>
           </MenuItem>
+          <MenuItem
+            icon={<StorefrontIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/" />}
+          >
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Cửa hàng
+            </Typography>
+          </MenuItem>
           <SubMenu
             label="Bán hàng"
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
           >
             <MenuItem component={<Link to="/dashboard?offline" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Offline
+                Bán tại quầy
               </Typography>
             </MenuItem>
             <MenuItem>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Online
+                Đơn đặt hàng
+              </Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Hóa đơn
               </Typography>
             </MenuItem>
           </SubMenu>
           <SubMenu
-            disabled={ADMIN}
             label="Sản phẩm"
             icon={
               <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>
@@ -142,7 +136,7 @@ export const Sidebar_Admin = (props) => {
                 </Typography>
               </MenuItem>
             </SubMenu>
-            <MenuItem disabled={ADMIN} component={<Link to="/product/archive" />}>
+            <MenuItem component={<Link to="/product/archive" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Kho lưu trữ
               </Typography>
@@ -184,14 +178,18 @@ export const Sidebar_Admin = (props) => {
             color: "#657d8d",
           }}
         >
-          <MenuItem
-            icon={<LogoutIcon style={{ color: "#0071bd" }} />}
-            onClick={handleLogout}
-          >
-            <Typography sx={{ color: "#32383e" }} level="body-md">
-              Đăng xuất
-            </Typography>
-          </MenuItem>
+          <MoeAlert
+            title="Đăng xuất"
+            message="Bạn có muốn đăng xuất không?"
+            event={handleLogout}
+            button={
+              <MenuItem icon={<LogoutIcon style={{ color: "#0071bd" }} />}>
+                <Typography sx={{ color: "#32383e" }} level="body-md">
+                  Đăng xuất
+                </Typography>
+              </MenuItem>
+            }
+          />
         </Menu>
       </Sidebar>
     </Box>

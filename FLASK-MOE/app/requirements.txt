@@ -1,0 +1,4 @@
+Flask speechrecognition
+download vi_core_news_md
+spacy
+openai

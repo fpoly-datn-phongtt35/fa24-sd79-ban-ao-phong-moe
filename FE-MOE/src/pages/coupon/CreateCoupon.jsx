@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment, Stack, Pagination } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { postCoupon, postCouponImage } from '~/apis/couponApi';
 import { useNavigate } from 'react-router-dom';
 import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
-import { fetchAllCustomer } from '~/apis/customerApi';
+import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
+import { CircularProgress } from '@mui/material';
+import CustomerTableCreate from '~/components/coupon/CustomerTableCreate';
+
 
 const CreateCoupon = () => {
-    const { register, handleSubmit, watch, formState: { errors }, control } = useForm();
+    const { register, handleSubmit, watch, getValues, clearErrors, formState: { errors }, control, setValue } = useForm();
     const [discountType, setDiscountType] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
     const [images, setImages] = useState(null);
     const navigate = useNavigate();
     const [customers, setCustomers] = useState([]);
@@ -22,23 +24,51 @@ const CreateCoupon = () => {
     const [discountTypeError, setDiscountTypeError] = useState('');
     const [imagesError, setImagesError] = useState('');
     const [selectedCustomersError, setSelectedCustomersError] = useState('');
-
+    const [loading, setLoading] = useState(false);
+    const [totalPages, setTotalPages] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    const [keyword, setKeyword] = useState('');
+    const [gender, setGender] = useState('');
+    const [birth, setBirth] = useState('');
+    const conditions = watch('conditions');
     const type = watch('type', 'PUBLIC');
-    const formatDate = (dateString, time = "00:00:00") => {
-        const date = new Date(dateString);
+    const formatDate = (dateTimeString) => {
+        const date = new Date(dateTimeString);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year} | ${time}`;
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
     };
 
     useEffect(() => {
         handleSetCustomer();
-    }, []);
+    }, [page]);
 
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            handleSearch();
+        }, 1000);
+        return () => clearTimeout(delayDebounceFn);
+    }, [keyword, gender, birth]);
+
+    useEffect(() => {
+        clearErrors('conditions');
+    }, [discountType, conditions, clearErrors]);
+
+    const handlePageChange = (event, newPage) => {
+        setPage(newPage);
+    };
 
     const handleDiscountTypeChange = (type) => {
         setDiscountType(type);
+        if (type === 'FIXED_AMOUNT') {
+            setValue('maxValue', 0);
+        }
         setDiscountTypeError('');
     };
 
@@ -47,35 +77,54 @@ const CreateCoupon = () => {
         setImagesError('');
     };
 
+    const handleSearch = async () => {
+        try {
+            setLoading(true);
+            const res = await searchKeywordAndDate(keyword || '', gender || '', birth || '');
+            setCustomers(res.data.content);
+            setTotalPages(res.data.totalPages);
+        } catch (error) {
+            console.error('Error during search:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const onSubmit = async (data) => {
         let isValid = true;
+
         if (!discountType) {
-            setDiscountTypeError('Discount type is required');
+            setDiscountTypeError('Chưa chọn loại giảm giá.');
             isValid = false;
         } else {
             setDiscountTypeError('');
         }
-        if (!images || images.length === 0) {
-            setImagesError('Images must not be null!');
+
+        if (data.type === 'PERSONAL' && (!images || images.length === 0)) {
+            setImagesError('Chưa chọn ảnh.');
             isValid = false;
         } else {
             setImagesError('');
         }
+
         if (data.type === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
-            setSelectedCustomersError('At least one customer must be selected for PERSONAL coupons.');
+            setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
             isValid = false;
         } else {
             setSelectedCustomersError('');
         }
+
         if (!isValid) {
             return;
         }
+
+
         const coupon = {
             code: data.code,
             name: data.name,
             discountValue: data.discountValue,
             discountType: discountType,
-            maxValue: data.maxValue,
+            maxValue: data.maxValue || 0,
             quantity: data.quantity,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
@@ -87,21 +136,26 @@ const CreateCoupon = () => {
         };
 
         try {
+            setLoading(true);
             const response = await postCoupon(coupon);
+            if (data.type === 'PERSONAL' && images && images.length > 0) {
+                let formData = new FormData();
+                formData.append("couponID", response);
 
-            let formData = new FormData();
-            formData.append("couponID", response);
-            images.forEach((image, index) => {
-                formData.append("images", images[0]);
-            });
-            await postCouponImage(formData);
+                images.forEach((image, index) => {
+                    formData.append("images", image);
+                });
+
+                await postCouponImage(formData);
+            }
+
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
+        } finally {
+            setLoading(false);
         }
     };
-
-
 
     const formatDateCustomer = (dateString) => {
         const date = new Date(dateString);
@@ -109,32 +163,61 @@ const CreateCoupon = () => {
     };
 
     const handleSetCustomer = async () => {
-        const response = await fetchAllCustomer();
-        setCustomers(response.data.content);
-        console.log(response)
-    };
-
-    const handleSelectAll = (event) => {
-        if (event.target.checked) {
-            const allCustomerIds = customers.map(customer => customer.id);
-            setSelectedCustomers(allCustomerIds);
-        } else {
-            setSelectedCustomers([]);
+        try {
+            const response = await fetchAllCustomer(page - 1, pageSize);
+            setCustomers(response.data.content);
+            setTotalPages(response.data.totalPages);
+        } catch (error) {
+            console.error("Failed to fetch customers:", error);
         }
     };
+
+    const handleSelectAll = async (event) => {
+        if (!isAllSelected) {
+            try {
+                let allCustomers = [];
+                const response = await fetchAllCustomer(0, pageSize);
+                const totalPages = response.data.totalPages;
+                for (let i = 0; i < totalPages; i++) {
+                    const pageResponse = await fetchAllCustomer(i, pageSize);
+                    allCustomers = allCustomers.concat(pageResponse.data.content);
+                }
+
+                const allCustomerIds = allCustomers.map(customer => customer.id);
+                setSelectedCustomers(allCustomerIds);
+                setSelectedCustomersError('');
+            } catch (error) {
+                console.error("Failed to fetch all customers:", error);
+            }
+        } else {
+            setSelectedCustomers([]);
+            setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
+        }
+    };
+
     const handleSelectCustomer = (customerId) => {
         setSelectedCustomers((prevSelected) => {
+            let updatedSelected;
             if (prevSelected.includes(customerId)) {
-                return prevSelected.filter(id => id !== customerId);
+                updatedSelected = prevSelected.filter(id => id !== customerId);
             } else {
-                return [...prevSelected, customerId];
+                updatedSelected = [...prevSelected, customerId];
             }
+
+            if (updatedSelected.length > 0) {
+                setSelectedCustomersError('');
+            } else {
+                setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
+            }
+
+            return updatedSelected;
         });
     };
 
-
-
     const isSelected = (customerId) => selectedCustomers.includes(customerId);
+
+    const isAllSelected = customers.length > 0 && customers.every(customer => selectedCustomers.includes(customer.id));
+
 
     return (
         <Container
@@ -168,50 +251,42 @@ const CreateCoupon = () => {
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
                         <Box display="flex" alignItems="center" mb={2}>
-
                         </Box>
-
                         <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={2} >
-
                             <TextField
                                 variant="outlined"
                                 label="Mã phiếu giảm giá"
                                 {...register('code', {
-                                    required: 'Code cannot be empty',
+                                    required: 'Chưa nhập mã giảm giá',
                                     minLength: {
                                         value: 5,
-                                        message: 'Code min 5 characters',
-
+                                        message: 'Mã phải có ít nhất 5 ký tự',
                                     },
                                     maxLength: {
-                                        value: 12,
-                                        message: 'Code should not exceed 12 characters',
+                                        value: 10,
+                                        message: 'Mã không được quá 10 ký tự',
                                     },
                                 })}
                                 error={!!errors.code}
                                 helperText={errors.code?.message}
                             />
-
-
                             <TextField
                                 variant="outlined"
                                 label="Tên phiếu giảm giá"
                                 {...register('name', {
-                                    required: 'Name cannot be empty',
+                                    required: 'Chưa nhập tên phiếu giảm giá',
                                     minLength: {
                                         value: 5,
-                                        message: 'Name min 5 characters',
+                                        message: 'Tên phải có ít nhất 5 ký tự',
                                     },
                                     maxLength: {
-                                        value: 50,
-                                        message: 'Name should not exceed 50 characters',
+                                        value: 100,
+                                        message: 'Tên không được quá 100 ký tự',
                                     },
                                 })}
                                 error={!!errors.name}
                                 helperText={errors.name?.message}
                             />
-
-
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <TextField
@@ -219,11 +294,21 @@ const CreateCoupon = () => {
                                         label="Giá trị"
                                         type="number"
                                         {...register('discountValue', {
-                                            required: 'Discount value is required',
+                                            required: 'Chưa nhập giá trị giảm',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Discount value must be greater than zero',
+                                                message: 'Giá trị phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị phải nhỏ hơn 999999999999999',
+                                            },
+                                            validate: value => {
+                                                if (discountType === 'PERCENTAGE' && value > 100) {
+                                                    return 'Giá trị phần trăm không thể lớn hơn 100';
+                                                }
+                                                return true;
+                                            }
                                         })}
                                         error={!!errors.discountValue}
                                         helperText={errors.discountValue?.message}
@@ -254,23 +339,37 @@ const CreateCoupon = () => {
                                 </Grid>
                                 <Grid item xs={6}>
                                     <TextField
+                                        disabled={discountType === 'FIXED_AMOUNT'}
                                         variant="outlined"
-                                        label="Giá trị tối thiểu cho đơn hàng"
+                                        label="Giá trị giảm tối đa cho đơn hàng"
                                         type="number"
                                         {...register('maxValue', {
-                                            required: 'Minimum order value is required',
-                                            min: {
+                                            required: 'Chưa nhập giá trị tối đa',
+                                            min: discountType === 'PERCENTAGE' ? {
                                                 value: 0.01,
-                                                message: 'Minimum order value must be greater than zero',
+                                                message: 'Giá trị tối đa phải lớn hơn 0',
+                                            } : undefined,
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Giá trị giảm tối đa phải nhỏ hơn 999999999999999',
+                                            },
+                                            validate: value => {
+                                                if (discountType === 'PERCENTAGE') {
+                                                    const discountValue = getValues('discountValue');
+                                                    if (value < discountValue) {
+                                                        return 'Giá trị giảm tối đa phải lớn hơn hoặc bằng giá trị giảm';
+                                                    }
+                                                }
+                                                return true;
                                             },
                                         })}
+                                        InputLabelProps={{ shrink: true }}
                                         error={!!errors.maxValue}
                                         helperText={errors.maxValue?.message}
                                         fullWidth
                                     />
                                 </Grid>
                             </Grid>
-
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
                                     <TextField
@@ -278,10 +377,15 @@ const CreateCoupon = () => {
                                         label="Số lượng"
                                         type="number"
                                         {...register('quantity', {
-                                            required: 'Quantity is required',
+                                            required: 'Chưa nhập số lượng sử dụng',
                                             min: {
                                                 value: 1,
-                                                message: 'Quantity must be at least 1',
+                                                message: 'Số lượng sử dụng phải lớn hơn 0',
+                                            },
+                                            max: {
+                                                value: 99999999,
+                                                message: 'Số lượng phải nhỏ hơn 99999999',
+
                                             },
                                         })}
                                         error={!!errors.quantity}
@@ -296,53 +400,78 @@ const CreateCoupon = () => {
                                         label="Điều kiện"
                                         type="number"
                                         {...register('conditions', {
-                                            required: 'Conditions order value is required',
+                                            required: 'Chưa nhập điều kiện để thực hiện sử dụng',
                                             min: {
                                                 value: 0.01,
-                                                message: 'Minimum order value must be greater than zero',
+                                                message: 'Điều kiện phải lớn hơn 0',
                                             },
+                                            max: {
+                                                value: 999999999999999,
+                                                message: 'Điều kiện phải nhỏ hơn 999999999999999',
+                                            },
+                                            validate: (value) => {
+                                                const discountValue = getValues('discountValue');
+                                                const numericalValue = parseFloat(value);
+
+                                                if (discountType === 'FIXED_AMOUNT' && numericalValue < discountValue) {
+                                                    return 'Điều kiện phải lớn hơn hoặc bằng giá trị giảm';
+                                                } else if (discountType === 'PERCENTAGE' && numericalValue < (discountValue / 100) * 10000) {
+                                                    return 'Điều kiện phải lớn hơn hoặc bằng giá trị giảm (tính theo phần trăm)';
+                                                }
+                                                return true;
+                                            }
                                         })}
+                                        InputLabelProps={{ shrink: true }}
                                         error={!!errors.conditions}
                                         helperText={errors.conditions?.message}
                                         fullWidth
                                     />
-
                                 </Grid>
                             </Grid>
-
-                            <TextField
-                                variant="outlined"
-                                label="Từ ngày"
-                                type="date"
-                                {...register('startDate', { required: 'Start date is required' })}
-                                error={!!errors.startDate}
-                                helperText={errors.startDate?.message}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
-
-
-                            <TextField
-                                variant="outlined"
-                                label="Đến ngày"
-                                type="date"
-                                {...register('endDate', { required: 'End date is required' })}
-                                error={!!errors.endDate}
-                                helperText={errors.endDate?.message}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
+                            <Grid container spacing={2} >
+                                <Grid item xs={6}>
+                                    <TextField
+                                        variant="outlined"
+                                        label="Thời gian bắt đầu"
+                                        type="datetime-local"
+                                        {...register('startDate', { required: 'Chưa nhập ngày bắt đầu' })}
+                                        error={!!errors.startDate}
+                                        helperText={errors.startDate?.message}
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <TextField
+                                        variant="outlined"
+                                        label="Thời gian kết thúc"
+                                        type="datetime-local"
+                                        {...register('endDate', {
+                                            required: 'Chưa nhập ngày kết thúc',
+                                            validate: (value) => {
+                                                const startDate = new Date(watch('startDate'));
+                                                const endDate = new Date(value);
+                                                return endDate > startDate || 'Ngày và giờ kết thúc phải lớn hơn ngày và giờ bắt đầu';
+                                            },
+                                        })}
+                                        error={!!errors.endDate}
+                                        helperText={errors.endDate?.message}
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            </Grid>
 
                             <Box
                                 sx={{
                                     border: '1px solid #ccc',
                                     borderRadius: '8px',
                                     padding: '10px',
-                                    marginTop: '10px', // Fix margin top value
+                                    marginTop: '10px',
                                 }}
                             >
                                 <Grid container alignItems="center" spacing={2}>
-                                    <Grid item style={{ marginRight: '320px' }}>
+                                    <Grid item style={{ marginRight: '40%' }}>
                                         <FormControl component="fieldset" error={!!errors.type}>
                                             <FormLabel component="legend">Kiểu</FormLabel>
                                         </FormControl>
@@ -352,7 +481,7 @@ const CreateCoupon = () => {
                                             name="type"
                                             control={control}
                                             defaultValue="PUBLIC"
-                                            rules={{ required: 'Type is required' }}
+                                            rules={{ required: 'Chưa chọn kiểu dữ liệu' }}
                                             render={({ field }) => (
                                                 <RadioGroup
                                                     {...field}
@@ -378,7 +507,7 @@ const CreateCoupon = () => {
                                 {...register('description', {
                                     maxLength: {
                                         value: 255,
-                                        message: 'Description should not exceed 255 characters',
+                                        message: 'Mô tả không quá 255 ký tự',
                                     },
                                 })}
                                 error={!!errors.description}
@@ -387,77 +516,48 @@ const CreateCoupon = () => {
                                 rows={3}
                                 fullWidth
                             />
+                            {imagesError && (
+                                <Typography color="error">{imagesError}</Typography>
+                            )}
 
+                            {type === 'PERSONAL' && (
+                                <Grid item xs={12} container justifyContent="center">
 
-                            <Grid item xs={12}>
-                                <CouponImage onImagesUpload={handleImagesUpload} />
-                                {imagesError && (
-                                    <Typography color="error">{imagesError}</Typography>
-                                )}
-                            </Grid>
-
+                                    <CouponImage onImagesUpload={handleImagesUpload} />
+                                </Grid>
+                            )}
 
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
-                                    <Button type="submit" className='w-100' variant="contained" color="primary" >
-                                        Thêm mới
+                                    <Button onClick={() => navigate("/coupon")} className='w-100' type="submit" variant="contained" color="error" >
+                                        Quay lại
+                                    </Button>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Button type="submit" className='w-100' variant="contained" color="primary" disabled={loading}>
+                                        {loading ? <CircularProgress size={24} /> : 'Thêm mới'}
                                     </Button>
                                 </Grid>
                             </Grid>
+
                         </Box>
                     </Grid>
 
-                    <Grid item xs={6}>
-
-                        <TextField
-                            variant="outlined"
-                            label="Tìm kiếm khách hàng"
-                            fullWidth
-                            margin="normal"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-
-                        <table className="table table-bordered table-hover">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th>
-                                        <Checkbox
-                                            checked={selectedCustomers.length === customers.length && customers.length > 0}
-                                            onChange={handleSelectAll}
-                                        />
-                                    </th>
-                                    <th>Tên</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Email</th>
-                                    <th>Ngày sinh</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {customers.length === 0 && (
-                                    <tr>
-                                        <td colSpan={9} align="center">
-                                            Không tìm thấy khách hàng!
-                                        </td>
-                                    </tr>
-                                )}
-                                {customers && customers.map((customer, index) => (
-                                    <tr key={index}>
-                                        <td>
-                                            <Checkbox
-                                                checked={isSelected(customer.id)}
-                                                onChange={() => handleSelectCustomer(customer.id)}
-                                            />
-                                        </td>
-                                        <td>{customer.firstName}</td>
-                                        <td>{customer.phoneNumber}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{formatDateCustomer(customer.dateOfBirth)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </Grid>
+                    <CustomerTableCreate
+                        keyword={keyword}
+                        setKeyword={setKeyword}
+                        customers={customers}
+                        type={type}
+                        isAllSelected={isAllSelected}
+                        handleSelectAll={handleSelectAll}
+                        isSelected={isSelected}
+                        handleSelectCustomer={handleSelectCustomer}
+                        formatDateCustomer={formatDateCustomer}
+                        selectedCustomersError={selectedCustomersError}
+                        totalPages={totalPages}
+                        page={page}
+                        handlePageChange={handlePageChange}
+                    />
                 </Grid>
             </Box>
         </Container>

@@ -72,10 +72,8 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
 
         if (startDate != null && endDate != null) {
             if (currentDate.before(startDate)) {
-//                return "Not Started";  // chưa diễn ra
                 return "C.Bắt đầu";
             } else if (currentDate.after(endDate)) {
-//                return "Ended";  // kết thúc
                 return "Kết thúc";
             } else {
                 return "Bắt đầu";

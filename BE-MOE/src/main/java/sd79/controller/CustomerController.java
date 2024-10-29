@@ -14,6 +14,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CustomerReq;
+import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.enums.Gender;
@@ -68,7 +70,7 @@ public class CustomerController {
     )
     @PostMapping("/store")
     public ResponseData<?> addCustomer(@Valid @RequestBody CustomerReq customerReq) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Customer created successfully", customerService.createCustomer(customerReq));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm khách hàng thành công", customerService.createCustomer(customerReq));
     }
 
     // Cập nhật khách hàng
@@ -77,8 +79,8 @@ public class CustomerController {
             description = "Update customer information in the database"
     )
     @PutMapping("/update/{id}")
-    public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerReq customerReq) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Customer updated successfully", customerService.updateCustomer(id, customerReq));
+    public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest customerRequest) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin khách hàng thành công", customerService.updateCustomer(id, customerRequest));
     }
 
     // Xóa khách hàng
@@ -89,7 +91,7 @@ public class CustomerController {
     @DeleteMapping("/delete/{id}")
     public ResponseData<?> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Customer deleted successfully");
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
     }
 
     @Operation(
@@ -127,15 +129,25 @@ public class CustomerController {
         return new ResponseData<>(HttpStatus.OK.value(), "Search results (paginated)", customers);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
+//    }
+
+    @Operation(
+            summary = "Upload image",
+            description = "Upload the image to cloudinary and return the url to save to the database"
+    )
+    @PostMapping("/upload")
+    public ResponseData<?> uploadFile(@Valid @ModelAttribute ProductImageReq request) {
+        this.customerService.updateImage(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Successfully added customer images");
     }
 }

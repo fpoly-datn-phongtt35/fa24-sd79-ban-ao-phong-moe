@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { useEffect, useState } from "react";
 import debounce from "lodash.debounce";
 import Container from "@mui/material/Container";
@@ -23,6 +27,7 @@ import {
   postBrand,
   putBrand,
 } from "~/apis/brandsApi";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Brand = () => {
   const [brands, setBrands] = useState(null);
@@ -60,17 +65,7 @@ export const Brand = () => {
     handleSetBrands();
   };
   const ondelete = async (id) => {
-    swal({
-      title: "Xác nhận xóa",
-      text: "Bạn có chắc chắn xóa thương hiệu này?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        handleDelete(id);
-      }
-    });
+    handleDelete(id);
   };
   if (!brands) {
     return (
@@ -85,7 +80,7 @@ export const Brand = () => {
       </Box>
     );
   }
-  
+
   return (
     <Container
       maxWidth="max-width"
@@ -161,12 +156,16 @@ export const Brand = () => {
                         id={brand.id}
                         handleSubmit={handleEditBrand}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => ondelete(brand.id)}
-                      >
-                        <FolderDeleteTwoToneIcon />
-                      </IconButton>
+                      <MoeAlert
+                        title="Cảnh báo"
+                        message="Bạn có chắc chắn xóa thương hiệu này?"
+                        event={() => ondelete(brand.id)}
+                        button={
+                          <IconButton color="error">
+                            <FolderDeleteTwoToneIcon />
+                          </IconButton>
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

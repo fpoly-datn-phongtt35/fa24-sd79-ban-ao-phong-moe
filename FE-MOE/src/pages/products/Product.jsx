@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Container,
   Box,
@@ -21,6 +25,7 @@ import { Filter } from "~/components/products/Filter";
 import { TableData } from "~/components/products/TableData";
 import debounce from "lodash.debounce";
 import { useNavigate } from "react-router-dom";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 export const Product = () => {
   const [products, setProducts] = useState([]);
@@ -48,6 +53,7 @@ export const Product = () => {
     brand,
     material,
     origin,
+    setCurrentPage
   ]);
 
   useEffect(() => {
@@ -127,19 +133,9 @@ export const Product = () => {
   };
 
   const onMoveToBin = (id) => {
-    swal({
-      title: "Xác nhận",
-      text: "Bạn có muốn chuyển sản phẩm vào kho lưu trữ không?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    }).then((confirm) => {
-      if (confirm) {
-        moveToBin(id).then(() => {
-          setCurrentPage(1);
-          handleSetProducts();
-        });
-      }
+    moveToBin(id).then(() => {
+      setCurrentPage(1);
+      handleSetProducts();
     });
   };
 
@@ -161,11 +157,30 @@ export const Product = () => {
     );
   }
 
+  const method = {
+    onChangeSearchVoice,
+    btnAdd: true,
+    onChangeSearch,
+    status,
+    category,
+    brand,
+    material,
+    origin,
+    onChangeStatus,
+    onChangeCategory,
+    onChangeBrand,
+    onChangeMaterial,
+    onChangeOrigin,
+    clearFilter,
+    attributes,
+  };
+
   return (
     <Container
       maxWidth="max-width"
       sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
     >
+      <MoeAlert />
       <Grid
         container
         spacing={2}
@@ -189,24 +204,7 @@ export const Product = () => {
         </Breadcrumbs>
       </Grid>
 
-      <Filter
-        onChangeSearchVoice={onChangeSearchVoice}
-        btnAdd={true}
-        onChangeSearch={onChangeSearch}
-        keyword={keyword}
-        status={status}
-        category={category}
-        brand={brand}
-        material={material}
-        attributes={attributes}
-        origin={origin}
-        onChangeStatus={onChangeStatus}
-        onChangeCategory={onChangeCategory}
-        onChangeBrand={onChangeBrand}
-        onChangeMaterial={onChangeMaterial}
-        onChangeOrigin={onChangeOrigin}
-        clearFilter={clearFilter}
-      />
+      <Filter method={method} />
 
       <TableData
         restore={false}
