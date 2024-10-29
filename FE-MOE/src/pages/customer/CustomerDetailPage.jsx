@@ -3,8 +3,11 @@ import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
 import { toast } from 'react-toastify';
 import { putCustomer, fetchCustomerById, postcustomerImage } from '~/apis/customerApi';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Radio, RadioGroup } from '@mui/joy';
+import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
+import axios from 'axios';
+
+const host = "https://provinces.open-api.vn/api/";
 
 export const CustomerDetailPage = () => {
   const [customerData, setCustomerData] = useState({
@@ -24,6 +27,53 @@ export const CustomerDetailPage = () => {
   const [imageObject, setImageObject] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  /*---Start handle address---*/
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      const response = await axios.get(`${host}?depth=1`);
+      setCities(response.data);
+    };
+    fetchCities();
+  }, []);
+
+  const handleCityChange = async (e) => {
+    const cityId = e;
+    setSelectedCity(cityId);
+    setSelectedDistrict("");
+    setSelectedWard("");
+    if (cityId) {
+      const response = await axios.get(`${host}p/${cityId}?depth=2`);
+      setDistricts(response.data.districts);
+    } else {
+      setDistricts([]);
+    }
+  };
+
+  const handleDistrictChange = async (e) => {
+    const districtId = e;
+    setSelectedDistrict(districtId);
+    setSelectedWard(""); // Reset ward
+    if (districtId) {
+      const response = await axios.get(`${host}d/${districtId}?depth=2`);
+      setWards(response.data.wards);
+    } else {
+      setWards([]);
+    }
+  };
+
+  const handleWardChange = (e) => {
+    setSelectedWard(e);
+  };
+  /*---END---*/
 
   const formatDate = (dateString, time = "00:00:00") => {
     const date = new Date(dateString);
@@ -33,7 +83,6 @@ export const CustomerDetailPage = () => {
     return `${day}/${month}/${year} | ${time}`;
   };
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCustomerDetail = async () => {
@@ -42,6 +91,10 @@ export const CustomerDetailPage = () => {
         console.log("API Response:", response.data);
 
         const customerData = response.data;
+
+        handleCityChange(customerData.city_id);
+        handleDistrictChange(customerData.district_id)
+        handleWardChange(customerData.ward)
         setCustomerData({
           firstName: customerData.firstName,
           lastName: customerData.lastName,
@@ -72,15 +125,25 @@ export const CustomerDetailPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const cityName = cities.find((city) => city.code == selectedCity)?.name;
+    const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+    const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
     const updatedCustomer = {
       ...customerData,
+      city: cityName,
+      city_id: selectedCity,
+      district: districtName,
+      district_id: selectedDistrict,
+      ward: wardName,
       dateOfBirth: formatDate(customerData.dateOfBirth),
       updatedAt: new Date().toISOString(),
     };
     setIsLoading(true);
     await putCustomer(updatedCustomer, id).then(async (res) => {
       if (imageObject === null) {
-        toast.success('Thêm thành công');
+        toast.success('Sửa thành công');
         setIsLoading(false);
         navigate('/customer');
         return;
@@ -94,6 +157,7 @@ export const CustomerDetailPage = () => {
         setIsLoading(false);
         navigate('/customer');
       })
+
     });
 
   };
@@ -258,40 +322,55 @@ export const CustomerDetailPage = () => {
 
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Thành phố</FormLabel>
-                        <Input
-                          name="city"
-                          value={customerData.city}
-                          placeholder='Thành phố'
-                          onChange={handleChange}
-                        />
+                        <FormLabel >Thành phố</FormLabel>
+                        <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                          <Option value="" disabled>
+                            Chọn tỉnh thành
+                          </Option>
+                          {cities.map((city) => (
+                            <Option key={city.code} value={city.code}>
+                              {city.name}
+                            </Option>
+                          ))}
+                        </Select>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Quận/Huyện</FormLabel>
-                        <Input
-                          name="district"
-                          value={customerData.district}
-                          placeholder='Quận/Huyện'
-                          onChange={handleChange}
-                        />
+                        <FormLabel >Quận/Huyện</FormLabel>
+                        <Select value={selectedDistrict}
+                          onChange={(e, v) => handleDistrictChange(v)}
+                          placeholder="Chọn quận huyện">
+                          <Option value="" disabled>
+                            Chọn quận huyện
+                          </Option>
+                          {districts.map((district) => (
+                            <Option key={district.code} value={district.code}>
+                              {district.name}
+                            </Option>
+                          ))}
+                        </Select>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Phường/Xã</FormLabel>
-                        <Input
-                          name="ward"
-                          value={customerData.ward}
-                          placeholder='Phường/Xã'
-                          onChange={handleChange}
-                        />
+                        <FormLabel >Phường/Xã</FormLabel>
+                        <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                          placeholder="Chọn phường xã">
+                          <Option value="" disabled>
+                            Chọn phường xã
+                          </Option>
+                          {wards.map((ward) => (
+                            <Option key={ward.code} value={ward.name}>
+                              {ward.name}
+                            </Option>
+                          ))}
+                        </Select>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl>
-                        <FormLabel required>Tên đường</FormLabel>
+                        <FormLabel>Tên đường</FormLabel>
                         <Input
                           name="streetName"
                           value={customerData.streetName}

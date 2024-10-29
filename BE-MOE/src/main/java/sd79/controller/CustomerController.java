@@ -70,7 +70,7 @@ public class CustomerController {
     )
     @PostMapping("/store")
     public ResponseData<?> addCustomer(@Valid @RequestBody CustomerReq customerReq) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Customer created successfully", customerService.createCustomer(customerReq));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm khách hàng thành công", customerService.createCustomer(customerReq));
     }
 
     // Cập nhật khách hàng
@@ -80,7 +80,7 @@ public class CustomerController {
     )
     @PutMapping("/update/{id}")
     public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest customerRequest) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Customer updated successfully", customerService.updateCustomer(id, customerRequest));
+        return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin khách hàng thành công", customerService.updateCustomer(id, customerRequest));
     }
 
     // Xóa khách hàng
@@ -91,7 +91,7 @@ public class CustomerController {
     @DeleteMapping("/delete/{id}")
     public ResponseData<?> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Customer deleted successfully");
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
     }
 
     @Operation(
