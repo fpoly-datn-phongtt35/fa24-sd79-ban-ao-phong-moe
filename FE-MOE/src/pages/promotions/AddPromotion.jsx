@@ -7,7 +7,6 @@ import HomeIcon from "@mui/icons-material/Home";
 import AddIcon from '@mui/icons-material/Add';
 import DoDisturbOnIcon from '@mui/icons-material/DoDisturbOn';
 
-
 export const AddPromotion = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
@@ -26,10 +25,11 @@ export const AddPromotion = () => {
       // Gọi API postDiscount để thêm đợt giảm giá
       const response = await postDiscount({
         name: data.name,
-        promotionValue: parseInt(data.promotionValue), // Đảm bảo tỷ lệ giảm giá là số nguyên
+        code: data.code,
+        percent: data.promotionValue, // Đảm bảo tỷ lệ giảm giá là số nguyên
         startDate: formatDate(data.startDate),
         endDate: formatDate(data.endDate),
-        description: data.description,
+        note: data.note,
         userId: localStorage.getItem("userId"), // Đảm bảo lấy đúng userId từ localStorage
       });
 
@@ -82,11 +82,11 @@ export const AddPromotion = () => {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3} justifyContent="space-between">
-          <Grid xs={6}>
+          <Grid xs={4}>
             <FormControl error={!!errors?.name}>
               <FormLabel required>Tên đợt giảm giá</FormLabel>
               <Input
-                placeholder="Nhập tên sản phẩm..."
+                placeholder="Nhập tên giảm giá..."
                 fullWidth
                 {...register("name", { required: true })}
               />
@@ -96,15 +96,29 @@ export const AddPromotion = () => {
               )}
             </FormControl>
           </Grid>
-          <Grid xs={6}>
-            <FormControl error={!!errors?.promotionValue}>
+          <Grid xs={4}>
+            <FormControl error={!!errors?.code}>
+              <FormLabel required>Mã giảm giá</FormLabel>
+              <Input
+                placeholder="Nhập mã giảm giá..."
+                fullWidth
+                {...register("code", { required: true })}
+              />
+              {/* {errors.name && <span className="text-danger">Tên đợt giảm giá là bắt buộc</span>} */}
+              {errors.code && (
+                <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>
+              )}
+            </FormControl>
+          </Grid>
+          <Grid xs={4}>
+            <FormControl error={!!errors?.percent}>
               <FormLabel>Tỷ lệ giảm (%)</FormLabel>
               <Input
                 type="number"
                 placeholder="Nhập tỷ lệ giảm"
                 {...register("promotionValue", { required: true, min: 1, max: 100 })}
               />
-              {errors.promotionValue && (
+              {errors.percent && (
                 <FormHelperText>Tỷ lệ giảm là bắt buộc và phải từ 1% đến 100%!</FormHelperText>
               )}
             </FormControl>
@@ -132,12 +146,12 @@ export const AddPromotion = () => {
             </FormControl>
           </Grid>
           <Grid xs={12}>
-            <FormControl error={!!errors?.description}>
+            <FormControl error={!!errors?.note}>
               <FormLabel>Mô tả</FormLabel>
               <Textarea
                 minRows={3}
                 maxRows={10}
-                {...register("description")}
+                {...register("note")}
                 placeholder="Nhập mô tả..."
               ></Textarea>
             </FormControl>

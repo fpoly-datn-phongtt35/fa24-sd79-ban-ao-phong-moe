@@ -177,9 +177,11 @@ export const Promotion = () => {
             <tr>
               <th>#</th>
               <th>Tên</th>
+              <th>Mã</th>
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
+              <th>Sản phẩm</th>
               <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
@@ -190,10 +192,12 @@ export const Promotion = () => {
                 <tr key={discount.id}>
                   <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td>{discount.name}</td>
-                  <td>{discount.promotionValue}%</td>
+                  <td>{discount.code}</td>
+                  <td>{discount.percent}%</td>
                   <td>{new Date(discount.startDate).toLocaleDateString()}</td>
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
-                  <td>{discount.description}</td>
+                  <td>{discount.numberOfProduct}</td>
+                  <td>{discount.note}</td>
                   <td>
 
                     <IconButton color='warning' onClick={() => navigate(`/promotions/update/${discount.id}`)}>
