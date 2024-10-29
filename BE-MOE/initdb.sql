@@ -614,6 +614,8 @@ VALUES
 (9, 350000, 1, 4, 25, 'ACTIVE'),
 (10, 450000, 2, 2, 20, 'ACTIVE');
 
+UPDATE products SET updated_by = 1, created_by = 2
+
 
 INSERT INTO employee_address (street_name, ward, district, city, country)
 VALUES
