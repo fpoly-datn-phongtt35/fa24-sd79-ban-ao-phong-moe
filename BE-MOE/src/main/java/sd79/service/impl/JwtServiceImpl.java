@@ -45,6 +45,9 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.refreshKey}")
     private String refreshKey;
 
+    @Value("${jwt.key}")
+    private String key;
+
     @Override
     public String generateToken(UserDetails user) {
         return generateToken(new HashMap<>(), user);
@@ -67,7 +70,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String generateToken(Map<String, Object> claims, UserDetails user) {
-        return Jwts.builder()
+        return key + Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -77,7 +80,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String generateRefreshToken(Map<String, Object> claims, UserDetails userDetails) {
-        return Jwts.builder()
+        return key + Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -104,6 +107,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Claims extraAllClaim(String token, TokenType type) {
+        token = token.startsWith(key) ? token.substring(key.length()) : token;
         return Jwts.parserBuilder().setSigningKey(getKey(type)).build().parseClaimsJws(token).getBody();
     }
 
