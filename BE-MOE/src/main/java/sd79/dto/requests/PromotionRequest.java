@@ -10,10 +10,6 @@ import java.util.Date;
 @Getter
 @Builder
 public class PromotionRequest {
-//    @NotNull(message = "ID cannot be null")
-//    @NotEmpty(message = "ID cannot be empty")
-//    @Size(max = 100, message = "ID should not exceed 100 characters")
-//    private int id;
 
     @NotNull(message = "Name cannot be null")
     @NotEmpty(message = "Name cannot be empty")
@@ -34,4 +30,8 @@ public class PromotionRequest {
 
     @Size(max = 255, message = "Description should not exceed 255 characters")
     private String description;
+
+    private Long productID;
+
+    private BigDecimal promotionPrice;
 }

@@ -5,14 +5,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import sd79.dto.requests.PromotionProductReq;
 import sd79.dto.requests.PromotionRequest;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.model.Product;
+import sd79.model.ProductPromotion;
 import sd79.model.Promotion;
 import sd79.model.User;
+import sd79.repositories.PromotionProductRepo;
 import sd79.repositories.PromotionRepo;
 import sd79.repositories.auth.UserRepository;
+import sd79.repositories.products.ProductRepository;
 import sd79.service.PromotionService;
+
 
 import java.util.Date;
 import java.util.List;
@@ -23,6 +29,8 @@ import java.util.List;
 public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepo promotionRepo;
     private final UserRepository userRepository;
+    private final PromotionProductRepo promotionProductRepo;
+    private final ProductRepository productRepository;
 
     @Override
     public List<PromotionResponse> getAllPromotion() { //tra ra danh dach phieu giam gia
@@ -31,22 +39,49 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public PromotionResponse getPromotionId(Integer id) { // tim kiem id phieu giam gia
-        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Promotion not found"));
         return convertCPromotionResponse(promotion);
     }
 
+
     @Transactional
     @Override
-    public Integer storePromotion(PromotionRequest promotionRequest) { //tao phieu giam gia
-        Promotion promotion = new Promotion();
-        populatePromotionData(promotion, promotionRequest);
-        return promotionRepo.save(promotion).getId();
+    public Integer storePromotion(PromotionRequest promotionRequest) { // Create promotion
+        Promotion promotion = Promotion.builder()
+                .name(promotionRequest.getName())
+                .promotionValue(promotionRequest.getPromotionValue())
+                .startDate(promotionRequest.getStartDate())
+                .endDate(promotionRequest.getEndDate())
+                .description(promotionRequest.getDescription())
+                .build();
+
+        promotionRepo.save(promotion);
+        return promotion.getId();
     }
+
+    @Override
+    public Integer storeProductPromotion(PromotionProductReq promotionProductReq) {
+        Product product = productRepository.findById(promotionProductReq.getProductID())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + promotionProductReq.getProductID()));
+
+        Promotion promotion = promotionRepo.findById(promotionProductReq.getPromotionID())
+                .orElseThrow(() -> new IllegalArgumentException("Promotion not found with ID: " + promotionProductReq.getPromotionID()));
+
+        ProductPromotion productPromotion = ProductPromotion.builder()
+                .product(product)
+                .promotion(promotion)
+                .promotionPrice(promotionProductReq.getPromotionPrice())
+                .build();
+
+        promotionProductRepo.save(productPromotion);
+        return productPromotion.getId();
+    }
+
 
     @Transactional
     @Override
     public Integer updatePromotion(PromotionRequest promotionRequest, Integer id) {//sua phieu giam gia
-        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Promotion not found"));
         populatePromotionData(promotion, promotionRequest);
         return promotionRepo.save(promotion).getId();
     }
@@ -54,7 +89,7 @@ public class PromotionServiceImpl implements PromotionService {
     @Transactional
     @Override
     public void isDeletePromotion(Integer id) {//xoa phieu giam gia
-        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+        Promotion promotion = promotionRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Promotion not found"));
         promotionRepo.delete(promotion);
     }
 
@@ -103,6 +138,7 @@ public class PromotionServiceImpl implements PromotionService {
         promotion.setStartDate(promotionRequest.getStartDate());
         promotion.setEndDate(promotionRequest.getEndDate());
         promotion.setDescription(promotionRequest.getDescription());
+
     }
 
     private PromotionResponse convertCPromotionResponse(Promotion promotion) {//lay du lieu phieu giam gia respone de hien thi danh sach
@@ -116,8 +152,13 @@ public class PromotionServiceImpl implements PromotionService {
                 .build();
     }
 
+
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
+//    @Override
+//    private Integer storePromotionProduct(PromotionProductReq req){
+//        if (this.promotionProductRepo.existsProduct(req.getProductId(), req.get))
+//    }
 }

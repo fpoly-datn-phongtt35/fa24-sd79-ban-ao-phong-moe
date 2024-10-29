@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { Container, Button, Row, Col, Table, Pagination, Form } from "react-bootstrap";
+import { Row, Col, Pagination, Form } from "react-bootstrap";
 import { fetchAllDiscounts, deleteDiscount } from "~/apis/discountApi";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Box, Breadcrumbs, Button, Container, Grid, Link, Sheet, Table, Typography } from "@mui/joy";
+import AddIcon from '@mui/icons-material/Add';
+import HomeIcon from "@mui/icons-material/Home";
+import { IconButton } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import RefreshIcon from "@mui/icons-material/Refresh";
+
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -21,7 +29,6 @@ export const Promotion = () => {
     const res = await fetchAllDiscounts();
     setDiscounts(res.data);
   };
-  
 
   const onDelete = async (id) => {
     try {
@@ -43,6 +50,15 @@ export const Promotion = () => {
       console.error("Failed to delete discount", error);
       Swal.fire("Lỗi", "Không thể xóa đợt giảm giá", "error");
     }
+  };
+
+  // Hàm để reset bộ lọc
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSearchStartDate("");
+    setSearchEndDate("");
+    handleSetDiscounts(); // Nạp lại danh sách giảm giá
+    setCurrentPage(1); // Đặt lại trang hiện tại về 1
   };
 
   // Lọc danh sách đợt giảm giá
@@ -72,13 +88,51 @@ export const Promotion = () => {
   };
 
   return (
-    <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: "15px" }}>
-      <div className="fs-3 mb-4">
-        <span className="fw-bold">Quản lý đợt giảm giá</span>
-        <Button className="float-end" onClick={() => navigate("/promotions/add")}>
-          Thêm mới
-        </Button>
-      </div>
+    <Container maxWidth="max-width"
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        marginBottom={2}
+        height={"50px"}
+      >
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+            Quản lý đợt giảm giá
+          </Typography>
+        </Breadcrumbs>
+      </Grid>
+
+      <Box sx={{ marginBottom: 1, display: 'flex', justifyContent: 'space-between' }}>
+        <Typography level="title-lg">
+          Quản lý đợt giảm giá
+        </Typography>
+        <Box>
+          <Button
+            variant="soft"
+            size="sm"
+            startDecorator={<RefreshIcon />}
+            onClick={handleResetFilters}
+            sx={{ marginRight: 1 }}
+          >
+            Làm mới
+          </Button>
+          <Button size="sm" startDecorator={<AddIcon />} onClick={() => navigate("/promotions/add")}>
+            Thêm mới
+          </Button>
+        </Box>
+      </Box>
 
       <Row className="mb-4">
         <Col md={6}>
@@ -107,8 +161,18 @@ export const Promotion = () => {
         </Col>
       </Row>
 
-      <div className="table-responsive">
-        <Table className="table table-hover table-striped">
+      {/* <Box sx={{ marginBottom: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          startDecorator={<RefreshIcon />}
+          onClick={handleResetFilters}
+          variant="outlined"
+        >
+          Reset
+        </Button>
+      </Box> */}
+
+      <Sheet>
+        <Table borderAxis="x" variant="outlined">
           <thead>
             <tr>
               <th>#</th>
@@ -131,16 +195,13 @@ export const Promotion = () => {
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
                   <td>{discount.description}</td>
                   <td>
-                    <Button
-                      variant="warning" 
-                      className="me-2"
-                      onClick={() => navigate(`/promotions/update/${discount.id}`)}
-                    >
-                      <i className="fa-solid fa-square-pen"></i>
-                    </Button>
-                    <Button variant="danger" onClick={() => onDelete(discount.id)}>
-                      <i className="fa-solid fa-trash"></i>
-                    </Button>
+
+                    <IconButton color='warning' onClick={() => navigate(`/promotions/update/${discount.id}`)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color='error' onClick={() => onDelete(discount.id)}>
+                      <HighlightOffIcon />
+                    </IconButton>
                   </td>
                 </tr>
               ))
@@ -151,7 +212,7 @@ export const Promotion = () => {
             )}
           </tbody>
         </Table>
-      </div>
+      </Sheet>
 
       <Pagination className="justify-content-center">
         <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
@@ -168,6 +229,7 @@ export const Promotion = () => {
         <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
         <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
       </Pagination>
+
     </Container>
   );
 };

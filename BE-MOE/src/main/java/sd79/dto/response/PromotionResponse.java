@@ -17,4 +17,6 @@ public class PromotionResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date endDate;
     private String description;
+    private int productID;
+    private BigDecimal promotionPrice;
 }

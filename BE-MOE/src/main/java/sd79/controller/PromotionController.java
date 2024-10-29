@@ -11,19 +11,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.PromotionProductReq;
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
-import sd79.enums.TodoDiscountType;
-import sd79.enums.TodoType;
-import sd79.model.Coupon;
-import sd79.model.Promotion;
 import sd79.service.impl.PromotionServiceImpl;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -54,6 +49,15 @@ public class PromotionController {
     @PostMapping("/store")
     public ResponseData<?> addPromotions(@Valid @RequestBody PromotionRequest promotionRequest) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "promotion created successfully",service.storePromotion(promotionRequest));
+    }
+
+    @Operation(
+            summary = "New Promotion",
+            description = "New promotion into database"
+    )
+    @PostMapping("/store/product")
+    public ResponseData<?> addPromotions(@Valid @RequestBody PromotionProductReq promotionProductReq) {
+        return new ResponseData<>(HttpStatus.CREATED.value(), "promotion created successfully",service.storeProductPromotion(promotionProductReq));
     }
 
     @Operation(
