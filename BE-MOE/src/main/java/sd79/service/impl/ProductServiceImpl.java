@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.service.impl;
 
 import jakarta.persistence.EntityExistsException;
@@ -5,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import sd79.dto.requests.common.ProductParamFilter2;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
@@ -55,6 +62,14 @@ public class ProductServiceImpl implements ProductService {
             param.setPageNo(1);
         }
         return this.productCustomizeQuery.getAllProducts(param);
+    }
+
+    @Override
+    public PageableResponse getAllProductDetails(ProductParamFilter2 param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.productCustomizeQuery.getAllProductDetails(param);
     }
 
     @Override

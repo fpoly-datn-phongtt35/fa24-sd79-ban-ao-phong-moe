@@ -18,7 +18,6 @@ import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/CreateCoupon";
 import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
-import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
 import { AddPromotion } from "./pages/promotions/AddPromotion";
 import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
@@ -26,16 +25,17 @@ import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
 import { useState } from "react";
 import Header_Client from "./components/layout/Header_Client";
-import Authentication from "./pages/auth/Authentication";
 import Home from "./pages/clients/Home";
 import FooterClient from "./components/layout/FooterClient";
 import AboutUs from "./pages/clients/AboutUs";
 import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
+import LoginPage from "./pages/auth/LoginPage";
 import LocationSelector from "./pages/other/LocationSelector";
 import { EmployeeStore } from "./pages/employee/EmployeeStore";
+import ShoppingCart from "./pages/clients/ShoppingCart";
 
-const ProtectedRoutes = () => {
+const ProtectedRoutes_ADMIN = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
@@ -53,7 +53,7 @@ const ProtectedRoutes = () => {
   };
 
   if (!accessToken) {
-    return <Navigate to="/login" replace={true} />;
+    return <Navigate to="/signin" replace={true} />;
   } else if (getAuthority() === "ADMIN") {
     return (
       <div className="layout">
@@ -77,8 +77,53 @@ const ProtectedRoutes = () => {
     return <Navigate to="/" replace={true} />;
   }
 };
+const ProtectedRoutes_USER = () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
+  if (!accessToken) {
+    return <Navigate to="/signin" replace={true} />;
+  } else if (getAuthority() === "USER") {
+    return (
+      <div className="layout_client">
+        <div className="main-area_client">
+          <div>
+            <Header_Client />
+          </div>
+          <div className="content-area_client">
+            <Outlet />
+            <FooterClient />
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return <Navigate to="/" replace={true} />;
+  }
+};
 
 const PublicRoutes = () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const getAuthority = () => {
+    const roleCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("role="));
+
+    return roleCookie ? roleCookie.split("=")[1] : "";
+  };
+
+  if (accessToken && getAuthority() == "ADMIN") {
+    return <Navigate to="/dashboard" replace={true} />;
+  }
+
   return (
     <div className="layout_client">
       <div className="main-area_client">
@@ -100,20 +145,29 @@ const UnauthorizedRoutes = () => {
     return <Navigate to="/dashboard" replace={true} />;
   }
   return (
-    <>
-      <Outlet />
-    </>
+    <div className="layout_client">
+      <div className="main-area_client">
+        <div>
+          <Header_Client />
+        </div>
+        <div className="content-area_client">
+          <Outlet />
+          <FooterClient />
+        </div>
+      </div>
+    </div>
   );
 };
 
 function App() {
   return (
     <Routes>
-      <Route path="/home" element={<Navigate to="/" replace={true} />} />
+      <Route path="*" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
-        <Route path="/login" element={<Authentication />} />
+        <Route path="/signin" element={<LoginPage />} />
       </Route>
+
       <Route element={<PublicRoutes />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
@@ -122,7 +176,11 @@ function App() {
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
-      <Route element={<ProtectedRoutes />}>
+      <Route element={<ProtectedRoutes_USER />}>
+        <Route path="/cart" element={<ShoppingCart />} />
+      </Route>
+
+      <Route element={<ProtectedRoutes_ADMIN />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product" element={<Product />} />
         <Route path="/product/categories" element={<Categories />} />
@@ -142,7 +200,6 @@ function App() {
         <Route path="/promotions" element={<Promotion />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeeStore />} />
-        <Route path="/employee/demo" element={<EmployeesCreate />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
@@ -152,3 +209,7 @@ function App() {
 }
 
 export default App;
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1

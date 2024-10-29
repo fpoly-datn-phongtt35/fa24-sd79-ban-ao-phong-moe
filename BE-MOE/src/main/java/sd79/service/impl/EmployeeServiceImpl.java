@@ -59,34 +59,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findAll(pageable).map(this::convertEmployeeResponse);
     }
 
-//    @Override
-//    public int storeEmployee(EmployeeReq req) {
-//        Salary salary = this.salaryRepository.save(Salary.builder().amount(req.getSalary()).build());
-
-//        EmployeeAddress address = new EmployeeAddress();
-//        address.setWardId(req.getAddress().getWardId());
-//        address.setWard(req.getAddress().getWard());
-//        address.setDistrictId(req.getAddress().getDistrictId());
-//        address.setDistrict(req.getAddress().getDistrict());
-//        address.setProvince(req.getAddress().getProvince());
-//        address.setProvinceId(req.getAddress().getProvinceId());
-//        addressRepository.save(address);
-//        System.out.println(address.getProvince()+"gi do");
-//
-//        Employee employee = Employee.builder()
-//                .first_name(req.getFirst_name())
-//                .last_name(req.getLast_name())
-//                .phone_number(req.getPhone_number())
-//                .gender(req.getGender())
-//                .date_of_birth(req.getDate_of_birth())
-//                .avatar(req.getAvatar())
-//                .position(getPositionById(req.getPositionId()))
-//                .salaries(salary)
-//                .employee_address(address)
-//                .build();
-//        return this.employeeRepository.save(employee).getId();
-//    }
-
     @Override
     public int storeEmployee(EmployeeReq req) {
         User user = this.userRepository.save(User.builder()
@@ -105,14 +77,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         EmployeeAddress address = this.addressRepository.save(EmployeeAddress.builder()
                 .streetName(req.getAddress().getStreetName())
                 .ward(req.getAddress().getWard())
-                .wardId(req.getAddress().getWardId())
                 .district(req.getAddress().getDistrict())
                 .districtId(req.getAddress().getDistrictId())
                 .province(req.getAddress().getProvince())
                 .provinceId(req.getAddress().getProvinceId())
                 .build());
 
-        Positions position = this.positionsRepository.findById(req.getPositionId()).orElseThrow(() -> new EntityNotFoundException("Position not found"));
+        System.out.println(req.getPosition());
+        Positions position = this.positionsRepository.findById(req.getPosition()).orElseThrow(() -> new EntityNotFoundException("Position not found"));
         return this.employeeRepository.save(Employee.builder()
                 .first_name(req.getFirst_name())
                 .last_name(req.getLast_name())
@@ -129,7 +101,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void updateEmp(EmployeeReq req, Integer id) {
-        System.out.println(req.getPositionId());
+        System.out.println(req.getPosition());
         Employee employee = this.employeeRepository.findByIdEmp(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với ID: " + id));
         System.out.println(employee.getFirst_name());
@@ -144,26 +116,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         salary.setAmount(req.getSalary());
         System.out.println("Updated salary: " + salary.getAmount());
         this.salaryRepository.save(salary);
-
-        // Cập nhật địa chỉ
-//    Employee_address address = this.addressRepository.findById(req.getAddress().getId())
-//            .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy địa chỉ với ID: " + req.getAddress().getId()));
-
-        // Cập nhật thông tin địa chỉ
-//    address.setProvince(req.getAddress().getProvince());
-//    address.setDistrict(req.getAddress().getDistrict());
-//    address.setWard(req.getAddress().getWard());
-        // Thêm các trường khác nếu cần
-//    this.addressRepository.save(address); // Lưu địa chỉ đã cập nhật
-
         // Cập nhật các thông tin khác của nhân viên
         employee.setFirst_name(req.getFirst_name());
         employee.setLast_name(req.getLast_name());
         employee.setPhone_number(req.getPhone_number());
-//        employee.setGender(req.getGender());
+        employee.setGender(req.getGender());
         employee.setDate_of_birth(req.getDate_of_birth());
 //        employee.setAvatar(req.getAvatar());
-        employee.setPosition(getPositionById(req.getPositionId()));
+        employee.setPosition(getPositionById(req.getPosition()));
         employee.setSalaries(salary);
 //    employee.setEmployee_address(address); // Liên kết địa chỉ đã cập nhật với nhân viên
 
@@ -187,6 +147,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .first_name(employee.getFirst_name())
                 .last_name(employee.getLast_name())
                 .phone_number(employee.getPhone_number())
+                .email(employee.getUser().getEmail())
                 .gender(employee.getGender() == Gender.MALE ? "Nam" : employee.getGender() == Gender.FEMALE ? "Nữ" : "Khác")
                 .date_of_birth(employee.getDate_of_birth())
 //                .avatar(employee.getAvatar())

@@ -14,38 +14,27 @@ import java.util.Date;
 @Builder
 public class EmployeeReq {
 
-    @NotBlank
     private String username;
 
-    @NotBlank
     private String password;
 
-    @NotBlank
-    @Email
     private String email;
 
-    @NotBlank
     private String first_name;
 
-    @NotBlank
     private String last_name;
 
-    @NotBlank
     private String phone_number;
 
     private Gender gender;
 
-    @NotNull
     private Date date_of_birth;
 
     private String avatar;
 
-    @NotNull
     private int salary;
 
-    @NotNull
-    private int positionId;
+    private int position;
 
-    @NotNull
     private AddressRequest address;
 }

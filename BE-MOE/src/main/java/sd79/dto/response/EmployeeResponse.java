@@ -35,4 +35,6 @@ public class EmployeeResponse {
     private EmployeeAddress employee_address;
 
     private PositionResponse position;
+
+    private String email;
 }

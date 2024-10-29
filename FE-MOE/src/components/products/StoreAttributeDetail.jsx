@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Button,
   DialogContent,
@@ -11,15 +15,18 @@ import {
   Option,
   Select,
   Stack,
+  Typography,
 } from "@mui/joy";
 import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { fetchAllColors } from "~/apis/colorApi";
-import { fetchAllSizes } from "~/apis/sizesApi";
+import { fetchAllColors, postColor } from "~/apis/colorApi";
+import { fetchAllSizes, postSize } from "~/apis/sizesApi";
 import { useParams } from "react-router-dom";
 import { storeProductDetailAttribute } from "~/apis/productApi";
+import { DialogStoreV2 } from "../colors/DialogStoreV2";
+import { DialogStoreSizeV2 } from "../sizes/DialogStoreSizeV2";
 
 export const StoreAttributeDetail = (props) => {
   const [open, setOpen] = useState(false);
@@ -67,6 +74,14 @@ export const StoreAttributeDetail = (props) => {
     setValue("quantity", "");
     setValue("retailPrice", "");
   };
+
+  const handlePostColor = async (data) => {
+    await postColor(data).then(() => fetchColors());
+  };
+
+  const handlePostSize = async (data) => {
+    await postSize(data).then(() => fetchSizes());
+  };
   return (
     <>
       <Button
@@ -90,6 +105,21 @@ export const StoreAttributeDetail = (props) => {
                   sx={{ minWidth: 300, maxWidth: 320 }}
                   {...register("colorId", { required: true })}
                 >
+                  <Button
+                    startDecorator={
+                      <DialogStoreV2
+                        buttonTitle="Thêm mới màu sắc"
+                        title="Thêm mới màu sắc"
+                        label="Nhập tên màu sắc"
+                        handleSubmit={handlePostColor}
+                      />
+                    }
+                    color="neutral"
+                    size="sm"
+                    variant="plain"
+                  >
+                    Thêm màu sắc
+                  </Button>
                   {colors.map((color, index) => (
                     <Option key={index} value={color.id}>
                       {color.name}
@@ -108,6 +138,21 @@ export const StoreAttributeDetail = (props) => {
                   sx={{ minWidth: 300, maxWidth: 320 }}
                   {...register("sizeId", { required: true })}
                 >
+                  <Button
+                    startDecorator={
+                      <DialogStoreSizeV2
+                        buttonTitle="Thêm mới kích thước"
+                        title="Thêm mới kích thước"
+                        label="Nhập tên kích thước"
+                        handleSubmit={handlePostSize}
+                      />
+                    }
+                    color="neutral"
+                    size="sm"
+                    variant="plain"
+                  >
+                    Thêm kích thước
+                  </Button>
                   {sizes.map((size, index) => (
                     <Option key={index} value={size.id}>
                       {size.name}

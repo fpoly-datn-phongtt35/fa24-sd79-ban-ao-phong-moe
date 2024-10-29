@@ -55,7 +55,7 @@ export const Customer = () => {
       setCustomers(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      toast.error('Failed to fetch customers.');
+      toast.error('Không thể tìm kiếm khách hàng.');
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ export const Customer = () => {
       setCustomers(res.data.content);
       setTotalPages(res.data.totalPages);
     } catch (error) {
-      console.error('Error during search:', error);
+      console.error('Lỗi khi tìm kiếm:', error);
     } finally {
       setLoading(false);
     }
@@ -90,8 +90,8 @@ export const Customer = () => {
       await deleteCustomer(id);
       handleSetCustomer();
     } catch (error) {
-      console.error('Failed to delete customer', error);
-      swal('Error', 'Failed to delete customer', 'error');
+      console.error('Xóa không thành công', error);
+      swal('Error', 'Xóa không thành công', 'error');
     }
   };
 
@@ -182,9 +182,7 @@ export const Customer = () => {
         </Grid>
       </Box>
       <Box marginBottom={2}>
-        <Typography color="neutral" level="title-lg" noWrap variant="plain">
-          Danh sách sản phẩm
-        </Typography>
+        
       </Box>
       <TableContainer sx={{ border: '1px solid #38383e78' }} component={Paper}>
         <Table aria-label="customer table">

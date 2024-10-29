@@ -24,9 +24,9 @@ public class CouponResponse {
     private BigDecimal maxValue;
     private Integer quantity; // so luong phieu giam gia su dung
     private BigDecimal conditions;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private Date startDate; // ngay bat dau
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm") //yyyy-MM-dd
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private Date endDate; // ngay ket thuc
     private String status; //trang thai
     private String description;

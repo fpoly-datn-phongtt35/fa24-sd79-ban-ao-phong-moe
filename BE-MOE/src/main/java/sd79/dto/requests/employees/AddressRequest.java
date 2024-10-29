@@ -14,9 +14,6 @@ public class AddressRequest {
     @NotBlank
     private String ward;
 
-    @NotNull
-    private Integer wardId;
-
     @NotBlank
     private String district;
 

@@ -12,7 +12,7 @@ import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/emplo
 import AddIcon from '@mui/icons-material/Add';
 import { Breadcrumbs, Button, Link } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
-import { formatCurrencyVND } from '~/utils/format';
+import { formatCurrencyVND, formatDateWithoutTime } from '~/utils/format';
 export const Employee = () => {
     const [employee, setEmployee] = useState([]);
     const [keyword, setKeyword] = useState('');
@@ -26,6 +26,14 @@ export const Employee = () => {
         handleSetEmployee(currentPage);
     }, [currentPage]);
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
     useEffect(() => {
         if (!keyword && !phone_number) {
             handleSetEmployee(currentPage);
@@ -173,6 +181,8 @@ export const Employee = () => {
                             <TableCell>Tên Đệm</TableCell>
                             <TableCell>SĐT</TableCell>
                             <TableCell>Giới Tính</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Ngày Sinh</TableCell>
                             <TableCell>Lương</TableCell>
                             <TableCell>Địa chỉ</TableCell>
                             <TableCell>Chức vụ</TableCell>
@@ -187,7 +197,11 @@ export const Employee = () => {
                                     <TableCell>{emp.first_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.last_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
-                                    <TableCell>{emp.gender || 'N/A'}</TableCell>  
+                                    <TableCell>{emp.gender || 'N/A'}</TableCell>
+                                    <TableCell>{emp.email || 'N/A'}</TableCell>
+                                    {/* <TableCell>{formatDate(emp.date_of_birth)}</TableCell> */}
+                                    <TableCell>{formatDateWithoutTime(emp.date_of_birth)}</TableCell>
+
                                     <TableCell>
                                         {emp.salaries && typeof emp.salaries === 'object' ? (
                                             formatCurrencyVND(emp.salaries.amount) || 'N/A'
@@ -202,6 +216,7 @@ export const Employee = () => {
                                                 <div>{emp.employee_address.province || 'N/A'}</div>
                                                 <div>{emp.employee_address.district || 'N/A'}</div>
                                                 <div>{emp.employee_address.ward || 'N/A'}</div>
+                                                <div>{emp.employee_address.streetName || 'N/A'}</div>
                                             </div>
                                         ) : (
                                             'N/A'

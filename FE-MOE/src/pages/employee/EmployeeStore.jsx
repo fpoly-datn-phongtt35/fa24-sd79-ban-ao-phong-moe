@@ -1,58 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
 import { toast } from 'react-toastify';
-import { postCustomer, postcustomerImage } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
-import { useForm } from 'react-hook-form';
-import { getAllPositions } from '~/apis/employeeApi';
-import { getAllProvinces, getDistrictsByProvinceId, getWardsByDistrictId } from '~/apis/addressEmployeeApi';
+import axios from 'axios';
+import { getAllPositions, postEmployee } from '~/apis/employeeApi';
+
+const host = "https://provinces.open-api.vn/api/";
 
 export const EmployeeStore = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [imageObject, setImageObject] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const [positions, setPositions] = useState([]);
-
-    const [provinces, setProvinces] = useState([]);
+    /*---Start handle address---*/
+    const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
+    const [selectedCity, setSelectedCity] = useState("");
+    const [selectedDistrict, setSelectedDistrict] = useState("");
+    const [selectedWard, setSelectedWard] = useState("");
 
-    const [selectedProvince, setSelectedProvince] = useState(null);
-    const [selectedDistrict, setSelectedDistrict] = useState(null);
-    const navigate = useNavigate();
+    const [position, setPosition] = useState(null);
+    const [streetName, setStreetName] = useState('');
 
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        watch,
-        formState: { errors },
-    } = useForm();
+    const [positions, setPositions] = useState([]);
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            const response = await axios.get(`${host}?depth=1`);
+            setCities(response.data);
+        };
+        fetchCities();
+    }, []);
 
     useEffect(() => {
         const fetchPosition = async () => {
             await getAllPositions().then((res) => setPositions(res.data))
         }
-
-        const fetchProvinces = async () => {
-            await getAllProvinces().then((res) => setProvinces(res))
-        }
         fetchPosition();
-        fetchProvinces();
     }, [])
-
-    // useEffect(() => {
-    //     handleProvinceChange();
-    // }, [selectedProvince])
-
-    useEffect(() => {
-        if (selectedProvince) {
-            handleProvinceChange();
+    const handleCityChange = async (e) => {
+        const cityId = e;
+        setSelectedCity(cityId);
+        setSelectedDistrict("");
+        setSelectedWard("");
+        if (cityId) {
+            const response = await axios.get(`${host}p/${cityId}?depth=2`);
+            setDistricts(response.data.districts);
+        } else {
+            setDistricts([]);
         }
-    }, [selectedProvince]);
+    };
+
+    const handleDistrictChange = async (e) => {
+        const districtId = e;
+        setSelectedDistrict(districtId);
+        setSelectedWard(""); // Reset ward
+        if (districtId) {
+            const response = await axios.get(`${host}d/${districtId}?depth=2`);
+            setWards(response.data.wards);
+        } else {
+            setWards([]);
+        }
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e);
+    };
+    /*---END---*/
 
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
@@ -60,27 +77,85 @@ export const EmployeeStore = () => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
-    };
+      };
 
-    const handleProvinceChange = async () => {
-        try {
-            const res = await getDistrictsByProvinceId(selectedProvince);
-            setDistricts(res);
-            setSelectedDistrict(null); // Reset the selected district when province changes
-            setWards([]); // Reset wards when province changes
-        } catch (error) {
-            console.error(error);
+    const [employeeData, setEmployeeData] = useState({
+        username: '',
+        password: '',
+        email: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        gender: '',
+        date_of_birth: '',
+        avatar: 'null',
+        salary: '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
+    const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        if (name === 'date_of_birth') {
+            console.log("Ngày sinh:", value); // Log giá trị nhập vào
+        }
+        if (name === 'gender') {
+            setEmployeeData({ ...employeeData, gender: value });
+        } else {
+            setEmployeeData({ ...employeeData, [name]: value });
         }
     };
 
-    const handleDistrictChange = async (event) => {
-        const districtId = event.target.value;
-        setSelectedDistrict(districtId);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const currentDate = new Date().toISOString();
+
+        const cityName = cities.find((city) => city.code == selectedCity)?.name;
+        const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+        const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
+        const customerWithTimestamps = {
+            ...employeeData,
+            address:{
+                province: cityName,
+                provinceId: selectedCity,
+                district: districtName,
+                districtId: selectedDistrict,
+                ward: wardName,
+                streetName: streetName
+                //
+            },
+            position: position,
+            date_of_birth: formatDate(employeeData.date_of_birth),
+            createdAt: currentDate,
+            updatedAt: currentDate,
+        };
+
+        console.log(customerWithTimestamps);
+
         try {
-            const res = await getWardsByDistrictId(districtId);
-            setWards(res);
+            // setIsLoading(true);
+            await postEmployee(customerWithTimestamps)
+                // .then(async (res) => {
+                //     if (imageObject === null) {
+                //         setIsLoading(false);
+                //         navigate('/employee');
+                //         return;
+                //     }
+                //     const formData = new FormData();
+                //     formData.append("images", imageObject)
+                //     formData.append("productId", res)
+                //     await postcustomerImage(formData).then(() => {
+                //         toast.success('Thêm thành công');
+                //         setIsLoading(false);
+                //         navigate('/employee');
+                //     })
+                // });
         } catch (error) {
-            console.error(error);
+            setIsLoading(false);
+            toast.error('Thêm thất bại!');
         }
     };
 
@@ -91,14 +166,8 @@ export const EmployeeStore = () => {
         setImageObject(file)
     }
 
-    const onSubmit = async (data) => {
-        console.log("Submited..");
-        console.log(data);
-
-
-    }
-
     return (
+        
         <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
             <Box mt={4} mb={4}>
                 <Grid
@@ -135,7 +204,7 @@ export const EmployeeStore = () => {
                 </Grid>
                 <Paper elevation={3}>
                     <Box p={4}>
-                        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+                        <Box component="form" onSubmit={handleSubmit} noValidate>
                             <Grid container spacing={3}>
                                 <Grid item xs={12} md={4}>
                                     <Box display="flex" flexDirection="column" alignItems="center">
@@ -168,8 +237,10 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Họ</FormLabel>
                                                 <Input
+                                                    value={employeeData.last_name}
+                                                    name="last_name"
+                                                    onChange={handleChange}
                                                     placeholder='Họ'
-                                                    {...register("last_name", { required: true })}
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -177,8 +248,10 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Tên</FormLabel>
                                                 <Input
-                                                    placeholder='Nhập tên'
-                                                    {...register("first_name", { required: true })}
+                                                    value={employeeData.first_name}
+                                                    name="first_name"
+                                                    onChange={handleChange}
+                                                    placeholder='Tên'
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -186,8 +259,10 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Tên tài khoản</FormLabel>
                                                 <Input
-                                                    placeholder='Nhập tên tài khoản'
-                                                    {...register("username", { required: true })}
+                                                    value={employeeData.username}
+                                                    name="username"
+                                                    onChange={handleChange}
+                                                    placeholder='Tên tài khoản'
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -195,9 +270,11 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Mật Khẩu</FormLabel>
                                                 <Input
+                                                    value={employeeData.password}
+                                                    name="password"
                                                     type="password"
-                                                    placeholder='Nhập mật Khẩu'
-                                                    {...register("password", { required: true })}
+                                                    onChange={handleChange}
+                                                    placeholder='Mật Khẩu'
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -205,9 +282,11 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Email</FormLabel>
                                                 <Input
-                                                    placeholder='Nhập email'
+                                                    value={employeeData.email}
+                                                    name="email"
+                                                    onChange={handleChange}
+                                                    placeholder='Email'
                                                     type="email"
-                                                    {...register("email", { required: true })}
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -215,9 +294,34 @@ export const EmployeeStore = () => {
                                             <FormControl>
                                                 <FormLabel required>Số Điện Thoại</FormLabel>
                                                 <Input
-                                                    placeholder='Nhập số Điện Thoại'
-                                                    {...register("phone_number", { required: true })}
+                                                    value={employeeData.phone_number}
+                                                    name="phone_number"
+                                                    onChange={handleChange}
+                                                    placeholder='Số Điện Thoại'
                                                 />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Lương</FormLabel>
+                                                <Input
+                                                    value={employeeData.salary}
+                                                    name='salary'
+                                                    onChange={handleChange}
+                                                    type="number"
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Chức vụ</FormLabel>
+                                                <Select defaultValue={0} placeholder="Chọn chức vụ" onChange={(e, v) => setPosition(v)}>
+                                                    {
+                                                        positions?.map((item) => (
+                                                            <Option key={item.id} value={item.id}>{item.name}</Option>
+                                                        ))
+                                                    }
+                                                </Select>
                                             </FormControl>
                                         </Grid>
 
@@ -228,16 +332,22 @@ export const EmployeeStore = () => {
                                                     <Box sx={{ display: 'flex', gap: 2 }}>
                                                         <Radio
                                                             label="Nam"
+                                                            checked={employeeData.gender === 'MALE'}
+                                                            onChange={handleChange}
                                                             value="MALE"
                                                             name="gender"
                                                         />
                                                         <Radio
                                                             label="Nữ"
+                                                            checked={employeeData.gender === 'FEMALE'}
+                                                            onChange={handleChange}
                                                             value="FEMALE"
                                                             name="gender"
                                                         />
                                                         <Radio
                                                             label="Khác"
+                                                            checked={employeeData.gender === 'OTHER'}
+                                                            onChange={handleChange}
                                                             value="OTHER"
                                                             name="gender"
                                                         />
@@ -251,70 +361,46 @@ export const EmployeeStore = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Ngày sinh</FormLabel>
+                                                {console.log("Giá trị của employeeData.date_of_birth:", employeeData.date_of_birth)}
                                                 <Input
+                                                    name="date_of_birth"
+                                                    value={employeeData.date_of_birth}
+                                                    onChange={handleChange}
                                                     placeholder='Ngày sinh'
                                                     type='date'
-                                                    {...register("date_of_birth", { required: true })}
                                                 />
+                                                
                                             </FormControl>
                                         </Grid>
 
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
-                                                <FormLabel required>Lương</FormLabel>
-                                                <Input
-                                                    type='number'
-                                                    placeholder='Nhập lương'
-                                                    {...register("salary", { required: true })}
-                                                />
-                                            </FormControl>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <FormControl>
-                                                <FormLabel required>Chức vụ</FormLabel>
-                                                <Select defaultValue={0} placeholder="Chọn chức vụ" {...register("positionId", { required: true })}>
-                                                    {
-                                                        positions?.map((item) => (
-                                                            <Option key={item.id} value={item.id}>{item.name}</Option>
-                                                        ))
-                                                    }
+                                                <FormLabel >Thành phố</FormLabel>
+                                                <Select onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                                                    <Option value="" disabled>
+                                                        Chọn tỉnh thành
+                                                    </Option>
+                                                    {cities.map((city) => (
+                                                        <Option key={city.code} value={city.code}>
+                                                            {city.name}
+                                                        </Option>
+                                                    ))}
                                                 </Select>
                                             </FormControl>
                                         </Grid>
 
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
-                                                <FormLabel required>Thành phố</FormLabel>
-                                                <Select defaultValue={0} placeholder="Chọn tỉnh/thành phố"
-                                                    {...register("province", { required: true })}
-                                                    onChange={(event, value) => {
-                                                        console.log(value);
-                                                        setSelectedProvince(value);
-                                                    }}
-                                                >
-                                                    {
-                                                        provinces?.map((item) => (
-                                                            <Option key={item.ProvinceID} value={item.ProvinceID}>{item.ProvinceName}</Option>
-                                                        ))
-                                                    }
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <FormControl>
-                                                <FormLabel required>Quận/Huyện</FormLabel>
-                                                <Select
-                                                    defaultValue={0}
-                                                    placeholder="Chọn quận/huyện"
-                                                    {...register("district", { required: true })}
-                                                    onChange={(event, value) => {
-                                                        console.log("Selected District ID:", value);
-                                                        // Bạn có thể thực hiện thêm các hành động khác ở đây nếu cần
-                                                    }}
-                                                >
-                                                    {districts?.map((item) => (
-                                                        <Option key={item.DistrictID} value={item.DistrictID}>
-                                                            {item.DistrictName}
+                                                <FormLabel >Quận/Huyện</FormLabel>
+                                                <Select value={selectedDistrict}
+                                                    onChange={(e, v) => handleDistrictChange(v)}
+                                                    placeholder="Chọn quận huyện">
+                                                    <Option value="" disabled>
+                                                        Chọn quận huyện
+                                                    </Option>
+                                                    {districts.map((district) => (
+                                                        <Option key={district.code} value={district.code}>
+                                                            {district.name}
                                                         </Option>
                                                     ))}
                                                 </Select>
@@ -322,25 +408,27 @@ export const EmployeeStore = () => {
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
-                                                <FormLabel required>Xã/Phường</FormLabel>
-                                                <Select
-                                                    placeholder="Chọn xã/phường"
-                                                    defaultValue={0}
-                                                >
+                                                <FormLabel >Phường/Xã</FormLabel>
+                                                <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                                                    placeholder="Chọn phường xã">
+                                                    <Option value="" disabled>
+                                                        Chọn phường xã
+                                                    </Option>
                                                     {wards.map((ward) => (
-                                                        <Option key={ward.id} value={ward.id}>{ward.name}</Option>
+                                                        <Option key={ward.code} value={ward.name}>
+                                                            {ward.name}
+                                                        </Option>
                                                     ))}
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-
-
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
-                                                <FormLabel required>Tên đường</FormLabel>
+                                                <FormLabel>Tên đường</FormLabel>
                                                 <Input
                                                     name="streetName"
                                                     placeholder='Tên đường'
+                                                    onChange={(e) => setStreetName(e.target.value)}
                                                 />
                                             </FormControl>
                                         </Grid>
@@ -349,7 +437,7 @@ export const EmployeeStore = () => {
                                         <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                                             Thêm Người Dùng
                                         </Button>
-                                        <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/employee")}>
+                                        <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                                             Hủy
                                         </Button>
                                     </Grid>

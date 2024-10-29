@@ -25,9 +25,6 @@ public class EmployeeAddress {
     @Column(name = "ward", length = 50)
     private String ward;
 
-    @Column(name = "ward_id")
-    private Integer wardId;
-
     @Size(max = 50)
     @Column(name = "district", length = 50)
     private String district;
