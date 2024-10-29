@@ -29,13 +29,41 @@ export const CustomerDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  /*---Start handle address---*/
+  
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
+
+  const [errors, setErrors] = useState({
+    lastName: '',
+    firstName: '',
+    phoneNumber: '',
+    gender: '',
+    dateOfBirth: '',
+    email: '',
+  });
+
+  const validateForm = () => {
+
+    const newErrors = {
+      lastName: customerData.lastName ? '' : 'Họ không được để trống',
+      firstName: customerData.firstName ? '' : 'Tên không được để trống',
+      phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
+      gender: customerData.gender ? '' : 'Phải chọn giới tính',
+      dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
+      email: customerData.email ? '': 'Email không được để trống',
+
+    };
+
+    
+
+    setErrors(newErrors);
+
+    return Object.values(newErrors).every((error) => error === '');
+  };
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -120,12 +148,97 @@ export const CustomerDetailPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let newErrors = { ...errors };
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>0-9]/g; 
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const minAge = 16;
+
+    const calculateAge = (dob) => {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    };
+
+    if (name === 'lastName') {
+      if (value.length > 20) {
+        newErrors.lastName = "Họ không được vượt quá 20 ký tự";
+      } else if (specialCharRegex.test(value)) {
+        newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
+      } else {
+        delete newErrors.lastName; 
+      }
+    }
+
+    
+    if (name === 'firstName') {
+      if (value.length > 50) {
+        newErrors.firstName = "Tên không được vượt quá 50 ký tự";
+      } else if (specialCharRegex.test(value)) {
+        newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
+      } else {
+        delete newErrors.firstName; 
+      }
+    }
+
+    if (name === 'phoneNumber') {
+      if (!phoneRegex.test(value)) {
+        newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+      } else {
+        delete newErrors.phoneNumber;
+      }
+    }
+    
+
+
+    if (name === 'gender') {
+      if (!value) {
+        newErrors.gender = "Phải chọn giới tính";
+      } else {
+        delete newErrors.gender;
+      }
+      setCustomerData({ ...customerData, gender: value });
+    } else {
+      setCustomerData({ ...customerData, [name]: value });
+    }
+
+    if (name === 'dateOfBirth') {
+      const age = calculateAge(value);
+      if (age < minAge) {
+        newErrors.dateOfBirth = "Phải trên 16 tuổi";
+      } else {
+        delete newErrors.dateOfBirth;
+      }
+      setCustomerData({ ...customerData, dateOfBirth: value });
+    } else {
+      setCustomerData({ ...customerData, [name]: value });
+    }
+  if (name === 'email') {
+    if (!emailRegex.test(value)) {
+      newErrors.email = "Email không đúng định dạng";
+    } else {
+      delete newErrors.email;
+    }
+  }
     setCustomerData({ ...customerData, [name]: value });
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: value ? '' : prevErrors[name],
+    }));
+   
+
+    setErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validateForm()) return;
     const cityName = cities.find((city) => city.code == selectedCity)?.name;
     const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
     const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
@@ -237,7 +350,19 @@ export const CustomerDetailPage = () => {
                           name="lastName"
                           onChange={handleChange}
                           placeholder='Họ'
+                          sx={{
+                            border: `1px solid ${errors.lastName ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                            '&:hover:not(.Mui-disabled):before': {
+                              borderColor: errors.lastName ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: errors.lastName ? 'red' : 'primary.main',
+                            },
+                          }}
                         />
+                        {errors.lastName && (
+                          <Typography color="error" variant="body2">{errors.lastName}</Typography>
+                        )}
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -248,7 +373,19 @@ export const CustomerDetailPage = () => {
                           name="firstName"
                           onChange={handleChange}
                           placeholder='Tên'
+                          sx={{
+                            border: `1px solid ${errors.firstName ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                            '&:hover:not(.Mui-disabled):before': {
+                              borderColor: errors.firstName ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: errors.firstName ? 'red' : 'primary.main',
+                            },
+                          }}
                         />
+                        {errors.firstName && (
+                          <Typography color="error" variant="body2">{errors.firstName}</Typography>
+                        )}
                       </FormControl>
                     </Grid>
 
@@ -261,7 +398,19 @@ export const CustomerDetailPage = () => {
                           onChange={handleChange}
                           placeholder='Email'
                           type="email"
+                          sx={{
+                            border: `1px solid ${errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                            '&:hover:not(.Mui-disabled):before': {
+                              borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: errors.email ? 'red' : 'primary.main',
+                            },
+                          }}
                         />
+                        {errors.email && (
+                          <Typography color="error" variant="body2">{errors.email}</Typography>
+                        )}
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -272,7 +421,19 @@ export const CustomerDetailPage = () => {
                           name="phoneNumber"
                           onChange={handleChange}
                           placeholder='Số Điện Thoại'
+                          sx={{
+                            border: `1px solid ${errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                            '&:hover:not(.Mui-disabled):before': {
+                              borderColor: errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: errors.phoneNumber ? 'red' : 'primary.main',
+                            },
+                          }}
                         />
+                        {errors.phoneNumber && (
+                          <Typography color="error" variant="body2">{errors.phoneNumber}</Typography>
+                        )}
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -286,6 +447,10 @@ export const CustomerDetailPage = () => {
                               onChange={handleChange}
                               value="MALE"
                               name="gender"
+                              sx={{
+                                color: errors.gender ? 'red' : 'default',
+                                '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
+                              }}
                             />
                             <Radio
                               label="Nữ"
@@ -293,6 +458,10 @@ export const CustomerDetailPage = () => {
                               onChange={handleChange}
                               value="FEMALE"
                               name="gender"
+                              sx={{
+                                color: errors.gender ? 'red' : 'default',
+                                '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
+                              }}
                             />
                             <Radio
                               label="Khác"
@@ -300,10 +469,16 @@ export const CustomerDetailPage = () => {
                               onChange={handleChange}
                               value="OTHER"
                               name="gender"
+                              sx={{
+                                color: errors.gender ? 'red' : 'default',
+                                '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
+                              }}
                             />
 
                           </Box>
-
+                          {errors.gender && (
+                            <Typography color="error" variant="body2">{errors.gender}</Typography>
+                          )}
                         </RadioGroup>
                       </FormControl>
                     </Grid>
@@ -316,7 +491,19 @@ export const CustomerDetailPage = () => {
                           onChange={handleChange}
                           placeholder='Ngày sinh'
                           type='text'
+                          sx={{
+                            border: `1px solid ${errors.dateOfBirth ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                            '&:hover:not(.Mui-disabled):before': {
+                              borderColor: errors.dateOfBirth ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                            },
+                            '&.Mui-focused': {
+                              borderColor: errors.dateOfBirth ? 'red' : 'primary.main',
+                            },
+                          }}
                         />
+                        {errors.dateOfBirth && (
+                          <Typography color="error" variant="body2">{errors.dateOfBirth}</Typography>
+                        )}
                       </FormControl>
                     </Grid>
 
