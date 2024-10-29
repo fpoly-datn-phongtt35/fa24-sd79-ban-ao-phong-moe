@@ -33,9 +33,11 @@ authorizedAxiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error?.response?.status === 401) {
-      handleLogoutAPI().then(() => {
-        location.href = "/login";
-      });
+      if (localStorage.getItem("accessToken")) {
+        handleLogoutAPI().then(() => {
+          location.href = "/login";
+        });
+      }
     }
 
     const originalRequest = error.config;

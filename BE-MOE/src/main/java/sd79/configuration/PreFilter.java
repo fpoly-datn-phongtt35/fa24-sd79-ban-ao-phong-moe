@@ -25,7 +25,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import sd79.dto.response.ExceptionResponse;
-import sd79.exception.AuthenticationException;
+import sd79.exception.AuthenticationExceptionCustom;
 import sd79.service.JwtService;
 import sd79.service.TokenService;
 import sd79.service.UserService;
@@ -57,7 +57,7 @@ public class PreFilter extends OncePerRequestFilter {
         try {
             final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
             if (this.tokenService.getToken(username) == null) {
-                throw new AuthenticationException("Authentication failed");
+                throw new AuthenticationExceptionCustom("Authentication failed");
             }
             if (StringUtils.isNotEmpty(username) & SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userService.userDetailsService().loadUserByUsername(username);

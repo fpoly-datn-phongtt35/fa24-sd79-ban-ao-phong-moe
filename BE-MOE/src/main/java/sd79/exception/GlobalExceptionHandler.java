@@ -12,7 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -62,7 +66,7 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    @ExceptionHandler({EntityNotFoundException.class, InternalAuthenticationServiceException.class})
+    @ExceptionHandler({EntityNotFoundException.class, AuthenticationExceptionCustom.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ExceptionResponse handleEntityNotFound(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse();
@@ -73,9 +77,9 @@ public class GlobalExceptionHandler {
         if (ex instanceof EntityNotFoundException) {
             response.setError("Entity not found");
         }
-        if (ex instanceof InternalAuthenticationServiceException) {
-            response.setError("Internal authentication service error");
-            message = "Username or password incorrect";
+        if (ex instanceof AuthenticationExceptionCustom) {
+            response.setError("Authentication error");
+            message = "Username or password incorrect 2";
         }
         response.setMessage(message);
         return response;
@@ -91,6 +95,39 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         if (ex instanceof NotAllowedDeleteEntityException) {
             response.setError("Can't delete this entity");
+        }
+        response.setMessage(message);
+        return response;
+    }
+
+    @ExceptionHandler({
+            BadCredentialsException.class,
+            AuthenticationException.class,
+            InternalAuthenticationServiceException.class,
+            DisabledException.class,
+            LockedException.class,
+    })
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ExceptionResponse handleBadCredentials(Exception ex, WebRequest request) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setTimestamp(new Date());
+        response.setPath(request.getDescription(false).replace("uri=", ""));
+        String message = ex.getMessage();
+
+        if (ex instanceof InternalAuthenticationServiceException) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setError("Bad credentials");
+            message = "Tài khoản không tồn tại";
+        } else if (ex instanceof BadCredentialsException) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setError("Bad credentials");
+            message = "Mật khẩu không hợp lệ";
+        } else if(ex instanceof DisabledException){
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setError("Người dùng đã bị vô hiệu hóa");
+        } else if(ex instanceof LockedException){
+            response.setStatus(HttpStatus.LOCKED.value());
+            response.setError("Người dùng đã bị khóa");
         }
         response.setMessage(message);
         return response;

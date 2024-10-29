@@ -6,12 +6,12 @@
  */
 package sd79.exception;
 
-public class AuthenticationException extends RuntimeException {
-    public AuthenticationException(String message) {
+public class AuthenticationExceptionCustom extends RuntimeException {
+    public AuthenticationExceptionCustom(String message) {
         super(message);
     }
 
-    public AuthenticationException(String message, Throwable cause) {
+    public AuthenticationExceptionCustom(String message, Throwable cause) {
         super(message, cause);
     }
 }
