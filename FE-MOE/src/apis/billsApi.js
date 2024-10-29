@@ -9,7 +9,7 @@ export const fetchAllBillProducts = async (
   color,
   brand
 ) => {
-  let uri = "/bill/product?";
+  let uri = "/product/product-details?";
   let queryParams = [];
 
   if (pageNo !== null && pageNo !== undefined) {

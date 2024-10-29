@@ -5,50 +5,44 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Typography,
   Button,
   Badge,
   Box,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
-import { handleLogoutAPI } from "~/apis";
-import { Avatar, Input } from "@mui/joy";
-
-const IconSvgCustom = ({ icon, title }) => (
-  <img src={icon} alt={title} style={{ width: "40px", height: "40px" }} />
-);
+import { accessUserAPI, handleLogoutAPI } from "~/apis";
+import { Avatar, Input, Typography } from "@mui/joy";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [hasAuthenticated, setHasAuthenticated] = useState(false);
-  const [isManager, setIsManager] = useState(false);
   const [avatar, setAvatar] = useState("");
+  const [username, setUsername] = useState("");
+  const accessToken = localStorage.getItem("accessToken");
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    setAvatar(localStorage.getItem("avatar"));
-    const getAuthority = () => {
-      const roleCookie = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("role="));
-      return roleCookie ? roleCookie.split("=")[1] : "";
-    };
     if (accessToken) {
       setHasAuthenticated(true);
-      if (getAuthority() !== "USER") {
-        setIsManager(true);
-      } else {
-        setIsManager(false);
-      }
+      handleAccessData();
     } else {
       setHasAuthenticated(false);
     }
-  }, []);
+  }, [accessToken]);
 
   const navigate = useNavigate();
+
+  const handleAccessData = async () => {
+    await accessUserAPI("USER").then((res) => {
+      setAvatar(res?.avatar);
+      setUsername(res?.username);
+    });
+  };
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -59,13 +53,14 @@ const Header_Client = () => {
   };
 
   const singIn = () => {
-    navigate("/login");
+    navigate("/signin");
   };
 
   const handleLogout = async () => {
     await handleLogoutAPI();
     localStorage.removeItem("accessToken");
-    navigate("/login");
+    document.cookie = "role=; path=/; max-age=0";
+    navigate("/signin");
   };
 
   return (
@@ -133,7 +128,7 @@ const Header_Client = () => {
             </Badge>
           </IconButton>
           <IconButton onClick={hasAuthenticated ? handleMenuClick : singIn}>
-            <Avatar src={avatar} alt="avatar" />
+            <Avatar src={avatar} alt={username} />
           </IconButton>
         </Box>
 
@@ -142,17 +137,39 @@ const Header_Client = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleMenuClose}>Quản lý tài khoản</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Đơn hàng của tôi</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Lịch sử hủy đơn</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Đánh giá của tôi</MenuItem>
-          {isManager && (
-            <MenuItem onClick={() => navigate("/dashboard")}>
-              Trang quản lý
-            </MenuItem>
-          )}
+          <MenuItem onClick={handleMenuClose}>
+            <Typography
+              level="tile-md"
+              startDecorator={<AccountCircleOutlinedIcon />}
+            >
+              Quản lý tài khoản
+            </Typography>
+          </MenuItem>
+          <MenuItem onClick={handleMenuClose}>
+            <Typography
+              level="tile-md"
+              startDecorator={<ShoppingCartOutlinedIcon />}
+            >
+              Đơn hàng của tôi
+            </Typography>
+          </MenuItem>
+          <MenuItem onClick={handleMenuClose}>
+            <Typography
+              level="tile-md"
+              startDecorator={<FeedbackOutlinedIcon />}
+            >
+              Đánh giá của tôi
+            </Typography>
+          </MenuItem>
           {hasAuthenticated && (
-            <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <Typography
+                level="tile-md"
+                startDecorator={<LogoutOutlinedIcon />}
+              >
+                Đăng xuất
+              </Typography>
+            </MenuItem>
           )}
         </Menu>
       </Toolbar>

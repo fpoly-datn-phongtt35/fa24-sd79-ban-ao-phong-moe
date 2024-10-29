@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import sd79.dto.requests.common.ProductParamFilter2;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
@@ -55,6 +56,14 @@ public class ProductServiceImpl implements ProductService {
             param.setPageNo(1);
         }
         return this.productCustomizeQuery.getAllProducts(param);
+    }
+
+    @Override
+    public PageableResponse getAllProductDetails(ProductParamFilter2 param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.productCustomizeQuery.getAllProductDetails(param);
     }
 
     @Override
@@ -261,7 +270,6 @@ public class ProductServiceImpl implements ProductService {
         });
         return productDetailResponses;
     }
-
 
     private List<ImageResponse> convertToImageResponse(List<ProductImage> images) {
         List<ImageResponse> imageResponses = new ArrayList<>();

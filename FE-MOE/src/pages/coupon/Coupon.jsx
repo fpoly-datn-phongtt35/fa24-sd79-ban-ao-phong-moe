@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Box, Link, Typography, Container } from "@mui/material";
+import { Grid, Box, Link, Typography, Container, Breadcrumbs } from "@mui/material";
 import CouponPagination from "~/components/coupon/CouponPagination";
 import CouponSearchFilter from "~/components/coupon/CouponSearchFilter";
 import CouponTable from "~/components/coupon/CouponTable";
 import { deleteCoupon, fetchAllCoupon } from '~/apis/couponApi';
 import HomeIcon from "@mui/icons-material/Home";
-import { Breadcrumbs } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
 
-const Coupon = () => {
+export const Coupon = () => {
   const navigate = useNavigate();
   const [coupons, setCoupons] = useState([]);
   const [pageNo, setPage] = useState(1);
@@ -86,13 +85,16 @@ const Coupon = () => {
   };
 
   return (
-    <Container maxWidth="max-width" className="bg-white" style={{ height: '100%', marginTop: '15px' }}>
-      <Grid
+    <Container
+      maxWidth="max-width"
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
+    >
+       <Grid
         container
         spacing={2}
         alignItems="center"
         marginBottom={2}
-        height={"35px"}
+        height={"50px"}
       >
         <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
           <Link

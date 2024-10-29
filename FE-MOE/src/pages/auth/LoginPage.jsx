@@ -1,8 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Typography, Input, Button, Link } from "@mui/joy";
 import SideImage from "~/assert/images/SideImage.svg";
+import authorizedAxiosInstance from "~/utils/authorizedAxios";
+import { API_ROOT } from "~/utils/constants";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const data = {
+      username,
+      password,
+      platform: "web",
+    };
+    const res = await authorizedAxiosInstance.post(
+      `${API_ROOT}/auth/access`,
+      data
+    );
+    document.cookie =
+      `role=${res.data.authority};path=/;max-age=` + 7 * 24 * 60 * 60;
+    localStorage.setItem("userId", res.data.userId);
+    localStorage.setItem("username", username);
+    localStorage.setItem("accessToken", res.data.accessToken);
+    localStorage.setItem("refreshToken", res.data.refreshToken);
+
+    navigate("/dashboard");
+  };
   return (
     <Box
       sx={{
@@ -29,7 +57,7 @@ function LoginPage() {
             backgroundImage: `url(${SideImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            width: 700, // Tăng kích thước ảnh
+            width: 700,
             height: 600,
           }}
         />
@@ -39,44 +67,52 @@ function LoginPage() {
           sx={{
             flex: 1,
             padding: "40px",
-            marginLeft: "40px", // Tạo khoảng cách xa hơn giữa ảnh và form
+            marginLeft: "40px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
           }}
         >
-          <Typography level="h4" marginBottom={3}>
-            ĐĂNG NHẬP
-          </Typography>
-          <Input
-            placeholder="Nhập tên tài khoản hoặc email"
-            type="email"
-            fullWidth
-            sx={{ mb: 2, maxWidth: 320 }} // Giảm chiều ngang của ô nhập
-          />
-          <Input
-            placeholder="Mật khẩu"
-            type="password"
-            fullWidth
-            sx={{ mb: 2, maxWidth: 320 }} // Giảm chiều ngang của ô nhập
-          />
+          <form onSubmit={handleSubmit}>
+            <Typography level="h4" marginBottom={3}>
+              ĐĂNG NHẬP
+            </Typography>
+            <Input
+              placeholder="Nhập tên tài khoản hoặc email"
+              type="text"
+              fullWidth
+              sx={{ mb: 2, maxWidth: 320 }}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              placeholder="Mật khẩu"
+              type="password"
+              fullWidth
+              sx={{ mb: 2, maxWidth: 320 }}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          {/* Box containing Log In button and Forget Password link */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              maxWidth: 320,
-            }}
-          >
-            <Button variant="solid" color="danger" sx={{ width: "35%" }}>
-              Đăng nhập
-            </Button>
-            <Link href="#" underline="hover" sx={{ color: "danger.500" }}>
-              Quên mật khẩu
-            </Link>
-          </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                maxWidth: 320,
+              }}
+            >
+              <Button
+                type="submit"
+                variant="solid"
+                color="danger"
+                sx={{ width: "35%" }}
+              >
+                Đăng nhập
+              </Button>
+              <Link href="#" underline="hover" sx={{ color: "danger.500" }}>
+                Quên mật khẩu
+              </Link>
+            </Box>
+          </form>
         </Box>
       </Box>
     </Box>

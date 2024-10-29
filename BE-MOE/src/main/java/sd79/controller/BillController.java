@@ -31,34 +31,61 @@ public class BillController {
 
     private final BillService billService;
 
-
-    @Operation(
-            summary = "Get all product listings",
-            description = "Get the entire product list (updating search and pagination functions)"
-    )
-    @GetMapping("/product")
-    public ResponseData<?> getAllBillProduct(BillParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.billService.getAllBillProducts(param));
-    }
-
-
-    @Operation(
-            summary = "Thêm mới hóa đơn",
-            description = "Thêm hóa đơn và các chi tiết hóa đơn vào cơ sở dữ liệu"
-    )
-    @PostMapping("/store")
-    public ResponseData<?> addBill(@Valid @RequestBody BillStoreRequest billStoreRequest,
-                                   BindingResult bindingResult) {
+    //them lan 1
+    @Operation(summary = "Thêm hóa đơn với chỉ mã", description = "Thêm hóa đơn chỉ với mã mà không cần thông tin khác")
+    @PostMapping("/storeBill")
+    public ResponseData<?> addBill(@Valid @RequestBody BillRequest billRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
         }
+        long billId = billService.storeBill(billRequest);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn với mã thành công", billId);
+    }
 
-        // Extract BillRequest and BillDetailRequest list from the wrapper DTO
+    //them lan 2
+    @Operation(summary = "Thêm sản phẩm vào hóa đơn", description = "Thêm sản phẩm vào hóa đơn chi tiết ")
+    @PostMapping("/storeProduct")
+    public ResponseData<?> addProduct(@Valid @RequestBody BillDetailRequest billDetailRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
+        }
+        long billId = billService.storeProduct(billDetailRequest);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới sản phẩm vào hdct thành công", billId);
+    }
+
+    @Operation(summary = "Xóa sản phẩm khỏi hóa đơn", description = "Xóa sản phẩm khỏi chi tiết hóa đơn")
+    @DeleteMapping("/deleteProduct/{billDetailId}")
+    public ResponseData<?> deleteProduct(@PathVariable long billDetailId) {
+        billService.deleteBillDetail(billDetailId);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa sản phẩm khỏi hóa đơn thành công");
+    }
+
+    //them lan 3
+    @Operation(summary = "Thêm khách hàng vào hóa đơn", description = "Thêm khách hàng vào hóa đơn hiện có")
+    @PostMapping("/addCustomer")
+    public ResponseData<?> addCustomer(@RequestParam Long billId, @RequestParam Long customerId) {
+        long updatedBillId = billService.storeCustomer(billId, customerId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Thêm khách hàng vào hóa đơn thành công", updatedBillId);
+    }
+
+    //them lan 4
+    @Operation(summary = "Thêm mã giảm giá vào hóa đơn", description = "Thêm mã giảm giá vào hóa đơn hiện có")
+    @PostMapping("/addCoupon")
+    public ResponseData<?> addCoupon(@RequestParam Long billId, @RequestParam Long couponId) {
+        long updatedBillId = billService.storeCoupon(billId, couponId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Thêm mã giảm giá vào hóa đơn thành công", updatedBillId);
+    }
+
+    //them cuoi cung
+    @Operation(summary = "Thêm mới hóa đơn", description = "Thêm hóa đơn và các chi tiết hóa đơn vào cơ sở dữ liệu")
+    @PostMapping("/storePay")
+    public ResponseData<?> addPay(@Valid @RequestBody BillStoreRequest billStoreRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
+        }
         BillRequest billRequest = billStoreRequest.getBillRequest();
         List<BillDetailRequest> billDetails = billStoreRequest.getBillDetails();
-
-        // Call the service to store the Bill and associated BillDetails
-        long billId = billService.storeBill(billRequest, billDetails);
+        long billId = billService.storePay(billRequest, billDetails);
 
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
     }

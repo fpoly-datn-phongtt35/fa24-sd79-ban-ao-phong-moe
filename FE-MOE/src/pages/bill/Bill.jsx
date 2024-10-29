@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -18,7 +18,6 @@ import {
     Alert,
     InputAdornment,
     Dialog,
-    DialogTitle,
     DialogContent,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -30,6 +29,10 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import SearchIcon from '@mui/icons-material/Search';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { Input } from '@mui/joy';
+import { formatCurrencyVND } from '~/utils/format';
+import { ImageRotator } from '~/components/common/ImageRotator ';
+import CustomerList from '~/components/bill/CustomerList';
+import CouponModal from '~/components/bill/CouponModal';
 
 function Bill() {
     const [tabIndex, setTabIndex] = useState(0);
@@ -37,6 +40,10 @@ function Bill() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showMaxOrderAlert, setShowMaxOrderAlert] = useState(false);
     const [isProductListModalOpen, setProductListModalOpen] = useState(false);
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+    const [selectedCoupon, setSelectedCoupon] = useState(null);
+    const [orderData, setOrderData] = useState({});
 
     const handleTabChange = (event, newValue) => setTabIndex(newValue);
 
@@ -48,6 +55,8 @@ function Bill() {
         const newOrder = `HD1503${Math.floor(1000 + Math.random() * 9000)}`;
         setOrders(prevOrders => [newOrder, ...prevOrders]);
         setShowMaxOrderAlert(false);
+        setSelectedOrder(newOrder);
+        setOrderData((prev) => ({ ...prev, [newOrder]: { products: [], coupon: null } }));
     };
 
     const deleteOrder = (orderToDelete) => {
@@ -55,10 +64,57 @@ function Bill() {
         if (selectedOrder === orderToDelete) setSelectedOrder(null);
     };
 
-    const selectOrder = (order) => setSelectedOrder(order);
+    const selectOrder = (order) => {
+        setSelectedOrder(order);
+    };
 
     const openProductListModal = () => setProductListModalOpen(true);
     const closeProductListModal = () => setProductListModalOpen(false);
+
+    const openCouponModal = () => setIsCouponModalOpen(true);
+    const closeCouponModal = () => setIsCouponModalOpen(false);
+
+    const handleAddProduct = (product) => {
+        setOrderData(prevData => ({
+            ...prevData,
+            [selectedOrder]: {
+                ...prevData[selectedOrder],
+                products: [...(prevData[selectedOrder]?.products || []), product],
+            },
+        }));
+    };
+
+    const handleDeleteProduct = (productToDelete) => {
+        setOrderData(prevData => ({
+            ...prevData,
+            [selectedOrder]: {
+                ...prevData[selectedOrder],
+                products: prevData[selectedOrder]?.products.filter(product => product !== productToDelete),
+            },
+        }));
+    };
+
+    const handleSelectCoupon = (coupon) => {
+        setOrderData(prevData => ({
+            ...prevData,
+            [selectedOrder]: {
+                ...prevData[selectedOrder],
+                coupon,
+            },
+        }));
+    };
+
+    const handleRemoveCoupon = () => {
+        setOrderData(prevData => ({
+            ...prevData,
+            [selectedOrder]: {
+                ...prevData[selectedOrder],
+                coupon: null,
+            },
+        }));
+    };
+
+    const getCurrentOrderData = () => orderData[selectedOrder] || { products: [], coupon: null};
 
     return (
         <Container maxWidth="max-width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
@@ -78,10 +134,10 @@ function Bill() {
             <Button variant="contained" color="primary" onClick={createNewOrder} sx={{ mb: 2, fontWeight: 'bold' }}>
                 Tạo mới đơn hàng
             </Button>
-
-            {orders.map((order, index) => (
-                <Box key={index} sx={{ position: 'relative', mb: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+                {orders.map((order, index) => (
                     <Button
+                        key={index}
                         color={selectedOrder === order ? "primary" : "secondary"}
                         variant="outlined"
                         onClick={() => selectOrder(order)}
@@ -94,6 +150,7 @@ function Bill() {
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             '&:hover': { backgroundColor: 'primary.light' },
+                            marginBottom: '8px'
                         }}
                     >
                         {order}
@@ -104,139 +161,191 @@ function Bill() {
                             <DeleteIcon fontSize="small" />
                         </span>
                     </Button>
-                </Box>
-            ))}
+                ))}
+            </Box>
 
-            {selectedOrder && (
-                <>
-                    {/* Thông tin giỏ hàng */}
-                    <Paper elevation={2} sx={{ p: 2, borderRadius: 2, mb: 3 }}>
-                        <Typography variant="h6" fontWeight="bold">Đơn hàng {selectedOrder}</Typography>
-                        <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'end' }}>
-                            <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openProductListModal}>Thêm sản phẩm</Button>
-                            <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>QR Code sản phẩm</Button>
+            <Paper elevation={2} sx={{ p: 2, borderRadius: 2, mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold">
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between', mt: 3 }}>
+                        <Box>
+                            Đơn hàng {selectedOrder || 'Chưa chọn đơn hàng'}
                         </Box>
-
-                        {/* Product List Modal */}
-                        <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="md" fullWidth>
-                            <DialogTitle>Danh sách sản phẩm</DialogTitle>
-                            <DialogContent>
-                                <ProductListModal />
-                            </DialogContent>
-                        </Dialog>
-
-                        <Typography variant="subtitle1" sx={{ mt: 3, fontWeight: 'bold', color: 'textSecondary' }}>Giỏ hàng</Typography>
-                        <List>
-                            <ListItem sx={{ backgroundColor: '#fafafa', borderRadius: '8px', mb: 2 }}>
-                                <img src="https://via.placeholder.com/100x80?text=Product+Image" alt="Product" style={{ width: 100, height: 80, marginRight: 16, borderRadius: '8px' }} />
-                                <ListItemText
-                                    primary="Giày Asics Gel Kayano"
-                                    secondary="Giá: 470,000 đ"
-                                    primaryTypographyProps={{ fontWeight: 'bold' }}
-                                />
-                                <Input type="number" defaultValue={1}/>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>470,000 đ</Typography>
-                                <IconButton color="error"><DeleteIcon /></IconButton>
-                            </ListItem>
-                        </List>
-                    </Paper>
-
-                    {/* Thông tin khách hàng */}
-                    <Paper elevation={2} sx={{ padding: 2, borderRadius: 2, mb: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Thông tin khách hàng</Typography>
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Box>
-                                <Typography variant="body1" fontWeight="bold">Tên khách hàng:</Typography>
-                                <Typography variant="body2" color="textSecondary">Khách hàng lẻ</Typography>
-                            </Box>
-                            <Box display="flex" gap={1} alignItems="center">
-                                <TextField
-                                    placeholder="Tìm kiếm khách hàng..."
-                                    variant="outlined"
-                                    size="small"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end"><SearchIcon /></InputAdornment>
-                                        ),
-                                    }}
-                                />
-                                <Button variant="contained" color="warning" startIcon={<AddIcon />}>Thêm mới KH</Button>
-                            </Box>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                startIcon={<AddIcon />}
+                                onClick={() => setProductListModalOpen(true)}
+                            >
+                                Thêm sản phẩm
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                startIcon={<QrCodeIcon />}
+                            >
+                                QR Code sản phẩm
+                            </Button>
                         </Box>
-                    </Paper>
+                    </Box>
+                </Typography>
 
-                    {/* Thông tin thanh toán */}
-                    <Paper elevation={2} sx={{ p: 2, borderRadius: 2, mb: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" color="textPrimary">
-                            Thông tin thanh toán
-                        </Typography>
-                        <Divider sx={{ my: 2 }} />
-                        <Grid container spacing={3}>
-                            {/* Left Side: Product Image */}
-                            <Grid item xs={12} md={4}>
-                                <img
-                                    src="https://via.placeholder.com/300x300?text=Product+Image"
-                                    alt="Shoe"
-                                    style={{ maxWidth: '100%', borderRadius: '8px' }}
-                                />
-                            </Grid>
+                {/* ------------------------------- Product ----------------------------------- */}
+                <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="maxWidth" fullWidth>
+                    <ProductListModal
+                        onAddProduct={handleAddProduct}
+                    />
+                </Dialog>
 
-                            <Grid item xs={12} md={8}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                    <Button variant="outlined" startIcon={<DiscountIcon />}>
-                                        Phiếu giảm giá
-                                    </Button>
-                                    <Typography color="textSecondary">Chọn hoặc nhập mã</Typography>
-                                </Box>
-
-                                <Box sx={{ backgroundColor: '#e6f4ea', padding: 1.5, borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                                    <Typography variant="body2" color="green" fontWeight="bold">
-                                        Áp dụng thành công phiếu giảm giá Kim Chi
+                <Typography variant="subtitle1" sx={{ mt: 3, fontWeight: 'bold', color: 'textSecondary' }}>Giỏ hàng</Typography>
+                <List>
+                    {getCurrentOrderData().products.map((product, index) => (
+                        <ListItem key={index} sx={{ backgroundColor: '#fafafa', borderRadius: '8px' }}>
+                            <Grid container alignItems="center" spacing={2}>
+                                <Grid item xs={2}>
+                                    <ImageRotator imageUrl={product.imageUrl} w={90} h={100} />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <ListItemText
+                                        primary={<Typography variant="h6" fontWeight="bold">{product.productName}</Typography>}
+                                        secondary={<Typography variant="body2" color="textSecondary">Giá: {formatCurrencyVND(product.price)}</Typography>}
+                                    />
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <Input type="number" defaultValue={1} sx={{ width: '100', mr: 10 }} />
+                                </Grid>
+                                <Grid item xs={2} display="flex" alignItems="center" justifyContent="flex-end">
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'primary.main', marginRight: 1 }}>
+                                        {formatCurrencyVND(product.price)}
                                     </Typography>
-                                    <Chip label="Giảm 10% đơn tối thiểu 100,000 đ" color="success" />
-                                    <IconButton color="error" size="small">
+                                    <IconButton color="error" onClick={() => handleDeleteProduct(product)}>
                                         <DeleteIcon />
                                     </IconButton>
-                                </Box>
-
-                                <Grid container spacing={1} sx={{ mb: 2 }}>
-                                    <Grid item xs={6}><Typography>Tạm tính:</Typography></Grid>
-                                    <Grid item xs={6}><Typography align="right">470,000 đ</Typography></Grid>
-
-                                    <Grid item xs={6}><Typography>Giảm giá:</Typography></Grid>
-                                    <Grid item xs={6}><Typography align="right">47,000 đ</Typography></Grid>
-
-                                    <Grid item xs={6}><Typography variant="h6">Tổng tiền:</Typography></Grid>
-                                    <Grid item xs={6}><Typography variant="h6" align="right" color="error">423,000 đ</Typography></Grid>
                                 </Grid>
 
-                                <TextField
-                                    label="Tiền khách đưa"
-                                    variant="outlined"
-                                    fullWidth
-                                    sx={{ my: 3 }}
-                                />
-                                <Typography color="error">Vui lòng nhập đủ tiền khách đưa!</Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
-                                    <Typography variant="body1">Tiền thừa: <span style={{ fontWeight: 'bold' }}>0 đ</span></Typography>
-                                    <Button variant="outlined" color="primary">VNĐ</Button>
-                                </Box>
-
-                                <Divider sx={{ my: 3 }} />
-                                <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán</Typography>
-                                <Box display="flex" justifyContent="space-between">
-                                    <Button variant="contained" color="warning" startIcon={<LocalAtmIcon />}>
-                                        Tiền mặt
-                                    </Button>
-                                    <Button variant="contained" color="info" startIcon={<CreditCardIcon />}>
-                                        Chuyển khoản
-                                    </Button>
-                                </Box>
                             </Grid>
+                        </ListItem>
+                    ))}
+                </List>
+
+            </Paper>
+
+            {/* ------------------------------- Customer ----------------------------------- */}
+            <CustomerList />
+            {/* ------------------------------- Bill ----------------------------------- */}
+
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold" color="textPrimary">
+                    Thông tin thanh toán
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={4}>
+                        <img
+                            src="https://via.placeholder.com/300x300?text=Product+Image"
+                            alt="Shoe"
+                            style={{ maxWidth: '100%', borderRadius: '8px' }}
+                        />
+                    </Grid>
+                    {/* ------------------------------- Coupon ----------------------------------- */}
+                    <Grid item xs={12} md={8}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Button
+                                startIcon={<DiscountIcon />}
+                                variant="text"
+                                onClick={openCouponModal}
+                            >
+                                Phiếu giảm giá
+                            </Button>
+                            <Typography variant="body2" color="textSecondary">
+                                Chọn hoặc nhập mã &gt;
+                            </Typography>
+                        </Box>
+
+                        <CouponModal
+                            open={isCouponModalOpen}
+                            onClose={closeCouponModal}
+                            onSelectCoupon={handleSelectCoupon}
+                        />
+
+
+
+                        {/* ------------------------------- Thong tin hoa don ----------------------------------- */}
+                        <Grid container spacing={1}>
+                            <Grid item xs={6}><Typography>Tạm tính:</Typography></Grid>
+                            <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>470,000 đ</Typography></Grid>
+
+                            <Grid item xs={6}><Typography>Giảm giá:</Typography></Grid>
+                            <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>47,000 đ</Typography></Grid>
                         </Grid>
-                    </Paper>
-                </>
-            )}
+
+                        {/* ------------------------------- Hien thi coupon ----------------------------------- */}
+                        {getCurrentOrderData().coupon && (
+                            <Box sx={{ backgroundColor: '#e6f4ea', p: 1, borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                                <Typography variant="body2" color="green">
+                                    Áp dụng thành công phiếu giảm giá <strong>{getCurrentOrderData().coupon.name}</strong>
+                                </Typography>
+                                <Chip
+                                    label={
+                                        getCurrentOrderData().coupon.discountType === 'FIXED_AMOUNT'
+                                            ? `Giảm ${formatCurrencyVND(getCurrentOrderData().coupon.discountValue)} đơn tối thiểu ${formatCurrencyVND(getCurrentOrderData().coupon.conditions)}`
+                                            : `Giảm ${getCurrentOrderData().coupon.discountValue}% đơn tối thiểu ${formatCurrencyVND(getCurrentOrderData().coupon.conditions)}`
+                                    }
+                                    color="success"
+                                />
+                                <IconButton color="error" size="small" onClick={handleRemoveCoupon}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
+                        )}
+
+                        {/* Total Amount */}
+                        <Grid container spacing={1} sx={{ mb: 2 }}>
+                            <Grid item xs={6}><Typography variant="h6">Tổng tiền:</Typography></Grid>
+                            <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">423,000 đ</Typography></Grid>
+                        </Grid>
+
+                        {/* Customer Payment Input */}
+                        <TextField
+                            label="Tiền khách đưa"
+                            variant="outlined"
+                            fullWidth
+                            sx={{ mb: 2 }}
+                        />
+                        <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                            Vui lòng nhập đủ tiền khách đưa!
+                        </Typography>
+
+                        {/* Change Due */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography>Tiền thừa:</Typography>
+                            <Typography fontWeight="bold">0 đ</Typography>
+                        </Box>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        {/* Payment Methods */}
+                        <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán:</Typography>
+                        <Box display="flex" justifyContent="space-between">
+                            <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: 'black' }} startIcon={<LocalAtmIcon />}>
+                                Tiền mặt
+                            </Button>
+                            <Button variant="contained" sx={{ backgroundColor: '#2196f3', color: 'white' }} startIcon={<CreditCardIcon />}>
+                                Chuyển khoản
+                            </Button>
+                            <Button variant="contained" sx={{ backgroundColor: '#424242', color: 'white' }} startIcon={<LocalAtmIcon />}>
+                                Tiền mặt & Chuyển khoản
+                            </Button>
+                        </Box>
+
+                        {/* Generate Invoice Button */}
+                        <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                            Tạo hóa đơn
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Paper>
         </Container>
     );
 }

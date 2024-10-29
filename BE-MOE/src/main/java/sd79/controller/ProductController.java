@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.common.ProductParamFilter2;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.ResponseData;
@@ -160,6 +161,15 @@ public class ProductController {
     public ResponseData<?> removeImage(@RequestParam String publicId) {
         this.productService.removeImageCloudinary(publicId);
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa thành công");
+    }
+
+    @Operation(
+            summary = "Get all product details listings",
+            description = "Get the entire product details list (updating search and pagination functions)"
+    )
+    @GetMapping("/product-details")
+    public ResponseData<?> getProductDetails(ProductParamFilter2 param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.productService.getAllProductDetails(param));
     }
 }
     
