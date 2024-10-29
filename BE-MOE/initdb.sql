@@ -214,19 +214,22 @@ CREATE TABLE coupon_share(
 CREATE TABLE promotions(
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
-  promotion_type VARCHAR(50),
-  promotion_value DECIMAL(10,2),
+	code VARCHAR(20) UNIQUE,
+  percent INT,
   start_date DATE,
   end_date DATE,
-  description TEXT
+  note VARCHAR(255),
+	created_by BIGINT,
+	updated_by BIGINT,
+	create_at DATETIME,
+	update_at DATETIME,
+	is_deleted BIT DEFAULT 0
 );
 
-CREATE TABLE product_promotion(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id BIGINT,
-    promotion_id INT,
-    applied_date DATE,
-    promotion_price DECIMAL(10, 2)
+CREATE TABLE promotion_details(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+	product_id BIGINT,
+  promotion_id INT
 );
 
 -- bill
@@ -303,9 +306,9 @@ ALTER TABLE product_details ADD CONSTRAINT fk_product_details_color_id FOREIGN K
 ALTER TABLE products MODIFY description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- promotions
-ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+ALTER TABLE promotion_details ADD CONSTRAINT fk_promotion_product_id FOREIGN KEY (product_id) REFERENCES products(id);
 
-ALTER TABLE product_promotion ADD CONSTRAINT fk_product_promotion_promotion_id FOREIGN KEY (promotion_id) REFERENCES promotions(id);
+ALTER TABLE promotion_details ADD CONSTRAINT fk_promotion_id FOREIGN KEY (promotion_id) REFERENCES promotions(id);
 
 -- ROLE --
 INSERT INTO roles (name, created_at, updated_at)
@@ -640,28 +643,33 @@ VALUES
 ('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
 -- promotions
-INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)
-VALUES
-    (1, 'Summer Sale', 15.00, '2024-06-01', '2024-06-30', 'Get 15% off on all summer collection shirts.'),
-    (2, 'Buy 1 Get 1 Free', 50.00, '2024-07-01', '2024-07-15', 'Buy one shirt and get another shirt of equal or lesser value for free.'),
-    (3, 'Flash Sale', 25.00, '2024-08-10', '2024-08-10', '25% off on selected shirts for 24 hours.'),
-    (4, 'Holiday Special', 20.00, '2024-12-20', '2024-12-31', 'Celebrate the holidays with 20% off on all shirts.'),
-    (5,'Black Friday', 50.00, '2024-11-29', '2024-11-29', 'One-day massive discount event.'),
-    (6,'Cyber Monday', 40.00, '2024-12-02', '2024-12-02', 'Online sales for electronics and more.'),
-    (7,'Christmas Sale', 25.00, '2024-12-20', '2024-12-25', 'Holiday season discounts.'),
-    (8,'New Year Sale', 15.00, '2024-01-01', '2024-01-05', 'Celebrate the new year with discounts.'),
-    (9,'Easter Promotion', 18.00, '2024-04-10', '2024-04-14', 'Limited-time offer for Easter celebration.'),
-    (10,'Back to School', 12.50, '2024-08-15', '2024-08-30', 'School supplies and clothing discounts.'),
-    (11,'Flash Sale', 30.00, '2024-05-01', '2024-05-01', 'One-day flash sale on selected items.'),
-    (12,'Clearance Sale', 35.00, '2024-09-01', '2024-09-15', 'End of season clearance discounts.'),
-    (13,'Halloween Sale', 22.00, '2024-10-28', '2024-10-31', 'Discounts on Halloween costumes and treats.'),
-    (14,'Labor Day Sale', 18.00, '2024-09-01', '2024-09-03', 'Promotions for Labor Day weekend.'),
-    (15,'Sale', 11.00, '2024-08-02', '2024-09-05', 'Promotions for weekend.');
+INSERT INTO promotions (name, code, percent, start_date, end_date, note, created_by, updated_by, create_at, update_at, is_deleted)
+VALUES 
+('Khuyến mãi Tết Nguyên Đán', 'TET2024', 15, '2024-02-01', '2024-02-15', 'Giảm giá cho Tết Nguyên Đán', 1, 1, '2023-10-01 08:00:00', '2023-10-01 08:00:00', 0),
+('Khuyến mãi 8/3', 'QUOCTEPN', 20, '2024-03-01', '2024-03-08', 'Khuyến mãi nhân ngày Quốc tế Phụ nữ', 2, 2, '2023-10-05 09:00:00', '2023-10-05 09:00:00', 0),
+('Sale cuối năm', 'CUOINAM2024', 30, '2024-12-15', '2024-12-31', 'Giảm giá đặc biệt cuối năm', 3, 3, '2023-10-10 10:30:00', '2023-10-10 10:30:00', 0),
+('Mừng Ngày Nhà giáo', 'NGAYNHA23', 10, '2024-11-10', '2024-11-20', 'Khuyến mãi nhân ngày Nhà giáo Việt Nam', 1, 1, '2023-10-15 11:45:00', '2023-10-15 11:45:00', 0),
+('Giảm giá mùa hè', 'SUMMER2024', 25, '2024-06-01', '2024-06-30', 'Khuyến mãi mùa hè', 2, 2, '2023-10-20 13:20:00', '2023-10-20 13:20:00', 0),
+('Khuyến mãi Giáng sinh', 'NOEL2024', 35, '2024-12-20', '2024-12-25', 'Ưu đãi đặc biệt nhân dịp Giáng sinh', 3, 3, '2023-10-25 15:00:00', '2023-10-25 15:00:00', 0),
+('Ưu đãi mùa thu', 'AUTUMN23', 10, '2024-09-01', '2024-09-30', 'Giảm giá mùa thu', 1, 1, '2023-10-28 16:45:00', '2023-10-28 16:45:00', 0),
+('Giảm giá dịp lễ 30/4', 'LE304', 20, '2024-04-25', '2024-05-01', 'Ưu đãi đặc biệt dịp lễ 30/4', 2, 2, '2023-10-30 17:30:00', '2023-10-30 17:30:00', 0),
+('Khuyến mãi Thứ 6 Đen', 'BLACKFRI2024', 50, '2024-11-25', '2024-11-29', 'Khuyến mãi Black Friday', 3, 3, '2023-11-01 08:15:00', '2023-11-01 08:15:00', 0),
+('Ưu đãi Valentine', 'VALENTINE', 15, '2024-02-10', '2024-02-14', 'Ưu đãi dành cho ngày Valentine', 1, 1, '2023-11-05 09:45:00', '2023-11-05 09:45:00', 0);
 
-INSERT INTO product_promotion (id, product_id, promotion_id, applied_date, promotion_price)
-VALUES
-    (1, 1, 1, '2024-06-01', 85.00),
-    (2, 2, 2, '2024-07-01', 100.00);
+INSERT INTO promotion_details (promotion_id, product_id)
+VALUES 
+(1, 1), (1, 5), (1, 10),
+(2, 2), (2, 15), (2, 18),
+(3, 20), (3, 25), (3, 30),
+(4, 4), (4, 8), (4, 12),
+(5, 3), (5, 22), (5, 27),
+(6, 19), (6, 26), (6, 34),
+(7, 16), (7, 7), (7, 21),
+(8, 31), (8, 9), (8, 13),
+(9, 14), (9, 17), (9, 33),
+(10, 6), (10, 11), (10, 29);
+
+
 
 -- Coupons
 INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, created_by, updated_by) VALUES

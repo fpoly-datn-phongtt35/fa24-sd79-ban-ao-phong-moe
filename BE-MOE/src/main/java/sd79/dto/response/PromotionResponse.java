@@ -6,17 +6,27 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
 @Getter
 @Builder
 public class PromotionResponse {
-    private Integer id;
+    private int id;
+
+    private String code;
+
     private String name;
-    private BigDecimal promotionValue;
+
+    private int percent;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date startDate;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private Date endDate;
-    private String description;
-    private int productID;
-    private BigDecimal promotionPrice;
+
+    private String note;
+
+    private String status;
+
+    private int numberOfProduct;
 }
