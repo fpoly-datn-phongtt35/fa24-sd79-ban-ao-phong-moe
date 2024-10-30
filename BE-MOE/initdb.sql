@@ -318,16 +318,17 @@ VALUES
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES
     ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 1, 0, NOW(), NOW(), 0),
-    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0);
+    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0),
+    ('user', 'user@moe.vn', '$2a$12$L1voq9FiLnjeK9uk6t6fSu1JuTI.FnHOaKiTkjarX9Xxu4w0mWeRa', 2, 0, 0, NOW(), NOW(), 0);
 
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
-('Áo Thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
-('Áo Khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
-('Quần', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
-('Váy', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
-('Giày', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
+('Áo thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+('Áo khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+('Áo phông', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+('Áo ba lỗ', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+('Áo sơ mi', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
 -- Insert data into brands
 INSERT INTO brands (name, created_by, updated_by, create_at, update_at, is_deleted)
@@ -614,30 +615,11 @@ VALUES
 (9, 350000, 1, 4, 25, 'ACTIVE'),
 (10, 450000, 2, 2, 20, 'ACTIVE');
 
-
-INSERT INTO employee_address (street_name, ward, district, city, country)
-VALUES
-('123 Main St', 'Ward 1', 'District 1', 'Hanoi', 'Vietnam'),
-('456 Oak Ave', 'Ward 2', 'District 3', 'Ho Chi Minh City', 'Vietnam'),
-('789 Pine St', 'Ward 5', 'District 7', 'Da Nang', 'Vietnam');
-
 INSERT INTO positions (name, created_at, updated_at)
 VALUES
 ('Manager', NOW(), NOW()),
 ('Developer', NOW(), NOW()),
 ('Designer', NOW(), NOW());
-
-INSERT INTO salary (amount, created_at, updated_at)
-VALUES
-(50000000, NOW(), NOW()),
-(30000000, NOW(), NOW()),
-(20000000, NOW(), NOW());
-
-INSERT INTO employees (first_name, last_name, address_id, phone_number, gender, date_of_birth, avatar, position_id, salary_id, created_at, updated_at)
-VALUES
-('John', 'Doe', 1, '0123456789', 'MALE', '1990-01-01', 'john_avatar.jpg', 1, 1, NOW(), NOW()),
-('Jane', 'Smith', 2, '0987654321', 'FEMALE', '1992-02-02', 'jane_avatar.jpg', 2, 2, NOW(), NOW()),
-('Alex', 'Johnson', 3, '0112233445', 'OTHER', '1985-05-15', 'alex_avatar.jpg', 3, 3, NOW(), NOW());
 
 -- promotions
 INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)
