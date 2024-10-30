@@ -28,3 +28,23 @@ export const fetchProduct = async (id) => {
     .get(`${API_ROOT}/client/${id}`)
     .then((res) => res.data);
 };
+
+export const storeCart = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/client/add-to-cart`, data)
+    .then((res) => res.data);
+};
+
+export const fetchCarts = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/cart`)
+    .then((res) => res.data);
+};
+
+export const deleteItemCart = async (id) => {
+  return await authorizedAxiosInstance
+    .delete(
+      `${API_ROOT}/client/delete-cart/${id}/${localStorage.getItem("username")}`
+    )
+    .then((res) => res.data);
+};

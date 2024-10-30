@@ -14,6 +14,7 @@ import sd79.dto.response.productResponse.SizeResponse;
 import sd79.model.ProductDetail;
 
 import java.util.HashSet;
+import java.util.Optional;
 
 @Repository
 public interface ProductDetailRepository extends JpaRepository<ProductDetail, Long> {
@@ -29,4 +30,7 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
 
     @Query("SELECT DISTINCT  new sd79.dto.response.productResponse.ColorResponse(p.color.id, p.color.name, p.color.hexColorCode , p.color.createdBy.username, p.color.createAt, p.color.updateAt) FROM  ProductDetail p WHERE p.product.id = :productId AND p.status = 'ACTIVE'")
     HashSet<ColorResponse> getColorProduct(long productId);
+
+    @Query("FROM ProductDetail pd where pd.product.id = :productId AND pd.color.id = :colorId AND pd.size.id = :sizeId")
+    Optional<ProductDetail> findByProductIdAndColorIdAndSizeId(long productId, int colorId, int sizeId);
 }
