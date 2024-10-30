@@ -41,7 +41,7 @@ CREATE TABLE employees(
 		gender enum('MALE','FEMALE','OTHER'),
 		date_of_birth DATE ,
 		image varchar(200),
-        publicId varchar(200),
+    publicId varchar(200),
 		position_id INT,
 		salary_id INT,
 		user_id BIGINT,
@@ -78,13 +78,13 @@ CREATE TABLE customers (
 );
 
 CREATE TABLE customer_address (
-  id bigint PRIMARY KEY AUTO_INCREMENT,
-  street_name varchar(255),
-  ward varchar(255),
-  district varchar(255),
-	district_id INT,
-  city varchar(255),
-	city_id INT
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    street_name varchar(255),
+    ward varchar(255),
+    district varchar(255),
+	  district_id INT,
+    city varchar(255),
+	  city_id INT
 );
 
 -- Product
@@ -322,17 +322,47 @@ VALUES
 -- User System
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES
-    ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 1, 0, NOW(), NOW(), 0),
-    ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0);
+('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
+('javatech04', 'vunhph33506@fpt.edu.vn', '$2a$12$85bbJKHgQ.hbQnnaPXgc7uPV2e6BKQa.Zbop5HqlcdwvI09cpzI6G', 1, 0, 0, NOW(), NOW(), 0),
+('user', 'user@moe.vn', '$2a$12$L1voq9FiLnjeK9uk6t6fSu1JuTI.FnHOaKiTkjarX9Xxu4w0mWeRa', 2, 0, 0, NOW(), NOW(), 0);
+
+-- Insert data into employee
+INSERT INTO positions (name, created_at, updated_at)
+VALUES
+('Quản lý', NOW(), NOW()),
+('Nhân viên', NOW(), NOW()),
+('Hệ thống', NOW(), NOW());
+
+INSERT INTO employee_address (street_name, ward, district, district_id, province, province_id)
+VALUES
+('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1),
+('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
+
+INSERT INTO salary (amount, created_at, updated_at)
+VALUES
+(1000000, NOW(), NOW()),
+(1000000, NOW(), NOW());
+
+INSERT INTO employees (first_name, last_name, address_id, phone_number, gender, date_of_birth, image, publicId, position_id, salary_id, user_id, created_at, updated_at)
+VALUES
+('system', 'admin', 1, '0123456789', 'OTHER', '2004-12-01', 'https://th.bing.com/th/id/OIP.O2j8k6g1NTAM0t_mIqOBtQHaE7?rs=1&pid=ImgDetMain', 'publicIdNotFound', 1, 1, 1, NOW(), NOW()),
+('Vu', 'Nong Hoang', 2, '0777049085', 'MALE', '2004-12-01', 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1730197694/s6dug2xt1kgfbnv6uzbd.jpg', 'publicIdNotFound', 1, 2, 2, NOW(), NOW());
+
+-- Insert data into customer system
+INSERT INTO customer_address(street_name, ward, district, district_id, city, city_id)
+VALUES('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
+
+INSERT INTO customers (first_name, last_name, phone_number, gender, date_of_birth, image, publicId, address_id, user_id, created_at, updated_at)
+VALUES('system', 'user', '0123456789', 'OTHER', '2004-12-01', 'https://th.bing.com/th/id/OIP.O2j8k6g1NTAM0t_mIqOBtQHaE7?rs=1&pid=ImgDetMain', 'publicIdNotFound', 1, 3, NOW(), NOW());
 
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
-('Áo Thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
-('Áo Khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
-('Quần', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
-('Váy', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
-('Giày', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
+('Áo thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+('Áo khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+('Áo phông', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+('Áo ba lỗ', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+('Áo sơ mi', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
 -- Insert data into brands
 INSERT INTO brands (name, created_by, updated_by, create_at, update_at, is_deleted)
@@ -618,14 +648,6 @@ VALUES
 (8, 720000, 4, 3, 12, 'ACTIVE'), 
 (9, 350000, 1, 4, 25, 'ACTIVE'),
 (10, 450000, 2, 2, 20, 'ACTIVE');
-
-UPDATE products SET updated_by = 1, created_by = 2
-
-INSERT INTO positions (name, created_at, updated_at)
-VALUES
-('Quản lý', NOW(), NOW()),
-('Nhân viên', NOW(), NOW()),
-('Hệ thống', NOW(), NOW());
 
 -- promotions
 INSERT INTO promotions (id, name, promotion_value, start_date, end_date, description)

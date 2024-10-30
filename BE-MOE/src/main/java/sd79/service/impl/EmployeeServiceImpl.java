@@ -150,7 +150,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .email(employee.getUser().getEmail())
                 .gender(employee.getGender() == Gender.MALE ? "Nam" : employee.getGender() == Gender.FEMALE ? "Nữ" : "Khác")
                 .date_of_birth(employee.getDate_of_birth())
-//                .avatar(employee.getAvatar())
+                .avatar(employee.getImage())
                 .salaries(employee.getSalaries().getAmount())
                 .employee_address(employee.getEmployee_address())
                 .position(PositionResponse.builder()

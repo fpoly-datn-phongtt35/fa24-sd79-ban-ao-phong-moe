@@ -10,7 +10,7 @@ import {
 import { toast } from 'react-toastify';
 import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
 import AddIcon from '@mui/icons-material/Add';
-import { Breadcrumbs, Button, Link } from '@mui/joy';
+import { Avatar, Breadcrumbs, Button, Link } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import { formatCurrencyVND, formatDateWithoutTime } from '~/utils/format';
 export const Employee = () => {
@@ -176,7 +176,7 @@ export const Employee = () => {
                 <Table>
                     <TableHead>
                         <TableRow className="text-center">
-                            <TableCell>STT</TableCell>
+                            <TableCell>Avatar</TableCell>
                             <TableCell>Tên</TableCell>
                             <TableCell>Tên Đệm</TableCell>
                             <TableCell>SĐT</TableCell>
@@ -193,7 +193,9 @@ export const Employee = () => {
                         {Array.isArray(employee) && employee.length > 0 ? (
                             employee.map((emp, index) => (
                                 <TableRow key={emp.id} className="text-center">
-                                    <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                    <TableCell>
+                                        <Avatar alt={emp.first_name} src={emp?.avatar} />
+                                    </TableCell>
                                     <TableCell>{emp.first_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.last_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
