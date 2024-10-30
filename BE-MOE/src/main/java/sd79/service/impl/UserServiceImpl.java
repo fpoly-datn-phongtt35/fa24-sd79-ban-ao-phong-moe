@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsService userDetailsService() {
-        return username -> this.userRepository.findByUsername(username).orElseThrow(
+        return username -> this.userRepository.findUserByUsernameOrEmail(username).orElseThrow(
                 () -> new EntityNotFoundException(String.format("User with username '%s' not found!", username))
         );
     }

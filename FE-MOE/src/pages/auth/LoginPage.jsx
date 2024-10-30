@@ -3,37 +3,58 @@
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState } from "react";
-import { Box, Typography, Input, Button, Link } from "@mui/joy";
+import {
+  Box,
+  Typography,
+  Input,
+  Button,
+  Link,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Alert,
+} from "@mui/joy";
 import SideImage from "~/assert/images/SideImage.svg";
-import authorizedAxiosInstance from "~/utils/authorizedAxios";
+import { toast } from "react-toastify";
 import { API_ROOT } from "~/utils/constants";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import InfoIcon from '@mui/icons-material/Info';
 
 function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
   const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const data = {
-      username,
-      password,
+  const onSubmit = async (data) => {
+    const result = {
+      username: data.username,
+      password: data.password,
       platform: "web",
     };
-    const res = await authorizedAxiosInstance.post(
-      `${API_ROOT}/auth/access`,
-      data
-    );
-    document.cookie =
-      `role=${res.data.authority};path=/;max-age=` + 7 * 24 * 60 * 60;
-    localStorage.setItem("userId", res.data.userId);
-    localStorage.setItem("username", username);
-    localStorage.setItem("accessToken", res.data.accessToken);
-    localStorage.setItem("refreshToken", res.data.refreshToken);
-
-    navigate("/dashboard");
+    await axios
+      .post(`${API_ROOT}/auth/access`, result)
+      .then((res) => {
+        if (res.status === 200) {
+          setMessage("");
+          toast.success("Đăng nhập thành công!");
+          document.cookie =
+            `role=${res.data.authority};path=/;max-age=` + 7 * 24 * 60 * 60;
+          localStorage.setItem("userId", res.data.userId);
+          localStorage.setItem("username", data.username);
+          localStorage.setItem("accessToken", res.data.accessToken);
+          localStorage.setItem("refreshToken", res.data.refreshToken);
+          navigate("/dashboard");
+        }
+      })
+      .catch((error) => {
+        setMessage(error.response?.data?.message || error?.message);
+      });
   };
   return (
     <Box
@@ -77,25 +98,56 @@ function LoginPage() {
             justifyContent: "center",
           }}
         >
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Typography level="h4" marginBottom={3}>
               ĐĂNG NHẬP
             </Typography>
-            <Input
-              placeholder="Nhập tên tài khoản hoặc email"
-              type="text"
-              fullWidth
+            {message.length > 0 && (
+              <Alert
+                sx={{ alignItems: "flex-start", mb: 2, maxWidth: 320 }}
+                startDecorator={<InfoIcon />}
+                variant="soft"
+                color="warning"
+              >
+                <div>
+                  <Typography level="body-sm" color="warning">
+                    {message}
+                  </Typography>
+                </div>
+              </Alert>
+            )}
+            <FormControl
+              error={!!errors?.username}
               sx={{ mb: 2, maxWidth: 320 }}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <Input
-              placeholder="Mật khẩu"
-              type="password"
-              fullWidth
+            >
+              <FormLabel required>Tên tài khoản hoặc email</FormLabel>
+              <Input
+                placeholder="Nhập tên tài khoản hoặc email"
+                type="text"
+                fullWidth
+                {...register("username", { required: true })}
+              />
+              {errors.username && (
+                <FormHelperText>
+                  Vui lòng nhập tên tài khoản hoặc email của bạn!
+                </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl
+              error={!!errors?.password}
               sx={{ mb: 2, maxWidth: 320 }}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
+            >
+              <FormLabel required>Mật khẩu</FormLabel>
+              <Input
+                placeholder="Mật khẩu"
+                type="password"
+                fullWidth
+                {...register("password", { required: true })}
+              />
+              {errors.password && (
+                <FormHelperText>Vui lòng nhập mật khẩu!</FormHelperText>
+              )}
+            </FormControl>
             <Box
               sx={{
                 display: "flex",

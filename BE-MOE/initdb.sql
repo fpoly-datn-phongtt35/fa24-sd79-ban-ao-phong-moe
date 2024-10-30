@@ -23,13 +23,13 @@ CREATE TABLE users (
 );
 
 CREATE TABLE employee_address(
-	id bigint PRIMARY KEY AUTO_INCREMENT,
-  street_name varchar(255),
-  ward varchar(255),
-  district varchar(255),
-	district_id INT,
-  city varchar(255),
-	city_id INT
+    id bigint PRIMARY KEY AUTO_INCREMENT,
+    street_name varchar(255),
+    ward varchar(255),
+    district varchar(255),
+    district_id INT,
+    province varchar(255),
+    province_id INT
 );
 
 CREATE TABLE employees(
@@ -322,7 +322,7 @@ VALUES
 -- User System
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES
-    ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
+    ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 1, 0, NOW(), NOW(), 0),
     ('vunh2004', 'vunh2004@moe.vn', '$2a$12$NRGWUFouB4owNvLiEhZaX.gQu8oQjHU7rqpdCAW9/5Em2o8wgePtW', 1, 0, 0, NOW(), NOW(), 0);
 
 -- Insert data into categories
@@ -618,6 +618,8 @@ VALUES
 (8, 720000, 4, 3, 12, 'ACTIVE'), 
 (9, 350000, 1, 4, 25, 'ACTIVE'),
 (10, 450000, 2, 2, 20, 'ACTIVE');
+
+UPDATE products SET updated_by = 1, created_by = 2
 
 INSERT INTO positions (name, created_at, updated_at)
 VALUES

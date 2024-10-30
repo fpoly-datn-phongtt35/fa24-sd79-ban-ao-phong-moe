@@ -118,27 +118,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public long createCustomer(CustomerReq customerReq) {
 
-//        if (!isValidName(customerReq.getLastName())) {
-//            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
-//        } else if (!isValidName(customerReq.getFirstName())) {
-//            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
-//        } else if (!this.isValidEmail(customerReq.getEmail())) {
-//            throw new EntityExistsException("Email không đúng định dạng.");
-//        }else if (!isValidPassword(customerReq.getPassword())) {
-//            throw new EntityExistsException("Mật khẩu phải từ 6-20 ký tự, chứa ít nhất một ký tự in hoa và một ký tự đặc biệt.");
-//        } else if (!isValidPhoneNumber(customerReq.getPhoneNumber())) {
-//            throw new EntityExistsException("Số  điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
-//        } else if (!isValidUsername(customerReq.getUsername())) {
-//            throw new EntityExistsException("Tên tài khoản phải từ 6 đến 20 ký tự và không chứa ký tự đặc biệt.");
-//        } else if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
-//            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
-//        } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
-//            throw new EntityExistsException("Email đã tồn tại.");
-//        } else if (this.customerRepository.existsByPhoneNumber(customerReq.getPhoneNumber())) {
-//            throw new EntityExistsException("Số điện thoại đã tồn tại.");
-//        }else if (!isOldEnough(customerReq.getDateOfBirth())) {
-//            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
-//        }
+         if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
+            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
+        } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
+            throw new EntityExistsException("Email đã tồn tại.");
+        } else if (this.customerRepository.existsByPhoneNumber(customerReq.getPhoneNumber())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
         {
 
 
@@ -190,23 +176,14 @@ public class CustomerServiceImpl implements CustomerService {
             customerAddress = new CustomerAddress();
         }
         User user = customer.getUser();
-//        if (!isValidName(customerRequest.getLastName())) {
-//            throw new EntityExistsException("Họ tối đa 50 ký tự và phải viết hoa chữ cái đầu");
-//        } else if (!isValidName(customerRequest.getFirstName())) {
-//            throw new EntityExistsException("Tên tối đa 50 ký tự và ký tự đầu tiên phải viết hoa.");
-//        } else if (!this.isValidEmail(customerRequest.getEmail()) && !user.getEmail().equals(customerRequest.getEmail())) {
-//            throw new EntityExistsException("Email không đúng định dạng.");
-//        } else if (!isValidPhoneNumber(customerRequest.getPhoneNumber()) && !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
-//            throw new EntityExistsException("Số điện thoại từ 10 đến 12 số và bắt đầu bằng số 0");
-//        } else if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
-//                !user.getEmail().equals(customerRequest.getEmail())) {
-//            throw new EntityExistsException("Email đã tồn tại.");
-//        } else if (this.customerRepository.existsByPhoneNumber(customerRequest.getPhoneNumber()) &&
-//                !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
-//            throw new EntityExistsException("Số điện thoại đã tồn tại.");
-//        } else if (!isOldEnough(customerRequest.getDateOfBirth())) {
-//            throw new EntityExistsException("Bạn phải từ 16 tuổi trở lên.");
-//        }
+
+          if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
+                !user.getEmail().equals(customerRequest.getEmail())) {
+            throw new EntityExistsException("Email đã tồn tại.");
+        } else if (this.customerRepository.existsByPhoneNumber(customerRequest.getPhoneNumber()) &&
+                !customer.getPhoneNumber().equals(customerRequest.getPhoneNumber())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
         if (user == null) {
             user = new User();
         }
