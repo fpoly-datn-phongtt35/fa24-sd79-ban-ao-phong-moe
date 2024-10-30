@@ -1,37 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
 import { toast } from 'react-toastify';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import axios from 'axios';
-import { getAllPositions, getEmployee, putEmployee, } from '~/apis/employeeApi';
-
+import { getAllPositions, postEmployee } from '~/apis/employeeApi';
 
 const host = "https://provinces.open-api.vn/api/";
 
-export const EmployeeUpdate = () => {
-    const [employeeData, setEmployeeData] = useState({
-        username: '',
-        password: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        phone_number: '',
-        gender: '',
-        date_of_birth: '',
-        avatar: 'null',
-        salary: '',
-    });
-
+export const EmployeeStore = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [imageObject, setImageObject] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [positions, setPositions] = useState([]);
-    const [position, setPosition] = useState(null);
-    const [streetName, setStreetName] = useState('');
+
     /*---Start handle address---*/
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -40,6 +22,11 @@ export const EmployeeUpdate = () => {
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedWard, setSelectedWard] = useState("");
 
+    const [position, setPosition] = useState(null);
+    const [streetName, setStreetName] = useState('');
+
+    const [positions, setPositions] = useState([]);
+
     useEffect(() => {
         const fetchCities = async () => {
             const response = await axios.get(`${host}?depth=1`);
@@ -47,6 +34,7 @@ export const EmployeeUpdate = () => {
         };
         fetchCities();
     }, []);
+
     useEffect(() => {
         const fetchPosition = async () => {
             await getAllPositions().then((res) => setPositions(res.data))
@@ -54,12 +42,12 @@ export const EmployeeUpdate = () => {
         fetchPosition();
     }, [])
     const handleCityChange = async (e) => {
-        const provinceId = e;
-        setSelectedCity(provinceId);
+        const cityId = e;
+        setSelectedCity(cityId);
         setSelectedDistrict("");
         setSelectedWard("");
-        if (provinceId) {
-            const response = await axios.get(`${host}p/${provinceId}?depth=2`);
+        if (cityId) {
+            const response = await axios.get(`${host}p/${cityId}?depth=2`);
             setDistricts(response.data.districts);
         } else {
             setDistricts([]);
@@ -83,113 +71,103 @@ export const EmployeeUpdate = () => {
     };
     /*---END---*/
 
-    const formatDate2 = (dateTimeString) => {
-        // Split date and time parts
-        const [datePart] = dateTimeString.split(' | ');
-        const [day, month, year] = datePart.split('/');
-        return `${year}-${month}-${day}`;
-    };
-
-
     const formatDate = (dateString, time = "00:00:00") => {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
-    };
+      };
 
+    const [employeeData, setEmployeeData] = useState({
+        username: '',
+        password: '',
+        email: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        gender: '',
+        date_of_birth: '',
+        avatar: 'null',
+        salary: '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
 
-    useEffect(() => {
-        const fetchEmployeeDetail = async () => {
-            try {
-                const response = await getEmployee(id);
-                console.log("API Response:", response.data);
-
-                const employeeData = response.data;
-                console.log(formatDate2(employeeData.date_of_birth));
-
-                handleCityChange(employeeData.employee_address.provinceId);
-                handleDistrictChange(employeeData.employee_address.districtId)
-                handleWardChange(employeeData.employee_address.ward)
-                setEmployeeData({
-                    first_name: employeeData.first_name,
-                    last_name: employeeData.last_name,
-                    phone_number: employeeData.phone_number,
-                    gender: employeeData.gender === "Nam" ? "MALE" : employeeData.gender === "Nữ" ? "FEMALE" : "OTHER",
-                    date_of_birth: formatDate2(employeeData.date_of_birth),
-                    salary: employeeData.salaries,
-                    position: employeeData.position.id,
-                    image: employeeData.image,
-                    provinceId: employeeData.employee_address.provinceId,
-                    district: employeeData.employee_address.district,
-                    ward: employeeData.employee_address.ward,
-                    email: employeeData.email,
-                    streetName: employeeData.employee_address.streetName
-
-                });
-                setImagePreview(employeeData.image);
-            } catch (error) {
-                console.error("Error details:", error);
-                toast.error('Error fetching employee details: ' + (error.response?.data?.message || error.message));
-            }
-        };
-
-        fetchEmployeeDetail();
-    }, [id]);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setEmployeeData({ ...employeeData, [name]: value });
+        if (name === 'date_of_birth') {
+            console.log("Ngày sinh:", value); // Log giá trị nhập vào
+        }
+        if (name === 'gender') {
+            setEmployeeData({ ...employeeData, gender: value });
+        } else {
+            setEmployeeData({ ...employeeData, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const currentDate = new Date().toISOString();
 
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
         const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
 
-        const updatedEmploye = {
+        const customerWithTimestamps = {
             ...employeeData,
-            address: {
+            address:{
                 province: cityName,
                 provinceId: selectedCity,
                 district: districtName,
                 districtId: selectedDistrict,
                 ward: wardName,
                 streetName: streetName
+                //
             },
+            position: position,
             date_of_birth: formatDate(employeeData.date_of_birth),
+            createdAt: currentDate,
+            updatedAt: currentDate,
         };
-        setIsLoading(true);
-        await putEmployee(updatedEmploye, id).then(async (res) => {
-            if (imageObject === null) {
-                toast.success('Sửa thành công');
-                setIsLoading(false);
-                navigate('/employee');
-                return;
-            }
 
-            // const formData = new FormData();
-            // formData.append("images", imageObject)
-            // formData.append("productId", id)
-            // await postcustomerImage(formData).then(() => {
-            //     toast.success('Cập nhật thành công');
-            //     setIsLoading(false);
-            //     navigate('/employee');
-            // })
+        console.log(customerWithTimestamps);
 
-        });
-
+        try {
+            // setIsLoading(true);
+            await postEmployee(customerWithTimestamps)
+                // .then(async (res) => {
+                //     if (imageObject === null) {
+                //         setIsLoading(false);
+                //         navigate('/employee');
+                //         return;
+                //     }
+                //     const formData = new FormData();
+                //     formData.append("images", imageObject)
+                //     formData.append("productId", res)
+                //     await postcustomerImage(formData).then(() => {
+                //         toast.success('Thêm thành công');
+                //         setIsLoading(false);
+                //         navigate('/employee');
+                //     })
+                // });
+        } catch (error) {
+            setIsLoading(false);
+            toast.error('Thêm thất bại!');
+        }
     };
+
     const handleImageChange = (event) => {
         var file = event.target.files[0];
         var url = URL.createObjectURL(file)
         setImagePreview(url)
         setImageObject(file)
     }
+
     return (
+        
         <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
             <Box mt={4} mb={4}>
                 <Grid
@@ -200,7 +178,8 @@ export const EmployeeUpdate = () => {
                     height={"50px"}
                 >
                     <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
-                        <Link disabled={isLoading}
+                        <Link
+                            disabled={isLoading}
                             underline="hover"
                             sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                             color="inherit"
@@ -209,7 +188,8 @@ export const EmployeeUpdate = () => {
                             <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
                             Trang chủ
                         </Link>
-                        <Link disabled={isLoading}
+                        <Link
+                            disabled={isLoading}
                             underline="hover"
                             sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                             color="inherit"
@@ -218,7 +198,7 @@ export const EmployeeUpdate = () => {
                             Quản lý nhân viên
                         </Link>
                         <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-                            Sửa thông tin nhân viên
+                            Thêm nhân viên
                         </Typography>
                     </Breadcrumbs>
                 </Grid>
@@ -233,10 +213,12 @@ export const EmployeeUpdate = () => {
                                             alt="User Image"
                                             sx={{ width: 150, height: 150 }}
                                         />
-                                        <Button disabled={isLoading}
-                                            variant="outlined"
+                                        <Button
+                                            variant="soft"
                                             component="label"
+                                            color='primary'
                                             sx={{ mt: 2 }}
+                                            disabled={isLoading}
                                         >
                                             Chọn Ảnh
                                             <input
@@ -273,7 +255,29 @@ export const EmployeeUpdate = () => {
                                                 />
                                             </FormControl>
                                         </Grid>
-
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Tên tài khoản</FormLabel>
+                                                <Input
+                                                    value={employeeData.username}
+                                                    name="username"
+                                                    onChange={handleChange}
+                                                    placeholder='Tên tài khoản'
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Mật Khẩu</FormLabel>
+                                                <Input
+                                                    value={employeeData.password}
+                                                    name="password"
+                                                    type="password"
+                                                    onChange={handleChange}
+                                                    placeholder='Mật Khẩu'
+                                                />
+                                            </FormControl>
+                                        </Grid>
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Email</FormLabel>
@@ -311,7 +315,7 @@ export const EmployeeUpdate = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Chức vụ</FormLabel>
-                                                <Select value={employeeData.position} placeholder="Chọn chức vụ" onChange={(e, v) => setPosition(v)}>
+                                                <Select defaultValue={0} placeholder="Chọn chức vụ" onChange={(e, v) => setPosition(v)}>
                                                     {
                                                         positions?.map((item) => (
                                                             <Option key={item.id} value={item.id}>{item.name}</Option>
@@ -320,6 +324,7 @@ export const EmployeeUpdate = () => {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
+
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Giới tính</FormLabel>
@@ -352,21 +357,26 @@ export const EmployeeUpdate = () => {
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
+
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Ngày sinh</FormLabel>
+                                                {console.log("Giá trị của employeeData.date_of_birth:", employeeData.date_of_birth)}
                                                 <Input
                                                     name="date_of_birth"
-                                                    value={employeeData.date_of_birth || ""}
+                                                    value={employeeData.date_of_birth}
                                                     onChange={handleChange}
-                                                    type="date"
+                                                    placeholder='Ngày sinh'
+                                                    type='date'
                                                 />
+                                                
                                             </FormControl>
                                         </Grid>
+
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel >Thành phố</FormLabel>
-                                                <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                                                <Select onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
                                                     <Option value="" disabled>
                                                         Chọn tỉnh thành
                                                     </Option>
@@ -378,6 +388,7 @@ export const EmployeeUpdate = () => {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
+
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel >Quận/Huyện</FormLabel>
@@ -416,16 +427,15 @@ export const EmployeeUpdate = () => {
                                                 <FormLabel>Tên đường</FormLabel>
                                                 <Input
                                                     name="streetName"
-                                                    value={employeeData.streetName}
                                                     placeholder='Tên đường'
-                                                    onChange={handleChange}
+                                                    onChange={(e) => setStreetName(e.target.value)}
                                                 />
                                             </FormControl>
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={6} sx={{ marginTop: 1 }}>
-                                        <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
-                                            Cập Nhật Người Dùng
+                                        <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
+                                            Thêm Người Dùng
                                         </Button>
                                         <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                                             Hủy
@@ -440,5 +450,3 @@ export const EmployeeUpdate = () => {
         </Container>
     );
 };
-
-export default EmployeeUpdate;

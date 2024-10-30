@@ -148,10 +148,13 @@ export const AddCustomer = () => {
     if (name === 'lastName') {
       if (value.length > 20) {
         newErrors.lastName = "Họ không được vượt quá 20 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
         delete newErrors.lastName; 
+        setIsLoading(false);
       }
     }
 
@@ -159,18 +162,23 @@ export const AddCustomer = () => {
     if (name === 'firstName') {
       if (value.length > 50) {
         newErrors.firstName = "Tên không được vượt quá 50 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
         delete newErrors.firstName; 
+        setIsLoading(false);
       }
     }
 
     if (name === 'phoneNumber') {
       if (!phoneRegex.test(value)) {
         newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+        setIsLoading(true);
       } else {
         delete newErrors.phoneNumber;
+        setIsLoading(false);
       }
     }
     
@@ -179,8 +187,10 @@ export const AddCustomer = () => {
     if (name === 'gender') {
       if (!value) {
         newErrors.gender = "Phải chọn giới tính";
+        setIsLoading(true);
       } else {
         delete newErrors.gender;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, gender: value });
     } else {
@@ -191,8 +201,10 @@ export const AddCustomer = () => {
       const age = calculateAge(value);
       if (age < minAge) {
         newErrors.dateOfBirth = "Phải trên 16 tuổi";
+        setIsLoading(true);
       } else {
         delete newErrors.dateOfBirth;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, dateOfBirth: value });
     } else {
@@ -202,23 +214,29 @@ export const AddCustomer = () => {
     if (name === 'username') {
       if (!usernameRegex.test(value)) {
           newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+          setIsLoading(true);
       } else {
           delete newErrors.username;
+          setIsLoading(false);
       }
   }
 
   if (name === 'password') {
       if (!passwordRegex.test(value)) {
           newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
+          setIsLoading(true);
       } else {
           delete newErrors.password;
+          setIsLoading(false);
       }
   }
   if (name === 'email') {
     if (!emailRegex.test(value)) {
       newErrors.email = "Email không đúng định dạng";
+      setIsLoading(true);
     } else {
       delete newErrors.email;
+      setIsLoading(false);
     }
   }
 

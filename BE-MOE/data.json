@@ -1,28 +1,22 @@
 {
-  "name": "San pham demo 1",
-  "description": "Demo lan 1",
-  "status": "ACTIVE",
-  "categoryId": 2,
-  "brandId": 3,
-  "materialId": 1,
-  "origin": "Vietnam",
-  "imageUrl": [
-    "https://pos.nvncdn.com/fa49eb-41931/ps/20240511_TedBXFGoeE.jpeg",
-    "https://i.pinimg.com/736x/24/92/d4/2492d485e85d2e9b6fb99d5876e6f954.jpg"
-  ],
-  "productDetails": [
-    {
-      "retailPrice": 200000,
-      "sizeId": 2,
-      "colorId": 1,
-      "quantity": 10
-    },
-    {
-      "retailPrice": 200000,
-      "sizeId": 2,
-      "colorId": 2,
-      "quantity": 11
-    }
-  ],
-  "userId": 1
+  "username": "hacker",
+  "password": "123",
+  "email": "string@gmail.com",
+  "first_name": "a",
+  "last_name": "b",
+  "phone_number": "09298438",
+  "gender": "MALE",
+  "date_of_birth": "01/01/2001 | 00:00:00",
+  "avatar": "string",
+  "salary": 100000,
+  "positionId": 1,
+  "address": {
+    "streetName": "111",
+    "ward": "Thị Trấn Si Ma Cai",
+    "wardId": 90816,
+    "district": "Huyện Si Ma Cai",
+    "districtId": 2264,
+    "province": "Lào Cai",
+    "provinceId": 269
+  }
 }

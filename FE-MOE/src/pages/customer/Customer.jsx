@@ -15,6 +15,7 @@ import swal from 'sweetalert';
 import HomeIcon from "@mui/icons-material/Home";
 import { Avatar, Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Modal, ModalClose, Option, Select, Sheet, Switch, Typography } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
+import { formatCurrencyVND, formatDateWithoutTime } from '~/utils/format';
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -40,6 +41,7 @@ export const Customer = () => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+ 
   const mapGender = (gender) => {
     switch (gender) {
       case 'MALE':

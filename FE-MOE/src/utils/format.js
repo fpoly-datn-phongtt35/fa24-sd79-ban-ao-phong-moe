@@ -9,3 +9,7 @@ export const formatCurrencyVND = (price) => {
         minimumFractionDigits: 0,
     }).format(price);
 };
+export const formatDateWithoutTime = (dateTimeString) => {
+    const [datePart] = dateTimeString.split(" | ");
+    return datePart;
+}

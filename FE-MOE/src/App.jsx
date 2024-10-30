@@ -18,15 +18,13 @@ import Coupon from "./pages/coupon/Coupon";
 import CreateCoupon from "./pages/coupon/CreateCoupon";
 import UpdateCoupon from "./pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
-import EmployeesCreate from "./pages/employee/EmployeeCreate";
 import EmployeesUpdate from "./pages/employee/EmployeeUpdate";
 import { AddPromotion } from "./pages/promotions/AddPromotion";
 import { UpdatePromotion } from "./pages/promotions/UpdatePromotion";
-
 import { ProductDetail } from "./pages/products/main/ProductDetail";
 import { ProductStore } from "./pages/products/main/ProductStore";
-import Header_Client from "./components/layout/Header_Client";
 import { useState } from "react";
+import Header_Client from "./components/layout/Header_Client";
 import Home from "./pages/clients/Home";
 import FooterClient from "./components/layout/FooterClient";
 import AboutUs from "./pages/clients/AboutUs";
@@ -34,6 +32,7 @@ import { Contact } from "./pages/clients/Contact";
 import { ViewDetail } from "./pages/clients/ViewDetail";
 import LoginPage from "./pages/auth/LoginPage";
 import LocationSelector from "./pages/other/LocationSelector";
+import { EmployeeStore } from "./pages/employee/EmployeeStore";
 import ShoppingCart from "./pages/clients/ShoppingCart";
 
 const ProtectedRoutes_ADMIN = () => {
@@ -200,7 +199,7 @@ function App() {
         <Route path="/coupon/detail/:id" element={<UpdateCoupon />} />
         <Route path="/promotions" element={<Promotion />} />
         <Route path="/employee" element={<Employee />} />
-        <Route path="/employee/add" element={<EmployeesCreate />} />
+        <Route path="/employee/add" element={<EmployeeStore />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
