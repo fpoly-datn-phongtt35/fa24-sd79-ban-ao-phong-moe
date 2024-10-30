@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import axios from 'axios';
-import { getAllPositions, getEmployee, putEmployee, } from '~/apis/employeeApi';
+import { getAllPositions, getEmployee, putEmployee, postEmployeeImage} from '~/apis/employeeApi';
 
 
 const host = "https://provinces.open-api.vn/api/";
@@ -20,7 +20,7 @@ export const EmployeeUpdate = () => {
         phone_number: '',
         gender: '',
         date_of_birth: '',
-        avatar: 'null',
+        avatar: '',
         salary: '',
     });
 
@@ -120,7 +120,7 @@ export const EmployeeUpdate = () => {
                     date_of_birth: formatDate2(employeeData.date_of_birth),
                     salary: employeeData.salaries,
                     position: employeeData.position.id,
-                    image: employeeData.image,
+                    avatar: employeeData.avatar,
                     provinceId: employeeData.employee_address.provinceId,
                     district: employeeData.employee_address.district,
                     ward: employeeData.employee_address.ward,
@@ -128,7 +128,7 @@ export const EmployeeUpdate = () => {
                     streetName: employeeData.employee_address.streetName
 
                 });
-                setImagePreview(employeeData.image);
+                setImagePreview(employeeData.avatar);
             } catch (error) {
                 console.error("Error details:", error);
                 toast.error('Error fetching employee details: ' + (error.response?.data?.message || error.message));
@@ -171,14 +171,14 @@ export const EmployeeUpdate = () => {
                 return;
             }
 
-            // const formData = new FormData();
-            // formData.append("images", imageObject)
-            // formData.append("productId", id)
-            // await postcustomerImage(formData).then(() => {
-            //     toast.success('Cập nhật thành công');
-            //     setIsLoading(false);
-            //     navigate('/employee');
-            // })
+            const formData = new FormData();
+            formData.append("images", imageObject)
+            formData.append("productId", id)
+            await postEmployeeImage(formData).then(() => {
+                toast.success('Cập nhật thành công');
+                setIsLoading(false);
+                navigate('/employee');
+            })
 
         });
 
@@ -427,9 +427,7 @@ export const EmployeeUpdate = () => {
                                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                                             Cập Nhật Người Dùng
                                         </Button>
-                                        <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
-                                            Hủy
-                                        </Button>
+                                        
                                     </Grid>
                                 </Grid>
                             </Grid>

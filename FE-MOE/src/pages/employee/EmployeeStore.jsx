@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import axios from 'axios';
-import { getAllPositions, postEmployee } from '~/apis/employeeApi';
+import { getAllPositions, postEmployee, postEmployeeImage } from '~/apis/employeeApi';
 
 const host = "https://provinces.open-api.vn/api/";
 
@@ -77,7 +77,7 @@ export const EmployeeStore = () => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year} | ${time}`;
-      };
+    };
 
     const [employeeData, setEmployeeData] = useState({
         username: '',
@@ -88,7 +88,6 @@ export const EmployeeStore = () => {
         phone_number: '',
         gender: '',
         date_of_birth: '',
-        avatar: 'null',
         salary: '',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -118,7 +117,7 @@ export const EmployeeStore = () => {
 
         const customerWithTimestamps = {
             ...employeeData,
-            address:{
+            address: {
                 province: cityName,
                 provinceId: selectedCity,
                 district: districtName,
@@ -136,23 +135,25 @@ export const EmployeeStore = () => {
         console.log(customerWithTimestamps);
 
         try {
-            // setIsLoading(true);
+            setIsLoading(true);
             await postEmployee(customerWithTimestamps)
-                // .then(async (res) => {
-                //     if (imageObject === null) {
-                //         setIsLoading(false);
-                //         navigate('/employee');
-                //         return;
-                //     }
-                //     const formData = new FormData();
-                //     formData.append("images", imageObject)
-                //     formData.append("productId", res)
-                //     await postcustomerImage(formData).then(() => {
-                //         toast.success('Thêm thành công');
-                //         setIsLoading(false);
-                //         navigate('/employee');
-                //     })
-                // });
+                .then(async (res) => {
+                    if (imageObject === null) {
+                        setIsLoading(false);
+                        navigate('/employee');
+                        return;
+                    }
+                    console.log(res);
+                    
+                    const formData = new FormData();
+                    formData.append("images", imageObject)
+                    formData.append("productId", res)
+                    await postEmployeeImage(formData).then(() => {
+                        toast.success('Thêm thành công');
+                        setIsLoading(false);
+                        navigate('/employee');
+                    })
+                });
         } catch (error) {
             setIsLoading(false);
             toast.error('Thêm thất bại!');
@@ -167,7 +168,7 @@ export const EmployeeStore = () => {
     }
 
     return (
-        
+
         <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
             <Box mt={4} mb={4}>
                 <Grid
@@ -369,7 +370,7 @@ export const EmployeeStore = () => {
                                                     placeholder='Ngày sinh'
                                                     type='date'
                                                 />
-                                                
+
                                             </FormControl>
                                         </Grid>
 
