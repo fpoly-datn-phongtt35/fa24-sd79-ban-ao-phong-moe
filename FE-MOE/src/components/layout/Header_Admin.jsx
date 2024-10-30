@@ -3,19 +3,13 @@
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState, useEffect } from "react";
-import {
-  Avatar,
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Avatar, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
-import { handleLogoutAPI } from "~/apis";
+import { accessUserAPI, handleLogoutAPI } from "~/apis";
 import { MoeAlert } from "../other/MoeAlert";
 import { Tooltip, Typography } from "@mui/joy";
 
@@ -25,9 +19,15 @@ export const Header_Admin = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   useEffect(() => {
-    setUsername(localStorage.getItem("username"));
-    setAvatar(localStorage.getItem("avatar"));
+    handleAccessData();
   }, []);
+
+  const handleAccessData = async () => {
+    await accessUserAPI("ADMIN").then((res) => {
+      setAvatar(res?.avatar);
+      setUsername(res?.username);
+    });
+  };
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
