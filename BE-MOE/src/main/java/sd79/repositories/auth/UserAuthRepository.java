@@ -41,7 +41,7 @@ public class UserAuthRepository {
         StringBuilder sql = new StringBuilder("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, u.user.email, u.image)");
         if (role.equals(UserRole.ADMIN)) {
             //TODO
-            sql.append(" FROM Employee u WHERE u.user.username = :username");
+            sql.append(" FROM employees  u WHERE u.user.username = :username");
             TypedQuery<UserResponse> query = entityManager.createQuery(sql.toString(), UserResponse.class);
             query.setParameter("username", username);
             return query.getSingleResult();
