@@ -3,6 +3,7 @@ package sd79.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.enums.Gender;
+import sd79.enums.ProductStatus;
 import sd79.model.Customer;
 import sd79.service.CustomerService;
 
@@ -51,6 +53,12 @@ public class CustomerController {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<CustomerResponse> customers = customerService.getAll(pageable);
         return new ResponseData<>(HttpStatus.OK.value(), "List of customers (paginated)", customers);
+    }
+
+    @PatchMapping("/change-isLocked/{id}/{isLocked}")
+    public ResponseData<?> setUserLocked(@Min(1) @PathVariable("id") long id, @PathVariable("isLocked") Boolean isLocked) {
+        this.customerService.setUserLocked(id, isLocked);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Thay đổi trạng thái thành công");
     }
 
     // Lấy thông tin khách hàng theo ID

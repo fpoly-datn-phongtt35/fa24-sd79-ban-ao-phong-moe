@@ -13,10 +13,13 @@ import sd79.dto.requests.CustomerReq;
 import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.CustomerResponse;
+import sd79.dto.response.auth.UserResponse;
 import sd79.enums.Gender;
+import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Customer;
 import sd79.model.CustomerAddress;
+import sd79.model.Product;
 import sd79.model.User;
 import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
@@ -60,6 +63,17 @@ public class CustomerServiceImpl implements CustomerService {
         return customers.map(this::convertCustomerResponse);
     }
 
+
+    @Override
+    public void setUserLocked(long id, Boolean isLocked) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
+        User user = userRepository.findById(customer.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
+        user.setIsLocked(isLocked);
+        this.userRepository.save(user);
+    }
+
     @Override
     public CustomerResponse getCustomerById(Long id) {
         Customer customer = customerRepository.findById(id)
@@ -67,51 +81,51 @@ public class CustomerServiceImpl implements CustomerService {
         return convertCustomerResponse(customer);
     }
 
-    public boolean isValidEmail(String email) {
-        return EMAIL_PATTERN.matcher(email).matches();
-    }
-
-    public boolean isValidUsername(String username) {
-        return username != null && username.matches(USERNAME_REGEX);
-    }
-
-    public boolean isValidPassword(String password) {
-        return password != null && PASSWORD_PATTERN.matcher(password).matches();
-    }
-
-    public boolean isValidPhoneNumber(String phoneNumber) {
-        return phoneNumber != null && PHONE_PATTERN.matcher(phoneNumber).matches();
-    }
-
-    public boolean isValidName(String name) {
-        if (name == null || name.length() > 50) {
-            return false;
-        }
-        return Character.isUpperCase(name.charAt(0));
-    }
-
-    public boolean isOldEnough(Date dateOfBirth) {
-        if (dateOfBirth == null) {
-            throw new EntityExistsException("Ngày sinh không được để trống.");
-        }
-
-
-        Calendar birthDate = Calendar.getInstance();
-        birthDate.setTime(dateOfBirth);
-
-        Calendar today = Calendar.getInstance();
-
-        int age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
-
-
-        if (today.get(Calendar.MONTH) < birthDate.get(Calendar.MONTH) ||
-                (today.get(Calendar.MONTH) == birthDate.get(Calendar.MONTH) &&
-                        today.get(Calendar.DAY_OF_MONTH) < birthDate.get(Calendar.DAY_OF_MONTH))) {
-            age--;
-        }
-
-        return age >= 16;
-    }
+//    public boolean isValidEmail(String email) {
+//        return EMAIL_PATTERN.matcher(email).matches();
+//    }
+//
+//    public boolean isValidUsername(String username) {
+//        return username != null && username.matches(USERNAME_REGEX);
+//    }
+//
+//    public boolean isValidPassword(String password) {
+//        return password != null && PASSWORD_PATTERN.matcher(password).matches();
+//    }
+//
+//    public boolean isValidPhoneNumber(String phoneNumber) {
+//        return phoneNumber != null && PHONE_PATTERN.matcher(phoneNumber).matches();
+//    }
+//
+//    public boolean isValidName(String name) {
+//        if (name == null || name.length() > 50) {
+//            return false;
+//        }
+//        return Character.isUpperCase(name.charAt(0));
+//    }
+//
+//    public boolean isOldEnough(Date dateOfBirth) {
+//        if (dateOfBirth == null) {
+//            throw new EntityExistsException("Ngày sinh không được để trống.");
+//        }
+//
+//
+//        Calendar birthDate = Calendar.getInstance();
+//        birthDate.setTime(dateOfBirth);
+//
+//        Calendar today = Calendar.getInstance();
+//
+//        int age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+//
+//
+//        if (today.get(Calendar.MONTH) < birthDate.get(Calendar.MONTH) ||
+//                (today.get(Calendar.MONTH) == birthDate.get(Calendar.MONTH) &&
+//                        today.get(Calendar.DAY_OF_MONTH) < birthDate.get(Calendar.DAY_OF_MONTH))) {
+//            age--;
+//        }
+//
+//        return age >= 16;
+//    }
 
 
     @Transactional
@@ -264,6 +278,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .district_id(customer.getCustomerAddress().getDistrictId())
                 .ward(customer.getCustomerAddress().getWard())
                 .streetName(customer.getCustomerAddress().getStreetName())
+                .isLocked(customer.getUser().getIsLocked())
                 .image(customer.getImage())
                 .createdAt(customer.getCreatedAt())
                 .updatedAt(customer.getUpdatedAt())
