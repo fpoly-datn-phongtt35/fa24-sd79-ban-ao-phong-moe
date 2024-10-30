@@ -12,7 +12,9 @@ function CommonProvider({ children }) {
   const [carts, setCarts] = useState(null);
 
   useEffect(() => {
-    handleFetchCarts();
+    if (localStorage.getItem("accessToken")) {
+      handleFetchCarts();
+    }
   }, []);
 
   const handleFetchCarts = async () => {
