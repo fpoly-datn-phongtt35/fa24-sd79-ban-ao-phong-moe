@@ -80,8 +80,8 @@ export default function CouponModal({ open, onClose, onSelectCoupon }) {
                                 cursor: 'pointer'
                             }}
                             onClick={() => {
-                                onSelectCoupon(coupon); // Pass the selected coupon to the parent
-                                onClose(); // Close the modal
+                                onSelectCoupon(coupon); 
+                                onClose(); 
                             }}
                         >
                             <Box sx={{ flex: 1 }}>
@@ -117,7 +117,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon }) {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={onClose}  color="primary">
                     Đóng
                 </Button>
             </DialogActions>

@@ -17,6 +17,7 @@ import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.requests.productRequests.BillStoreRequest;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.ResponseData;
+import sd79.dto.response.bills.BillDetailRespone;
 import sd79.dto.response.bills.ProductResponse;
 import sd79.model.BillDetail;
 import sd79.service.BillService;
@@ -32,6 +33,12 @@ public class BillController {
     private final BillService billService;
 
     //them lan 1
+    @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
+    @GetMapping("/getBill")
+    public ResponseData<?> getAllBill() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", this.billService.getAllBills());
+    }
+
     @Operation(summary = "Thêm hóa đơn với chỉ mã", description = "Thêm hóa đơn chỉ với mã mà không cần thông tin khác")
     @PostMapping("/storeBill")
     public ResponseData<?> addBill(@Valid @RequestBody BillRequest billRequest, BindingResult bindingResult) {
@@ -42,7 +49,21 @@ public class BillController {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn với mã thành công", billId);
     }
 
+    @Operation(summary = "Xóa hóa đơn", description = "Xóa hóa đơn")
+    @DeleteMapping("/deleteBill/{billID}")
+    public ResponseData<?> deleteBill(@PathVariable long billID) {
+        billService.deleteBill(billID);
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa hóa đơn thành công");
+    }
+
     //them lan 2
+    @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
+    @GetMapping("/getProduct/{billId}")  // Accept billId as a path variable
+    public ResponseData<?> getAllProduct(@PathVariable long billId) {
+        List<BillDetailRespone> billDetails = this.billService.getAllProducts(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", billDetails);
+    }
+
     @Operation(summary = "Thêm sản phẩm vào hóa đơn", description = "Thêm sản phẩm vào hóa đơn chi tiết ")
     @PostMapping("/storeProduct")
     public ResponseData<?> addProduct(@Valid @RequestBody BillDetailRequest billDetailRequest, BindingResult bindingResult) {
@@ -60,20 +81,34 @@ public class BillController {
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa sản phẩm khỏi hóa đơn thành công");
     }
 
-    //them lan 3
+    //them lan 3@PathVariable
     @Operation(summary = "Thêm khách hàng vào hóa đơn", description = "Thêm khách hàng vào hóa đơn hiện có")
-    @PostMapping("/addCustomer")
+    @PostMapping("/storeCustomer")
     public ResponseData<?> addCustomer(@RequestParam Long billId, @RequestParam Long customerId) {
         long updatedBillId = billService.storeCustomer(billId, customerId);
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm khách hàng vào hóa đơn thành công", updatedBillId);
     }
 
+    @Operation(summary = "Xóa khách hàng khỏi hóa đơn", description = "Xóa khách hàng khỏi hóa đơn hiện có")
+    @PostMapping("/deleteCustomer")
+    public ResponseData<?> deleteCustomer(@RequestParam Long billId) {
+        long updatedBillId = billService.deleteCustomer(billId); // Call the service method to update the bill
+        return new ResponseData<>(HttpStatus.OK.value(), "Khách hàng đã được xóa khỏi hóa đơn thành công", updatedBillId);
+    }
+
     //them lan 4
     @Operation(summary = "Thêm mã giảm giá vào hóa đơn", description = "Thêm mã giảm giá vào hóa đơn hiện có")
-    @PostMapping("/addCoupon")
+    @PostMapping("/storeCoupon")
     public ResponseData<?> addCoupon(@RequestParam Long billId, @RequestParam Long couponId) {
         long updatedBillId = billService.storeCoupon(billId, couponId);
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm mã giảm giá vào hóa đơn thành công", updatedBillId);
+    }
+
+    @Operation(summary = "Xóa phiếu giảm giá khỏi hóa đơn", description = "Xóa hiếu giảm giá khỏi hóa đơn hiện có")
+    @PostMapping("/deleteCoupon")
+    public ResponseData<?> deleteCoupon(@RequestParam Long billId) {
+        long updatedBillId = billService.deleteCoupon(billId); // Call the service method to update the bill
+        return new ResponseData<>(HttpStatus.OK.value(), "Phiếu giảm giá đã được xóa khỏi hóa đơn thành công", updatedBillId);
     }
 
     //them cuoi cung

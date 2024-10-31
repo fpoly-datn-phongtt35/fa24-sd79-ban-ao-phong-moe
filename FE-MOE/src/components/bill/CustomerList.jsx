@@ -10,29 +10,48 @@ import {
     ListItem,
     ListItemText,
     CircularProgress,
+    Dialog,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
-import Dialog from '@mui/material/Dialog';
 import AddCustomerModal from './AddCustomerModal';
+import { deleteCustomer, fetchBill } from '~/apis/billsApi';
+import ClearIcon from '@mui/icons-material/Clear';
+import { Input } from '@mui/joy';
 
-export default function CustomerList() {
-    const [customer, setCustomer] = useState({
-        fullName: '',
-        email: '',
-        phoneNumber: '',
-    });
+export default function CustomerList({ selectedOrder, onAddCustomer }) {
+    const [customer, setCustomer] = useState(null); // Initialize as null
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
+    const [bills, setBills] = useState([]);
 
     useEffect(() => {
         handleSetCustomer();
+        handleSetBill();
     }, []);
+
+    useEffect(() => {
+        if (selectedOrder) {
+            const customerFromBill = findCustomerInBills(selectedOrder);
+            setCustomer(customerFromBill);
+        }
+    }, [selectedOrder, bills]);
+
+    const handleSetBill = async () => {
+        try {
+            const response = await fetchBill();
+            if (response?.data) {
+                setBills(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch bills:', error);
+        }
+    };
 
     const handleSetCustomer = async () => {
         setLoading(true);
@@ -76,12 +95,33 @@ export default function CustomerList() {
 
     const handleCustomerSelect = (selectedCustomer) => {
         setCustomer({
-            fullName: selectedCustomer.fullName || 'N/A',
-            email: selectedCustomer.email || 'N/A',
-            phoneNumber: selectedCustomer.phoneNumber || 'N/A',
+            ...selectedCustomer,
+            user: selectedCustomer.user || {}
         });
         setSearchTerm(selectedCustomer.fullName);
         setShowDropdown(false);
+        handleAddCustomer(selectedCustomer);
+    };
+
+    const handleAddCustomer = (customer) => {
+        onAddCustomer(customer);
+    };
+
+    const handleDeleteCustomer = async (customerId) => {
+        try {
+            await deleteCustomer(customerId);
+            setCustomer(null);
+            setSearchTerm('');
+            setFilteredCustomers(customers);
+        } catch (error) {
+            toast.error("Failed to delete customer.");
+            console.error("Error deleting customer:", error);
+        }
+    };
+
+    const findCustomerInBills = (orderId) => {
+        const billWithCustomer = bills.find(bill => bill.id === orderId);
+        return billWithCustomer ? billWithCustomer.customer : null;
     };
 
     const handleOpenModal = () => setOpenModal(true);
@@ -95,6 +135,20 @@ export default function CustomerList() {
                 </Typography>
                 <Box display="flex" flexDirection="column" gap={1} position="relative" width="40%">
                     <Box display="flex" gap={1} alignItems="center" width="100%">
+                        <Box sx={{ flex: customer ? '1' : '0' }}>
+                            {customer ? (
+                                <>
+                                    <span>{customer.firstName} {customer.lastName}</span>
+                                    <Button
+                                        onClick={() => handleDeleteCustomer(selectedOrder)}
+                                        size="small"
+                                        sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
+                                    >
+                                        <ClearIcon fontSize="small" />
+                                    </Button>
+                                </>
+                            ) : null}
+                        </Box>
                         <TextField
                             placeholder="Tìm kiếm khách hàng..."
                             variant="outlined"
@@ -110,10 +164,10 @@ export default function CustomerList() {
                                     </InputAdornment>
                                 ),
                             }}
-                            sx={{ flex: 1, minWidth: 0 }}
+                            sx={{ flex: 3, minWidth: 0, width: 100 }}
                         />
                         <Button
-                            size="medium"
+                            size="large"
                             variant="contained"
                             color="warning"
                             startIcon={<AddIcon />}
@@ -143,7 +197,12 @@ export default function CustomerList() {
                                 }}
                             >
                                 {filteredCustomers.map((c, index) => (
-                                    <ListItem key={index} onClick={() => handleCustomerSelect(c)} role="button" tabIndex={0}>
+                                    <ListItem
+                                        key={index}
+                                        onClick={() => handleCustomerSelect(c)}
+                                        role="button"
+                                        tabIndex={0}
+                                    >
                                         <ListItemText
                                             primary={`${c.fullName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
                                             secondary={null}
@@ -156,15 +215,15 @@ export default function CustomerList() {
                 </Box>
             </Box>
 
-            {searchTerm && filteredCustomers.length > 0 ? (
+            {customer ? (
                 <Box>
-                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customer.fullName}</Typography>
-                    <Typography variant="body1"><strong>Email:</strong> {customer.email}</Typography>
+                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customer.firstName} {customer.lastName}</Typography>
+                    <Typography variant="body1"><strong>Email:</strong> {customer.user ? customer.user.email : 'N/A'}</Typography>
                     <Typography variant="body1"><strong>Số điện thoại:</strong> {customer.phoneNumber}</Typography>
                 </Box>
             ) : (
                 <Typography variant="body1" align="center" sx={{ mt: 2 }}>
-                    Không có khách hàng nào lẻ.
+                    Không có thông tin khách hàng.
                 </Typography>
             )}
 
