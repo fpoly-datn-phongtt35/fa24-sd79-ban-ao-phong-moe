@@ -30,7 +30,14 @@ import java.util.Date;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, ConstraintViolationException.class, EntityExistsException.class, AccessDeniedException.class})
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            HttpMessageNotReadableException.class,
+            ConstraintViolationException.class,
+            EntityExistsException.class,
+            AccessDeniedException.class,
+            InvalidDataException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleValidException(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse();
@@ -39,28 +46,33 @@ public class GlobalExceptionHandler {
         response.setPath(request.getDescription(false).replace("uri=", ""));
 
         String message = ex.getMessage();
-        if (ex instanceof MethodArgumentNotValidException) {
-            int start = message.lastIndexOf("[");
-            int end = message.lastIndexOf("]");
-            message = message.substring(start + 1, end - 1);
-            response.setError("Payload invalid");
-        } else if (ex instanceof ConstraintViolationException) {
-            message = message.substring(message.indexOf(" ") + 1);
-            response.setError("PathVariable invalid");
-        } else if (ex instanceof HttpMessageNotReadableException) {
-            int startIndex = message.indexOf("JSON parse error: ");
-            if (startIndex != -1) {
-                String detailedMessage = message.substring(startIndex + "JSON parse error: ".length());
-                int errorStart = detailedMessage.indexOf("Failed to parse Date value '");
-                int errorEnd = detailedMessage.indexOf("'", errorStart + "Failed to parse Date value '".length());
-                message = detailedMessage.substring(errorStart, errorEnd);
-                response.setError("Invalid payload format");
-
+        switch (ex) {
+            case MethodArgumentNotValidException methodArgumentNotValidException -> {
+                int start = message.lastIndexOf("[");
+                int end = message.lastIndexOf("]");
+                message = message.substring(start + 1, end - 1);
+                response.setError("Payload invalid");
             }
-        } else if (ex instanceof EntityExistsException) {
-            response.setError("Entity exists");
-        } else if (ex instanceof AccessDeniedException) {
-            response.setError("Access denied");
+            case ConstraintViolationException constraintViolationException -> {
+                message = message.substring(message.indexOf(" ") + 1);
+                response.setError("PathVariable invalid");
+            }
+            case HttpMessageNotReadableException httpMessageNotReadableException -> {
+                int startIndex = message.indexOf("JSON parse error: ");
+                if (startIndex != -1) {
+                    String detailedMessage = message.substring(startIndex + "JSON parse error: ".length());
+                    int errorStart = detailedMessage.indexOf("Failed to parse Date value '");
+                    int errorEnd = detailedMessage.indexOf("'", errorStart + "Failed to parse Date value '".length());
+                    message = detailedMessage.substring(errorStart, errorEnd);
+                    response.setError("Invalid payload format");
+
+                }
+            }
+            case EntityExistsException entityExistsException -> response.setError("Entity exists");
+            case AccessDeniedException accessDeniedException -> response.setError("Access denied");
+            case InvalidDataException invalidDataException -> response.setError("Invalid data");
+            default -> {
+            }
         }
         response.setMessage(message);
         return response;
@@ -79,8 +91,7 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         if (ex instanceof EntityNotFoundException) {
             response.setError("Entity not found");
-        }
-        if (ex instanceof AuthenticationExceptionCustom) {
+        } else if (ex instanceof AuthenticationExceptionCustom) {
             response.setError("Authentication error");
             message = "Username or password incorrect";
         }

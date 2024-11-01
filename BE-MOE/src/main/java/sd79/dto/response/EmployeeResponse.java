@@ -21,6 +21,8 @@ public class EmployeeResponse {
 
     private String last_name;
 
+    private String full_name;
+
     private String phone_number;
 
     private String gender;

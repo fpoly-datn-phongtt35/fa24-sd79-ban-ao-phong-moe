@@ -27,7 +27,7 @@ spring:
       on-profile: nhv
 jwt:
   key: LEADER_SD79NHV$2a$12$wvYek6dEmfHd3QOhnY2BVe8LbTGQa7bo2mda3FrHez80ToFEEh5u.
-  expiryMinute: 10
+  expiryMinute: 1000
   expiryDay: 3
   secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
   refreshKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980

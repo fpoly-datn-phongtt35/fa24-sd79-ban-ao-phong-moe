@@ -4,6 +4,7 @@ package sd79.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.response.EmployeeResponse;
 import sd79.model.Employee;
 
@@ -24,4 +25,6 @@ public interface EmployeeService {
     void updateEmp(EmployeeReq req, Integer id);
 
     List<Employee> findByNameAndPhone(String keyword, String phone_number);
+
+    void updateImage(EmployeeImageReq req);
 }

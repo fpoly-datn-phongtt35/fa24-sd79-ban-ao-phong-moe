@@ -40,7 +40,10 @@ public class AuthenticationService {
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
-        var user = this.userRepository.findUserByUsernameOrEmail(signInRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Username or password incorrect"));
+        var user = this.userRepository.findUserByUsernameOrEmailIgnoreCase(signInRequest.getUsername())
+                .filter(u -> u.getUsername().equals(signInRequest.getUsername()) || u.getEmail().equals(signInRequest.getUsername()))
+                .orElseThrow(() -> new UsernameNotFoundException("Username or password incorrect"));
+
         String access_token = this.jwtService.generateToken(user);
         String refresh_token = this.jwtService.generateRefreshToken(user);
 

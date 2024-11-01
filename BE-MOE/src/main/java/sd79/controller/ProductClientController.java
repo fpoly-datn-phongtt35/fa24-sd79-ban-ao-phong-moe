@@ -4,15 +4,18 @@
  * Github: https://github.com/JavaTech04
  * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
  */
-package sd79.controller.client;
+package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.clients.CartReq;
+import sd79.dto.requests.clients.FilterForCartReq;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
 import sd79.service.ProductService;
@@ -63,10 +66,49 @@ public class ProductClientController {
 
     @Operation(
             summary = "Get Product",
-            description = "Get product detail"
+            description = "Get product detail by product ID"
     )
     @GetMapping("/{id}")
     public ResponseData<?> getProduct(@PathVariable Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientProduct.getProductDetail(id));
+    }
+
+    @Operation(
+            summary = "Get Cart",
+            description = "Retrieve the current user's shopping cart details"
+    )
+    @GetMapping("/cart")
+    public ResponseData<?> getCarts(HttpServletRequest request) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientProduct.getCarts(request));
+    }
+
+    @Operation(
+            summary = "Add to Cart",
+            description = "Add an item to the shopping cart with specified filters"
+    )
+    @PostMapping("/add-to-cart")
+    public ResponseData<?> addToCart(@RequestBody FilterForCartReq cartReq) {
+        this.clientProduct.addToCart(cartReq);
+        return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công");
+    }
+
+    @Operation(
+            summary = "Update Cart",
+            description = "Update an item in the shopping cart based on the provided request data"
+    )
+    @PutMapping("/update-cart")
+    public ResponseData<?> updateCart(@RequestBody CartReq cartReq) {
+        this.clientProduct.updateCart(cartReq);
+        return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
+    }
+
+    @Operation(
+            summary = "Delete from Cart",
+            description = "Delete an item from the cart using the item ID and username"
+    )
+    @DeleteMapping("/delete-cart/{id}/{username}")
+    public ResponseData<?> deleteCart(@PathVariable String id, @PathVariable String username) {
+        this.clientProduct.deleteCart(id, username);
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
     }
 }

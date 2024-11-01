@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.ResponseData;
 import sd79.model.Employee;
@@ -63,7 +64,7 @@ public class EmployeeController {
     )
     @PostMapping
     public ResponseData<?> addEmployee(@Valid @RequestBody EmployeeReq req) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", employeeService.storeEmployee(req));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "", employeeService.storeEmployee(req));
     }
 
     // Cập nhật employee
@@ -74,7 +75,7 @@ public class EmployeeController {
     @PutMapping("/{id}")
     public ResponseData<?> updateEmployee(@PathVariable Integer id, @Valid @RequestBody EmployeeReq employeeRequest) {
         employeeService.updateEmp(employeeRequest, id);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Employee updated successfully");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "");
     }
 
     // Xóa employee
@@ -85,20 +86,9 @@ public class EmployeeController {
     @DeleteMapping("{id}")
     public ResponseData<?> deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Employee deleted successfully");
+        return new ResponseData<>(HttpStatus.OK.value(), "");
     }
 
-    //    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ResponseData<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//        ex.getBindingResult().getAllErrors().forEach((error) -> {
-//            String fieldName = ((FieldError) error).getField();
-//            String errorMessage = error.getDefaultMessage();
-//            errors.put(fieldName, errorMessage);
-//        });
-//        return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors);
-//    }
     @GetMapping("/searchNameAndPhone")
     public ResponseData<?> searchNameAndPhone(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -106,5 +96,15 @@ public class EmployeeController {
 
         List<Employee> results = employeeService.findByNameAndPhone(keyword, phone_number);
         return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
+    }
+
+    @Operation(
+            summary = "Upload image",
+            description = "Upload the image to cloudinary and return the url to save to the database"
+    )
+    @PostMapping("/upload")
+    public ResponseData<?> uploadFile(@Valid @ModelAttribute EmployeeImageReq request) {
+        this.employeeService.updateImage(request);
+        return new ResponseData<>(HttpStatus.CREATED.value(), "");
     }
 }

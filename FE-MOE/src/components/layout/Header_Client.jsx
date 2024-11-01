@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -22,6 +22,7 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
 import { Avatar, Input, Tooltip, Typography } from "@mui/joy";
+import { CommonContext } from "~/context/CommonContext";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -29,6 +30,8 @@ const Header_Client = () => {
   const [avatar, setAvatar] = useState("");
   const [username, setUsername] = useState("");
   const accessToken = localStorage.getItem("accessToken");
+
+  const context = useContext(CommonContext);
 
   useEffect(() => {
     if (accessToken) {
@@ -64,6 +67,7 @@ const Header_Client = () => {
     await handleLogoutAPI();
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
+    context.setAmoutCart(null);
     navigate("/signin");
   };
 
@@ -128,7 +132,7 @@ const Header_Client = () => {
           </IconButton>
           <Tooltip variant="plain" title="Giỏ hàng">
             <IconButton onClick={() => navigate("/cart")}>
-              <Badge badgeContent={2} color="primary">
+              <Badge badgeContent={context.amoutCart} color="primary">
                 <ShoppingCartOutlinedIcon />
               </Badge>
             </IconButton>

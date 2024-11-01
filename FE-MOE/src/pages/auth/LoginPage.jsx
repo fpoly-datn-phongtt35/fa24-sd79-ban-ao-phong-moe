@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Typography,
@@ -15,16 +15,17 @@ import {
   Alert,
 } from "@mui/joy";
 import SideImage from "~/assert/images/SideImage.svg";
-import { toast } from "react-toastify";
 import { API_ROOT } from "~/utils/constants";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
+import { CommonContext } from "~/context/CommonContext";
 
 function LoginPage() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const context = useContext(CommonContext);
   const {
     register,
     handleSubmit,
@@ -42,13 +43,13 @@ function LoginPage() {
       .then((res) => {
         if (res.status === 200) {
           setMessage("");
-          toast.success("Đăng nhập thành công!");
           document.cookie =
             `role=${res.data.authority};path=/;max-age=` + 7 * 24 * 60 * 60;
           localStorage.setItem("userId", res.data.userId);
           localStorage.setItem("username", data.username);
           localStorage.setItem("accessToken", res.data.accessToken);
           localStorage.setItem("refreshToken", res.data.refreshToken);
+          context.handleFetchCarts();
           navigate("/dashboard");
         }
       })
@@ -61,8 +62,8 @@ function LoginPage() {
       sx={{
         display: "flex",
         justifyContent: "center",
-        minHeight: 700,
-        maxHeight: 700,
+        minHeight: 750,
+        maxHeight: 750,
         maxWidth: 1305,
         margin: "auto",
       }}
@@ -75,19 +76,17 @@ function LoginPage() {
           overflow: "hidden",
         }}
       >
-        {/* Left Side Image */}
         <Box
           sx={{
             flex: 1,
             backgroundImage: `url(${SideImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            width: 700,
-            height: 600,
+            width: 636,
+            height: 636,
           }}
         />
 
-        {/* Right Side Form */}
         <Box
           sx={{
             flex: 1,
@@ -158,13 +157,13 @@ function LoginPage() {
             >
               <Button
                 type="submit"
-                variant="solid"
-                color="danger"
+                variant="soft"
+                color="neutral"
                 sx={{ width: "35%" }}
               >
                 Đăng nhập
               </Button>
-              <Link href="#" underline="hover" sx={{ color: "danger.500" }}>
+              <Link href="#" underline="hover" color="neutral">
                 Quên mật khẩu
               </Link>
             </Box>
