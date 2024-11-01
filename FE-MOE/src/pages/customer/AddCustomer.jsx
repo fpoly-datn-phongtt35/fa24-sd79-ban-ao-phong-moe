@@ -131,7 +131,7 @@ export const AddCustomer = () => {
     const phoneRegex = /^0\d{9,11}$/;
     const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
 
     const calculateAge = (dob) => {
@@ -651,7 +651,7 @@ export const AddCustomer = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                       Thêm Người Dùng
                     </Button>
-                    <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

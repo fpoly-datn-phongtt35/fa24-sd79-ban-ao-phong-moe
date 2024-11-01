@@ -8,14 +8,14 @@ import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import DetailsIcon from '@mui/icons-material/Details';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate, setLocked } from '~/apis/customerApi';
 import { toast } from 'react-toastify';
 import swal from 'sweetalert';
 import HomeIcon from "@mui/icons-material/Home";
 import { Avatar, Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Modal, ModalClose, Option, Select, Sheet, Switch, Typography } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
-import { formatCurrencyVND, formatDateWithoutTime } from '~/utils/format';
+
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -247,7 +247,7 @@ export const Customer = () => {
                   </TableCell>
                   <TableCell>
                     <IconButton onClick={() => onDetailsClick(customer)}>
-                      <DetailsIcon color="warning" />
+                      <RemoveRedEyeIcon color="warning" />
                     </IconButton>
                     <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
                       <EditIcon color="primary" />

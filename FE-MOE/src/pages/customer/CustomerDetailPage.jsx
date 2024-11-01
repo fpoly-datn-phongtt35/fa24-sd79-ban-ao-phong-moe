@@ -603,7 +603,7 @@ export const CustomerDetailPage = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                       Cập Nhật Người Dùng
                     </Button>
-                    <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>
