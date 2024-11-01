@@ -4,12 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.Date;
+
 @Getter
 @Builder
 
-public class PromotionProductReq {
+public class PromotionDetailRequest {
     private Long productID;
     private Integer promotionID;
-    private BigDecimal promotionPrice;
 }

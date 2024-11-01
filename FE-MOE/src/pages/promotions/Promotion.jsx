@@ -62,7 +62,7 @@ export const Promotion = () => {
   };
 
   // Lọc danh sách đợt giảm giá
-  const filteredDiscounts = discounts.filter((discount) => {
+  const filteredDiscounts = (discounts || []).filter((discount) => {
     const discountStartDate = new Date(discount.startDate).setHours(0, 0, 0, 0);
     const discountEndDate = new Date(discount.endDate).setHours(0, 0, 0, 0);
 
@@ -73,6 +73,7 @@ export const Promotion = () => {
 
     return isNameMatched && isWithinDateRange;
   });
+
 
   // Tính toán số lượng trang
   const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
@@ -181,7 +182,6 @@ export const Promotion = () => {
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
-              <th>Sản phẩm</th>
               <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
@@ -196,7 +196,6 @@ export const Promotion = () => {
                   <td>{discount.percent}%</td>
                   <td>{new Date(discount.startDate).toLocaleDateString()}</td>
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
-                  <td>{discount.numberOfProduct}</td>
                   <td>{discount.note}</td>
                   <td>
 

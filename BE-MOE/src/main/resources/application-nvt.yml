@@ -22,6 +22,7 @@ spring:
     activate:
       on-profile: nvt
 jwt:
+  key: SD79NVT$2a$12$7gyw.KUZphS2qF65MDQ1Lu3xTMtS6MriZUpfyi9RVxhGK5cA9J2EW
   expiryMinute: 60
   expiryDay: 14
   secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818

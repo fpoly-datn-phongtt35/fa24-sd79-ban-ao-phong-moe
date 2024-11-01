@@ -2,10 +2,11 @@ package sd79.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import sd79.dto.requests.PromotionProductReq;
+import sd79.dto.requests.PromotionDetailRequest;
 import sd79.dto.requests.PromotionRequest;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
+import sd79.model.PromotionDetail;
 
 import java.util.Date;
 import java.util.List;
@@ -19,11 +20,13 @@ public interface PromotionService {
 
     Integer storePromotion(PromotionRequest promotionRequest);
 
-    Integer storeProductPromotion(PromotionProductReq promotionProductReq);
+//    Integer storePromotionDetail(PromotionDetailRequest promotionDetailRequest);
+
+//    PromotionResponse getPromotionInfo(Integer id);
 
     Integer updatePromotion(PromotionRequest req, Integer id);
 
-    void isDeletePromotion(Integer id);
+    void deleteByPromotionId(Integer id);
 
     Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable);
 

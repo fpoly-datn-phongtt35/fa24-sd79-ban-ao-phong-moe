@@ -4,23 +4,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.PromotionProductReq;
+import sd79.dto.requests.PromotionDetailRequest;
 import sd79.dto.requests.PromotionRequest;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Product;
-import sd79.model.Promotion;
-import sd79.model.PromotionDetail;
-import sd79.model.User;
+import sd79.model.*;
 import sd79.repositories.auth.UserRepository;
 import sd79.repositories.products.ProductRepository;
 import sd79.repositories.promotions.PromotionDetailRepository;
 import sd79.repositories.promotions.PromotionRepository;
 import sd79.service.PromotionService;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,15 +44,15 @@ public class PromotionsServiceImpl implements PromotionService {
                         .startDate(item.getStartDate())
                         .endDate(item.getEndDate())
                         .note(item.getNote())
-                        .status("TODO")
-                        .numberOfProduct(10)
                         .build()
         ).toList();
     }
 
     @Override
     public PromotionResponse getPromotionId(Integer id) {
-        return null;
+        Promotion promotion = this.promotionRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Promotion not found"));
+        return convertPromotionResponsse(promotion);
     }
 
     @Override
@@ -79,7 +78,7 @@ public class PromotionsServiceImpl implements PromotionService {
                 .build());
 
         for (Long productId : req.getProductIds()) {
-            PromotionDetail promotionDetail = PromotionDetail.builder()
+            sd79.model.PromotionDetail promotionDetail = sd79.model.PromotionDetail.builder()
                     .promotion(promotion)
                     .product(getProduct(productId))
                     .build();
@@ -88,20 +87,79 @@ public class PromotionsServiceImpl implements PromotionService {
         return promotion.getId();
     }
 
-    @Override
-    public Integer storeProductPromotion(PromotionProductReq promotionProductReq) {
-        return 0;
-    }
 
     @Override
     public Integer updatePromotion(PromotionRequest req, Integer id) {
-        return 0;
+        Promotion promotion = this.promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Promotion not found with id " + id));
+
+        // Cập nhật thông tin khuyến mãi
+        promotion.setName(req.getName());
+        promotion.setPercent(req.getPercent());
+        promotion.setCode(req.getCode());
+        promotion.setStartDate(req.getStartDate());
+        promotion.setEndDate(req.getEndDate());
+        promotion.setNote(req.getNote());
+        populatePromotionData(promotion, req);
+
+        // Lưu lại thông tin đã cập nhật
+        this.promotionRepository.save(promotion);
+
+
+        // Thêm mới các chi tiết khuyến mãi dựa trên danh sách productIds từ request
+        for (Long productId : req.getProductIds()) {
+            PromotionDetail promotionDetail = PromotionDetail.builder()
+                    .promotion(promotion)
+                    .product(getProduct(productId))
+                    .build();
+            this.promotionDetailRepository.save(promotionDetail);
+        }
+
+        return promotion.getId();
     }
 
     @Override
-    public void isDeletePromotion(Integer id) {
+    public void deleteByPromotionId(Integer id) {
+        Promotion promotion = this.promotionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Promotion not found with id " + id));
+
+        promotionDetailRepository.deleteByPromotionId(id);
+
+        promotionRepository.delete(promotion);
 
     }
+
+    private void populatePromotionData(Promotion promotion, PromotionRequest promotionRequest) {//lay du lieu phieu giam gia request de them
+        promotion.setName(promotionRequest.getName());
+        promotion.setCode(promotionRequest.getCode());
+        promotion.setPercent(promotionRequest.getPercent());
+        promotion.setStartDate(promotionRequest.getStartDate());
+        promotion.setEndDate(promotionRequest.getEndDate());
+        promotion.setNote(promotionRequest.getNote());
+//        promotion.setPromotionDetails(promotionRequest.getProductIds());
+    }
+
+    private PromotionResponse convertPromotionResponsse(Promotion promotion){
+        List<Product> products = promotion.getPromotionDetails().stream()
+                .map(PromotionDetail::getProduct)
+                .collect(Collectors.toList());
+        List<Long> list = new ArrayList<>();
+
+        products.forEach(i -> {
+            list.add(i.getId());
+        });
+        return PromotionResponse.builder()
+                .id(promotion.getId())
+                .name(promotion.getName())
+                .code(promotion.getCode())
+                .percent(promotion.getPercent())
+                .startDate(promotion.getStartDate())
+                .endDate(promotion.getEndDate())
+                .note(promotion.getNote())
+                .listIdProduct(list)
+                .build();
+    }
+
 
     @Override
     public Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable) {

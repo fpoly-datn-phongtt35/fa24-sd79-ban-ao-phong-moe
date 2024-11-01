@@ -53,7 +53,7 @@ const Home = () => {
 
   const handleSetProducts = async () => {
     const res = await fetchAllProducts(currentPage);
-    setProducts((prev) => [...prev, ...res.data]);
+    setProducts((prev) => [...prev, ...res?.data]);
   };
 
   const viewMore = async () => {

@@ -14,11 +14,9 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.response.auth.TokenResponse;
-import sd79.dto.response.auth.UserResponse;
 import sd79.exception.InvalidDataException;
 import sd79.model.User;
 import sd79.model.redis_model.Token;
@@ -42,7 +40,7 @@ public class AuthenticationService {
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
-        var user = this.userRepository.findByUsername(signInRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Username or password incorrect"));
+        var user = this.userRepository.findUserByUsernameOrEmail(signInRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Username or password incorrect"));
         String access_token = this.jwtService.generateToken(user);
         String refresh_token = this.jwtService.generateRefreshToken(user);
 

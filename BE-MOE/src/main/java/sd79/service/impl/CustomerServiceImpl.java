@@ -271,25 +271,26 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private CustomerResponse convertCustomerResponse(Customer customer) {
-        return CustomerResponse.builder()
-                .id(customer.getId())
-                .firstName(customer.getFirstName())
-                .lastName(customer.getLastName())
-                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
-                .phoneNumber(customer.getPhoneNumber())
-                .username(customer.getUser().getUsername())
-                .email(customer.getUser().getEmail())
-                .dateOfBirth(customer.getDateOfBirth())
-                .gender(customer.getGender())
-                .city(customer.getCustomerAddress().getCity())
-                .city_id(customer.getCustomerAddress().getCityId())
-                .district(customer.getCustomerAddress().getDistrict())
-                .district_id(customer.getCustomerAddress().getDistrictId())
-                .ward(customer.getCustomerAddress().getWard())
-                .streetName(customer.getCustomerAddress().getStreetName())
-                .image(customer.getImage())
-                .createdAt(customer.getCreatedAt())
-                .updatedAt(customer.getUpdatedAt())
-                .build();
+        CustomerResponse.CustomerResponseBuilder builder = CustomerResponse.builder();
+        builder.id(customer.getId());
+        builder.firstName(customer.getFirstName());
+        builder.lastName(customer.getLastName());
+        builder.fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()));
+        builder.phoneNumber(customer.getPhoneNumber());
+        builder.username(customer.getUser().getUsername());
+        builder.email(customer.getUser().getEmail());
+        builder.dateOfBirth(customer.getDateOfBirth());
+        builder.gender(customer.getGender());
+        builder.city(customer.getCustomerAddress().getCity());
+        builder.city_id(customer.getCustomerAddress().getCityId());
+        builder.district(customer.getCustomerAddress().getDistrict());
+        builder.district_id(customer.getCustomerAddress().getDistrictId());
+        builder.ward(customer.getCustomerAddress().getWard());
+        builder.streetName(customer.getCustomerAddress().getStreetName());
+        builder.image(customer.getImage());
+        builder.createdAt(customer.getCreatedAt());
+        builder.updatedAt(customer.getUpdatedAt());
+        CustomerResponse build = builder.build();
+        return build;
     }
 }

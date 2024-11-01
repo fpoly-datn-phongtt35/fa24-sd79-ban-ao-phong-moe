@@ -1,6 +1,7 @@
 package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -43,9 +44,29 @@ public class PromotionController {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.promotionService.storePromotion(request));
     }
 
-//    @GetMapping("/detail/{id}")
-//    public ResponseData<?> getPromotionId(@PathVariable Integer id) {
-//        return new ResponseData<>(HttpStatus.OK.value(), "Coupon details", service.getPromotionId(id));
+    @Operation(
+            summary = "New Promotion",
+            description = "New promotion into database"
+    )
+    @PutMapping("/update/{id}")
+    public ResponseData<?> updatePromotion(@PathVariable Integer id, @Valid @RequestBody PromotionRequest req) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion update successfully", promotionService.updatePromotion(req, id));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseData<?> deletePromotions(@PathVariable int id) {
+        promotionService.deleteByPromotionId(id);
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion deleted successfully");
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseData<?> getPromotionId(@PathVariable Integer id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion details", promotionService.getPromotionId(id));
+    }
+
+//    @PutMapping("/update/{id}")
+//    public ResponseData<?> updatePromotions(@PathVariable Integer id, @Valid @RequestBody PromotionRequest promotionRequest) {
+//        return new ResponseData<>(HttpStatus.OK.value(), "Promotion updated successfully",service.updatePromotion(promotionRequest,id ));
 //    }
 //
 //    @Operation(
@@ -80,10 +101,6 @@ public class PromotionController {
 //            summary = "Update Promotion",
 //            description = "Update promotion into database"
 //    )
-//    @PutMapping("/update/{id}")
-//    public ResponseData<?> updatePromotions(@PathVariable Integer id, @Valid @RequestBody PromotionRequest promotionRequest) {
-//        return new ResponseData<>(HttpStatus.OK.value(), "Promotion updated successfully",service.updatePromotion(promotionRequest,id ));
-//    }
 //
 //    @GetMapping("/searchKeywordAndDate")
 //    public ResponseData<?> searchKeywordAndDate(

@@ -22,6 +22,7 @@ spring:
     activate:
       on-profile: ddd
 jwt:
+  key: SD79DDD$2a$12$PfhidXb.KBHkobikBQUIB.NvUxexrBgP98cjfQRocX91bAQg9BF4C
   expiryMinute: 10
   expiryDay: 3
   secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
