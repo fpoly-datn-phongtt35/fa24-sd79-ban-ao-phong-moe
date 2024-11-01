@@ -17,7 +17,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/joy";
-import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
@@ -102,19 +101,20 @@ function ShoppingCart() {
   return (
     <Box>
       <Grid container spacing={2} alignItems="center" height={"50px"}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+        <Breadcrumbs
+          separator="›"
+          aria-label="breadcrumbs"
+          sx={{ marginLeft: 5 }}
+        >
           <Link
             underline="hover"
-            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-            color="inherit"
+            sx={{ cursor: "pointer" }}
+            color="neutral"
             onClick={() => navigate("/")}
           >
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Trang chủ
           </Link>
-          <Typography level="title-md" noWrap>
-            Giỏ hàng
-          </Typography>
+          <Typography noWrap>Giỏ hàng</Typography>
         </Breadcrumbs>
       </Grid>
       <Box margin={5}>
@@ -246,7 +246,10 @@ function ShoppingCart() {
                 color="primary"
                 size="sm"
                 startDecorator={<PaymentsOutlinedIcon />}
-                onClick={() => console.log("Selected IDs: ", selectedIds)}
+                onClick={() => {
+                  console.log("Selected IDs: ", selectedIds);
+                  navigate("/checkout")
+                }}
               >
                 Thanh toán
               </Button>
