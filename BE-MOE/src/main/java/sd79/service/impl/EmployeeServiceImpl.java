@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.employees.PositionResponse;
 import sd79.enums.Gender;
@@ -20,6 +21,7 @@ import sd79.utils.CloudinaryUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -136,6 +138,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findByKeywordAndPhone(keyword, phone_number);
     }
 
+    @Override
+    public void updateImage(EmployeeImageReq req) {
+        Employee employee = this.employeeRepository.findById(req.getProductId()).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên"));
+        if (req.getImages() != null && employee.getPublicId() != null) {
+            this.cloudinary.removeByPublicId(employee.getPublicId());
+        }
+        assert req.getImages() != null;
+        Map<String, String> uploadResult = this.cloudinary.upload(req.getImages()[0]);
+        employee.setImage(uploadResult.get("url"));
+        employee.setPublicId(uploadResult.get("publicId"));
+        employeeRepository.save(employee);
+    }
+
     Positions getPositionById(int id) {
         return this.positionsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Position not found!"));
     }
@@ -146,6 +161,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .id(employee.getId())
                 .first_name(employee.getFirst_name())
                 .last_name(employee.getLast_name())
+                .full_name(String.format("%s %s", employee.getLast_name(), employee.getFirst_name()))
                 .phone_number(employee.getPhone_number())
                 .email(employee.getUser().getEmail())
                 .gender(employee.getGender() == Gender.MALE ? "Nam" : employee.getGender() == Gender.FEMALE ? "Nữ" : "Khác")

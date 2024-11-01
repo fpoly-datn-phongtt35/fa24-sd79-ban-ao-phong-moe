@@ -177,8 +177,7 @@ export const Employee = () => {
                     <TableHead>
                         <TableRow className="text-center">
                             <TableCell>Avatar</TableCell>
-                            <TableCell>Tên</TableCell>
-                            <TableCell>Tên Đệm</TableCell>
+                            <TableCell>Họ Và Tên</TableCell>
                             <TableCell>SĐT</TableCell>
                             <TableCell>Giới Tính</TableCell>
                             <TableCell>Email</TableCell>
@@ -196,12 +195,10 @@ export const Employee = () => {
                                     <TableCell>
                                         <Avatar alt={emp.first_name} src={emp?.avatar} />
                                     </TableCell>
-                                    <TableCell>{emp.first_name || 'N/A'}</TableCell>
-                                    <TableCell>{emp.last_name || 'N/A'}</TableCell>
+                                    <TableCell>{emp.fullName || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
                                     <TableCell>{emp.gender || 'N/A'}</TableCell>
                                     <TableCell>{emp.email || 'N/A'}</TableCell>
-                                    {/* <TableCell>{formatDate(emp.date_of_birth)}</TableCell> */}
                                     <TableCell>{formatDateWithoutTime(emp.date_of_birth)}</TableCell>
 
                                     <TableCell>
