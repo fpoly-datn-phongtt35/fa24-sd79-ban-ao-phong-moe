@@ -18,6 +18,7 @@ import sd79.dto.requests.clients.FilterForCartReq;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.InvalidDataException;
 import sd79.model.Product;
 import sd79.model.ProductDetail;
 import sd79.model.ProductImage;
@@ -119,9 +120,15 @@ public class ClientProductImpl implements ClientProduct {
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(prd.getId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
             Cart updatedCart = isAlreadyExists.get();
+            if ((updatedCart.getQuantity() + req.getQuantity()) > prd.getQuantity()) {
+                throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity() - updatedCart.getQuantity()));
+            }
             updatedCart.setQuantity(updatedCart.getQuantity() + req.getQuantity());
             this.cartRepository.save(updatedCart);
             return;
+        }
+        if (req.getQuantity() > prd.getQuantity()) {
+            throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity()));
         }
         Cart cart = Cart.builder()
                 .id(String.valueOf(prd.getId()))
@@ -138,10 +145,16 @@ public class ClientProductImpl implements ClientProduct {
 
     @Override
     public void updateCart(CartReq req) {
+        ProductDetail prd = this.productDetailRepository.findById(req.getProductDetailId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(req.getProductDetailId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
             Cart updatedCart = isAlreadyExists.get();
             updatedCart.setQuantity(req.getQuantity());
+            if (req.getQuantity() < 1) {
+                throw new InvalidDataException("Số lượng phải lớn hơn 0");
+            } else if (req.getQuantity() > prd.getQuantity()) {
+                throw new InvalidDataException("Bạn đã thêm tối đa số lượng sản phẩm!");
+            }
             this.cartRepository.save(updatedCart);
         }
     }
