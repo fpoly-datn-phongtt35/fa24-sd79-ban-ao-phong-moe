@@ -64,7 +64,7 @@ public class EmployeeController {
     )
     @PostMapping
     public ResponseData<?> addEmployee(@Valid @RequestBody EmployeeReq req) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "", employeeService.storeEmployee(req));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", employeeService.storeEmployee(req));
     }
 
     // Cập nhật employee
@@ -75,7 +75,7 @@ public class EmployeeController {
     @PutMapping("/{id}")
     public ResponseData<?> updateEmployee(@PathVariable Integer id, @Valid @RequestBody EmployeeReq employeeRequest) {
         employeeService.updateEmp(employeeRequest, id);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sửa thành công");
     }
 
     // Xóa employee
@@ -86,7 +86,7 @@ public class EmployeeController {
     @DeleteMapping("{id}")
     public ResponseData<?> deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "");
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa nhân viên thành công!");
     }
 
     @GetMapping("/searchNameAndPhone")
@@ -94,7 +94,7 @@ public class EmployeeController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "phone_number", required = false) String phone_number) {
 
-        List<Employee> results = employeeService.findByNameAndPhone(keyword, phone_number);
+        List<EmployeeResponse> results = employeeService.findByNameAndPhone(keyword, phone_number);
         return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
     }
 
