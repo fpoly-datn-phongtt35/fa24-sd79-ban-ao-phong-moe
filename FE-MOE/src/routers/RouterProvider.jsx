@@ -154,9 +154,8 @@ function RouterProvider() {
           <div>
             <Header_Client />
           </div>
-          <div className="content-area_client">
+          <div className="content-area_client" style={{backgroundColor: '#4545ff1a'}}>
             <Outlet />
-            <FooterClient />
           </div>
         </div>
       </div>

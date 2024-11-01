@@ -18,10 +18,14 @@ function CommonProvider({ children }) {
   }, []);
 
   const handleFetchCarts = async () => {
-    await fetchCarts().then((response) => {
-      setCarts(response.data);
-      setAmoutCart(response.data?.length);
-    });
+    await fetchCarts()
+      .then((response) => {
+        setCarts(response.data);
+        setAmoutCart(response.data?.length);
+      })
+      .catch((error) => {
+        console.error("Fetch carts error:", error);
+      });
   };
 
   const data = {

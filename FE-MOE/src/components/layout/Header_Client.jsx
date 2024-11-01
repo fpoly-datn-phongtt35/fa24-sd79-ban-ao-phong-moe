@@ -67,6 +67,7 @@ const Header_Client = () => {
     await handleLogoutAPI();
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
+    context.setAmoutCart(null);
     navigate("/signin");
   };
 
