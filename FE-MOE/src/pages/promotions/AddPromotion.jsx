@@ -10,7 +10,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DoDisturbOnIcon from '@mui/icons-material/DoDisturbOn';
 
 export const AddPromotion = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm();
     const navigate = useNavigate();
     const [selectedProducts, setSelectedProducts] = useState([]);
 
@@ -27,21 +27,30 @@ export const AddPromotion = () => {
     };
 
     const onSubmit = async (data) => {
+        // Kiểm tra nếu ngày kết thúc không hợp lệ
+        if (isEndDateInvalid) {
+            Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
+            return; // Ngăn không cho tiếp tục nếu có lỗi
+        }
+    
         try {
             const response = await postDiscount({
                 name: data.name,
                 code: data.code,
-                percent: data.promotionValue,
+                percent: data.percent,
                 startDate: formatDate(data.startDate),
                 endDate: formatDate(data.endDate),
                 note: data.note,
                 userId: localStorage.getItem("userId"),
-                productIds: selectedProducts, // Pass selected product IDs to the API
+                productIds: selectedProducts,
             });
-
-            if (response && response.status === 200) {
-                Swal.fire("Thành công", "Đợt giảm giá đã được thêm!", "success");
-                navigate("/promotions");
+    
+            console.log("Response:", response);
+    
+            if (response.status === 201) {
+                Swal.fire("Thành công", response.message, "success").then(() => {
+                    navigate("/promotions");
+                });
             } else {
                 Swal.fire("Lỗi", "Không thể thêm đợt giảm giá", "error");
             }
@@ -50,6 +59,14 @@ export const AddPromotion = () => {
             Swal.fire("Lỗi", "Có lỗi xảy ra khi thêm đợt giảm giá", "error");
         }
     };
+    
+
+    // Theo dõi ngày bắt đầu và ngày kết thúc
+    const startDate = watch("startDate");
+    const endDate = watch("endDate");
+
+    // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
+    const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
 
     return (
         <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
@@ -101,10 +118,11 @@ export const AddPromotion = () => {
                                 </FormControl>
                             </Grid>
                             <Grid xs={6}>
-                                <FormControl error={!!errors?.endDate}>
+                                <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                                     <FormLabel>Ngày kết thúc</FormLabel>
                                     <Input type="date" {...register("endDate", { required: true })} />
-                                    {errors.endDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                                    {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
+                                    {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
                             </Grid>
                             <Grid xs={12}>
@@ -116,7 +134,7 @@ export const AddPromotion = () => {
                             <Grid xs={12}>
                                 <Grid spacing={2}>
                                     <Grid size={6}>
-                                        <Button startDecorator={<AddIcon />} type="submit">Thêm mới</Button>
+                                        <Button startDecorator={<AddIcon />} type="submit" re>Thêm mới</Button>
                                         <IconButton onClick={() => navigate("/promotions")}>
                                             <DoDisturbOnIcon /> Hủy
                                         </IconButton>

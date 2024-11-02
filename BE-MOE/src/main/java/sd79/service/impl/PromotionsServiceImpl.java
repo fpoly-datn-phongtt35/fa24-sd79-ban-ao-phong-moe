@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.PromotionDetailRequest;
+import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.PromotionRequest;
+import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;
@@ -105,16 +106,29 @@ public class PromotionsServiceImpl implements PromotionService {
         // Lưu lại thông tin đã cập nhật
         this.promotionRepository.save(promotion);
 
+        List<Long> existingProductIds = promotion.getPromotionDetails().stream()
+                .map(detail -> detail.getProduct().getId())
+                .collect(Collectors.toList());
 
         // Thêm mới các chi tiết khuyến mãi dựa trên danh sách productIds từ request
-        for (Long productId : req.getProductIds()) {
-            PromotionDetail promotionDetail = PromotionDetail.builder()
-                    .promotion(promotion)
-                    .product(getProduct(productId))
-                    .build();
-            this.promotionDetailRepository.save(promotionDetail);
+        for (PromotionDetail detail : new ArrayList<>(promotion.getPromotionDetails())) {
+            if (!req.getProductIds().contains(detail.getProduct().getId())) {
+                this.promotionDetailRepository.delete(detail);
+                promotion.getPromotionDetails().remove(detail);
+            }
         }
 
+        // Thêm mới các PromotionDetail cho các productIds chưa có trong existingProductIds
+        for (Long productId : req.getProductIds()) {
+            if (!existingProductIds.contains(productId)) {
+                PromotionDetail promotionDetail = PromotionDetail.builder()
+                        .promotion(promotion)
+                        .product(getProduct(productId))
+                        .build();
+                this.promotionDetailRepository.save(promotionDetail);
+                promotion.getPromotionDetails().add(promotionDetail);
+            }
+        }
         return promotion.getId();
     }
 
@@ -160,15 +174,34 @@ public class PromotionsServiceImpl implements PromotionService {
                 .build();
     }
 
-
+    @Transactional
     @Override
     public Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable) {
-        return null;
+        Page<Promotion> promotions = promotionRepository.searchPromotions(startDate, endDate, name, pageable);
+        return promotions.map(this::convertPromotionResponsse);  // Convert entity to response DTO
     }
 
     @Override
-    public Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate, String status, Pageable pageable) {
-        return null;
+    public Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
+                                                     String status, Pageable pageable) {
+        Page<Promotion> promotions;
+
+        // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
+        if ((keyword == null || keyword.isEmpty()) && startDate == null && endDate == null &&
+                 (status == null || status.isEmpty())) {
+            promotions = promotionRepository.findAll(pageable);  // Lấy toàn bộ danh sách với phân trang
+        } else {
+            // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
+            promotions = promotionRepository.findByKeywordAndDate(keyword, startDate, endDate, status, pageable);
+        }
+
+        // Chuyển đổi từ entity Coupon sang DTO CouponResponse
+        return promotions.map(this::convertPromotionResponsse);
+    }
+
+    @Override
+    public Page<PromotionResponse> getPromotion(Pageable pageable) {
+        return promotionRepository.findAll(pageable).map(this::convertPromotionResponsse);
     }
 
     private Product getProduct(Long id) {

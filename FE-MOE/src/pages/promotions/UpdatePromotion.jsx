@@ -10,10 +10,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import { ProductUpdate } from "~/components/promotion/ProductUpdate";
 
 export const UpdatePromotion = () => {
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   const navigate = useNavigate();
   const { id } = useParams();
   const [selectedProducts, setSelectedProducts] = useState([]);
+
+  // Theo dõi ngày bắt đầu và ngày kết thúc
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
+  const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
 
   // Hàm định dạng ngày tháng
   const formatDate = (dateTimeString) => {
@@ -39,11 +46,13 @@ export const UpdatePromotion = () => {
           // Đặt giá trị biểu mẫu với dữ liệu đã lấy
           setValue("name", promotionData.name);
           setValue("code", promotionData.code);
-          setValue("percent", promotionData.percent); // Đảm bảo đúng tên thuộc tính
-          setValue('startDate', promotionData.startDate.split('T')[0]); // Lấy phần YYYY-MM-DD
-          setValue('endDate', promotionData.endDate.split('T')[0]); // Lấy phần YYYY-MM-DD
+          setValue("percent", promotionData.percent);
+          setValue("startDate", promotionData.startDate.split("T")[0]);
+          setValue("endDate", promotionData.endDate.split("T")[0]);
           setValue("note", promotionData.note);
-          setSelectedProducts(promotionData.productIds || []);
+
+          // Đặt danh sách sản phẩm đã chọn từ listIdProduct
+          setSelectedProducts(promotionData.listIdProduct || []);  // Cập nhật với listIdProduct
         } else {
           Swal.fire("Lỗi", "Không thể tải thông tin đợt giảm giá", "error");
         }
@@ -57,6 +66,12 @@ export const UpdatePromotion = () => {
   }, [id, setValue]);
 
   const onSubmit = async (data) => {
+    // Kiểm tra nếu ngày kết thúc không hợp lệ
+    if (isEndDateInvalid) {
+      Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
+      return; // Ngăn không cho tiếp tục nếu có lỗi
+    }
+
     try {
       const response = await putDiscount(id, {
         name: data.name,
@@ -125,18 +140,19 @@ export const UpdatePromotion = () => {
               </Grid>
             </Grid>
             <Grid container spacing={3} justifyContent="space-between">
-              <Grid md={4}>
+              <Grid md={6}>
                 <FormControl error={!!errors?.startDate}>
                   <FormLabel>Ngày bắt đầu</FormLabel>
                   <Input type="date" {...register("startDate", { required: true })} />
                   {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
               </Grid>
-              <Grid xs={4}>
-                <FormControl error={!!errors?.endDate}>
+              <Grid xs={6}>
+                <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                   <FormLabel>Ngày kết thúc</FormLabel>
                   <Input type="date" {...register("endDate", { required: true })} />
-                  {errors.endDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                  {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
+                  {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
               </Grid>
               <Grid xs={12}>

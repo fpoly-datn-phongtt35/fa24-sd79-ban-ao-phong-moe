@@ -66,7 +66,10 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    @ExceptionHandler({EntityNotFoundException.class, AuthenticationExceptionCustom.class})
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            AuthenticationExceptionCustom.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ExceptionResponse handleEntityNotFound(Exception ex, WebRequest request) {
         ExceptionResponse response = new ExceptionResponse();
@@ -79,7 +82,7 @@ public class GlobalExceptionHandler {
         }
         if (ex instanceof AuthenticationExceptionCustom) {
             response.setError("Authentication error");
-            message = "Username or password incorrect 2";
+            message = "Username or password incorrect";
         }
         response.setMessage(message);
         return response;
@@ -122,10 +125,10 @@ public class GlobalExceptionHandler {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setError("Bad credentials");
             message = "Mật khẩu không hợp lệ";
-        } else if(ex instanceof DisabledException){
+        } else if (ex instanceof DisabledException) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setError("Người dùng đã bị vô hiệu hóa");
-        } else if(ex instanceof LockedException){
+        } else if (ex instanceof LockedException) {
             response.setStatus(HttpStatus.LOCKED.value());
             response.setError("Người dùng đã bị khóa");
         }

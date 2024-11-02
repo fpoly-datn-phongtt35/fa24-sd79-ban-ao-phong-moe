@@ -1,7 +1,12 @@
 package sd79.dto.requests;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
+import sd79.dto.requests.employees.AddressRequest;
+import sd79.enums.Gender;
 
 import java.util.Date;
 
@@ -9,13 +14,19 @@ import java.util.Date;
 @Builder
 public class EmployeeReq {
 
+    private String username;
+
+    private String password;
+
+    private String email;
+
     private String first_name;
 
     private String last_name;
 
     private String phone_number;
 
-    private String gender;
+    private Gender gender;
 
     private Date date_of_birth;
 
@@ -23,7 +34,7 @@ public class EmployeeReq {
 
     private int salary;
 
-    private String city;
+    private int position;
 
-    private int positionId;
+    private AddressRequest address;
 }
