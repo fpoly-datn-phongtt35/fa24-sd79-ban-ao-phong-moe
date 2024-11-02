@@ -15,6 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public class EmployeeImageReq {
     @NotNull(message = "productId must be not null")
-    private Integer productId;
+    private Long productId;
     private MultipartFile[] images;
 }

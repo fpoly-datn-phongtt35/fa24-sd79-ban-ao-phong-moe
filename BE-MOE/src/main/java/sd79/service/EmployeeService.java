@@ -14,17 +14,19 @@ import java.util.List;
 
 public interface EmployeeService {
 
-    EmployeeResponse getEmployeeById(Integer id);
+    EmployeeResponse getEmployeeById(Long id);
 
-    void deleteEmployee(Integer id);
+    void deleteEmployee(Long id);
 
     Page<EmployeeResponse> getEmployee(Pageable pageable);
 
     int storeEmployee(EmployeeReq req);
 
-    void updateEmp(EmployeeReq req, Integer id);
+    void setUserLocked(long id,Boolean isLocked);
 
-    List<Employee> findByNameAndPhone(String keyword, String phone_number);
+    void updateEmp(EmployeeReq req, Long id);
+
+    List<EmployeeResponse> findByNameAndPhone(String keyword, String phone_number);
 
     void updateImage(EmployeeImageReq req);
 }

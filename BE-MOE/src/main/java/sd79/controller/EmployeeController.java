@@ -3,6 +3,7 @@ package sd79.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,7 +55,7 @@ public class EmployeeController {
             description = "Get employee by from database"
     )
     @GetMapping("{id}")
-    public ResponseData<?> getEmployeeById(@PathVariable Integer id) {
+    public ResponseData<?> getEmployeeById(@PathVariable Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Employee details", employeeService.getEmployeeById(id));
     }
 
@@ -64,7 +65,7 @@ public class EmployeeController {
     )
     @PostMapping
     public ResponseData<?> addEmployee(@Valid @RequestBody EmployeeReq req) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "", employeeService.storeEmployee(req));
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", employeeService.storeEmployee(req));
     }
 
     // Cập nhật employee
@@ -73,9 +74,9 @@ public class EmployeeController {
             description = "Update employee into database"
     )
     @PutMapping("/{id}")
-    public ResponseData<?> updateEmployee(@PathVariable Integer id, @Valid @RequestBody EmployeeReq employeeRequest) {
+    public ResponseData<?> updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeReq employeeRequest) {
         employeeService.updateEmp(employeeRequest, id);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sửa thành công");
     }
 
     // Xóa employee
@@ -84,9 +85,9 @@ public class EmployeeController {
             description = "Set is delete of employee to true and hidde from from"
     )
     @DeleteMapping("{id}")
-    public ResponseData<?> deleteEmployee(@PathVariable Integer id) {
+    public ResponseData<?> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "");
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa nhân viên thành công!");
     }
 
     @GetMapping("/searchNameAndPhone")
@@ -94,7 +95,7 @@ public class EmployeeController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "phone_number", required = false) String phone_number) {
 
-        List<Employee> results = employeeService.findByNameAndPhone(keyword, phone_number);
+        List<EmployeeResponse> results = employeeService.findByNameAndPhone(keyword, phone_number);
         return new ResponseData<>(HttpStatus.OK.value(), "Search results", results);
     }
 
@@ -106,5 +107,10 @@ public class EmployeeController {
     public ResponseData<?> uploadFile(@Valid @ModelAttribute EmployeeImageReq request) {
         this.employeeService.updateImage(request);
         return new ResponseData<>(HttpStatus.CREATED.value(), "");
+    }
+    @PatchMapping("/change-isLocked/{id}/{isLocked}")
+    public ResponseData<?> setUserLocked(@Min(1) @PathVariable("id") long id, @PathVariable("isLocked") Boolean isLocked) {
+        this.employeeService.setUserLocked(id, isLocked);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Thay đổi trạng thái thành công");
     }
 }

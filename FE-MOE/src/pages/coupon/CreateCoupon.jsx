@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment, Stack, Pagination } from '@mui/material';
+import { TextField, Link, Button, Box, Grid, Typography, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox, IconButton, InputAdornment, Stack, Pagination, Breadcrumbs } from '@mui/material';
 import Container from "@mui/material/Container";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { postCoupon, postCouponImage } from '~/apis/couponApi';
@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { faPercent, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import CouponImage from '~/components/common/CouponImage';
 import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
-import { Breadcrumbs } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import { CircularProgress } from '@mui/material';
 import CustomerTableCreate from '~/components/coupon/CustomerTableCreate';
@@ -356,8 +355,11 @@ const CreateCoupon = () => {
                                             validate: value => {
                                                 if (discountType === 'PERCENTAGE') {
                                                     const discountValue = getValues('discountValue');
-                                                    if (value < discountValue) {
-                                                        return 'Giá trị giảm tối đa phải lớn hơn hoặc bằng giá trị giảm';
+                                                    const conditionsValue = getValues('conditions');                                                                      
+                                                    const minRequiredMaxValue = (discountValue / 100) * conditionsValue;
+                                
+                                                    if (value < minRequiredMaxValue) {
+                                                        return `Giá trị giảm tối đa phải lớn hơn hoặc bằng ${minRequiredMaxValue.toFixed(2)} cho điều kiện đơn hàng hiện tại`;
                                                     }
                                                 }
                                                 return true;

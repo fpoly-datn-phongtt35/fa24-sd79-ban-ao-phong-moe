@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Breadcrumbs,
@@ -17,141 +17,244 @@ import {
   Tooltip,
   Typography,
 } from "@mui/joy";
-import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
-import BackspaceOutlinedIcon from "@mui/icons-material/BackspaceOutlined";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { useContext } from "react";
-import { deleteItemCart } from "~/apis/client/productApiClient";
+import { deleteItemCart, updateCart } from "~/apis/client/productApiClient";
 import { formatCurrencyVND } from "~/utils/format";
 import { MoeAlert } from "~/components/other/MoeAlert";
 import { toast } from "react-toastify";
 import { CommonContext } from "~/context/CommonContext";
+import BagSvgIcon from "~/assert/icon/bag-svgrepo-com.svg";
+import SvgIconDisplay from "~/components/other/SvgIconDisplay";
+import debounce from "lodash.debounce";
 
 function ShoppingCart() {
   ScrollToTop();
   const navigate = useNavigate();
   const context = useContext(CommonContext);
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  useEffect(() => {
+    if (context.carts && context.carts.length > 0) {
+      setSelectAll(selectedIds.length === context.carts.length);
+    }
+  }, [selectedIds, context.carts]);
+
   const handleDeleteCart = async (id) => {
     await deleteItemCart(id).then((res) => {
       context.handleFetchCarts();
       toast.success(res.message);
+      setSelectedIds((prevSelectedIds) =>
+        prevSelectedIds.filter((itemId) => itemId !== id)
+      );
     });
   };
+
+  const debouncedQuantity = debounce((id, quantity) => {
+    handleUpdateCart(id, quantity);
+  }, 900);
+
+  const handleUpdateCart = async (id, quantity) => {
+    let data = {
+      productDetailId: id,
+      quantity: quantity,
+      username: localStorage.getItem("username"),
+    };
+    await updateCart(data).then(() => context.handleFetchCarts());
+  };
+
+  const onUpdateQuantity = (id, quantity) => {
+    debouncedQuantity(id, quantity);
+  };
+
+  const handleCheckboxChange = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((itemId) => itemId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedIds([]);
+    } else {
+      const allIds = context.carts.map((cart) => cart.id);
+      setSelectedIds(allIds);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const calculateTotalPrice = () => {
+    return context.carts
+      ?.filter((cart) => selectedIds.includes(cart.id))
+      .reduce((total, cart) => total + cart.retailPrice * cart.quantity, 0);
+  };
+
+  const totalPrice = calculateTotalPrice();
+
   return (
     <Box>
       <Grid container spacing={2} alignItems="center" height={"50px"}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+        <Breadcrumbs
+          separator="›"
+          aria-label="breadcrumbs"
+          sx={{ marginLeft: 5 }}
+        >
           <Link
             underline="hover"
-            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-            color="inherit"
+            sx={{ cursor: "pointer" }}
+            color="neutral"
             onClick={() => navigate("/")}
           >
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Trang chủ
           </Link>
-          <Typography level="title-md" noWrap>
-            Giỏ hàng
-          </Typography>
+          <Typography noWrap>Giỏ hàng</Typography>
         </Breadcrumbs>
       </Grid>
       <Box margin={5}>
-        <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-          <Grid size={{ xs: 12 }}>
-            <Sheet>
-              <Table>
-                <thead>
-                  <tr>
-                    <th className="text-center" style={{ width: "50px" }}>
-                      <Checkbox />
-                    </th>
-                    <th className="text-center">Sản phẩm</th>
-                    <th className="text-center">Giá tiền</th>
-                    <th className="text-center" style={{ width: "100px" }}>
-                      Số lượng
-                    </th>
-                    <th className="text-center">Tổng tiền</th>
-                    <th className="text-center" style={{ width: "100px" }}>
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {context.carts?.length === 0 && (
-                    <tr>
-                      <td colSpan={5} align="center">
-                        Chưa có sản phẩm nào được thêm!
-                      </td>
-                    </tr>
-                  )}
-                  {context.carts &&
-                    context.carts.map((cart) => (
-                      <tr key={cart.id}>
-                        <td className="text-center">
-                          <Checkbox />
-                        </td>
-                        <td>
-                          <CardShoppingCard data={cart} />
-                        </td>
-                        <td className="text-center">
-                          {formatCurrencyVND(cart.retailPrice)}
-                        </td>
-                        <td className="text-center">
-                          <Input defaultValue={cart.quantity} type="number" />
-                        </td>
-                        <td className="text-center">
-                          {formatCurrencyVND(cart.retailPrice * cart.quantity)}
-                        </td>
-                        <td className="text-center">
-                          <MoeAlert
-                            title="Xóa sản phẩm"
-                            message="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?"
-                            event={() => handleDeleteCart(cart.id)}
-                            button={
-                              <Tooltip
-                                title="Xóa khỏi giỏ hàng"
-                                variant="plain"
-                              >
-                                <BackspaceOutlinedIcon color="error" />
-                              </Tooltip>
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </Table>
-            </Sheet>
-          </Grid>
-          <Divider sx={{ my: 1, width: "100%" }} />
-          <Grid
-            xs={12}
+        {context.carts?.length === 0 && (
+          <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
+              textAlign: "center",
+              p: 2,
             }}
           >
-            <Button
-              variant="outlined"
-              color="primary"
-              startDecorator={<ShoppingCartOutlinedIcon />}
-              onClick={() => navigate("/")}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mb: 2,
+              }}
             >
-              Quay lại cửa hàng
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              startDecorator={<PaymentsOutlinedIcon />}
+              <SvgIconDisplay icon={BagSvgIcon} width="100px" height="100px" />
+            </Box>
+            <Typography level="h5" fontWeight="bold" color="neutral">
+              Giỏ hàng của bạn đang trống!
+            </Typography>
+            <Box marginTop={2}>
+              <Button size="lg" variant="soft" onClick={() => navigate("/")}>
+                MUA NGAY
+              </Button>
+            </Box>
+          </Box>
+        )}
+        <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+          {context.carts?.length > 0 && (
+            <Grid size={{ xs: 12 }}>
+              <Sheet>
+                <Table>
+                  <thead>
+                    <tr>
+                      <th className="text-center" style={{ width: "50px" }}>
+                        <Checkbox
+                          size="sm"
+                          checked={selectAll}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                      <th className="text-center">Sản phẩm</th>
+                      <th className="text-center">Giá tiền</th>
+                      <th className="text-center" style={{ width: "100px" }}>
+                        Số lượng
+                      </th>
+                      <th className="text-center">Tổng tiền</th>
+                      <th className="text-center" style={{ width: "100px" }}>
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {context.carts &&
+                      context.carts.map((cart) => (
+                        <tr key={cart.id}>
+                          <td className="text-center">
+                            <Checkbox
+                              size="sm"
+                              checked={selectedIds.includes(cart.id)}
+                              onChange={() => handleCheckboxChange(cart.id)}
+                            />
+                          </td>
+                          <td>
+                            <CardShoppingCard data={cart} />
+                          </td>
+                          <td className="text-center">
+                            <Typography level="title-md">
+                              {formatCurrencyVND(cart.retailPrice)}
+                            </Typography>
+                          </td>
+                          <td className="text-center">
+                            <Input
+                              defaultValue={cart.quantity}
+                              type="number"
+                              onChange={(e) =>
+                                onUpdateQuantity(cart.id, e.target.value)
+                              }
+                            />
+                          </td>
+                          <td className="text-center">
+                            <Typography level="title-md">
+                              {formatCurrencyVND(
+                                cart.retailPrice * cart.quantity
+                              )}
+                            </Typography>
+                          </td>
+                          <td className="text-center">
+                            <MoeAlert
+                              title="Xóa sản phẩm"
+                              message="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?"
+                              event={() => handleDeleteCart(cart.id)}
+                              button={
+                                <Tooltip
+                                  title="Xóa khỏi giỏ hàng"
+                                  variant="plain"
+                                >
+                                  <Typography level="title-md" color="danger">
+                                    Xóa
+                                  </Typography>
+                                </Tooltip>
+                              }
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </Table>
+              </Sheet>
+            </Grid>
+          )}
+          <Divider sx={{ my: 1, width: "100%" }} />
+
+          {context.carts?.length > 0 && selectedIds.length > 0 && (
+            <Grid
+              xs={12}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
             >
-              Mua hàng
-            </Button>
-          </Grid>
+              <Typography level="title-md">
+                Tổng tiền: {formatCurrencyVND(totalPrice)}
+              </Typography>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="sm"
+                startDecorator={<PaymentsOutlinedIcon />}
+                onClick={() => {
+                  console.log("Selected IDs: ", selectedIds);
+                  navigate("/checkout");
+                }}
+              >
+                Thanh toán
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </Box>
     </Box>

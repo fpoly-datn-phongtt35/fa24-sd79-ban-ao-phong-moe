@@ -1,8 +1,10 @@
 import { AspectRatio, Card, Typography } from "@mui/joy";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function CardShoppingCard({data}) {
+function CardShoppingCard({ data }) {
   const [flexBasis, setFlexBasis] = useState(200);
+  const navigate = useNavigate();
   return (
     <Card
       variant="plain"
@@ -16,12 +18,9 @@ function CardShoppingCard({data}) {
           flexBasis ? { flexBasis: `${flexBasis}px` } : { flexBasis: null },
         ]}
       >
-        <img
-          src={data.imageUrl}
-          alt=""
-        />
+        <img src={data.imageUrl} alt={data.name}/>
       </AspectRatio>
-      <div style={{width: '100%'}}>
+      <div style={{ width: "100%" }}>
         <Typography level="title-sm" noWrap={false}>
           {data.name}
         </Typography>

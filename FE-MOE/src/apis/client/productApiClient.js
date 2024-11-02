@@ -48,3 +48,9 @@ export const deleteItemCart = async (id) => {
     )
     .then((res) => res.data);
 };
+
+export const updateCart = async (data) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/client/update-cart`, data)
+    .then((res) => res.data);
+};

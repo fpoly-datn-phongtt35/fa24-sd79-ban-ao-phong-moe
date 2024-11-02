@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
+import { Container, Box, Grid, Typography, Paper, Avatar, FormControlLabel } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import axios from 'axios';
-import { getAllPositions, getEmployee, putEmployee, postEmployeeImage} from '~/apis/employeeApi';
+import { getAllPositions, getEmployee, putEmployee, postEmployeeImage } from '~/apis/employeeApi';
 
 
 const host = "https://provinces.open-api.vn/api/";
 
 export const EmployeeUpdate = () => {
     const [employeeData, setEmployeeData] = useState({
-        username: '',
-        password: '',
+
         email: '',
         first_name: '',
         last_name: '',
@@ -53,6 +52,7 @@ export const EmployeeUpdate = () => {
         }
         fetchPosition();
     }, [])
+
     const handleCityChange = async (e) => {
         const provinceId = e;
         setSelectedCity(provinceId);
@@ -99,16 +99,38 @@ export const EmployeeUpdate = () => {
         return `${day}/${month}/${year} | ${time}`;
     };
 
+    const [errors, setErrors] = useState({
+        email: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        gender: '',
+        date_of_birth: '',
+        avatar: '',
+        salary: '', // thêm salary nếu cần
+    });
+
+    const validateInputs = () => {
+        let tempErrors = {};
+        if (!employeeData.email) tempErrors.email = "Email là bắt buộc.";
+        if (!employeeData.first_name) tempErrors.first_name = "Tên là bắt buộc.";
+        if (!employeeData.last_name) tempErrors.last_name = "Họ là bắt buộc.";
+        if (!employeeData.gender) tempErrors.gender = "Phải chọn giới tính.";
+        if (!employeeData.phone_number) tempErrors.phone_number = "Số điện thoại là bắt buộc.";
+        if (!employeeData.date_of_birth) tempErrors.date_of_birth = "Ngày sinh là bắt buộc.";
+        if (!employeeData.salary) tempErrors.salary = "Lương là bắt buộc.";
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    }
 
     useEffect(() => {
         const fetchEmployeeDetail = async () => {
             try {
                 const response = await getEmployee(id);
                 console.log("API Response:", response.data);
-
                 const employeeData = response.data;
-                console.log(formatDate2(employeeData.date_of_birth));
 
+                // console.log(formatDate2(employeeData.date_of_birth));
                 handleCityChange(employeeData.employee_address.provinceId);
                 handleDistrictChange(employeeData.employee_address.districtId)
                 handleWardChange(employeeData.employee_address.ward)
@@ -125,7 +147,7 @@ export const EmployeeUpdate = () => {
                     district: employeeData.employee_address.district,
                     ward: employeeData.employee_address.ward,
                     email: employeeData.email,
-                    streetName: employeeData.employee_address.streetName
+                    streetName: employeeData.employee_address.streetName,
 
                 });
                 setImagePreview(employeeData.avatar);
@@ -138,14 +160,109 @@ export const EmployeeUpdate = () => {
         fetchEmployeeDetail();
     }, [id]);
 
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setEmployeeData({ ...employeeData, [name]: value });
+        let newErrors = { ...errors };
+        const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
+        const phoneRegex = /^0\d{9,11}$/;
+        const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const minAge = 16;
+    
+        const calculateAge = (dob) => {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        };
+    
+        switch (name) {
+            case 'last_name':
+                if (value.length > 20) {
+                    newErrors.last_name = "Họ không được vượt quá 20 ký tự";
+                } else if (specialCharRegex.test(value)) {
+                    newErrors.last_name = "Họ không được chứa ký tự đặc biệt và số";
+                } else {
+                    delete newErrors.last_name;
+                }
+                break;
+    
+            case 'first_name':
+                if (value.length > 50) {
+                    newErrors.first_name = "Tên không được vượt quá 50 ký tự";
+                } else if (specialCharRegex.test(value)) {
+                    newErrors.first_name = "Tên không được chứa ký tự đặc biệt và số";
+                } else {
+                    delete newErrors.first_name;
+                }
+                break;
+    
+            case 'phone_number':
+                if (!phoneRegex.test(value)) {
+                    newErrors.phone_number = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+                } else {
+                    delete newErrors.phone_number;
+                }
+                break;
+    
+            case 'gender':
+                if (!value) {
+                    newErrors.gender = "Phải chọn giới tính";
+                } else {
+                    delete newErrors.gender;
+                }
+                break;
+    
+            case 'date_of_birth':
+                const age = calculateAge(value);
+                if (age < minAge) {
+                    newErrors.date_of_birth = "Phải trên 16 tuổi";
+                } else {
+                    delete newErrors.date_of_birth;
+                }
+                break;
+    
+            case 'username':
+                if (!usernameRegex.test(value)) {
+                    newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+                } else {
+                    delete newErrors.username;
+                }
+                break;
+
+            case 'email':
+                if (!emailRegex.test(value)) {
+                    newErrors.email = "Email không đúng định dạng";
+                } else {
+                    delete newErrors.email;
+                }
+                break;
+    
+            case 'salary':
+                if (parseInt(value) <= 1000) {
+                    newErrors.salary = "Lương phải lớn hơn 1000";
+                } else {
+                    delete newErrors.salary;
+                }
+                break; 
+            default:
+                break;
+        }
+    
+        // Cập nhật employeeData và errors
+        setEmployeeData((prevData) => ({ ...prevData, [name]: value }));
+        setErrors(newErrors);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        if (!validateInputs()) return;
+        
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
         const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
@@ -165,7 +282,6 @@ export const EmployeeUpdate = () => {
         setIsLoading(true);
         await putEmployee(updatedEmploye, id).then(async (res) => {
             if (imageObject === null) {
-                toast.success('Sửa thành công');
                 setIsLoading(false);
                 navigate('/employee');
                 return;
@@ -258,8 +374,12 @@ export const EmployeeUpdate = () => {
                                                     value={employeeData.last_name}
                                                     name="last_name"
                                                     onChange={handleChange}
+                                                    
                                                     placeholder='Họ'
                                                 />
+                                                {errors.last_name && (
+                                                    <Typography color="error" variant="body2">{errors.last_name}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -271,6 +391,9 @@ export const EmployeeUpdate = () => {
                                                     onChange={handleChange}
                                                     placeholder='Tên'
                                                 />
+                                                {errors.first_name && (
+                                                    <Typography color="error" variant="body2">{errors.first_name}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
 
@@ -284,6 +407,9 @@ export const EmployeeUpdate = () => {
                                                     placeholder='Email'
                                                     type="email"
                                                 />
+                                                {errors.email && (
+                                                    <Typography color="error" variant="body2">{errors.email}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -295,6 +421,9 @@ export const EmployeeUpdate = () => {
                                                     onChange={handleChange}
                                                     placeholder='Số Điện Thoại'
                                                 />
+                                                {errors.phone_number && (
+                                                    <Typography color="error" variant="body2">{errors.phone_number}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -306,6 +435,9 @@ export const EmployeeUpdate = () => {
                                                     onChange={handleChange}
                                                     type="number"
                                                 />
+                                                {errors.salary && (
+                                                    <Typography color="error" variant="body2">{errors.salary}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -346,9 +478,10 @@ export const EmployeeUpdate = () => {
                                                             value="OTHER"
                                                             name="gender"
                                                         />
-
                                                     </Box>
-
+                                                    {errors.gender && (
+                                                        <Typography color="error" variant="body2">{errors.gender}</Typography>
+                                                    )}
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
@@ -361,6 +494,9 @@ export const EmployeeUpdate = () => {
                                                     onChange={handleChange}
                                                     type="date"
                                                 />
+                                                {errors.date_of_birth && (
+                                                    <Typography color="error" variant="body2">{errors.date_of_birth}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -427,7 +563,7 @@ export const EmployeeUpdate = () => {
                                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                                             Cập Nhật Người Dùng
                                         </Button>
-                                        
+
                                     </Grid>
                                 </Grid>
                             </Grid>

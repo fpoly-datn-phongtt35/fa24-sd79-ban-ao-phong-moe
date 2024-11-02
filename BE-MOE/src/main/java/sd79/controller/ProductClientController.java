@@ -97,7 +97,7 @@ public class ProductClientController {
             description = "Update an item in the shopping cart based on the provided request data"
     )
     @PutMapping("/update-cart")
-    public ResponseData<?> updateCart(CartReq cartReq) {
+    public ResponseData<?> updateCart(@RequestBody CartReq cartReq) {
         this.clientProduct.updateCart(cartReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
     }

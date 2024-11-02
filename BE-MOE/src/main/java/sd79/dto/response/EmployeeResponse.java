@@ -33,10 +33,11 @@ public class EmployeeResponse {
 
     private Integer salaries;
 
-    //    private String employee_address;
     private EmployeeAddress employee_address;
 
     private PositionResponse position;
 
     private String email;
+
+    private Boolean isLocked;
 }

@@ -67,6 +67,7 @@ const Header_Client = () => {
     await handleLogoutAPI();
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
+    context.setAmoutCart(null);
     navigate("/signin");
   };
 
@@ -85,6 +86,10 @@ const Header_Client = () => {
           variant="h6"
           style={{ fontWeight: "bold", color: "#000", fontSize: "24px" }}
         >
+          <img
+            src="https://cdn.pixabay.com/animation/2024/10/24/21/44/21-44-27-689_512.gif"
+            width={90}
+          />
           MOE SHOP
         </Typography>
 
@@ -120,7 +125,8 @@ const Header_Client = () => {
           <Box>
             <Input
               type="search"
-              endDecorator={<SearchIcon />}
+              sx={{ width: 350, border: "none" }}
+              startDecorator={<SearchIcon color="primary"/>}
               placeholder="Tìm kiếm"
             />
           </Box>

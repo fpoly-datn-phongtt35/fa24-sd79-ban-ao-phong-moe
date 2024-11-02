@@ -27,6 +27,22 @@ export const EmployeeStore = () => {
 
     const [positions, setPositions] = useState([]);
 
+    const [employeeData, setEmployeeData] = useState({
+        username: '',
+        password: '',
+        email: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        gender: '',
+        date_of_birth: '',
+        salary: '',
+
+        createdAt: new Date(),
+        updatedAt: new Date()
+
+    });
+
     useEffect(() => {
         const fetchCities = async () => {
             const response = await axios.get(`${host}?depth=1`);
@@ -49,8 +65,10 @@ export const EmployeeStore = () => {
         if (cityId) {
             const response = await axios.get(`${host}p/${cityId}?depth=2`);
             setDistricts(response.data.districts);
+            setEmployeeData((prev) => ({ ...prev, city: cityId })); // Cập nhật employeeData
         } else {
             setDistricts([]);
+            setEmployeeData((prev) => ({ ...prev, city: '' })); // Reset employeeData
         }
     };
 
@@ -61,13 +79,16 @@ export const EmployeeStore = () => {
         if (districtId) {
             const response = await axios.get(`${host}d/${districtId}?depth=2`);
             setWards(response.data.wards);
+            setEmployeeData((prev) => ({ ...prev, district: districtId })); // Cập nhật employeeData
         } else {
             setWards([]);
+            setEmployeeData((prev) => ({ ...prev, district: '' })); // Reset employeeData
         }
     };
 
     const handleWardChange = (e) => {
         setSelectedWard(e);
+        setEmployeeData((prev) => ({ ...prev, ward: e })); // Cập nhật employeeData
     };
     /*---END---*/
 
@@ -79,36 +100,151 @@ export const EmployeeStore = () => {
         return `${day}/${month}/${year} | ${time}`;
     };
 
-    const [employeeData, setEmployeeData] = useState({
-        username: '',
-        password: '',
-        email: '',
-        first_name: '',
+    const [errors, setErrors] = useState({
         last_name: '',
+        first_name: '',
         phone_number: '',
         gender: '',
         date_of_birth: '',
-        salary: '',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        email: '',
+        password: '',
+        username: '',
+        streetName: '',
     });
+
+    const validateInputs = () => {
+        let tempErrors = {};
+        if (!employeeData.username) tempErrors.username = "Tên tài khoản là bắt buộc.";
+        if (!employeeData.password) tempErrors.password = "Mật khẩu là bắt buộc.";
+        if (!employeeData.email) tempErrors.email = "Email là bắt buộc.";
+        if (!employeeData.first_name) tempErrors.first_name = "Tên là bắt buộc.";
+        if (!employeeData.last_name) tempErrors.last_name = "Họ là bắt buộc.";
+        if (!employeeData.gender) tempErrors.gender = "Phải chọn giới tính";
+        if (!employeeData.phone_number) tempErrors.phone_number = "Số điện thoại là bắt buộc.";
+        if (!employeeData.date_of_birth) tempErrors.date_of_birth = "Ngày sinh là bắt buộc.";
+        if (!employeeData.salary) tempErrors.salary = "Lương là bắt buộc.";
+        // if (!employeeData.position) tempErrors.position = "Vui lòng chọn chức vụ.";
+        if (!employeeData.city) tempErrors.city = "Thành phố là bắt buộc.";
+        if (!employeeData.district) tempErrors.district = "Quận/huyện là bắt buộc.";
+        if (!employeeData.ward) tempErrors.ward = "Phường/xã là bắt buộc.";
+        if (!employeeData.streetName) tempErrors.streetName = "Tên đường là bắt buộc.";
+        // console.log('Validation Result:', tempErrors);
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    }
 
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'date_of_birth') {
-            console.log("Ngày sinh:", value); // Log giá trị nhập vào
+        let newErrors = { ...errors };
+        const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
+        const phoneRegex = /^0\d{9,11}$/;
+        const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const minAge = 16;
+
+        const calculateAge = (dob) => {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        };
+
+        switch (name) {
+            case 'last_name':
+                if (value.length > 20) {
+                    newErrors.last_name = "Họ không được vượt quá 20 ký tự";
+                } else if (specialCharRegex.test(value)) {
+                    newErrors.last_name = "Họ không được chứa ký tự đặc biệt và số";
+                } else {
+                    delete newErrors.last_name;
+                }
+                break;
+
+            case 'first_name':
+                if (value.length > 50) {
+                    newErrors.first_name = "Tên không được vượt quá 50 ký tự";
+                } else if (specialCharRegex.test(value)) {
+                    newErrors.first_name = "Tên không được chứa ký tự đặc biệt và số";
+                } else {
+                    delete newErrors.first_name;
+                }
+                break;
+
+            case 'phone_number':
+                if (!phoneRegex.test(value)) {
+                    newErrors.phone_number = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+                } else {
+                    delete newErrors.phone_number;
+                }
+                break;
+
+            case 'gender':
+                if (!value) {
+                    newErrors.gender = "Phải chọn giới tính";
+                } else {
+                    delete newErrors.gender;
+                }
+                break;
+
+            case 'date_of_birth':
+                const age = calculateAge(value);
+                if (age < minAge) {
+                    newErrors.date_of_birth = "Phải trên 16 tuổi";
+                } else {
+                    delete newErrors.date_of_birth;
+                }
+                break;
+
+            case 'username':
+                if (!usernameRegex.test(value)) {
+                    newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+                } else {
+                    delete newErrors.username;
+                }
+                break;
+
+            case 'password':
+                if (!passwordRegex.test(value)) {
+                    newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
+                } else {
+                    delete newErrors.password;
+                }
+                break;
+
+            case 'email':
+                if (!emailRegex.test(value)) {
+                    newErrors.email = "Email không đúng định dạng";
+                } else {
+                    delete newErrors.email;
+                }
+                break;
+            case 'salary':
+                if (parseInt(value) <= 1000) {
+                    newErrors.salary = "Lương phải lớn hơn 1000";
+                } else {
+                    delete newErrors.salary;
+                }
+                break;
+
+            default:
+                break;
         }
-        if (name === 'gender') {
-            setEmployeeData({ ...employeeData, gender: value });
-        } else {
-            setEmployeeData({ ...employeeData, [name]: value });
-        }
+
+        // Cập nhật employeeData và errors
+        setEmployeeData((prevData) => ({ ...prevData, [name]: value }));
+        setErrors(newErrors);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateInputs()) return;
         const currentDate = new Date().toISOString();
 
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
@@ -144,12 +280,11 @@ export const EmployeeStore = () => {
                         return;
                     }
                     console.log(res);
-                    
+
                     const formData = new FormData();
                     formData.append("images", imageObject)
                     formData.append("productId", res)
                     await postEmployeeImage(formData).then(() => {
-                        toast.success('Thêm thành công');
                         setIsLoading(false);
                         navigate('/employee');
                     })
@@ -168,7 +303,6 @@ export const EmployeeStore = () => {
     }
 
     return (
-
         <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
             <Box mt={4} mb={4}>
                 <Grid
@@ -243,6 +377,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Họ'
                                                 />
+                                                {errors.last_name && (
+                                                    <Typography color="error" variant="body2">{errors.last_name}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -254,6 +391,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Tên'
                                                 />
+                                                {errors.first_name && (
+                                                    <Typography color="error" variant="body2">{errors.first_name}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -265,6 +405,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Tên tài khoản'
                                                 />
+                                                {errors.username && (
+                                                    <Typography color="error" variant="body2">{errors.username}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -277,6 +420,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Mật Khẩu'
                                                 />
+                                                {errors.password && (
+                                                    <Typography color="error" variant="body2">{errors.password}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -289,6 +435,9 @@ export const EmployeeStore = () => {
                                                     placeholder='Email'
                                                     type="email"
                                                 />
+                                                {errors.email && (
+                                                    <Typography color="error" variant="body2">{errors.email}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -300,6 +449,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Số Điện Thoại'
                                                 />
+                                                {errors.phone_number && (
+                                                    <Typography color="error" variant="body2">{errors.phone_number}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -311,6 +463,9 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     type="number"
                                                 />
+                                                {errors.salary && (
+                                                    <Typography color="error" variant="body2">{errors.salary}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -323,6 +478,9 @@ export const EmployeeStore = () => {
                                                         ))
                                                     }
                                                 </Select>
+                                                {errors.position && (
+                                                    <Typography color="error" variant="body2">{errors.position}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
 
@@ -352,9 +510,10 @@ export const EmployeeStore = () => {
                                                             value="OTHER"
                                                             name="gender"
                                                         />
-
                                                     </Box>
-
+                                                    {errors.gender && (
+                                                        <Typography color="error" variant="body2">{errors.gender}</Typography>
+                                                    )}
                                                 </RadioGroup>
                                             </FormControl>
                                         </Grid>
@@ -362,7 +521,7 @@ export const EmployeeStore = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Ngày sinh</FormLabel>
-                                                {console.log("Giá trị của employeeData.date_of_birth:", employeeData.date_of_birth)}
+                                                {/* {console.log("Giá trị của employeeData.date_of_birth:", employeeData.date_of_birth)} */}
                                                 <Input
                                                     name="date_of_birth"
                                                     value={employeeData.date_of_birth}
@@ -370,7 +529,9 @@ export const EmployeeStore = () => {
                                                     placeholder='Ngày sinh'
                                                     type='date'
                                                 />
-
+                                                {errors.date_of_birth && (
+                                                    <Typography color="error" variant="body2">{errors.date_of_birth}</Typography>
+                                                )}
                                             </FormControl>
                                         </Grid>
 
@@ -387,6 +548,7 @@ export const EmployeeStore = () => {
                                                         </Option>
                                                     ))}
                                                 </Select>
+                                                {errors.city && <span style={{ color: 'red' }}>{errors.city}</span>}
                                             </FormControl>
                                         </Grid>
 
@@ -405,6 +567,7 @@ export const EmployeeStore = () => {
                                                         </Option>
                                                     ))}
                                                 </Select>
+                                                {errors.district && <span style={{ color: 'red' }}>{errors.district}</span>}
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -421,6 +584,8 @@ export const EmployeeStore = () => {
                                                         </Option>
                                                     ))}
                                                 </Select>
+                                                {errors.ward && <span style={{ color: 'red' }}>{errors.ward}</span>}
+
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -429,7 +594,10 @@ export const EmployeeStore = () => {
                                                 <Input
                                                     name="streetName"
                                                     placeholder='Tên đường'
-                                                    onChange={(e) => setStreetName(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setStreetName(e.target.value);
+                                                        setErrors((prevErrors) => ({ ...prevErrors, streetName: '' })); // Xóa lỗi khi người dùng nhập
+                                                    }}
                                                 />
                                             </FormControl>
                                         </Grid>

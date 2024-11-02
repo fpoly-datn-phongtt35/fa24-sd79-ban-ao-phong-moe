@@ -11,9 +11,9 @@ public class BillDetailRequest {
     private Long productDetail;
     private Long bill;
     private Integer quantity;
-    private BigDecimal retailPrice;
+    private BigDecimal price;
     private BigDecimal discountAmount;
-    private BigDecimal totalAmountProduct;
+//    private BigDecimal totalAmountProduct;
 
 
 }
