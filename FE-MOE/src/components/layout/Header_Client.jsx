@@ -125,7 +125,8 @@ const Header_Client = () => {
           <Box>
             <Input
               type="search"
-              endDecorator={<SearchIcon />}
+              sx={{ width: 350, border: "none" }}
+              startDecorator={<SearchIcon color="primary"/>}
               placeholder="Tìm kiếm"
             />
           </Box>

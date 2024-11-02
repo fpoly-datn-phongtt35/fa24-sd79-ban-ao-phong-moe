@@ -248,7 +248,7 @@ function ShoppingCart() {
                 startDecorator={<PaymentsOutlinedIcon />}
                 onClick={() => {
                   console.log("Selected IDs: ", selectedIds);
-                  navigate("/checkout")
+                  navigate("/checkout");
                 }}
               >
                 Thanh toán
