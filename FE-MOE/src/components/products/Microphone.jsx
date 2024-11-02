@@ -1,7 +1,10 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   IconButton,
-  LinearProgress,
   Modal,
   ModalDialog,
   Tooltip,
@@ -46,7 +49,9 @@ export const Microphone = ({ method }) => {
 
   const handleStopListening = () => {
     SpeechRecognition.stopListening();
-    const result = transcript.replace(/\./g, "").replace(/tôi muốn tìm kiếm/gi, "");
+    const result = transcript
+      .replace(/\./g, "")
+      .replace(/tôi muốn tìm kiếm/gi, "");
     const response =
       result.trim().length > 0
         ? "Đang tìm kiếm kết quả"
@@ -92,8 +97,11 @@ export const Microphone = ({ method }) => {
           >
             <img src={chatbot} alt="ChatBot" />
           </Box>
-          <Box>
-            <LinearProgress thickness={1} />
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <img
+              src="https://cdn.pixabay.com/animation/2024/01/13/23/46/23-46-52-835_512.gif"
+              height={50}
+            />
           </Box>
           <Typography color="white" level="body-md">
             {message}

@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.service.impl;
 
 import lombok.RequiredArgsConstructor;
@@ -17,8 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsService userDetailsService() {
-        return username -> this.userRepository.findByUsername(username).orElseThrow(
-                () -> new EntityNotFoundException(String.format("User with username '%s' not found!", username))
-        );
+        return username -> this.userRepository.findUserByUsernameOrEmailIgnoreCase(username)
+                .filter(user -> user.getUsername().equals(username) || user.getEmail().equals(username))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User with username '%s' not found!", username)));
+
     }
 }

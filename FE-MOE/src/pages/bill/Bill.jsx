@@ -207,7 +207,7 @@ function Bill() {
             setCoupons(response.data);
         }
         await handleSetBill();
-        console.log(currentOrder)
+        console.log(response.data)
     };
 
     const handleRemoveCoupon = async () => {

@@ -1,6 +1,9 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { Box, Button, Divider, Grid, IconButton, Typography } from "@mui/joy";
 import { useEffect, useState } from "react";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import {
   fetchAllProducts,
@@ -50,7 +53,7 @@ const Home = () => {
 
   const handleSetProducts = async () => {
     const res = await fetchAllProducts(currentPage);
-    setProducts((prev) => [...prev, ...res.data]);
+    setProducts((prev) => [...prev, ...res?.data]);
   };
 
   const viewMore = async () => {

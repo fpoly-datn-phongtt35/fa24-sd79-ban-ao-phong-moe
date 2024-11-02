@@ -1,256 +1,460 @@
-import React, { useEffect, useState } from 'react'
-import { getEmployee, putEmployee, getAllPositions } from "~/apis/employeeApi";
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { Container, Box, Grid, Typography, Paper, Avatar, FormControlLabel } from '@mui/material';
+import { toast } from 'react-toastify';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
+import HomeIcon from "@mui/icons-material/Home";
+import axios from 'axios';
+import { getAllPositions, getEmployee, putEmployee, postEmployeeImage } from '~/apis/employeeApi';
 
-const EmployeesUpdate = () => {
-    const [data, setData] = useState(null);
 
-    const [first_name, setFirst_name] = useState('');
-    const [last_name, setLast_name] = useState('');
-    const [phone_number, setPhone_number] = useState('');
-    const [gender, setGender] = useState('');
-    //    const[date_of_birth,setDate_of_birth] = useState('')
-    const [salary, setSalary] = useState('');
-    const [city, setCity] = useState('');
-    const [positionId, setPositionId] = useState([]);
-    const [selectedPositionId, setSelectedPositionId] = useState('');
-    const navigartor = useNavigate();
-    const { id } = useParams();
+const host = "https://provinces.open-api.vn/api/";
 
-    const [errors, setErros] = useState({
+export const EmployeeUpdate = () => {
+    const [employeeData, setEmployeeData] = useState({
+
+        email: '',
         first_name: '',
         last_name: '',
         phone_number: '',
+        gender: '',
+        date_of_birth: '',
+        avatar: '',
         salary: '',
-        city: '',
-        positionId: ''
-    })
-
-    useEffect(() => {
-        handleSetPositions();
-    }, []);
-
-    const handleSetPositions = async () => {
-        try {
-            const res = await getAllPositions();
-            setPositionId(res.data); // Cập nhật danh sách chức vụ
-        } catch (error) {
-            console.error('Failed to fetch positions', error);
-        }
-    };
-
-    useEffect(() => {
-        handleSetPositions();
-        if (id) {
-            getEmployee(id)
-                .then((response) => {
-                setData(response);
-                console.log(response);
-                setFirst_name(response.data.first_name);
-                setLast_name(response.data.last_name);
-                setPhone_number(response.data.phone_number);
-                setGender(response.data.gender);
-                setSalary(response.data.salaries);
-                setCity(response.data.employee_address);
-                const position = response.data.position || '';
-                setSelectedPositionId(position);
-                console.log("Fetched position from API: ", position)
-                })
-                .catch(error => {
-                    console.error(error);
-                    toast.error('Failed to fetch employee data');
-                });
-        }
-    }, [id]);
-
-    getEmployee(id)
-    .then((response) => {
-        const positionName = response.data.position; // Lấy tên vị trí
-        setSelectedPositionId(positionId.find(pos => pos.name === positionName)?.id || ''); // Tìm ID dựa trên tên
-        console.log("Fetched position from API: ", positionName); // Log tên vị trí
-    })
-    .catch(error => {
-        console.error(error);
-        toast.error('Failed to fetch employee data');
+        isLocked: '',
     });
 
-    const saveEmployee = (e) => {
-        e.preventDefault();
-       
-            const employee = {
-                first_name: first_name,
-                last_name: last_name,
-                phone_number: phone_number,
-                gender: gender,
-                salary: salary,
-                city: city,
-                positionId: selectedPositionId // Sử dụng selectedPosition ở đây
-            }
-            console.log(employee);
-            putEmployee(employee, id).then((response) => {
-                // console.log(response.data);
-                navigartor('/employee')
-            });
-        
-    }
+    const [imagePreview, setImagePreview] = useState(null);
+    const [imageObject, setImageObject] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [positions, setPositions] = useState([]);
+    const [position, setPosition] = useState(null);
+    const [streetName, setStreetName] = useState('');
+    /*---Start handle address---*/
+    const [cities, setCities] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedCity, setSelectedCity] = useState("");
+    const [selectedDistrict, setSelectedDistrict] = useState("");
+    const [selectedWard, setSelectedWard] = useState("");
 
-    // function validateForm() {
-    //     let valid = true;
-    //     const errorsCopy = { ...errors }
-
-    //     if (first_name.trim()) {
-    //         errorsCopy.first_name = '';
-    //     } else {
-    //         errorsCopy.first_name = 'Không được trống tên';
-    //         valid = false;
-    //     }
-
-    //     if (last_name.trim()) {
-    //         errorsCopy.last_name = '';
-    //     } else {
-    //         errorsCopy.last_name = 'Không được trống tên đệm';
-    //         valid = false;
-    //     }
-
-    //     if (phone_number.trim()) {
-    //         errorsCopy.phone_number = '';
-    //     } else {
-    //         errorsCopy.phone_number = 'Không được trống số điện thoại';
-    //         valid = false;
-    //     }
-
-    //     if (salary.trim()) {
-    //         errorsCopy.salary = '';
-    //     } else {
-    //         errorsCopy.salary = 'Không được trống lương';
-    //         valid = false;
-    //     }
-
-    //     if (city.trim()) {
-    //         errorsCopy.city = '';
-    //     } else {
-    //         errorsCopy.city = 'Không được trống thành phố';
-    //         valid = false;
-    //     }
-
-    //     setErros(errorsCopy);
-    //     return valid;
-    // }
-    const pageTitle = () => {
-        if (id) {
-            return <h2 className='text-center'>Sửa nhân viên</h2>;
+    useEffect(() => {
+        const fetchCities = async () => {
+            const response = await axios.get(`${host}?depth=1`);
+            setCities(response.data);
+        };
+        fetchCities();
+    }, []);
+    useEffect(() => {
+        const fetchPosition = async () => {
+            await getAllPositions().then((res) => setPositions(res.data))
+        }
+        fetchPosition();
+    }, [])
+    const handleCityChange = async (e) => {
+        const provinceId = e;
+        setSelectedCity(provinceId);
+        setSelectedDistrict("");
+        setSelectedWard("");
+        if (provinceId) {
+            const response = await axios.get(`${host}p/${provinceId}?depth=2`);
+            setDistricts(response.data.districts);
         } else {
-            return <h2 className='text-center'>Thêm nhân viên</h2>;
+            setDistricts([]);
         }
     };
 
+    const handleDistrictChange = async (e) => {
+        const districtId = e;
+        setSelectedDistrict(districtId);
+        setSelectedWard(""); // Reset ward
+        if (districtId) {
+            const response = await axios.get(`${host}d/${districtId}?depth=2`);
+            setWards(response.data.wards);
+        } else {
+            setWards([]);
+        }
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e);
+    };
+    /*---END---*/
+
+    const formatDate2 = (dateTimeString) => {
+        // Split date and time parts
+        const [datePart] = dateTimeString.split(' | ');
+        const [day, month, year] = datePart.split('/');
+        return `${year}-${month}-${day}`;
+    };
+
+
+    const formatDate = (dateString, time = "00:00:00") => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year} | ${time}`;
+    };
+
+
+    useEffect(() => {
+        const fetchEmployeeDetail = async () => {
+            try {
+                const response = await getEmployee(id);
+                console.log("API Response:", response.data);
+                const employeeData = response.data;
+                console.log('isLocked value:', employeeData.isLocked);
+                // console.log(formatDate2(employeeData.date_of_birth));
+                handleCityChange(employeeData.employee_address.provinceId);
+                handleDistrictChange(employeeData.employee_address.districtId)
+                handleWardChange(employeeData.employee_address.ward)
+                setEmployeeData({
+                    first_name: employeeData.first_name,
+                    last_name: employeeData.last_name,
+                    phone_number: employeeData.phone_number,
+                    gender: employeeData.gender === "Nam" ? "MALE" : employeeData.gender === "Nữ" ? "FEMALE" : "OTHER",
+                    date_of_birth: formatDate2(employeeData.date_of_birth),
+                    salary: employeeData.salaries,
+                    position: employeeData.position.id,
+                    avatar: employeeData.avatar,
+                    provinceId: employeeData.employee_address.provinceId,
+                    district: employeeData.employee_address.district,
+                    ward: employeeData.employee_address.ward,
+                    email: employeeData.email,
+                    streetName: employeeData.employee_address.streetName,
+                    isLocked: employeeData.isLocked === 1,
+
+
+                });
+                setImagePreview(employeeData.avatar);
+            } catch (error) {
+                console.error("Error details:", error);
+                toast.error('Error fetching employee details: ' + (error.response?.data?.message || error.message));
+            }
+        };
+
+        fetchEmployeeDetail();
+    }, [id]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setEmployeeData({ ...employeeData, [name]: value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const cityName = cities.find((city) => city.code == selectedCity)?.name;
+        const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+        const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
+        const updatedEmploye = {
+            ...employeeData,
+            address: {
+                province: cityName,
+                provinceId: selectedCity,
+                district: districtName,
+                districtId: selectedDistrict,
+                ward: wardName,
+                streetName: streetName
+            },
+            date_of_birth: formatDate(employeeData.date_of_birth),
+
+
+        };
+        setIsLoading(true);
+        await putEmployee(updatedEmploye, id).then(async (res) => {
+            if (imageObject === null) {
+                setIsLoading(false);
+                navigate('/employee');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("images", imageObject)
+            formData.append("productId", id)
+            await postEmployeeImage(formData).then(() => {
+                toast.success('Cập nhật thành công');
+                setIsLoading(false);
+                navigate('/employee');
+            })
+
+        });
+
+    };
+    const handleImageChange = (event) => {
+        var file = event.target.files[0];
+        var url = URL.createObjectURL(file)
+        setImagePreview(url)
+        setImageObject(file)
+    }
     return (
-        <div>
-            <div className='container'>
-                <div className='card col-md-8 offset-md-2 offset-md-2'>
-                    {pageTitle()}
-                    <div className='card-body'>
-                        <form action="">
-                            <div className='form-group mb-2'>
-                                <label className='form-label'> Tên</label>
-                                <input
-                                    type="text"
-                                    placeholder='Nhập tên'
-                                    name='first_name'
-                                    value={first_name}
-                                    className={`form-control ${errors.first_name ? 'is-invalid' : ''}`}
-                                    onChange={(e) => setFirst_name(e.target.value)}
-                                />
-                                {/* {errors.first_name && <div className='invalid-feedback'>{errors.first_name}</div>} */}
-                            </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Tên Đệm</label>
-                                <input type="text" placeholder='nhập tên đệm' name='last_name'
-                                    value={last_name}
-                                    className={`form-control ${errors.last_name ? 'is-invalid' : ''}`} onChange={(e) => setLast_name(e.target.value)} />
-                                {/* {errors.last_name && <div className='invalid-feedback'>{errors.last_name}</div>} */}
-                            </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Sđt</label>
-                                <input type="text" placeholder='nhập số điện thoại' name='phone_number'
-                                    value={phone_number} className={`form-control ${errors.phone_number ? 'is-invalid' : ''}`} onChange={(e) => setPhone_number(e.target.value)} />
-                                {/* {errors.phone_number && <div className='invalid-feedback'>{errors.phone_number}</div>} */}
-                            </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Giới Tính</label>
+        <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
+            <Box mt={4} mb={4}>
+                <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    marginBottom={2}
+                    height={"50px"}
+                >
+                    <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+                        <Link disabled={isLoading}
+                            underline="hover"
+                            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                            color="inherit"
+                            onClick={() => navigate("/")}
+                        >
+                            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                            Trang chủ
+                        </Link>
+                        <Link disabled={isLoading}
+                            underline="hover"
+                            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                            color="inherit"
+                            onClick={() => navigate("/employee")}
+                        >
+                            Quản lý nhân viên
+                        </Link>
+                        <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+                            Sửa thông tin nhân viên
+                        </Typography>
+                    </Breadcrumbs>
+                </Grid>
+                <Paper elevation={3}>
+                    <Box p={4}>
+                        <Box component="form" onSubmit={handleSubmit} noValidate>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={4}>
+                                    <Box display="flex" flexDirection="column" alignItems="center">
+                                        <Avatar
+                                            src={imagePreview || '/placeholder-image.png'}
+                                            alt="User Image"
+                                            sx={{ width: 150, height: 150 }}
+                                        />
+                                        <Button disabled={isLoading}
+                                            variant="outlined"
+                                            component="label"
+                                            sx={{ mt: 2 }}
+                                        >
+                                            Chọn Ảnh
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                hidden
+                                                onChange={handleImageChange}
+                                            />
+                                        </Button>
+                                    </Box>
+                                </Grid>
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='MALE'
-                                        checked={gender === 'MALE'} // Kiểm tra xem gender có phải là 'MALE' không
-                                        onChange={() => setGender('MALE')} // Cập nhật gender khi chọn 'MALE'
-                                    />
-                                    <label className="form-check-label" htmlFor="MALE">Nam</label>
-                                </div>
+                                <Grid item xs={12} md={8}>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Họ</FormLabel>
+                                                <Input
+                                                    value={employeeData.last_name}
+                                                    name="last_name"
+                                                    onChange={handleChange}
+                                                    placeholder='Họ'
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Tên</FormLabel>
+                                                <Input
+                                                    value={employeeData.first_name}
+                                                    name="first_name"
+                                                    onChange={handleChange}
+                                                    placeholder='Tên'
+                                                />
+                                            </FormControl>
+                                        </Grid>
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='FEMALE'
-                                        checked={gender === 'FEMALE'} // Kiểm tra xem gender có phải là 'FEMALE' không
-                                        onChange={() => setGender('FEMALE')} // Cập nhật gender khi chọn 'FEMALE'
-                                    />
-                                    <label className="form-check-label" htmlFor="FEMALE">Nữ</label>
-                                </div>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Email</FormLabel>
+                                                <Input
+                                                    value={employeeData.email}
+                                                    name="email"
+                                                    onChange={handleChange}
+                                                    placeholder='Email'
+                                                    type="email"
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Số Điện Thoại</FormLabel>
+                                                <Input
+                                                    value={employeeData.phone_number}
+                                                    name="phone_number"
+                                                    onChange={handleChange}
+                                                    placeholder='Số Điện Thoại'
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Lương</FormLabel>
+                                                <Input
+                                                    value={employeeData.salary}
+                                                    name='salary'
+                                                    onChange={handleChange}
+                                                    type="number"
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Chức vụ</FormLabel>
+                                                <Select value={employeeData.position} placeholder="Chọn chức vụ" onChange={(e, v) => setPosition(v)}>
+                                                    {
+                                                        positions?.map((item) => (
+                                                            <Option key={item.id} value={item.id}>{item.name}</Option>
+                                                        ))
+                                                    }
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Giới tính</FormLabel>
+                                                <RadioGroup >
+                                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                                        <Radio
+                                                            label="Nam"
+                                                            checked={employeeData.gender === 'MALE'}
+                                                            onChange={handleChange}
+                                                            value="MALE"
+                                                            name="gender"
+                                                        />
+                                                        <Radio
+                                                            label="Nữ"
+                                                            checked={employeeData.gender === 'FEMALE'}
+                                                            onChange={handleChange}
+                                                            value="FEMALE"
+                                                            name="gender"
+                                                        />
+                                                        <Radio
+                                                            label="Khác"
+                                                            checked={employeeData.gender === 'OTHER'}
+                                                            onChange={handleChange}
+                                                            value="OTHER"
+                                                            name="gender"
+                                                        />
 
-                                <div className='form-check form-check-inline'>
-                                    <input
-                                        name='gender'
-                                        className='form-check-input'
-                                        type='radio'
-                                        id='OTHER'
-                                        checked={gender === 'OTHER'} // Kiểm tra xem gender có phải là 'OTHER' không
-                                        onChange={() => setGender('OTHER')} // Cập nhật gender khi chọn 'OTHER'
-                                    />
-                                    <label className="form-check-label" htmlFor="OTHER">Khác</label>
-                                </div>
-                            </div>
+                                                    </Box>
 
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Lương</label>
-                                <input type="text" placeholder='nhập lương' name='salary'
-                                    value={salary} className={`form-control ${errors.salary ? 'is-invalid' : ''}`} onChange={(e) => setSalary(e.target.value)} />
-                                {/* {errors.salary && <div className='invalid-feedback'>{errors.salary}</div>} */}
-                            </div>
-                            <div className='form-group mb-2'>
-                                <label className='form-label'>Địa chỉ</label>
-                                <input type="text" placeholder='nhập địa chỉ' name='employee_address'
-                                    value={city} className={`form-control ${errors.city ? 'is-invalid' : ''}`} onChange={(e) => setCity(e.target.value)} />
-                                {/* {errors.city && <div className='invalid-feedback'>{errors.city}</div>} */}
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="position">Chức vụ</label>
-                                <select
-                                    className="form-control"
-                                    id="position"
-                                    value={selectedPositionId} // Giá trị của combobox
-                                    onChange={(e) => setSelectedPositionId(e.target.value)}
-                                >
-                                    <option value="">Chọn chức vụ</option>
-                                    {positionId.map((pos) => (
-                                        <option key={pos.id} value={pos.id}>{pos.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Ngày sinh</FormLabel>
+                                                <Input
+                                                    name="date_of_birth"
+                                                    value={employeeData.date_of_birth || ""}
+                                                    onChange={handleChange}
+                                                    type="date"
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel >Thành phố</FormLabel>
+                                                <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                                                    <Option value="" disabled>
+                                                        Chọn tỉnh thành
+                                                    </Option>
+                                                    {cities.map((city) => (
+                                                        <Option key={city.code} value={city.code}>
+                                                            {city.name}
+                                                        </Option>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel >Quận/Huyện</FormLabel>
+                                                <Select value={selectedDistrict}
+                                                    onChange={(e, v) => handleDistrictChange(v)}
+                                                    placeholder="Chọn quận huyện">
+                                                    <Option value="" disabled>
+                                                        Chọn quận huyện
+                                                    </Option>
+                                                    {districts.map((district) => (
+                                                        <Option key={district.code} value={district.code}>
+                                                            {district.name}
+                                                        </Option>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel >Phường/Xã</FormLabel>
+                                                <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                                                    placeholder="Chọn phường xã">
+                                                    <Option value="" disabled>
+                                                        Chọn phường xã
+                                                    </Option>
+                                                    {wards.map((ward) => (
+                                                        <Option key={ward.code} value={ward.name}>
+                                                            {ward.name}
+                                                        </Option>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel>Tên đường</FormLabel>
+                                                <Input
+                                                    name="streetName"
+                                                    value={employeeData.streetName}
+                                                    placeholder='Tên đường'
+                                                    onChange={handleChange}
+                                                />
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Trạng thái khóa</FormLabel>
+                                                <RadioGroup
+                                                    row
+                                                    name="isLocked"
+                                                    value={employeeData.isLocked ? 'true' : 'false'} // Chuyển đổi giá trị thành chuỗi
+                                                    onChange={(e) => setEmployeeData({ ...employeeData, isLocked: e.target.value === 'true' })} // Chuyển đổi trở lại boolean
+                                                >
+                                                    <FormControlLabel value="true" control={<Radio />} label="Khóa" />
+                                                    <FormControlLabel value="false" control={<Radio />} label="Mở khóa" />
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </Grid>
 
-                            <button className='btn btn-primary mt-3' onClick={saveEmployee}>Submit</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
 
+                                    </Grid>
+                                    <Grid item xs={6} sx={{ marginTop: 1 }}>
+                                        <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
+                                            Cập Nhật Người Dùng
+                                        </Button>
 
-export default EmployeesUpdate
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    </Box>
+                </Paper>
+            </Box>
+        </Container>
+    );
+};
+
+export default EmployeeUpdate;

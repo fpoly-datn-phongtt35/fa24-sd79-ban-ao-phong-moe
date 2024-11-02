@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.configuration;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -87,5 +94,9 @@ public class AppConfig {
         return (webSecurity) -> webSecurity
                 .ignoring()
                 .requestMatchers("/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**");
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

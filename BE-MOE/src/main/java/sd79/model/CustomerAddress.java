@@ -33,5 +33,13 @@ public class CustomerAddress {
     @Column(name = "city")
     private String city;
 
+//    @Column(name = "ward_id")
+//    private Integer wardId;
+
+    @Column(name = "district_id")
+    private Integer districtId;
+
+    @Column(name = "city_id")
+    private Integer cityId;
 
 }

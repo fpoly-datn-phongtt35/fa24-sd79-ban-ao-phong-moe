@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from "react";
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+import React, { useState, useEffect, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -17,7 +21,8 @@ import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
-import { Avatar, Input, Typography } from "@mui/joy";
+import { Avatar, Input, Tooltip, Typography } from "@mui/joy";
+import { CommonContext } from "~/context/CommonContext";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -25,6 +30,8 @@ const Header_Client = () => {
   const [avatar, setAvatar] = useState("");
   const [username, setUsername] = useState("");
   const accessToken = localStorage.getItem("accessToken");
+
+  const context = useContext(CommonContext);
 
   useEffect(() => {
     if (accessToken) {
@@ -60,6 +67,7 @@ const Header_Client = () => {
     await handleLogoutAPI();
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
+    context.setAmoutCart(null);
     navigate("/signin");
   };
 
@@ -78,6 +86,10 @@ const Header_Client = () => {
           variant="h6"
           style={{ fontWeight: "bold", color: "#000", fontSize: "24px" }}
         >
+          <img
+            src="https://cdn.pixabay.com/animation/2024/10/24/21/44/21-44-27-689_512.gif"
+            width={90}
+          />
           MOE SHOP
         </Typography>
 
@@ -113,7 +125,8 @@ const Header_Client = () => {
           <Box>
             <Input
               type="search"
-              endDecorator={<SearchIcon />}
+              sx={{ width: 350, border: "none" }}
+              startDecorator={<SearchIcon color="primary"/>}
               placeholder="Tìm kiếm"
             />
           </Box>
@@ -122,11 +135,13 @@ const Header_Client = () => {
               <FavoriteBorderOutlinedIcon />
             </Badge>
           </IconButton>
-          <IconButton>
-            <Badge badgeContent={2} color="primary">
-              <ShoppingCartOutlinedIcon />
-            </Badge>
-          </IconButton>
+          <Tooltip variant="plain" title="Giỏ hàng">
+            <IconButton onClick={() => navigate("/cart")}>
+              <Badge badgeContent={context.amoutCart} color="primary">
+                <ShoppingCartOutlinedIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <IconButton onClick={hasAuthenticated ? handleMenuClick : singIn}>
             <Avatar src={avatar} alt={username} />
           </IconButton>

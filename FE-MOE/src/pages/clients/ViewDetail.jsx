@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   Grid,
@@ -22,16 +26,17 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import Done from "@mui/icons-material/Done";
 import { ScrollToTop } from "~/utils/defaultScroll";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { formatCurrencyVND } from "~/utils/format";
-import { fetchProduct } from "~/apis/client/productApiClient";
+import { fetchProduct, storeCart } from "~/apis/client/productApiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";
+import { CommonContext } from "~/context/CommonContext";
 
 export const ViewDetail = () => {
   ScrollToTop();
-
+  const context = useContext(CommonContext);
   const [product, setProduct] = useState(null);
   const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -65,7 +70,7 @@ export const ViewDetail = () => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!color) {
       toast.error("Vui lòng chọn màu");
       return;
@@ -76,7 +81,16 @@ export const ViewDetail = () => {
       toast.error("Số lượng phải lớn hơn 0");
       return;
     } else {
-      toast.success("Sản phẩm đã được thêm vào giỏ hàng");
+      await storeCart({
+        productId: id,
+        sizeId: size,
+        colorId: color,
+        quantity: quantity,
+        username: localStorage.getItem("username"),
+      }).then(() => {
+        toast.success("Sản phẩm đã được thêm vào giỏ hàng");
+        context.handleFetchCarts();
+      });
     }
   };
 

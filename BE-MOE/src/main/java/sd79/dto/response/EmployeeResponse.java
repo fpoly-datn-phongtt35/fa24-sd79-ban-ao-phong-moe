@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sd79.dto.response.employees.PositionResponse;
+import sd79.model.EmployeeAddress;
 
 
 import java.util.Date;
@@ -19,6 +21,8 @@ public class EmployeeResponse {
 
     private String last_name;
 
+    private String full_name;
+
     private String phone_number;
 
     private String gender;
@@ -29,7 +33,11 @@ public class EmployeeResponse {
 
     private Integer salaries;
 
-    private String employee_address;
+    private EmployeeAddress employee_address;
 
-    private String position;
+    private PositionResponse position;
+
+    private String email;
+
+    private Boolean isLocked;
 }

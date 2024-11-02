@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import axios from "axios";
 import { toast } from "react-toastify";
 import { handleLogoutAPI, refreshTokenAPI } from "~/apis";
@@ -29,9 +33,11 @@ authorizedAxiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error?.response?.status === 401) {
-      handleLogoutAPI().then(() => {
-        location.href = "/login";
-      });
+      if (localStorage.getItem("accessToken")) {
+        handleLogoutAPI().then(() => {
+          location.href = "/login";
+        });
+      }
     }
 
     const originalRequest = error.config;

@@ -22,6 +22,7 @@ spring:
     activate:
       on-profile: nvt
 jwt:
+  key: SD79NVT$2a$12$7gyw.KUZphS2qF65MDQ1Lu3xTMtS6MriZUpfyi9RVxhGK5cA9J2EW
   expiryMinute: 60
   expiryDay: 14
   secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
@@ -38,6 +39,6 @@ openapi:
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
 cloudinary:
-  cloud-name: https://console.cloudinary.com/pm/c-695fb1101b72230a274a40b4627840/developer-dashboard
-  api-secret: https://console.cloudinary.com/settings/c-695fb1101b72230a274a40b4627840/api-keys
-  api-key: https://console.cloudinary.com/settings/c-695fb1101b72230a274a40b4627840/api-keys
+  cloud-name: dniokvxat
+  api-secret: f4HHBNNCvXdHRQxQn375VT5K8Yg
+  api-key: 163797688946354

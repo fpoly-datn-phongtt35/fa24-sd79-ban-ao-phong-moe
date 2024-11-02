@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   Button,
@@ -103,7 +107,6 @@ export const TableDetails = (props) => {
 
   const handleInputChange = (id, field, value) => {
     const parsedValue = Number(value);
-
     if (field === "price") {
       if (parsedValue < 10000) {
         setInputErrors((prev) => ({
@@ -140,13 +143,17 @@ export const TableDetails = (props) => {
       }
     }
 
-    setInputValues((prevValues) => ({
-      ...prevValues,
-      [id]: {
-        ...prevValues[id],
-        [field]: value,
-      },
-    }));
+    setInputValues((prevValues) => {
+      const updatedValues = { ...prevValues };
+      selected.forEach((selectedId) => {
+        updatedValues[selectedId] = {
+          ...updatedValues[selectedId],
+          [field]: value,
+        };
+      });
+      return updatedValues;
+    });
+
     setHasChanged(true);
   };
 

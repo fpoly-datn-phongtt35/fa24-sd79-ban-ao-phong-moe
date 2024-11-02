@@ -62,4 +62,18 @@ public class Customer {
     @Column(name = "publicId", length = 200)
     private String publicId;
 
+    public void setFirstName(String firstName) {
+        this.firstName = capitalizeFirstLetter(firstName);
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = capitalizeFirstLetter(lastName);
+    }
+
+
+    private String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1).toLowerCase();
+    }
+
 }

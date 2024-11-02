@@ -1,3 +1,9 @@
+/*
+ * Author: Nong Hoang Vu || JavaTech
+ * Facebook:https://facebook.com/NongHoangVu04
+ * Github: https://github.com/JavaTech04
+ * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+ */
 package sd79.repositories.auth;
 
 import io.micrometer.common.util.StringUtils;
@@ -32,10 +38,10 @@ public class UserAuthRepository {
         }
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        StringBuilder sql = new StringBuilder("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, u.user.email, u.image)");
+        StringBuilder sql = new StringBuilder(String.format("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, %s , u.user.email, u.image)", role.equals(UserRole.ADMIN) ? "(CONCAT(u.last_name, ' ', u.first_name))" : "(CONCAT(u.lastName, ' ', u.firstName))"));
         if (role.equals(UserRole.ADMIN)) {
             //TODO
-            sql.append(" FROM Employee u WHERE u.user.username = :username");
+            sql.append(" FROM employees  u WHERE u.user.username = :username");
             TypedQuery<UserResponse> query = entityManager.createQuery(sql.toString(), UserResponse.class);
             query.setParameter("username", username);
             return query.getSingleResult();
