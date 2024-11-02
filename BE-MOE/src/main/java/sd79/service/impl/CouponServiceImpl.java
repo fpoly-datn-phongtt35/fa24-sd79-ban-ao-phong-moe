@@ -52,6 +52,24 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
+    public PageableResponse getAllCouponDate(CouponParamFilter param) {
+
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.couponCustomizeQuery.getAllCouponDate(param);
+    }
+
+    @Override
+    public PageableResponse getAllCouponDatePersonal(CouponParamFilter param) {
+
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.couponCustomizeQuery.getAllCouponDatePersonal(param);
+    }
+
+    @Override
     public CouponResponse getCouponById(Long id) {
         Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
         return convertCouponResponse(coupon);

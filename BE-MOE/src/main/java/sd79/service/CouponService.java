@@ -12,6 +12,8 @@ import sd79.model.Customer;
 
 public interface CouponService {
     PageableResponse getAllCoupon(CouponParamFilter param);
+    PageableResponse getAllCouponDate(CouponParamFilter param);
+    PageableResponse getAllCouponDatePersonal(CouponParamFilter param);
     CouponResponse getCouponById(Long id);
     long storeCoupon(CouponRequest couponRequest);
     void storeCouponImages(CouponImageReq req);

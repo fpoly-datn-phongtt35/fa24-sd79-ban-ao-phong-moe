@@ -1,63 +1,157 @@
-import { Box, Grid, Typography, Card, CardContent, Divider } from "@mui/joy";
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+import {
+  Box,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  Divider,
+  CircularProgress,
+  SvgIcon,
+  CardActions,
+  Button,
+} from "@mui/joy";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { LineChart } from "@mui/x-charts/LineChart";
 
 export const Dashboard = () => {
   return (
     <Box sx={{ padding: 3, minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ marginBottom: 3, color: "#333" }}>
-        Bảng Điều Khiển Bán Áo
+      <Typography level="title-lg" sx={{ marginBottom: 3, color: "#333" }}>
+        Dashboard
       </Typography>
 
       {/* Cards Section */}
       <Grid container spacing={2} sx={{ marginBottom: 4 }}>
         <Grid xs={3}>
-          <Card
-            variant="soft"
-            sx={{ backgroundColor: "#e3f2fd", color: "#1976d2" }}
-          >
-            <CardContent>
-              <Typography variant="h6">Doanh Thu Tháng</Typography>
-              <Typography variant="h4">$35,500</Typography>
-              <Typography>+15% so với tháng trước</Typography>
+          <Card variant="plain" color="neutral" invertedColors>
+            <CardContent orientation="horizontal">
+              <CircularProgress size="lg" determinate value={20}>
+                <SvgIcon>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+                    />
+                  </svg>
+                </SvgIcon>
+              </CircularProgress>
+              <CardContent>
+                <Typography level="body-md">Tổng Áo Đã Bán</Typography>
+                <Typography level="h2">31.542</Typography>
+              </CardContent>
             </CardContent>
+            <CardActions>
+              <Button variant="soft" size="sm">
+                Chi tiết
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
         <Grid xs={3}>
-          <Card
-            variant="soft"
-            sx={{ backgroundColor: "#f1f8e9", color: "#388e3c" }}
-          >
-            <CardContent>
-              <Typography variant="h6">Tổng Áo Đã Bán</Typography>
-              <Typography variant="h4">1,350</Typography>
-              <Typography>+10% so với tháng trước</Typography>
+          <Card variant="plain" color="neutral" invertedColors>
+            <CardContent orientation="horizontal">
+              <CircularProgress size="lg" determinate value={20}>
+                <SvgIcon>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+                    />
+                  </svg>
+                </SvgIcon>
+              </CircularProgress>
+              <CardContent>
+                <Typography level="body-md">Doanh Thu</Typography>
+                <Typography level="h2">123.456.789</Typography>
+              </CardContent>
             </CardContent>
+            <CardActions>
+              <Button variant="soft" size="sm">
+                Chi tiết
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
         <Grid xs={3}>
-          <Card
-            variant="soft"
-            sx={{ backgroundColor: "#fff3e0", color: "#f57c00" }}
-          >
-            <CardContent>
-              <Typography variant="h6">Tổng Số Khách Hàng</Typography>
-              <Typography variant="h4">420</Typography>
-              <Typography>+8% so với tháng trước</Typography>
+          <Card variant="plain" color="neutral" invertedColors>
+            <CardContent orientation="horizontal">
+              <CircularProgress size="lg" determinate value={20}>
+                <SvgIcon>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+                    />
+                  </svg>
+                </SvgIcon>
+              </CircularProgress>
+              <CardContent>
+                <Typography level="body-md">Tổng Số Khách Hàng</Typography>
+                <Typography level="h2">1.542</Typography>
+              </CardContent>
             </CardContent>
+            <CardActions>
+              <Button variant="soft" size="sm">
+                Chi tiết
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
         <Grid xs={3}>
-          <Card
-            variant="soft"
-            sx={{ backgroundColor: "#fce4ec", color: "#d81b60" }}
-          >
-            <CardContent>
-              <Typography variant="h6">Đánh Giá Trung Bình</Typography>
-              <Typography variant="h4">4.5/5</Typography>
-              <Typography>+0.1 từ tháng trước</Typography>
+          <Card variant="plain" color="neutral" invertedColors>
+            <CardContent orientation="horizontal">
+              <CircularProgress size="lg" determinate value={20}>
+                <SvgIcon>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+                    />
+                  </svg>
+                </SvgIcon>
+              </CircularProgress>
+              <CardContent>
+                <Typography level="body-md">Trung Bình Đánh Giá</Typography>
+                <Typography level="h2">4.7/5</Typography>
+              </CardContent>
             </CardContent>
+            <CardActions>
+              <Button variant="soft" size="sm">
+                Chi tiết
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
       </Grid>
@@ -65,7 +159,7 @@ export const Dashboard = () => {
       {/* Pie Chart and Bar Chart */}
       <Grid container spacing={2}>
         <Grid xs={6}>
-          <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+          <Typography level="title-lg" sx={{ marginBottom: 2, color: "#333" }}>
             Loại Áo Bán Chạy
           </Typography>
           <PieChart
@@ -80,12 +174,12 @@ export const Dashboard = () => {
                 ],
               },
             ]}
-            width={400}
+            width={500}
             height={300}
           />
         </Grid>
         <Grid xs={6}>
-          <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+          <Typography level="title-lg" sx={{ marginBottom: 2, color: "#333" }}>
             Số Lượng Áo Bán Theo Tháng
           </Typography>
           <BarChart
@@ -130,7 +224,7 @@ export const Dashboard = () => {
           borderRadius: 1,
         }}
       >
-        <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+        <Typography level="title-lg" sx={{ marginBottom: 2, color: "#333" }}>
           Tổng Quan Khách Hàng
         </Typography>
         <Divider />

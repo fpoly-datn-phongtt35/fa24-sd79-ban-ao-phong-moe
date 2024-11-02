@@ -2,29 +2,29 @@ package sd79.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
+import java.io.Serializable;
+import java.util.*;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "promotions")
-public class Promotion {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Promotion extends AbstractEntity<Integer> implements Serializable {
     @Size(max = 255)
     @Column(name = "name")
     private String name;
 
-    @Column(name = "promotion_value", precision = 10, scale = 2)
-    private BigDecimal promotionValue;
+    @Size(max = 20)
+    @Column(name = "code", length = 20)
+    private String code;
+
+    @Column(name = "percent")
+    private Integer percent;
 
     @Column(name = "start_date")
     private Date startDate;
@@ -32,8 +32,11 @@ public class Promotion {
     @Column(name = "end_date")
     private Date endDate;
 
-    @Lob
-    @Column(name = "description")
-    private String description;
+    @Size(max = 255)
+    @Column(name = "note")
+    private String note;
+
+    @OneToMany(mappedBy = "promotion")
+    private List<PromotionDetail> promotionDetails = new ArrayList<>();
 
 }

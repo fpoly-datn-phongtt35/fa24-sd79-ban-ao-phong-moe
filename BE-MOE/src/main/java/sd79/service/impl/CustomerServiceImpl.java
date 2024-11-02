@@ -132,7 +132,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public long createCustomer(CustomerReq customerReq) {
 
-         if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
+        if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
             throw new EntityExistsException("Tên tài khoản đã tồn tại.");
         } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
             throw new EntityExistsException("Email đã tồn tại.");
@@ -191,7 +191,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         User user = customer.getUser();
 
-          if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
+        if (this.customerRepository.existsByEmail(customerRequest.getEmail()) &&
                 !user.getEmail().equals(customerRequest.getEmail())) {
             throw new EntityExistsException("Email đã tồn tại.");
         } else if (this.customerRepository.existsByPhoneNumber(customerRequest.getPhoneNumber()) &&

@@ -16,6 +16,7 @@ import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
 import { useState } from "react";
+import { playAudio } from "~/utils/speak";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
@@ -46,7 +47,10 @@ export const Sidebar_Admin = (props) => {
         marginBottom={3}
         marginTop={1}
         onClick={() => navigate("/dashboard")}
-        onMouseEnter={() => setHovered(true)}
+        onMouseEnter={() => {
+          setHovered(true);
+          playAudio();
+        }}
         onMouseLeave={() => setHovered(false)}
       >
         <img
@@ -100,7 +104,7 @@ export const Sidebar_Admin = (props) => {
             label="Bán hàng"
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
           >
-            <MenuItem component={<Link to="/dashboard?offline" />}>
+            <MenuItem component={<Link to="/bill" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Bán tại quầy
               </Typography>
@@ -186,7 +190,7 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
             <MenuItem component={<Link to="/promotions" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Quản lý đợt giảm giá
+                Đợt giảm giá
               </Typography>
             </MenuItem>
           </SubMenu>

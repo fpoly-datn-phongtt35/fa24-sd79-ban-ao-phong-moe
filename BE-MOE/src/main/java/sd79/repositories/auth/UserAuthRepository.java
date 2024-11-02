@@ -38,7 +38,7 @@ public class UserAuthRepository {
         }
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        StringBuilder sql = new StringBuilder("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, (CONCAT(u.last_name, ' ', u.first_name)) , u.user.email, u.image)");
+        StringBuilder sql = new StringBuilder(String.format("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, %s , u.user.email, u.image)", role.equals(UserRole.ADMIN) ? "(CONCAT(u.last_name, ' ', u.first_name))" : "(CONCAT(u.lastName, ' ', u.firstName))"));
         if (role.equals(UserRole.ADMIN)) {
             //TODO
             sql.append(" FROM employees  u WHERE u.user.username = :username");
