@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState, useEffect } from "react";
 import { Avatar, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -7,13 +11,11 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
-import { MoeAlert } from "../other/MoeAlert";
 import {
   Autocomplete,
   Badge,
   Button,
   DialogContent,
-  DialogTitle,
   Drawer,
   Input,
   List,
@@ -43,7 +45,7 @@ const managementOptions = [
   { title: "Quản lý nhân viên", path: "/employee" },
   { title: "Thêm nhân viên", path: "/employee/add" },
   { title: "Quản lý phiếu giảm giá", path: "/coupon" },
-  { title: "Tạo phiếu giảm giá", path: "/coupon/add" },
+  { title: "Tạo phiếu giảm giá", path: "/coupon/create" },
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
@@ -82,10 +84,10 @@ export const Header_Admin = (props) => {
           sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}
         >
           <Autocomplete
-            freeSolo={true}
+            freeSolo
             startDecorator={<SearchIcon color="primary" />}
             placeholder="Tìm kiếm"
-            sx={{ border: "none", width: 350, backgroundColor: "#f9fafc" }}
+            sx={{ width: 350, backgroundColor: "#f9fafc", border: "none" }}
             options={managementOptions}
             getOptionLabel={(option) => option.title}
             onChange={(event, newValue) => {
@@ -93,7 +95,9 @@ export const Header_Admin = (props) => {
                 navigate(newValue.path);
               }
             }}
-            renderInput={(params) => <Input {...params} type="search" />}
+            components={{
+              Input: (props) => <Input {...props} type="search" />,
+            }}
           />
         </Box>
         <Box
