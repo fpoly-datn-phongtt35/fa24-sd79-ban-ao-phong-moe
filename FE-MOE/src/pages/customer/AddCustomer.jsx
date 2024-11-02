@@ -127,7 +127,7 @@ export const AddCustomer = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>0-9]/g; 
+    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g; 
     const phoneRegex = /^0\d{9,11}$/;
     const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;

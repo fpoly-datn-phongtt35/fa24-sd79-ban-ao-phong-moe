@@ -52,6 +52,7 @@ export const deleteEmployee = async (id) => {
 export const getEmployee = async (id) => {
   try {
     const res = await authorizedAxiosInstance.get(`${API_ROOT}/employee/${id}`);
+    // console.log('Employee data from API:', res.data);
     return res.data; // Trả về dữ liệu từ API
   } catch (error) {
     console.error('Error fetching employee data:', error);

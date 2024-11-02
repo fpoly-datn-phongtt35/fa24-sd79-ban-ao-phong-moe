@@ -24,7 +24,7 @@ public interface EmployeeService {
 
     void updateEmp(EmployeeReq req, Integer id);
 
-    List<Employee> findByNameAndPhone(String keyword, String phone_number);
+    List<EmployeeResponse> findByNameAndPhone(String keyword, String phone_number);
 
     void updateImage(EmployeeImageReq req);
 }

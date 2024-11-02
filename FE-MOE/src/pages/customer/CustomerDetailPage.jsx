@@ -160,9 +160,9 @@ export const CustomerDetailPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>0-9]/g;
+    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
     const phoneRegex = /^0\d{9,11}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
 
     const calculateAge = (dob) => {
