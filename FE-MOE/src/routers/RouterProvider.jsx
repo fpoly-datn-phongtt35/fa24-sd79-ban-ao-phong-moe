@@ -38,6 +38,8 @@ import LoginPage from "~/pages/auth/LoginPage";
 import LocationSelector from "~/pages/other/LocationSelector";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
+import CheckOut from "~/pages/clients/CheckOut";
+import Bill from "~/pages/bill/Bill";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -179,6 +181,7 @@ function RouterProvider() {
 
       <Route element={<ProtectedRoutes_USER />}>
         <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/checkout" element={<CheckOut />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -204,6 +207,7 @@ function RouterProvider() {
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
+        <Route path="/bill" element={<Bill />} />
       </Route>
     </Routes>
   );

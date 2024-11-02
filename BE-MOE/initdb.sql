@@ -241,6 +241,7 @@ CREATE TABLE bill_status (
 
 CREATE TABLE bill (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(10),
   customer_id BIGINT,
   coupon_id BIGINT,
   bill_status_id INT,
@@ -697,13 +698,6 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
 (9, 'https://example.com/images/coupon09.jpg', 'yz567'),
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
-
-INSERT INTO coupon_share (coupon_id, customer_id, is_deleted) VALUES
-    (1, 1, 0),  
-    (2, 2, 0), 
-    (3, 3, 0),  
-    (4, 4, 0),  
-    (5, 5, 0);  
     
 -- bill
 INSERT INTO bill_status (name, description) VALUES
@@ -714,20 +708,5 @@ INSERT INTO bill_status (name, description) VALUES
 ('Đã hủy đơn hàng', NULL),
 ('Khác', NULL);
 
-INSERT INTO bill (customer_id, coupon_id, bill_status_id, shipping_cost, total_amount, barcode, qr_code, created_by, updated_by, is_deleted) VALUES
-(1, 1, 1, 30000, 329000, '1234567890', 'QRCODE1', 1, 1, 0),
-(2, 2, 2, 25000, 424000, '2345678901', 'QRCODE2', 2, 2, 0),
-(3, 3, 3, 35000, 229000, '3456789012', 'QRCODE3', 3, 3, 0),
-(4, 4, 4, 20000, 619000, '4567890123', 'QRCODE4', 4, 4, 0),
-(5, 5, 5, 50000, 529000, '5678901234', 'QRCODE5', 5, 5, 0);
-
-INSERT INTO bill_detail (product_detail_id, bill_id, quantity, retail_price, discount_amount, total_amount_product) VALUES
-(1, 1, 2, 299000, 85, 598000), 
-(2, 1, 1, 399000, 100, 399000), 
-(3, 2, 3, 249000, NULL, 747000), 
-(4, 3, 1, 599000, NULL, 599000), 
-(1, 4, 1, 299000, 85, 299000),
-(2, 5, 2, 399000, 100, 798000), 
-(3, 5, 1, 249000, NULL, 249000); 
 
 

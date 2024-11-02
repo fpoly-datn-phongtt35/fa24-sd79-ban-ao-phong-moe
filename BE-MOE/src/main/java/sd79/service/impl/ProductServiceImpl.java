@@ -277,7 +277,6 @@ public class ProductServiceImpl implements ProductService {
         return productDetailResponses;
     }
 
-
     private List<ImageResponse> convertToImageResponse(List<ProductImage> images) {
         List<ImageResponse> imageResponses = new ArrayList<>();
         images.forEach(imageResponse -> {

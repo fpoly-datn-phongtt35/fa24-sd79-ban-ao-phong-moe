@@ -1,5 +1,8 @@
-import { Grid, TextField, Button, Select, MenuItem } from '@mui/material';
+import { Grid, TextField, Select, MenuItem } from '@mui/material';
 import { useNavigate } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+import { Button } from '@mui/joy';
+import { Refresh } from '@mui/icons-material';
 
 const CouponSearchFilter = ({
   keyword, setKeyword, startDate, setStartDate, endDate, setEndDate, discountType,
@@ -45,13 +48,14 @@ const CouponSearchFilter = ({
       </Grid>
       <Grid item xs={12} sm={3}>
         <Button
-          variant="contained"
-          color="success"
+          variant="solid"
+          color="primary"
           onClick={() => navigate("/coupon/create")}
           fullWidth
-          size="small"
+          size="lg"
+          startDecorator={<AddIcon />}
         >
-          Thêm mới
+          Tạo mới
         </Button>
       </Grid>
 
@@ -97,15 +101,17 @@ const CouponSearchFilter = ({
       </Grid>
       <Grid item xs={12} sm={3}>
         <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleClear}
+          variant="soft"
+          sx={{ backgroundColor: 'purple', color: 'white' }}
           fullWidth
-          size="small"
+          onClick={handleClear}
+          size="lg"
+          startDecorator={<Refresh />}
         >
-          Xóa lọc
+          Làm mới
         </Button>
       </Grid>
+
     </Grid>
   );
 };
