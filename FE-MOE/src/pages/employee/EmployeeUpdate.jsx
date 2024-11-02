@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
+import { Container, Box, Grid, Typography, Paper, Avatar, FormControlLabel } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
 import axios from 'axios';
-import { getAllPositions, getEmployee, putEmployee, postEmployeeImage} from '~/apis/employeeApi';
+import { getAllPositions, getEmployee, putEmployee, postEmployeeImage } from '~/apis/employeeApi';
 
 
 const host = "https://provinces.open-api.vn/api/";
 
 export const EmployeeUpdate = () => {
     const [employeeData, setEmployeeData] = useState({
-        username: '',
-        password: '',
+
         email: '',
         first_name: '',
         last_name: '',
@@ -22,6 +21,7 @@ export const EmployeeUpdate = () => {
         date_of_birth: '',
         avatar: '',
         salary: '',
+        isLocked: '',
     });
 
     const [imagePreview, setImagePreview] = useState(null);
@@ -105,10 +105,9 @@ export const EmployeeUpdate = () => {
             try {
                 const response = await getEmployee(id);
                 console.log("API Response:", response.data);
-
                 const employeeData = response.data;
-                console.log(formatDate2(employeeData.date_of_birth));
-
+                console.log('isLocked value:', employeeData.isLocked);
+                // console.log(formatDate2(employeeData.date_of_birth));
                 handleCityChange(employeeData.employee_address.provinceId);
                 handleDistrictChange(employeeData.employee_address.districtId)
                 handleWardChange(employeeData.employee_address.ward)
@@ -125,7 +124,9 @@ export const EmployeeUpdate = () => {
                     district: employeeData.employee_address.district,
                     ward: employeeData.employee_address.ward,
                     email: employeeData.email,
-                    streetName: employeeData.employee_address.streetName
+                    streetName: employeeData.employee_address.streetName,
+                    isLocked: employeeData.isLocked === 1,
+
 
                 });
                 setImagePreview(employeeData.avatar);
@@ -161,11 +162,12 @@ export const EmployeeUpdate = () => {
                 streetName: streetName
             },
             date_of_birth: formatDate(employeeData.date_of_birth),
+
+
         };
         setIsLoading(true);
         await putEmployee(updatedEmploye, id).then(async (res) => {
             if (imageObject === null) {
-                toast.success('Sửa thành công');
                 setIsLoading(false);
                 navigate('/employee');
                 return;
@@ -422,12 +424,28 @@ export const EmployeeUpdate = () => {
                                                 />
                                             </FormControl>
                                         </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl>
+                                                <FormLabel required>Trạng thái khóa</FormLabel>
+                                                <RadioGroup
+                                                    row
+                                                    name="isLocked"
+                                                    value={employeeData.isLocked ? 'true' : 'false'} // Chuyển đổi giá trị thành chuỗi
+                                                    onChange={(e) => setEmployeeData({ ...employeeData, isLocked: e.target.value === 'true' })} // Chuyển đổi trở lại boolean
+                                                >
+                                                    <FormControlLabel value="true" control={<Radio />} label="Khóa" />
+                                                    <FormControlLabel value="false" control={<Radio />} label="Mở khóa" />
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </Grid>
+
+
                                     </Grid>
                                     <Grid item xs={6} sx={{ marginTop: 1 }}>
                                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                                             Cập Nhật Người Dùng
                                         </Button>
-                                        
+
                                     </Grid>
                                 </Grid>
                             </Grid>

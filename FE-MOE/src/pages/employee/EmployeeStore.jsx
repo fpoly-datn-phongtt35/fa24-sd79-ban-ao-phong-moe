@@ -27,6 +27,22 @@ export const EmployeeStore = () => {
 
     const [positions, setPositions] = useState([]);
 
+    const validateInputs = () => {
+        let tempErrors = {};
+
+        if (!employeeData.username) tempErrors.username = "Tên tài khoản là bắt buộc.";
+        if (!employeeData.password) tempErrors.password = "Mật khẩu là bắt buộc.";
+        if (!employeeData.email) tempErrors.email = "Email là bắt buộc.";
+        if (!employeeData.first_name) tempErrors.first_name = "Tên là bắt buộc.";
+        if (!employeeData.last_name) tempErrors.last_name = "Họ là bắt buộc.";
+        if (!employeeData.phone_number) tempErrors.phone_number = "Số điện thoại là bắt buộc.";
+        if (!employeeData.date_of_birth) tempErrors.date_of_birth = "Ngày sinh là bắt buộc.";
+        if (!employeeData.salary) tempErrors.salary = "Lương là bắt buộc.";
+        if (!position) tempErrors.position = "Vui lòng chọn chức vụ.";
+
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    }
     useEffect(() => {
         const fetchCities = async () => {
             const response = await axios.get(`${host}?depth=1`);
@@ -149,7 +165,6 @@ export const EmployeeStore = () => {
                     formData.append("images", imageObject)
                     formData.append("productId", res)
                     await postEmployeeImage(formData).then(() => {
-                        toast.success('Thêm thành công');
                         setIsLoading(false);
                         navigate('/employee');
                     })

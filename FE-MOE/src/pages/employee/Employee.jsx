@@ -1,11 +1,13 @@
 // src/pages/employee/Employee.jsx
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Grid, TextField, Typography, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Pagination
+    Pagination, IconButton
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
@@ -51,6 +53,7 @@ export const Employee = () => {
             const res = await searchNameAndPhone(keyword.trim(), phone_number.trim());
             if (res && res.data && Array.isArray(res.data.data)) {
                 setEmployee(res.data.data);
+                // console.log(res.data.data);
                 setTotalPages(Math.ceil(res.data.totalElements / itemsPerPage));
             } else {
                 setEmployee([]);
@@ -87,7 +90,6 @@ export const Employee = () => {
     const removeEmployee = async (id) => {
         try {
             await deleteEmployee(id);
-            toast.success("Xóa nhân viên thành công!");
             handleSetEmployee(currentPage);
         } catch (error) {
             console.error("Error deleting employee:", error);
@@ -155,21 +157,50 @@ export const Employee = () => {
             </Grid>
 
             <div className="text-end">
-                <Button
-                    startDecorator={<AddIcon />}
-                    onClick={addNewEmployee}
+            <div className="text-end" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '15px' }}>
+    <Button
+        startDecorator={<AddIcon />}
+        onClick={addNewEmployee}
+        style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            transition: 'background-color 0.3s ease'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
+    >
+        Thêm nhân viên
+    </Button>
+    <Button
+        size="sm"
+        variant="solid"
+        color="danger"
+        onClick={handleClear}
+        style={{
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            transition: 'background-color 0.3s ease',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b32d3a'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+    >
+        Xóa Tìm Kiếm
+    </Button>
+</div>
 
-                >
-                    Thêm nhân viên
-                </Button>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={handleClear}
-                    style={{ margin: '20px' }}
-                >
-                    Xóa Tìm Kiếm
-                </Button>
             </div>
 
             <TableContainer component={Paper}>
@@ -195,7 +226,7 @@ export const Employee = () => {
                                     <TableCell>
                                         <Avatar alt={emp.first_name} src={emp?.avatar} />
                                     </TableCell>
-                                    <TableCell>{emp.fullName || 'N/A'}</TableCell>
+                                    <TableCell>{emp.full_name || 'N/A'}</TableCell>
                                     <TableCell>{emp.phone_number || 'N/A'}</TableCell>
                                     <TableCell>{emp.gender || 'N/A'}</TableCell>
                                     <TableCell>{emp.email || 'N/A'}</TableCell>
@@ -225,21 +256,13 @@ export const Employee = () => {
                                         {typeof emp.position === 'object' ? (emp.position.name || 'N/A') : (emp.position || 'N/A')}
                                     </TableCell>
                                     <TableCell>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={() => removeEmployee(emp.id)}
-                                            style={{ marginRight: '10px' }}
-                                        >
-                                            Xóa
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="info"
-                                            onClick={() => updateEmployee(emp.id)}
-                                        >
-                                            Sửa
-                                        </Button>
+                                        <IconButton onClick={() => removeEmployee(emp.id)}>
+                                            <DeleteIcon color="error" />
+                                        </IconButton>
+
+                                        <IconButton onClick={() => updateEmployee(emp.id)}>
+                                            <EditIcon />
+                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))

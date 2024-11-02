@@ -36,5 +36,7 @@ public class EmployeeReq {
 
     private int position;
 
+    private Boolean isLocked;
+
     private AddressRequest address;
 }
