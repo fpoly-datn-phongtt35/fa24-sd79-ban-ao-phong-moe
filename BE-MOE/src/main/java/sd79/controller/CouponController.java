@@ -38,6 +38,24 @@ public class CouponController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm giá thành công", this.couponService.getAllCoupon(param));
     }
 
+    @Operation(
+            summary = "Lấy danh sách phiếu giảm giá trạng thái đang diễn ra",
+            description = "Lấy tất cả phiếu giảm giá trạng thái đang diễn ra từ cơ sở dữ liệu"
+    )
+    @GetMapping("/getAllCouponDate")
+    public ResponseData<?> getAllCouponDate(CouponParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm trạng thái đang diễn ra giá thành công", this.couponService.getAllCouponDate(param));
+    }
+
+    @Operation(
+            summary = "Lấy danh sách phiếu giảm giá cá nhân",
+            description = "Lấy tất cả phiếu giảm giá tcá nhâ từ cơ sở dữ liệu"
+    )
+    @GetMapping("/getAllCouponDatePersonal")
+    public ResponseData<?> getAllCouponDatePersonal(CouponParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm cá nhân thành công", this.couponService.getAllCouponDatePersonal(param));
+    }
+
     // Lấy thông tin phiếu giảm giá theo ID
     @GetMapping("/detail/{id}")
     public ResponseData<?> getCouponById(@PathVariable Long id) {

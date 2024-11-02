@@ -55,8 +55,6 @@ export const fetchAllCoupon = async (
     .then((res) => res.data);
 };
 
-
-
 export const postCoupon = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/coupon/store`, data)

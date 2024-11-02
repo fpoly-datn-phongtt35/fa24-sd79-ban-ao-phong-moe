@@ -7,9 +7,9 @@ import sd79.model.Customer;
 
 @Getter
 @Builder
-public class BillRespone {
+public class BillResponse {
     private Long id;
     private String code;
     private Customer customer;
-    private Coupon coupon;
+    private BillCouponResponse coupon;
 }

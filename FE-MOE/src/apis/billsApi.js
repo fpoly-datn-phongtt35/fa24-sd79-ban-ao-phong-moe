@@ -80,6 +80,12 @@ export const deleteProduct = async (id) => {
 };
 
 //them lan 3
+export const fetchCustomer = async (billId) => { 
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/bill/getCustomer/${billId}`) 
+    .then((res) => res.data);
+};
+
 export const postCustomer = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/bill/storeCustomer`, null, {
@@ -108,6 +114,122 @@ export const deleteCustomer = async (billId) => {
 
 
 //them lan 4
+export const fetchAllCouponDate = async (
+  pageNo,
+  keyword,
+  startDate,
+  endDate,
+  discountType,
+  type,
+  status,
+  pageSize,
+  sort,
+  direction
+) => {
+  let uri = "/coupon/getAllCouponDate?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (startDate) {
+    queryParams.push(`startDate=${startDate}`);
+  }
+  if (endDate) {
+    queryParams.push(`endDate=${endDate}`);
+  }
+  if (discountType) {
+    queryParams.push(`discountType=${discountType}`);
+  }
+  if (type) {
+    queryParams.push(`type=${type}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (pageSize !== undefined && pageSize !== null) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (sort) {
+    queryParams.push(`sort=${sort}`);
+  }
+  if (direction) {
+    queryParams.push(`direction=${direction}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
+export const fetchAllCouponDatePersonal = async (
+  pageNo,
+  keyword,
+  startDate,
+  endDate,
+  discountType,
+  type,
+  status,
+  pageSize,
+  sort,
+  direction,
+  customerId 
+) => {
+  let uri = "/coupon/getAllCouponDatePersonal?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (startDate) {
+    queryParams.push(`startDate=${startDate}`);
+  }
+  if (endDate) {
+    queryParams.push(`endDate=${endDate}`);
+  }
+  if (discountType) {
+    queryParams.push(`discountType=${discountType}`);
+  }
+  if (type) {
+    queryParams.push(`type=${type}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  if (pageSize !== undefined && pageSize !== null) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (sort) {
+    queryParams.push(`sort=${sort}`);
+  }
+  if (direction) {
+    queryParams.push(`direction=${direction}`);
+  }
+  if (customerId !== null && customerId !== undefined) { 
+    queryParams.push(`customerId=${customerId}`); 
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
+export const fetchCoupon = async (billId) => { 
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/bill/getCoupon/${billId}`) 
+    .then((res) => res.data);
+};
+
 export const postCoupon = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/bill/storeCoupon`, null, {
@@ -126,11 +248,25 @@ export const deleteCoupon = async (billId) => {
     .post(`${API_ROOT}/bill/deleteCoupon`, null, {
       params: { billId }
     })
-    .then((res) => {
-      toast.success(res.data.message);
+    .then((res) => {  
       return res.data.data; 
     })
     .catch((error) => {
       toast.error("Xóa phiếu giảm giá khỏi đơn hàng không thành công");
     });
 };
+
+//them lan 5
+export const addPay = async (billStoreRequest) => {
+  try {
+    const res = await authorizedAxiosInstance.post(`${API_ROOT}/bill/storePay`, billStoreRequest);
+    toast.success("Thêm mới hóa đơn thành công");
+    return res.data.data; 
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Thêm mới hóa đơn không thành công";
+    toast.error(errorMessage);
+    console.error("Error adding new bill:", error);
+    throw error;
+  }
+};
+

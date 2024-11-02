@@ -440,8 +440,11 @@ const UpdateCoupon = () => {
                                             validate: value => {
                                                 if (discountType === 'PERCENTAGE') {
                                                     const discountValue = getValues('discountValue');
-                                                    if (value < discountValue) {
-                                                        return 'Giá trị giảm tối đa phải lớn hơn hoặc bằng giá trị giảm';
+                                                    const conditionsValue = getValues('conditions');                                                                      
+                                                    const minRequiredMaxValue = (discountValue / 100) * conditionsValue;
+                                
+                                                    if (value < minRequiredMaxValue) {
+                                                        return `Giá trị giảm tối đa phải lớn hơn hoặc bằng ${minRequiredMaxValue.toFixed(2)} cho điều kiện đơn hàng hiện tại`;
                                                     }
                                                 }
                                                 return true;

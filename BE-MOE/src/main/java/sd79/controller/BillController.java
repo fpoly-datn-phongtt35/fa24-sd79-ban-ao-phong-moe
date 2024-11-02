@@ -4,22 +4,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.BillDetailRequest;
 import sd79.dto.requests.BillRequest;
-import sd79.dto.requests.CouponRequest;
-import sd79.dto.requests.common.BillParamFilter;
-import sd79.dto.requests.common.CouponParamFilter;
-import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.requests.productRequests.BillStoreRequest;
-import sd79.dto.response.PageableResponse;
 import sd79.dto.response.ResponseData;
-import sd79.dto.response.bills.BillDetailRespone;
-import sd79.dto.response.bills.ProductResponse;
-import sd79.model.BillDetail;
+import sd79.dto.response.bills.BillCouponResponse;
+import sd79.dto.response.bills.BillDetailResponse;
+import sd79.model.Coupon;
+import sd79.model.Customer;
 import sd79.service.BillService;
 
 import java.util.List;
@@ -31,6 +28,7 @@ import java.util.List;
 public class BillController {
 
     private final BillService billService;
+    private static final Logger logger = LoggerFactory.getLogger(BillController.class);
 
     //them lan 1
     @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
@@ -60,7 +58,7 @@ public class BillController {
     @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
     @GetMapping("/getProduct/{billId}")  // Accept billId as a path variable
     public ResponseData<?> getAllProduct(@PathVariable long billId) {
-        List<BillDetailRespone> billDetails = this.billService.getAllProducts(billId);
+        List<BillDetailResponse> billDetails = this.billService.getAllProducts(billId);
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", billDetails);
     }
 
@@ -81,7 +79,14 @@ public class BillController {
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Xóa sản phẩm khỏi hóa đơn thành công");
     }
 
-    //them lan 3@PathVariable
+    //them lan 3
+    @Operation(summary = "Lấy tất cả khách hàng", description = "Lấy danh sách tất cả khách hàng")
+    @GetMapping("/getCustomer/{billId}")
+    public ResponseData<?> getAllCustomers(@PathVariable long billId) {
+        List<Customer> customers = billService.getAllCustomers(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách khách hàng thành công", customers);
+    }
+
     @Operation(summary = "Thêm khách hàng vào hóa đơn", description = "Thêm khách hàng vào hóa đơn hiện có")
     @PostMapping("/storeCustomer")
     public ResponseData<?> addCustomer(@RequestParam Long billId, @RequestParam Long customerId) {
@@ -97,6 +102,13 @@ public class BillController {
     }
 
     //them lan 4
+    @Operation(summary = "Lấy tất cả mã giảm giá", description = "Lấy danh sách tất cả mã giảm giá")
+    @GetMapping("/getCoupon/{billId}")
+    public ResponseData<?> getAllCoupons(@PathVariable Long billId) {
+        List<BillCouponResponse> coupons = billService.getAllCoupons(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách mã giảm giá thành công", coupons);
+    }
+
     @Operation(summary = "Thêm mã giảm giá vào hóa đơn", description = "Thêm mã giảm giá vào hóa đơn hiện có")
     @PostMapping("/storeCoupon")
     public ResponseData<?> addCoupon(@RequestParam Long billId, @RequestParam Long couponId) {
@@ -115,15 +127,34 @@ public class BillController {
     @Operation(summary = "Thêm mới hóa đơn", description = "Thêm hóa đơn và các chi tiết hóa đơn vào cơ sở dữ liệu")
     @PostMapping("/storePay")
     public ResponseData<?> addPay(@Valid @RequestBody BillStoreRequest billStoreRequest, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
-        }
+//        if (bindingResult.hasErrors()) {
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
+//        }
+//
+//        // Check if BillRequest is null
+//        if (billStoreRequest.getBillRequest() == null) {
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillRequest cannot be null", null);
+//        }
+
         BillRequest billRequest = billStoreRequest.getBillRequest();
         List<BillDetailRequest> billDetails = billStoreRequest.getBillDetails();
-        long billId = billService.storePay(billRequest, billDetails);
 
-        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
-    }
+//        // Additional check for billDetails
+//        if (billDetails == null || billDetails.isEmpty()) {
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillDetails cannot be empty", null);
+//        }
+//
+//        logger.info("Received request to add pay: {}", billStoreRequest);
 
+//        try {
+            long billId = billService.storePay(billRequest, billDetails);
+//            return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
+//        } catch (IllegalArgumentException e) {
+//            logger.error("Error adding pay: {}", e.getMessage());
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+//        } catch (Exception e) {
+//            logger.error("Unexpected error occurred while adding pay: ", e);
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
+        }
 
 }

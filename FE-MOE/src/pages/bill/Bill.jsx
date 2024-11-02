@@ -20,7 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchProduct, postBill, postCoupon, postCustomer, postProduct } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
@@ -40,8 +40,13 @@ function Bill() {
     const [isCouponModalOpen, setCouponModalOpen] = useState(false)
     const [orderData, setOrderData] = useState({});
     const [products, setProducts] = useState([]);
+    const [coupons, setCoupons] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const handleTabChange = (event, newValue) => setTabIndex(newValue);
+    const [currentOrder, setCurrentOrder] = useState(null);
+    const [customerAmount, setCustomerAmount] = useState('');
 
+    //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
         handleSetBill();
     }, []);
@@ -49,40 +54,12 @@ function Bill() {
     useEffect(() => {
         if (selectedOrder) {
             handleSetProduct(selectedOrder);
+            handleSetCoupon(selectedOrder);
+            handleSetCustomer(selectedOrder);
         }
     }, [selectedOrder]);
 
-    const handleQuantityChange = (productId, newQuantity) => {
-        setProducts(prevProducts =>
-            prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: newQuantity } : product
-            )
-        );
-    };
-
-    const handleSelectCoupon = async (coupon) => {
-        try {
-            const couponData = {
-                bill: selectedOrder,
-                coupon: coupon.id
-            };
-            await postCoupon(couponData);
-
-            setOrderData(prevOrderData => ({
-                ...prevOrderData,
-                coupon: coupon
-            }));
-            setSelectedCoupon(coupon);
-        } catch (error) {
-            console.error("Failed to apply coupon:", error);
-        }
-        await handleSetBill();
-    };
-
-    const getCurrentOrderData = () => {
-        return bills.find(order => order.id === selectedOrder) || {};
-    };
-
+    //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async (data) => {
         const billData = {
             code: data.code,
@@ -94,58 +71,23 @@ function Bill() {
             setSelectedOrder(response.data.id);
         }
         await handleSetBill();
-    };
-
-    const onProduct = async (pr) => {
-        if (!selectedOrder) {
-            console.error('No order selected. Order object:', selectedOrder);
-            return;
-        }
-
-        const product = {
-            productDetail: pr.id,
-            bill: selectedOrder,
-            quantity: 1,
-            price: parseFloat(pr.price),
-            discountAmount: 0,
-        };
-
-        try {
-            await postProduct(product);
-            handleSetProduct(selectedOrder);
-        } catch (error) {
-            console.error('Failed to add product:', error);
-        }
-    };
-
-    const onCustomer = async (customer) => {
-        const customerData = {
-            bill: selectedOrder,
-            customer: customer.id
-        };
-
-        try {
-            await postCustomer(customerData);
-
-        } catch (error) {
-            console.error("Failed to add customer:", error);
-        }
+        await handleSetCoupon(selectedOrder);
     };
 
     const handleSetBill = async () => {
         const response = await fetchBill();
         if (response?.data) {
-            setBills(response.data);
-        }
-        console.log(response.data)
-    };
+            const updatedBills = [
+                ...bills.filter(bill => !response.data.some(newBill => newBill.id === bill.id)),
+                ...response.data.map(bill => ({
+                    ...bill,
+                    customerId: bill.customer ? bill.customer.id : null,
+                }))
+            ];
 
-    const handleSetProduct = async (orderId) => {
-        const response = await fetchProduct(orderId);
-        if (response?.data) {
-            setProducts(response.data);
+            setBills(updatedBills);
+            setCurrentOrder(updatedBills[0]);
         }
-        console.log(response.data)
     };
 
     const deleteOrder = async (orderToDelete) => {
@@ -158,7 +100,39 @@ function Bill() {
         setSelectedOrder(order.id);
     };
 
+    //----------------------------------------------------------Product--------------------------------------//
+    const onProduct = async (pr) => {
+        if (!selectedOrder) {
+            console.error('No order selected. Order object:', selectedOrder);
+            return;
+        }
+        const product = {
+            productDetail: pr.id,
+            bill: selectedOrder,
+            quantity: 1,
+            price: parseFloat(pr.price),
+            discountAmount: 0,
+        };
+        try {
+            await postProduct(product);
+            handleSetProduct(selectedOrder);
+        } catch (error) {
+            console.error('Failed to add product:', error);
+        }
+    };
+
+    const handleSetProduct = async (orderId) => {
+        const response = await fetchProduct(orderId);
+        if (response?.data) {
+            setProducts(response.data);
+        }
+    };
+
     const openProductListModal = (order) => {
+        if (!selectedOrder) {
+            console.log('No order selected, cannot open product modal.');
+            return;
+        }
         if (order) {
             setSelectedOrder(order.id);
             setProductListModalOpen(true);
@@ -179,6 +153,63 @@ function Bill() {
 
     };
 
+    const closeProductListModal = () => setProductListModalOpen(false);
+
+    //----------------------------------------------------------Customer--------------------------------------//   
+    const onCustomer = async (customer) => {
+        if (!selectedOrder) {
+            console.error("No order selected, cannot add customer.");
+            return;
+        }
+
+        const customerData = {
+            bill: selectedOrder,
+            customer: customer.id,
+            customerId: orderData.customerId
+        };
+
+        try {
+            await postCustomer(customerData);
+        } catch (error) {
+            console.error("Failed to add customer:", error);
+        }
+    };
+
+    const handleSetCustomer = async (orderId) => {
+        const response = await fetchCustomer(orderId);
+        if (response?.data) {
+            setCustomers(response.data);
+        }
+    };
+
+    //----------------------------------------------------------Coupon--------------------------------------//  
+    const onCoupon = async (coupon) => {
+        if (!selectedOrder) {
+            console.error("No order selected, cannot apply coupon.");
+            return;
+        }
+        const couponData = {
+            bill: selectedOrder,
+            coupon: coupon.id
+        };
+        await postCoupon(couponData);
+        await handleSetBill();
+        await handleSetCoupon(selectedOrder);
+
+    };
+
+    const handleSetCoupon = async (orderId) => {
+        if (!orderId) {
+            return;
+        }
+        const response = await fetchCoupon(orderId);
+        if (response?.data) {
+            setCoupons(response.data);
+        }
+        await handleSetBill();
+        console.log(currentOrder)
+    };
+
     const handleRemoveCoupon = async () => {
         try {
             await deleteCoupon(selectedOrder);
@@ -187,7 +218,8 @@ function Bill() {
                 coupon: null
             }));
             setSelectedCoupon(null);
-            handleSetBill();
+            await handleSetBill();
+            await handleSetCoupon(selectedOrder);
         } catch (error) {
             console.error("Failed to remove coupon:", error);
         }
@@ -196,10 +228,88 @@ function Bill() {
     const openCouponModal = () => setCouponModalOpen(true);
     const closeCouponModal = () => setCouponModalOpen(false);
 
-    const closeProductListModal = () => setProductListModalOpen(false);
+    const handleQuantityChange = (productId, newQuantity) => {
+        setProducts(prevProducts =>
+            prevProducts.map(product =>
+                product.id === productId ? { ...product, quantity: newQuantity } : product
+            )
+        );
+    };
 
+    //----------------------------------------------------------Tính toán--------------------------------------//  
+    const subtotal = products.reduce((total, product) => {
+        return total + product.productDetail.price * product.quantity;
+    }, 0);
+
+    const discountAmount = (() => {
+        if (!currentOrder || !currentOrder.coupon) return 0;
+
+        const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
+
+        if (subtotal < conditions) return 0;
+
+        if (discountType === 'FIXED_AMOUNT') {
+            return discountValue;
+        } else if (discountType === 'PERCENTAGE') {
+            const calculatedDiscount = (subtotal * discountValue) / 100;
+            return Math.min(calculatedDiscount, maxValue);
+        }
+
+        return 0;
+    })();
+
+    const handleCustomerAmountChange = (event) => {
+        const value = parseFloat(event.target.value) || 0;
+        setCustomerAmount(value);
+    };
+
+    const totalAfterDiscount = subtotal - discountAmount;
+    const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
+
+    //----------------------------------------------------------Them lan cuoi----------------------------------//
+    const onPay = async () => {
+        if (!currentOrder || products.length === 0) {
+            toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
+            return;
+        }
+    
+        const billStoreRequest = {
+            billRequest: {             
+                code: currentOrder.code,
+                customer: currentOrder.customerId || null,
+                coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
+                billStatus: 1, 
+                shippingCost: 0,
+                totalAmount: totalAfterDiscount,
+                barcode: "null",
+                qrCode: "null",
+                userId: localStorage.getItem("userId"),
+            },
+            billDetails: products.map(product => ({
+                productDetail: product.productDetail.id,
+                quantity: product.quantity,
+                price: product.productDetail.price,
+                discountAmount: product.discountAmount,
+            })),
+        };
+    
+        try {
+            const billId = await addPay(billStoreRequest);
+            if (billId) {
+                toast.success("Hóa đơn đã được tạo thành công!");
+                await handleSetBill(); 
+            }
+        } catch (error) {
+            console.error("Failed to create invoice:", error);
+            toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
+        }
+    };
+    
+
+    //----------------------------------------------------------Giao diện--------------------------------------//  
     return (
         <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
+            {/* Bill */}
             <div>
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Quản lý đơn hàng
@@ -237,7 +347,9 @@ function Bill() {
                         </Button>
                     ))}
                 </Box>
+
             </div>
+            {/* Product */}
             <div>
                 <Typography variant="h6" fontWeight="bold">
                     Đơn hàng {selectedOrder || 'Chưa chọn đơn hàng'}
@@ -249,6 +361,7 @@ function Bill() {
                         color="primary"
                         startIcon={<AddIcon />}
                         onClick={() => openProductListModal(bills.find(order => order.id === selectedOrder))}
+                        disabled={!selectedOrder}
                     >
                         Thêm sản phẩm
                     </Button>
@@ -333,9 +446,11 @@ function Bill() {
                     ))}
                 </List>
             </div>
+            {/* Customer */}
             <div>
                 <CustomerList selectedOrder={selectedOrder} onAddCustomer={onCustomer} />
             </div>
+            {/* Coupon and Tính toán */}
             <div>
                 <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
                     <Typography variant="h6" fontWeight="bold" color="textPrimary">
@@ -358,6 +473,7 @@ function Bill() {
                                     startIcon={<DiscountIcon />}
                                     variant="text"
                                     onClick={openCouponModal}
+                                    disabled={!selectedOrder}
                                 >
                                     Phiếu giảm giá
                                 </Button>
@@ -366,30 +482,32 @@ function Bill() {
                                 </Typography>
                             </Box>
 
+
                             <CouponModal
                                 open={isCouponModalOpen}
                                 onClose={closeCouponModal}
-                                onSelectCoupon={handleSelectCoupon}
+                                onSelectCoupon={onCoupon}
+                                customerId={currentOrder?.customerId}
                             />
 
                             <Grid container spacing={1}>
                                 <Grid item xs={6}><Typography>Tạm tính:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>470,000 đ</Typography></Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>{formatCurrencyVND(subtotal)}</Typography></Grid>
 
                                 <Grid item xs={6}><Typography>Giảm giá:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>47,000 đ</Typography></Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>{formatCurrencyVND(discountAmount)}</Typography></Grid>
                             </Grid>
 
-                            {getCurrentOrderData().coupon && (
-                                <Box sx={{ backgroundColor: '#e6f4ea', p: 1, borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                            {coupons.map((coupon, index) => (
+                                <Box key={index} sx={{ backgroundColor: '#e6f4ea', p: 1, borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
                                     <Typography variant="body2" color="green">
-                                        Áp dụng thành công phiếu giảm giá <strong>{getCurrentOrderData().coupon.name}</strong>
+                                        Áp dụng thành công phiếu giảm giá <strong>{coupon.name}</strong>
                                     </Typography>
                                     <Chip
                                         label={
-                                            getCurrentOrderData().coupon.discountType === 'FIXED_AMOUNT'
-                                                ? `Giảm ${formatCurrencyVND(getCurrentOrderData().coupon.discountValue)} đơn tối thiểu ${formatCurrencyVND(getCurrentOrderData().coupon.conditions)}`
-                                                : `Giảm ${getCurrentOrderData().coupon.discountValue}% đơn tối thiểu ${formatCurrencyVND(getCurrentOrderData().coupon.conditions)}`
+                                            coupon.discountType === 'FIXED_AMOUNT'
+                                                ? `Giảm ${formatCurrencyVND(coupon.discountValue)} đơn tối thiểu ${formatCurrencyVND(coupon.conditions)}`
+                                                : `Giảm ${coupon.discountValue}% đơn tối thiểu ${formatCurrencyVND(coupon.conditions)}`
                                         }
                                         color="success"
                                     />
@@ -398,30 +516,34 @@ function Bill() {
                                         <DeleteIcon />
                                     </IconButton>
                                 </Box>
-                            )}
+                            ))}
 
                             <Grid container spacing={1} sx={{ mb: 2 }}>
                                 <Grid item xs={6}><Typography variant="h6">Tổng tiền:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">423,000 đ</Typography></Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">{formatCurrencyVND(totalAfterDiscount)}</Typography></Grid>
                             </Grid>
-
 
                             <TextField
                                 label="Tiền khách đưa"
                                 variant="outlined"
                                 fullWidth
                                 sx={{ mb: 2 }}
+                                value={customerAmount}
+                                onChange={handleCustomerAmountChange}
                             />
-                            <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                                Vui lòng nhập đủ tiền khách đưa!
-                            </Typography>
 
+                            {customerAmount < totalAfterDiscount && (
+                                <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                                    Vui lòng nhập đủ tiền khách đưa!
+                                </Typography>
+                            )}
 
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                 <Typography>Tiền thừa:</Typography>
-                                <Typography fontWeight="bold">0 đ</Typography>
+                                <Typography fontWeight="bold">
+                                    {changeAmount >= 0 ? formatCurrencyVND(changeAmount) : formatCurrencyVND(0)}
+                                </Typography>
                             </Box>
-
                             <Divider sx={{ my: 2 }} />
 
 
@@ -438,15 +560,14 @@ function Bill() {
                                 </Button>
                             </Box>
 
-                            <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                            <Button variant="contained" color="primary" onClick={onPay} sx={{ mt: 2 }}>
                                 Tạo hóa đơn
                             </Button>
+
                         </Grid>
                     </Grid>
                 </Paper>
             </div>
-
-
         </Container >
     );
 }

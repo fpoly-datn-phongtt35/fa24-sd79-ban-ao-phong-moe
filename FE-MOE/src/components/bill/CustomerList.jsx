@@ -21,7 +21,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { Input } from '@mui/joy';
 
 export default function CustomerList({ selectedOrder, onAddCustomer }) {
-    const [customer, setCustomer] = useState(null); // Initialize as null
+    const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredCustomers, setFilteredCustomers] = useState([]);
@@ -157,6 +157,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer }) {
                             onChange={handleSearchChange}
                             onFocus={() => setShowDropdown(true)}
                             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                            disabled={!selectedOrder}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">

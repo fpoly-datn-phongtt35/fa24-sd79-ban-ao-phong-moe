@@ -38,8 +38,8 @@ function ProductListModal({ onAddProduct, onClose }) {
         const fetchProducts = async () => {
             try {
                 const res = await fetchAllBillProducts(currentPage, pageSize, keyword, size, color);
-                console.log(res.data); // Log the entire response to check its structure
-                setProducts(res.data.content || []); // Ensure we set products to an empty array if content is undefined
+                console.log(res.data); 
+                setProducts(res.data.content || []); 
                 setTotalProducts(res.data.totalElements || 0);
             } catch (error) {
                 console.error('Error fetching products:', error);

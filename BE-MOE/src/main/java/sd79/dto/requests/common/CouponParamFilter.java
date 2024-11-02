@@ -18,4 +18,5 @@ public class CouponParamFilter {
     private int pageSize = 5;
     private String sort = "id";
     private String direction = "DESC";
+    private Long customerId;
 }
