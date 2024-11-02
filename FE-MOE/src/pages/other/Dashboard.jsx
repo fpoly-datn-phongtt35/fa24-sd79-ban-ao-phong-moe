@@ -1,107 +1,204 @@
-// Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
-// Github: https://github.com/JavaTech04
-// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import { Box, Grid } from "@mui/joy";
+import { Box, Grid, Typography, Card, CardContent, Divider } from "@mui/joy";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { LineChart } from "@mui/x-charts/LineChart";
+
 export const Dashboard = () => {
   return (
-    <Box>
-      <LineChart
-        xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-        series={[
-          {
-            data: [2, 5.5, 2, 8.5, 1.5, 5],
-            area: true,
-          },
-        ]}
-        height={300}
-      />
-      <Grid container spacing={2} justifyContent="space-between">
-        <Grid size={6}>
+    <Box sx={{ padding: 3, minHeight: "100vh" }}>
+      <Typography variant="h4" sx={{ marginBottom: 3, color: "#333" }}>
+        Bảng Điều Khiển Bán Áo
+      </Typography>
+
+      {/* Cards Section */}
+      <Grid container spacing={2} sx={{ marginBottom: 4 }}>
+        <Grid xs={3}>
+          <Card
+            variant="soft"
+            sx={{ backgroundColor: "#e3f2fd", color: "#1976d2" }}
+          >
+            <CardContent>
+              <Typography variant="h6">Doanh Thu Tháng</Typography>
+              <Typography variant="h4">$35,500</Typography>
+              <Typography>+15% so với tháng trước</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid xs={3}>
+          <Card
+            variant="soft"
+            sx={{ backgroundColor: "#f1f8e9", color: "#388e3c" }}
+          >
+            <CardContent>
+              <Typography variant="h6">Tổng Áo Đã Bán</Typography>
+              <Typography variant="h4">1,350</Typography>
+              <Typography>+10% so với tháng trước</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid xs={3}>
+          <Card
+            variant="soft"
+            sx={{ backgroundColor: "#fff3e0", color: "#f57c00" }}
+          >
+            <CardContent>
+              <Typography variant="h6">Tổng Số Khách Hàng</Typography>
+              <Typography variant="h4">420</Typography>
+              <Typography>+8% so với tháng trước</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid xs={3}>
+          <Card
+            variant="soft"
+            sx={{ backgroundColor: "#fce4ec", color: "#d81b60" }}
+          >
+            <CardContent>
+              <Typography variant="h6">Đánh Giá Trung Bình</Typography>
+              <Typography variant="h4">4.5/5</Typography>
+              <Typography>+0.1 từ tháng trước</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Pie Chart and Bar Chart */}
+      <Grid container spacing={2}>
+        <Grid xs={6}>
+          <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+            Loại Áo Bán Chạy
+          </Typography>
           <PieChart
             series={[
               {
                 data: [
-                  { id: 0, value: 10, label: "series A" },
-                  { id: 1, value: 15, label: "series B" },
-                  { id: 2, value: 20, label: "series C" },
+                  { id: 0, value: 35, label: "Áo Thun" },
+                  { id: 1, value: 25, label: "Áo Hoodie" },
+                  { id: 2, value: 20, label: "Áo Polo" },
+                  { id: 3, value: 10, label: "Áo Sơ Mi" },
+                  { id: 4, value: 10, label: "Áo Khoác" },
                 ],
               },
             ]}
             width={400}
-            height={200}
+            height={300}
           />
         </Grid>
-        <Grid size={6}>
-          <PieChart
+        <Grid xs={6}>
+          <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+            Số Lượng Áo Bán Theo Tháng
+          </Typography>
+          <BarChart
             series={[
               {
                 data: [
-                  { id: 0, value: 10, label: "series A" },
-                  { id: 1, value: 15, label: "series B" },
-                  { id: 2, value: 20, label: "series C" },
+                  120, 150, 200, 220, 260, 280, 300, 320, 310, 330, 360, 400,
                 ],
               },
             ]}
-            width={400}
-            height={200}
-          />
-        </Grid>
-        <Grid size={6}>
-          <PieChart
-            series={[
+            height={300}
+            xAxis={[
               {
                 data: [
-                  { id: 0, value: 10, label: "series A" },
-                  { id: 1, value: 15, label: "series B" },
-                  { id: 2, value: 20, label: "series C" },
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                  "Nov",
+                  "Dec",
                 ],
+                scaleType: "band",
               },
             ]}
-            width={400}
-            height={200}
-          />
-        </Grid>
-        <Grid size={6}>
-          <PieChart
-            series={[
-              {
-                data: [
-                  { id: 0, value: 10, label: "series A" },
-                  { id: 1, value: 15, label: "series B" },
-                  { id: 2, value: 20, label: "series C" },
-                ],
-              },
-            ]}
-            width={400}
-            height={200}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
           />
         </Grid>
       </Grid>
 
-      <LineChart
-        xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-        series={[
+      {/* Customer Overview Table */}
+      <Box
+        sx={{
+          marginTop: 4,
+          backgroundColor: "#ffffff",
+          padding: 3,
+          borderRadius: 1,
+        }}
+      >
+        <Typography variant="h6" sx={{ marginBottom: 2, color: "#333" }}>
+          Tổng Quan Khách Hàng
+        </Typography>
+        <Divider />
+        <Grid container sx={{ marginTop: 2 }}>
+          <Grid xs={3}>
+            <Typography variant="body1">
+              <strong>Tên Khách Hàng</strong>
+            </Typography>
+          </Grid>
+          <Grid xs={3}>
+            <Typography variant="body1">
+              <strong>Email</strong>
+            </Typography>
+          </Grid>
+          <Grid xs={3}>
+            <Typography variant="body1">
+              <strong>Số Đơn Đặt Hàng</strong>
+            </Typography>
+          </Grid>
+          <Grid xs={3}>
+            <Typography variant="body1">
+              <strong>Đánh Giá</strong>
+            </Typography>
+          </Grid>
+        </Grid>
+        <Divider sx={{ marginY: 1 }} />
+        {[
           {
-            data: [2, 5.5, 2, 8.5, 1.5, 5],
+            name: "Nguyễn Văn A",
+            email: "vana@example.com",
+            orders: 15,
+            rating: "4.8/5",
           },
-        ]}
-        height={300}
-      />
-      <BarChart
-        series={[
-          { data: [35, 44, 24, 34] },
-          { data: [51, 6, 49, 30] },
-          { data: [15, 25, 30, 50] },
-          { data: [60, 50, 15, 25] },
-        ]}
-        height={290}
-        xAxis={[{ data: ["Q1", "Q2", "Q3", "Q4"], scaleType: "band" }]}
-        margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-      />
+          {
+            name: "Trần Thị B",
+            email: "thib@example.com",
+            orders: 12,
+            rating: "4.6/5",
+          },
+          {
+            name: "Lê Thị C",
+            email: "lethi@example.com",
+            orders: 10,
+            rating: "4.7/5",
+          },
+          {
+            name: "Phạm Văn D",
+            email: "pvd@example.com",
+            orders: 8,
+            rating: "4.9/5",
+          },
+        ].map((customer, index) => (
+          <Grid container key={index} sx={{ marginY: 1 }}>
+            <Grid xs={3}>
+              <Typography>{customer.name}</Typography>
+            </Grid>
+            <Grid xs={3}>
+              <Typography>{customer.email}</Typography>
+            </Grid>
+            <Grid xs={3}>
+              <Typography>{customer.orders}</Typography>
+            </Grid>
+            <Grid xs={3}>
+              <Typography>{customer.rating}</Typography>
+            </Grid>
+          </Grid>
+        ))}
+      </Box>
     </Box>
   );
 };

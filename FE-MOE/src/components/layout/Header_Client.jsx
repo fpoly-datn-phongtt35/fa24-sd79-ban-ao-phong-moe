@@ -86,6 +86,10 @@ const Header_Client = () => {
           variant="h6"
           style={{ fontWeight: "bold", color: "#000", fontSize: "24px" }}
         >
+          <img
+            src="https://cdn.pixabay.com/animation/2024/10/24/21/44/21-44-27-689_512.gif"
+            width={90}
+          />
           MOE SHOP
         </Typography>
 

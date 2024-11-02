@@ -10,14 +10,16 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
-import StorefrontIcon from "@mui/icons-material/Storefront";
 import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
+import { useState } from "react";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
+  const [hovered, setHovered] = useState(false);
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -29,29 +31,53 @@ export const Sidebar_Admin = (props) => {
       <Box
         sx={{
           cursor: "pointer",
-          padding: 1,
+          padding: 2,
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           background: "#fbfbfb",
+          borderRadius: "8px",
+          transition: "background 0.3s ease",
+          "&:hover": {
+            transform: "scale(1.05)",
+            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+          },
         }}
         marginBottom={3}
         marginTop={1}
         onClick={() => navigate("/dashboard")}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         <img
-          src={logo}
+          src={
+            hovered
+              ? "https://cdn.pixabay.com/animation/2022/07/29/10/38/10-38-33-739_512.gif"
+              : logo
+          }
           alt="MOE Logo"
           style={{
             maxWidth: !props.collapsed ? "80px" : "50px",
-            marginLeft: "10px",
+            borderRadius: "4px",
+            transition: "transform 0.3s ease",
+            transform: hovered ? "rotate(360deg)" : "rotate(0deg)",
           }}
         />
         {!props.collapsed && (
-          <Typography level="title-lg" sx={{ color: "#0071bd", marginLeft: 1 }}>
-            MOE Store
+          <Typography
+            level="title-lg"
+            sx={{
+              color: "#0071bd",
+              marginTop: 1,
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            MOE SHOP
           </Typography>
         )}
       </Box>
+
       <Sidebar
         className="sidebar"
         collapsed={props.collapsed}
@@ -68,14 +94,6 @@ export const Sidebar_Admin = (props) => {
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
               Trang chủ
-            </Typography>
-          </MenuItem>
-          <MenuItem
-            icon={<StorefrontIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/" />}
-          >
-            <Typography sx={{ color: "#32383e" }} level="body-md">
-              Cửa hàng
             </Typography>
           </MenuItem>
           <SubMenu
@@ -172,6 +190,14 @@ export const Sidebar_Admin = (props) => {
               </Typography>
             </MenuItem>
           </SubMenu>
+          <MenuItem
+            icon={<CelebrationIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/product" />}
+          >
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Quản lý sự kiện
+            </Typography>
+          </MenuItem>
         </Menu>
         <Menu
           rootStyles={{

@@ -1,7 +1,3 @@
-// Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
-// Github: https://github.com/JavaTech04
-// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState, useEffect } from "react";
 import { Avatar, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -11,11 +7,31 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
 import { MoeAlert } from "../other/MoeAlert";
-import { Tooltip, Typography } from "@mui/joy";
+import { Autocomplete, Badge, Button, Input, Typography } from "@mui/joy";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import SearchIcon from "@mui/icons-material/Search";
 
+const managementOptions = [
+  { title: "Bán tại quầy", path: "/" },
+  { title: "Quản lý sản phẩm", path: "/product" },
+  { title: "Thêm sản phẩm", path: "/product/new" },
+  { title: "Quản lý danh mục", path: "/product/categories" },
+  { title: "Quản lý thương hiệu", path: "/product/brand" },
+  { title: "Quản lý chất liệu", path: "/product/material" },
+  { title: "Quản lý kích thước", path: "/product/size" },
+  { title: "Quản lý màu sắc", path: "/product/color" },
+  { title: "Kho lưu trữ", path: "/product/archive" },
+  { title: "Quản lý khách hàng", path: "/customer" },
+  { title: "Thêm khách hàng", path: "/customer/add" },
+  { title: "Quản lý nhân viên", path: "/employee" },
+  { title: "Thêm nhân viên", path: "/employee/add" },
+  { title: "Quản lý phiếu giảm giá", path: "/coupon" },
+  { title: "Tạo phiếu giảm giá", path: "/coupon/add" },
+  { title: "Quản lý đợt giảm giá", path: "/promotions" },
+  { title: "Tạo đợt giảm giá", path: "/promotions/add" },
+];
 export const Header_Admin = (props) => {
-  const [username, setUsername] = useState("Unknown");
-  const [avatar, setAvatar] = useState("");
+  const [data, setData] = useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   useEffect(() => {
@@ -24,8 +40,7 @@ export const Header_Admin = (props) => {
 
   const handleAccessData = async () => {
     await accessUserAPI("ADMIN").then((res) => {
-      setAvatar(res?.avatar);
-      setUsername(res?.username);
+      setData(res);
     });
   };
 
@@ -54,7 +69,38 @@ export const Header_Admin = (props) => {
         />
       </div>
       <div className="header-left">
-        <Box sx={{ marginLeft: "5px" }}>
+        <Box
+          sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}
+        >
+          <Autocomplete
+            freeSolo={true}
+            startDecorator={<SearchIcon color="primary" />}
+            placeholder="Tìm kiếm"
+            sx={{ border: "none", width: 350, backgroundColor: "#f9fafc" }}
+            options={managementOptions}
+            getOptionLabel={(option) => option.title}
+            onChange={(event, newValue) => {
+              if (newValue) {
+                navigate(newValue.path);
+              }
+            }}
+            renderInput={(params) => <Input {...params} type="search" />}
+          />
+        </Box>
+        <Box
+          sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}
+        >
+          <Button
+            size="sm"
+            variant="soft"
+            sx={{ backgroundColor: "#fffbf2", color: "#ffc86e" }}
+          >
+            <Badge color="danger" size="sm">
+              <NotificationsNoneOutlinedIcon />
+            </Badge>
+          </Button>
+        </Box>
+        <Box sx={{ marginLeft: "5px", display: "flex", alignItems: "center" }}>
           <IconButton
             size="small"
             aria-label="account of current user"
@@ -63,10 +109,14 @@ export const Header_Admin = (props) => {
             onClick={handleMenu}
             color="inherit"
           >
-            <Tooltip variant="plain" title={username}>
-              <Avatar alt={username} src={avatar} />
-            </Tooltip>
+            <Avatar alt={data?.username} src={data?.avatar} />
           </IconButton>
+          <Box sx={{ marginLeft: "10px", textAlign: "left" }}>
+            <Typography level="title-md">{data?.fullName}</Typography>
+            <Typography level="body-sm" sx={{ color: "grey.500" }}>
+              Admin
+            </Typography>
+          </Box>
           <Menu
             id="menu-appbar"
             anchorEl={anchorEl}
@@ -83,10 +133,23 @@ export const Header_Admin = (props) => {
             onClose={handleClose}
           >
             <MenuItem
-              sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                p: 1.5,
+                flexDirection: "column",
+              }}
             >
-              <Avatar src={avatar} alt={username} />
-              <Typography level="title-md">{username}</Typography>
+              <Avatar
+                src={data?.avatar}
+                alt={data?.username}
+                sx={{ width: 56, height: 56 }}
+              />
+              <Typography level="title-md">{data?.username}</Typography>
+              <Typography level="body-sm" sx={{ color: "grey.500" }}>
+                Admin
+              </Typography>
             </MenuItem>
             <hr />
             <MenuItem
