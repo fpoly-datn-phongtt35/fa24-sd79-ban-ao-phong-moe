@@ -7,10 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import {
     Grid, TextField, Typography, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Pagination, IconButton
+    Pagination, IconButton,Switch
 } from '@mui/material';
 import { toast } from 'react-toastify';
-import { getAllEmployee, deleteEmployee, searchNameAndPhone } from "~/apis/employeeApi";
+import { getAllEmployee, deleteEmployee, searchNameAndPhone, setLocked } from "~/apis/employeeApi";
 import AddIcon from '@mui/icons-material/Add';
 import { Avatar, Breadcrumbs, Button, Link } from '@mui/joy';
 import HomeIcon from "@mui/icons-material/Home";
@@ -22,6 +22,8 @@ export const Employee = () => {
     const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại (bắt đầu từ 1)
     const [totalPages, setTotalPages] = useState(1); // Tổng số trang
     const [itemsPerPage] = useState(5); // Số lượng nhân viên mỗi trang
+    const [lockedStates, setLockedStates] = useState({});
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -61,6 +63,25 @@ export const Employee = () => {
         } catch (error) {
             console.error('Error during search:', error);
             setEmployee([]);
+        }
+    };
+
+    const onSetLocked = async (id, currentLockedState) => {
+        const updatedLockedState = !currentLockedState;
+
+        try {
+
+            await setLocked(id, updatedLockedState);
+
+
+            setLockedStates((prevStates) => ({
+                ...prevStates,
+                [id]: updatedLockedState,
+            }));
+
+            console.log(`employee ${id} isLocked: ${updatedLockedState}`);
+        } catch (error) {
+            console.error("Failed to update lock status:", error);
         }
     };
 
@@ -157,49 +178,49 @@ export const Employee = () => {
             </Grid>
 
             <div className="text-end">
-            <div className="text-end" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '15px' }}>
-    <Button
-        startDecorator={<AddIcon />}
-        onClick={addNewEmployee}
-        style={{
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            transition: 'background-color 0.3s ease'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
-    >
-        Thêm nhân viên
-    </Button>
-    <Button
-        size="sm"
-        variant="solid"
-        color="danger"
-        onClick={handleClear}
-        style={{
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            transition: 'background-color 0.3s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b32d3a'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
-    >
-        Xóa Tìm Kiếm
-    </Button>
-</div>
+                <div className="text-end" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', marginTop: '10px', marginBottom: '15px' }}>
+                    <Button
+                        startDecorator={<AddIcon />}
+                        onClick={addNewEmployee}
+                        style={{
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'background-color 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
+                    >
+                        Thêm nhân viên
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="solid"
+                        color="danger"
+                        onClick={handleClear}
+                        style={{
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            transition: 'background-color 0.3s ease',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b32d3a'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+                    >
+                        Xóa Tìm Kiếm
+                    </Button>
+                </div>
 
             </div>
 
@@ -214,7 +235,8 @@ export const Employee = () => {
                             <TableCell>Email</TableCell>
                             <TableCell>Ngày Sinh</TableCell>
                             <TableCell>Lương</TableCell>
-                            <TableCell>Địa chỉ</TableCell>
+                            {/* <TableCell>Địa chỉ</TableCell> */}
+                            <TableCell>Trạng Thái</TableCell>
                             <TableCell>Chức vụ</TableCell>
                             <TableCell>Thao Tác</TableCell>
                         </TableRow>
@@ -240,7 +262,7 @@ export const Employee = () => {
                                         )}
 
                                     </TableCell>
-                                    <TableCell>
+                                    {/* <TableCell>
                                         {emp.employee_address && typeof emp.employee_address === 'object' ? (
                                             <div>
                                                 <div>{emp.employee_address.province || 'N/A'}</div>
@@ -251,6 +273,12 @@ export const Employee = () => {
                                         ) : (
                                             'N/A'
                                         )}
+                                    </TableCell> */}
+                                    <TableCell>
+                                        <Switch size="lg"
+                                            checked={lockedStates[emp.id] ?? emp.isLocked}
+                                            onClick={() => onSetLocked(emp.id, lockedStates[emp.id] ?? emp.isLocked)}
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         {typeof emp.position === 'object' ? (emp.position.name || 'N/A') : (emp.position || 'N/A')}
