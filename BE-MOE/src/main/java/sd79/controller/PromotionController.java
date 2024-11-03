@@ -3,7 +3,6 @@ package sd79.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,40 +10,49 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.CouponResponse;
+import sd79.dto.response.CustomerResponse;
+import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
-import sd79.enums.TodoDiscountType;
-import sd79.enums.TodoType;
-import sd79.model.Coupon;
-import sd79.model.Promotion;
-import sd79.service.impl.PromotionServiceImpl;
+import sd79.enums.Gender;
+import sd79.service.PromotionService;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/${api.version}/promotion")
 @RequiredArgsConstructor
 public class PromotionController {
-    @Autowired
-    private final PromotionServiceImpl service;
+    private final PromotionService promotionService;
 
     @Operation(
             summary = "Get Promotion",
             description = "Get all coupon from database"
     )
     @GetMapping
-    public ResponseData<?> getPromotions() {
-        return new ResponseData<>(HttpStatus.OK.value(), "List promotion", service.getAllPromotion());
+    public ResponseData<?> getAllPromotion(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size,
+        @RequestParam(defaultValue = "id") String sortBy,  // Sorting criteria
+        @RequestParam(defaultValue = "asc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);;
+        Page<PromotionResponse> promotionPage = promotionService.getPromotion(pageable);
+        return new ResponseData<>(HttpStatus.OK.value(), "List promotion", promotionPage);
     }
 
-    @GetMapping("/detail/{id}")
-    public ResponseData<?> getPromotionId(@PathVariable Integer id) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Coupon details", service.getPromotionId(id));
+    @Operation(
+            summary = "Get Promotion",
+            description = "Get all coupon from database"
+    )
+    @GetMapping("/promotion-details")
+    public ResponseData<?> getAllPromotionDetail() {
+        return new ResponseData<>(HttpStatus.OK.value(), "List promotion", this.promotionService.getAllPromotionDetail());
     }
 
     @Operation(
@@ -52,18 +60,8 @@ public class PromotionController {
             description = "New promotion into database"
     )
     @PostMapping("/store")
-    public ResponseData<?> addPromotions(@Valid @RequestBody PromotionRequest promotionRequest) {
-        return new ResponseData<>(HttpStatus.CREATED.value(), "promotion created successfully",service.storePromotion(promotionRequest));
-    }
-
-    @Operation(
-            summary = "Delete Promotion",
-            description = "Set is delete of promotion to true and hidde from from"
-    )
-    @DeleteMapping("/delete/{id}")
-    public ResponseData<?> deletePromotions(@PathVariable int id) {
-        service.isDeletePromotion(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Promotion deleted successfully");
+    public ResponseData<?> storePromotions(@RequestBody PromotionRequest request) {
+        return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.promotionService.storePromotion(request));
     }
 
     @Operation(
@@ -71,8 +69,24 @@ public class PromotionController {
             description = "Update promotion into database"
     )
     @PutMapping("/update/{id}")
-    public ResponseData<?> updatePromotions(@PathVariable Integer id, @Valid @RequestBody PromotionRequest promotionRequest) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Promotion updated successfully",service.updatePromotion(promotionRequest,id ));
+    public ResponseData<?> updatePromotion(@PathVariable Integer id, @Valid @RequestBody PromotionRequest req) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion update successfully", promotionService.updatePromotion(req, id));
+    }
+
+        @Operation(
+            summary = "Delete Promotion",
+            description = "Set is delete of promotion to true and hidde from from"
+    )
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseData<?> deletePromotions(@PathVariable int id) {
+        promotionService.deleteByPromotionId(id);
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion deleted successfully");
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseData<?> getPromotionId(@PathVariable Integer id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Promotion details", promotionService.getPromotionId(id));
     }
 
     @GetMapping("/searchKeywordAndDate")
@@ -96,7 +110,7 @@ public class PromotionController {
         Pageable pageable = PageRequest.of(page, size, sortBy);
 
         // Fetch paginated and sorted data
-        Page<PromotionResponse> results = service.findByKeywordAndDate(
+        Page<PromotionResponse> results = promotionService.findByKeywordAndDate(
                 keyword, startDate, endDate, status, pageable);
 
         Map<String, Object> response = new HashMap<>();
@@ -104,6 +118,6 @@ public class PromotionController {
         response.put("totalPages", results.getTotalPages());
         response.put("totalElements", results.getTotalElements());
 
-        return new ResponseData<>(HttpStatus.OK.value(), "List coupon", response);
+        return new ResponseData<>(HttpStatus.OK.value(), "List promotion", response);
     }
 }

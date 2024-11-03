@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 //
 //    @Query("SELECT e FROM employees e WHERE e.phone_number = :phone_number")
 //    Optional<Employee> findByPhone_number(String phone_number);
 
     @Query("from employees where id = :id")
-    Optional<Employee> findByIdEmp(Integer id);
+    Optional<Employee> findByIdEmp(Long id);
 
     @Query("FROM employees e WHERE (CONCAT(e.first_name, ' ', e.last_name) LIKE %:keyword%) " +
             "OR (e.phone_number LIKE :phone_number)")

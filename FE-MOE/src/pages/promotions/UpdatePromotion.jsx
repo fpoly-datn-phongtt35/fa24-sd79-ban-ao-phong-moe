@@ -2,35 +2,57 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { detailDiscount, putDiscount } from "~/apis/discountApi";
 import Swal from "sweetalert2";
-import { Container, Button, Row, Col, Form } from "react-bootstrap";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel, Grid, IconButton, Input, Link, Textarea, Typography } from "@mui/joy";
+import HomeIcon from "@mui/icons-material/Home";
+import DoDisturbOnIcon from '@mui/icons-material/DoDisturbOn';
+import EditIcon from '@mui/icons-material/Edit';
+import { ProductUpdate } from "~/components/promotion/ProductUpdate";
 
 export const UpdatePromotion = () => {
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
-  const formatDate = (dateString, time = "00:00:00") => {
-    const date = new Date(dateString);
+  // Theo dõi ngày bắt đầu và ngày kết thúc
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
+  const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
+
+  // Hàm định dạng ngày tháng
+  const formatDate = (dateTimeString) => {
+    const date = new Date(dateTimeString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}/${month}/${year} | ${time}`;
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
   };
 
- //Hàm lấy thông tin chi tiết để cập nhật
+  // Hàm lấy thông tin chi tiết đợt giảm giá để cập nhật
   useEffect(() => {
     const fetchPromotionDetail = async () => {
       try {
         const response = await detailDiscount(id);
         if (response && response.status === 200) {
           const promotionData = response.data;
-          //Đặt giá trị biểu mẫu với dữ liệu đã lấy
+
+          // Đặt giá trị biểu mẫu với dữ liệu đã lấy
           setValue("name", promotionData.name);
-          setValue("promotionValue", promotionData.promotionValue);
-          setValue("startDate", promotionData.startDate.split(' ')[0]); 
-          setValue("endDate", promotionData.endDate.split(' ')[0]);
-          setValue("description", promotionData.description);
+          setValue("code", promotionData.code);
+          setValue("percent", promotionData.percent);
+          setValue("startDate", promotionData.startDate.split("T")[0]);
+          setValue("endDate", promotionData.endDate.split("T")[0]);
+          setValue("note", promotionData.note);
+
+          // Đặt danh sách sản phẩm đã chọn từ listIdProduct
+          setSelectedProducts(promotionData.listIdProduct || []);  // Cập nhật với listIdProduct
         } else {
           Swal.fire("Lỗi", "Không thể tải thông tin đợt giảm giá", "error");
         }
@@ -43,21 +65,28 @@ export const UpdatePromotion = () => {
     fetchPromotionDetail();
   }, [id, setValue]);
 
-  
   const onSubmit = async (data) => {
+    // Kiểm tra nếu ngày kết thúc không hợp lệ
+    if (isEndDateInvalid) {
+      Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
+      return; // Ngăn không cho tiếp tục nếu có lỗi
+    }
+
     try {
       const response = await putDiscount(id, {
         name: data.name,
-        promotionValue: parseInt(data.promotionValue), //Đảm bảo giá trị là 1 số nguyên
+        code: data.code,
+        percent: data.percent,
         startDate: formatDate(data.startDate),
         endDate: formatDate(data.endDate),
-        description: data.description,
-        userId: localStorage.getItem("userId"), // Đảm bảo lấy đúng userId từ localStorage
+        note: data.note,
+        userId: localStorage.getItem("userId"),
+        productIds: selectedProducts,
       });
 
       if (response && response.status === 200) {
         Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
-        navigate("/promotions"); // Redirect to promotions list after successful update
+        navigate("/promotions");
       } else {
         Swal.fire("Lỗi", "Không thể cập nhật đợt giảm giá", "error");
       }
@@ -68,76 +97,90 @@ export const UpdatePromotion = () => {
   };
 
   return (
-    <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: "15px" }}>
-      <h2 className="mb-4">Cập nhật đợt giảm giá</h2>
-      
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Tên đợt giảm giá</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Nhập tên đợt giảm giá"
-                {...register("name", { required: true })}
-              />
-              {errors.name && <span className="text-danger">Tên đợt giảm giá là bắt buộc</span>}
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Tỷ lệ giảm (%)</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="Nhập tỷ lệ giảm"
-                {...register("promotionValue", { required: true, min: 1, max: 100 })}
-              />
-              {errors.promotionValue && (
-                <span className="text-danger">
-                  Tỷ lệ giảm là bắt buộc và phải từ 1% đến 100%
-                </span>
-              )}
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Ngày bắt đầu</Form.Label>
-              <Form.Control
-                type="date"
-                {...register("startDate", { required: true })}
-              />
-              {errors.startDate && <span className="text-danger">Ngày bắt đầu là bắt buộc</span>}
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Ngày kết thúc</Form.Label>
-              <Form.Control
-                type="date"
-                {...register("endDate", { required: true })}
-              />
-              {errors.endDate && <span className="text-danger">Ngày kết thúc là bắt buộc</span>}
-            </Form.Group>
-          </Col>
-        </Row>
-        <Form.Group className="mb-3">
-          <Form.Label>Mô tả</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            {...register("description")}
-            placeholder="Nhập mô tả"
-          />
-        </Form.Group>
-        <Button type="submit" variant="primary">
-          Cập nhật
-        </Button>
-        <Button variant="secondary" onClick={() => navigate("/promotions")} className="ms-2">
-          Hủy
-        </Button>
-      </Form>
+    <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+      <Grid container spacing={2}>
+        <Grid item xs={7}>
+          <Grid container spacing={2} alignItems="center" marginBottom={2} height={"50px"}>
+            <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+              <Link underline="hover" sx={{ cursor: "pointer", display: "flex", alignItems: "center" }} color="inherit" onClick={() => navigate("/")}>
+                <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                Trang chủ
+              </Link>
+              <Link underline="hover" sx={{ cursor: "pointer", display: "flex", alignItems: "center" }} color="inherit" onClick={() => navigate("/promotions")}>
+                Quản lý đợt giảm giá
+              </Link>
+              <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+                Cập nhật đợt giảm giá
+              </Typography>
+            </Breadcrumbs>
+          </Grid>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container spacing={3} justifyContent="space-between">
+              <Grid xs={4}>
+                <FormControl error={!!errors?.name}>
+                  <FormLabel required>Tên đợt giảm giá</FormLabel>
+                  <Input placeholder="Nhập tên sản phẩm..." fullWidth {...register("name", { required: true })} />
+                  {errors.name && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                </FormControl>
+              </Grid>
+              <Grid xs={4}>
+                <FormControl error={!!errors?.code}>
+                  <FormLabel required>Mã đợt giảm giá</FormLabel>
+                  <Input placeholder="Nhập mã sản phẩm..." fullWidth {...register("code", { required: true })} />
+                  {errors.code && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                </FormControl>
+              </Grid>
+              <Grid xs={4}>
+                <FormControl error={!!errors?.percent}>
+                  <FormLabel>Tỷ lệ giảm (%)</FormLabel>
+                  <Input type="number" placeholder="Nhập tỷ lệ giảm" {...register("percent", { required: true, min: 1, max: 100 })} />
+                  {errors.percent && <FormHelperText>Tỷ lệ giảm là bắt buộc và phải từ 1% đến 100%!</FormHelperText>}
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container spacing={3} justifyContent="space-between">
+              <Grid md={6}>
+                <FormControl error={!!errors?.startDate}>
+                  <FormLabel>Ngày bắt đầu</FormLabel>
+                  <Input type="date" {...register("startDate", { required: true })} />
+                  {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                </FormControl>
+              </Grid>
+              <Grid xs={6}>
+                <FormControl error={isEndDateInvalid || !!errors?.endDate}>
+                  <FormLabel>Ngày kết thúc</FormLabel>
+                  <Input type="date" {...register("endDate", { required: true })} />
+                  {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
+                  {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
+                </FormControl>
+              </Grid>
+              <Grid xs={12}>
+                <FormControl error={!!errors?.note}>
+                  <FormLabel>Mô tả</FormLabel>
+                  <Textarea minRows={3} maxRows={10} {...register("note")} placeholder="Nhập mô tả..."></Textarea>
+                </FormControl>
+              </Grid>
+
+              <Grid xs={12}>
+                <Grid spacing={2}>
+                  <Grid size={6}>
+                    <Button startDecorator={<EditIcon />} type="submit">
+                      Cập nhật
+                    </Button>
+                    <IconButton onClick={() => navigate("/promotions")}>
+                      <DoDisturbOnIcon /> Hủy
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </form>
+        </Grid>
+        <Grid item xs={5}>
+          <ProductUpdate selectedProducts={selectedProducts} setSelectedProducts={setSelectedProducts} />
+        </Grid>
+      </Grid>
     </Container>
   );
 };

@@ -190,7 +190,7 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
             <MenuItem component={<Link to="/promotions" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">
-                Quản lý đợt giảm giá
+                Đợt giảm giá
               </Typography>
             </MenuItem>
           </SubMenu>

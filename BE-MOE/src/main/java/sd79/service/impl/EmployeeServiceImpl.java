@@ -45,14 +45,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final CloudinaryUtils cloudinary;
 
     @Override
-    public EmployeeResponse getEmployeeById(Integer id) {
+    public EmployeeResponse getEmployeeById(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         return convertEmployeeResponse(employee);
     }
 
     @Transactional
     @Override
-    public void deleteEmployee(Integer id) { //xoá nhân viên
+    public void deleteEmployee(Long id) { //xoá nhân viên
         Employee employee = employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         employeeRepository.delete(employee);
         userRepository.delete(employee.getUser());
@@ -102,9 +102,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build()).getId();
     }
 
+    @Override
+    public void setUserLocked(long id, Boolean isLocked) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên"));
+        User user = userRepository.findById(employee.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
+        user.setIsLocked(isLocked);
+        this.userRepository.save(user);
+    }
+
 
     @Override
-    public void updateEmp(EmployeeReq req, Integer id) {
+    public void updateEmp(EmployeeReq req, Long id) {
         Employee employee = this.employeeRepository.findByIdEmp(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với ID: " + id));
 

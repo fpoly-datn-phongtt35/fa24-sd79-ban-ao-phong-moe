@@ -31,7 +31,7 @@ import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNone
 import SearchIcon from "@mui/icons-material/Search";
 
 const managementOptions = [
-  { title: "Bán tại quầy", path: "/" },
+  { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
   { title: "Thêm sản phẩm", path: "/product/new" },
   { title: "Quản lý danh mục", path: "/product/categories" },

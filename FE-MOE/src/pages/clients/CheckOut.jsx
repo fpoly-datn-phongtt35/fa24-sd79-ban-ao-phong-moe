@@ -1,7 +1,12 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   Breadcrumbs,
   Button,
+  CircularProgress,
   FormControl,
   Grid,
   Input,
@@ -19,9 +24,45 @@ import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import VisaSvgIcon from "~/assert/icon/visa.svg";
 import MasterCardSvgIcon from "~/assert/icon/mastercard.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
+import { CommonContext } from "~/context/CommonContext";
+import { useContext, useEffect, useState } from "react";
+import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
+import { formatCurrencyVND } from "~/utils/format";
+import { ScrollToTop } from "~/utils/defaultScroll";
 
 function CheckOut() {
   const navigate = useNavigate();
+  const context = useContext(CommonContext);
+  const [items, setItems] = useState(null);
+
+  useEffect(() => {
+    ScrollToTop();
+    setItems(context.tempCarts);
+  });
+
+  const calculateTotalPrice = () => {
+    return items?.reduce(
+      (total, items) => total + items.retailPrice * items.quantity,
+      0
+    );
+  };
+
+  const totalPrice = calculateTotalPrice();
+
+  if (!items) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="95vw"
+        onClick={() => navigate("/cart")}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
   return (
     <Box>
       <Grid container spacing={2} alignItems="center" height={"50px"}>
@@ -95,29 +136,44 @@ function CheckOut() {
           }}
         >
           <Sheet>
-            <Table borderAxis="none">
+            <Table borderAxis="x" variant="outlined">
               <thead>
                 <tr>
-                  <th>Sản phẩm</th>
-                  <th>Đơn giá</th>
-                  <th>Số lượng</th>
-                  <th>Thành tiền</th>
+                  <th className="text-center" width="30%">
+                    Sản phẩm
+                  </th>
+                  <th className="text-center">Đơn giá</th>
+                  <th className="text-center">Số lượng</th>
+                  <th className="text-center">Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                </tr>
+                {items &&
+                  items.map((i) => (
+                    <tr key={i.id}>
+                      <td>
+                        <CardShoppingCard data={i} />
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">
+                          {formatCurrencyVND(i.retailPrice)}
+                        </Typography>
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">{i.quantity}</Typography>
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">
+                          {formatCurrencyVND(i.retailPrice * i.quantity)}
+                        </Typography>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </Table>
             <Box
               sx={{
-                marginTop: 5,
-                Top: 5,
-                Top: 5,
+                marginTop: 2,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -131,8 +187,9 @@ function CheckOut() {
                   size="md"
                 />
               </Box>
-              <Typography level="title-lg" color="neutral">
-                Tổng số tiền (1 sản phẩm): 100.000 đ
+              <Typography level="title-md">
+                Tổng số tiền ({items.length} sản phẩm):{" "}
+                {formatCurrencyVND(totalPrice)}
               </Typography>
             </Box>
           </Sheet>
@@ -218,7 +275,7 @@ function CheckOut() {
                     Tổng tiền hàng
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    100.000 đ
+                    {formatCurrencyVND(totalPrice)}
                   </Typography>
                 </Box>
                 <Box
@@ -260,7 +317,7 @@ function CheckOut() {
                     Tổng thanh toán
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="danger">
-                    100.000 đ
+                    {formatCurrencyVND(totalPrice)}
                   </Typography>
                 </Box>
               </Box>

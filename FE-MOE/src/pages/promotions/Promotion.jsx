@@ -1,27 +1,57 @@
-import { useEffect, useState } from "react";
-import { Container, Button, Row, Col, Table, Pagination, Form } from "react-bootstrap";
-import { fetchAllDiscounts, deleteDiscount } from "~/apis/discountApi";
+import React, { useEffect, useState } from "react";
+import { Box, Breadcrumbs, Button, Container, Grid, Link, Sheet, Table, Typography } from "@mui/joy";
+import AddIcon from '@mui/icons-material/Add';
+import HomeIcon from "@mui/icons-material/Home";
+import EditIcon from '@mui/icons-material/Edit';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { fetchAllDiscounts, deleteDiscount, searchDiscounts } from "~/apis/discountApi";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Pagination, IconButton, TextField } from "@mui/material";
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchStartDate, setSearchStartDate] = useState("");
   const [searchEndDate, setSearchEndDate] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const navigate = useNavigate();
 
+  // Lấy dữ liệu ban đầu
   useEffect(() => {
     handleSetDiscounts();
   }, []);
 
-  const handleSetDiscounts = async () => {
-    const res = await fetchAllDiscounts();
-    setDiscounts(res.data);
+  // Giám sát thay đổi của điều kiện tìm kiếm
+  useEffect(() => {
+    setCurrentPage(1); // Reset trang khi điều kiện tìm kiếm thay đổi
+    handleSearch(1);   // Tìm kiếm dữ liệu với trang đầu tiên
+  }, [searchTerm, searchStartDate, searchEndDate]);
+
+  const handleSetDiscounts = async (page = currentPage) => {
+    try {
+      const res = await fetchAllDiscounts(page - 1, itemsPerPage);
+      setDiscounts(res.data.content || []);
+      setTotalPages(res.data.totalPages || 1);
+    } catch (error) {
+      console.error("Failed to fetch discounts", error);
+      setDiscounts([]);
+    }
   };
-  
+
+  const handleSearch = async (page = 1) => {
+    try {
+      const results = await searchDiscounts(searchTerm, searchStartDate, searchEndDate, page - 1, itemsPerPage);
+      setDiscounts(results.data.content || []);
+      setTotalPages(results.data.totalPages || 1);
+    } catch (error) {
+      console.error("Failed to search discounts", error);
+      setDiscounts([]);
+    }
+  };
 
   const onDelete = async (id) => {
     try {
@@ -37,7 +67,7 @@ export const Promotion = () => {
       if (confirmResult.isConfirmed) {
         await deleteDiscount(id);
         Swal.fire("Đã xóa!", "Đợt giảm giá đã được xóa.", "success");
-        handleSetDiscounts();
+        handleSetDiscounts(currentPage); // Cập nhật lại danh sách
       }
     } catch (error) {
       console.error("Failed to delete discount", error);
@@ -45,74 +75,84 @@ export const Promotion = () => {
     }
   };
 
-  // Lọc danh sách đợt giảm giá
-  const filteredDiscounts = discounts.filter((discount) => {
-    const discountStartDate = new Date(discount.startDate).setHours(0, 0, 0, 0);
-    const discountEndDate = new Date(discount.endDate).setHours(0, 0, 0, 0);
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSearchStartDate("");
+    setSearchEndDate("");
+    setCurrentPage(1);
+    handleSetDiscounts(); // Lấy lại danh sách ban đầu
+  };
 
-    const isNameMatched = discount.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const isWithinDateRange =
-      (!searchStartDate || new Date(searchStartDate).setHours(0, 0, 0, 0) <= discountEndDate) &&
-      (!searchEndDate || new Date(searchEndDate).setHours(0, 0, 0, 0) >= discountStartDate);
-
-    return isNameMatched && isWithinDateRange;
-  });
-
-  // Tính toán số lượng trang
-  const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
-
-  // Lấy dữ liệu cho trang hiện tại
-  const currentDiscounts = filteredDiscounts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const handlePageChange = (event, newPage) => {
+    setCurrentPage(newPage);
+    if (searchTerm || searchStartDate || searchEndDate) {
+      handleSearch(newPage); // Gọi tìm kiếm nếu có điều kiện
+    } else {
+      handleSetDiscounts(newPage); // Lấy lại dữ liệu theo trang nếu không tìm kiếm
+    }
   };
 
   return (
-    <Container className="bg-white p-4 rounded shadow-sm" style={{ marginTop: "15px" }}>
-      <div className="fs-3 mb-4">
-        <span className="fw-bold">Quản lý đợt giảm giá</span>
-        <Button className="float-end" onClick={() => navigate("/promotions/add")}>
-          Thêm mới
-        </Button>
-      </div>
+    <Container maxWidth="max-width" sx={{ height: "100%", marginTop: "15px", backgroundColor: "#fff" }}>
+      <Grid container spacing={2} alignItems="center" marginBottom={2} height={"50px"}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.white", cursor: "pointer" }}>Quản lý đợt giảm giá</Typography>
+        </Breadcrumbs>
+      </Grid>
 
-      <Row className="mb-4">
-        <Col md={6}>
-          <Form.Control
-            type="search"
-            placeholder="Nhập tên đợt giảm giá..."
+      <Box sx={{ marginBottom: 1, display: 'flex', justifyContent: 'space-between' }}>
+        <Typography level="title-lg">Quản lý đợt giảm giá</Typography>
+      </Box>
+
+      <Box sx={{ marginBottom: 1, display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
+          <TextField
+            label="Tìm kiếm tên"
+            variant="outlined"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
           />
-        </Col>
-        <Col md={3}>
-          <Form.Control
+          <TextField
+            label="Ngày bắt đầu"
             type="date"
+            InputLabelProps={{ shrink: true }}
             value={searchStartDate}
             onChange={(e) => setSearchStartDate(e.target.value)}
-            placeholder="Ngày bắt đầu..."
+            size="small"
           />
-        </Col>
-        <Col md={3}>
-          <Form.Control
+          <TextField
+            label="Ngày kết thúc"
             type="date"
+            InputLabelProps={{ shrink: true }}
             value={searchEndDate}
             onChange={(e) => setSearchEndDate(e.target.value)}
-            placeholder="Ngày kết thúc..."
+            size="small"
           />
-        </Col>
-      </Row>
+        </Box>
 
-      <div className="table-responsive">
-        <Table className="table table-hover table-striped">
+        <Box>
+          <Button variant="soft" size="small" startDecorator={<RefreshIcon />} onClick={handleResetFilters} sx={{ marginRight: 1 }}>Làm mới</Button>
+          <Button size="small" startDecorator={<AddIcon />} onClick={() => navigate("/promotions/add")}>Thêm mới</Button>
+        </Box>
+      </Box>
+
+      <Sheet>
+        <Table aria-label="discounts table" borderAxis="x" variant="outlined">
           <thead>
             <tr>
               <th>#</th>
               <th>Tên</th>
+              <th>Mã</th>
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
@@ -121,26 +161,19 @@ export const Promotion = () => {
             </tr>
           </thead>
           <tbody>
-            {currentDiscounts.length > 0 ? (
-              currentDiscounts.map((discount, index) => (
+            {discounts.length > 0 ? (
+              discounts.map((discount, index) => (
                 <tr key={discount.id}>
                   <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td>{discount.name}</td>
-                  <td>{discount.promotionValue}%</td>
+                  <td>{discount.code}</td>
+                  <td>{discount.percent}%</td>
                   <td>{new Date(discount.startDate).toLocaleDateString()}</td>
                   <td>{new Date(discount.endDate).toLocaleDateString()}</td>
-                  <td>{discount.description}</td>
+                  <td>{discount.note}</td>
                   <td>
-                    <Button
-                      variant="warning" 
-                      className="me-2"
-                      onClick={() => navigate(`/promotions/update/${discount.id}`)}
-                    >
-                      <i className="fa-solid fa-square-pen"></i>
-                    </Button>
-                    <Button variant="danger" onClick={() => onDelete(discount.id)}>
-                      <i className="fa-solid fa-trash"></i>
-                    </Button>
+                    <IconButton color='warning' onClick={() => navigate(`/promotions/update/${discount.id}`)}><EditIcon /></IconButton>
+                    <IconButton color='error' onClick={() => onDelete(discount.id)}><HighlightOffIcon /></IconButton>
                   </td>
                 </tr>
               ))
@@ -151,23 +184,15 @@ export const Promotion = () => {
             )}
           </tbody>
         </Table>
-      </div>
+      </Sheet>
 
-      <Pagination className="justify-content-center">
-        <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
-        <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-        {[...Array(totalPages).keys()].map((number) => (
-          <Pagination.Item
-            key={number + 1}
-            active={number + 1 === currentPage}
-            onClick={() => handlePageChange(number + 1)}
-          >
-            {number + 1}
-          </Pagination.Item>
-        ))}
-        <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-        <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
-      </Pagination>
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        sx={{ marginTop: 2, display: 'flex', justifyContent: 'center' }}
+      />
     </Container>
   );
 };

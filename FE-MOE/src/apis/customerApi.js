@@ -44,6 +44,11 @@ export const postcustomerImage = async (data) => {
       return res.data.data
     });
 };
+export const setLocked = async (id, isLocked) => {
+  return await authorizedAxiosInstance.patch(
+    `${API_ROOT}/customer/change-isLocked/${id}/${isLocked}`
+  );
+};
 export const searchKeywordAndDate = async (keyword, gender, birth) => {
   try {
     const params = {};
