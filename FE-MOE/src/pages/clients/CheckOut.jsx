@@ -17,39 +17,55 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import RoomOutlinedIcon from "@mui/icons-material/RoomOutlined";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import VisaSvgIcon from "~/assert/icon/visa.svg";
-import MasterCardSvgIcon from "~/assert/icon/mastercard.svg";
+import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
 import { CommonContext } from "~/context/CommonContext";
 import { useContext, useEffect, useState } from "react";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import { formatCurrencyVND } from "~/utils/format";
 import { ScrollToTop } from "~/utils/defaultScroll";
+import { reqPay } from "~/apis";
+import { handleVerifyBanking } from "~/exceptions/PaymentException";
+import { getUserAddressCart } from "~/apis/client/productApiClient";
+import VoucherModal from "~/components/clients/modals/VoucherModal";
 
 function CheckOut() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const context = useContext(CommonContext);
   const [items, setItems] = useState(null);
 
   const [message, setMessage] = useState("");
   const [subTotal, setSubTotal] = useState(0);
-  const [shipping, setShipping] = useState(24000);
+  const [shipping, setShipping] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
-  const [discount, setDiscount] = useState(100000);
+  const [discount, setDiscount] = useState(0);
   const [couponId, setCouponId] = useState(1);
+
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     ScrollToTop();
+    fetchUsers();
     setItems(JSON.parse(localStorage.getItem("orderItems")));
+    handleVerifyBanking(searchParams.get("vnp_TransactionStatus")) &&
+      navigate("/cart");
   }, []);
 
   useEffect(() => {
     setSubTotal(calculateTotalPrice());
   }, [items]);
+
+  const fetchUsers = async () => {
+    await getUserAddressCart().then((res) => {
+      setUserInfo(res.data);
+    });
+  };
 
   const calculateTotalPrice = () => {
     return items?.reduce(
@@ -58,11 +74,7 @@ function CheckOut() {
     );
   };
 
-  const onPay = () => {
-    if (paymentMethod === "BANK") {
-      console.log("Bank Payment");
-      return;
-    }
+  const onPay = async () => {
     const data = {
       items,
       message,
@@ -73,7 +85,11 @@ function CheckOut() {
       couponId,
       total: subTotal + shipping - discount,
     };
-
+    if (paymentMethod === "BANK") {
+      console.log("Bank Payment");
+      localStorage.setItem("temp_data", JSON.stringify(data));
+      await reqPay(data);
+    }
     console.log(data);
 
     // localStorage.removeItem("orderItems")
@@ -144,8 +160,14 @@ function CheckOut() {
           >
             Địa chỉ nhận hàng
           </Typography>
-          <Typography level="body-lg">
-            180/23, Đường Phú Mỹ, Phường Mỹ Đình 2, Quận Nam Từ Liêm, Hà Nội{" "}
+          <Typography level="body-lg" margin={2}>
+            Người nhận: {userInfo?.fullName}
+          </Typography>
+          <Typography level="body-lg" margin={2}>
+            Số điện thoại: {userInfo?.phone}
+          </Typography>
+          <Typography level="body-lg" margin={2}>
+            Địa chỉ: {userInfo?.address}
             <Typography
               color="primary"
               level="body-xs"
@@ -166,7 +188,7 @@ function CheckOut() {
           }}
         >
           <Sheet>
-            <Table borderAxis="x" variant="outlined">
+            <Table borderAxis="y">
               <thead>
                 <tr>
                   <th className="text-center" width="30%">
@@ -242,9 +264,7 @@ function CheckOut() {
           >
             Giảm giá
           </Typography>
-          <Button variant="plain" size="sm">
-            Chọn phiếu giảm giá
-          </Button>
+          <VoucherModal />
         </Box>
         {/* Payment method */}
         <Box
@@ -279,9 +299,21 @@ function CheckOut() {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
                 <Box>
-                  <SvgIconDisplay icon={VNPaySvgIcon} />
-                  <SvgIconDisplay icon={VisaSvgIcon} />
-                  <SvgIconDisplay icon={MasterCardSvgIcon} />
+                  <SvgIconDisplay
+                    width={"60px"}
+                    height={"60px"}
+                    icon={VNPaySvgIcon}
+                  />
+                  <SvgIconDisplay
+                    width={"60px"}
+                    height={"60px"}
+                    icon={VisaSvgIcon}
+                  />
+                  <SvgIconDisplay
+                    width={"25px"}
+                    height={"25px"}
+                    icon={MBankIcon}
+                  />
                 </Box>
               </Box>
             </RadioGroup>
