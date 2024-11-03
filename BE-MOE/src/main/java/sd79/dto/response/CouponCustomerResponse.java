@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
-import sd79.model.CouponShare;
 import sd79.model.Customer;
 
 import java.math.BigDecimal;
@@ -14,24 +13,23 @@ import java.util.List;
 
 @Getter
 @Builder
-public class CouponResponse {
+public class CouponCustomerResponse {
     private Long id;
-    private String code; // ma
-    private String name; // ten
-    private TodoType type; // kieu cong khai hay ca nhan
+    private String code;
+    private String name;
+    private TodoType type;
     private BigDecimal discountValue;
-    private TodoDiscountType discountType; // kieu giam gia % hay tien
+    private TodoDiscountType discountType;
     private BigDecimal maxValue;
-    private Integer quantity; // so luong phieu giam gia su dung
+    private Integer quantity;
     private Integer usageCount;
     private BigDecimal conditions;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
-    private Date startDate; // ngay bat dau
+    private Date startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
-    private Date endDate; // ngay ket thuc
-    private String status; //trang thai
+    private Date endDate;
+    private String status;
     private String description;
     private String imageUrl;
     private List<Customer> customers;
-
 }

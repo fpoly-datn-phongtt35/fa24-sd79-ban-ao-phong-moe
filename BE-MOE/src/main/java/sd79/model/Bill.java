@@ -3,11 +3,13 @@ package sd79.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import sd79.enums.PaymentMethod;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -17,39 +19,55 @@ import java.time.Instant;
 @NoArgsConstructor
 @Table(name = "bill")
 public class Bill extends AbstractEntity<Long> implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
 
     @Size(max = 10)
     @Column(name = "code", length = 10)
     private String code;
 
-    @ManyToOne
+    @Size(max = 255)
+    @Column(name = "bank_code")
+    private String bankCode;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "bill_status_id")
     private BillStatus billStatus;
 
-    @Column(name = "shipping_cost", precision = 15)
-    private BigDecimal shippingCost;
+    @Column(name = "shipping", precision = 15)
+    private BigDecimal shipping;
 
-    @Column(name = "total_amount", precision = 15)
-    private BigDecimal totalAmount;
+    @Column(name = "subtotal", precision = 15)
+    private BigDecimal subtotal;
+
+    @Column(name = "seller_discount", precision = 15)
+    private BigDecimal sellerDiscount;
+
+    @Column(name = "total", precision = 15)
+    private BigDecimal total;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     @Size(max = 255)
-    @Column(name = "barcode")
-    private String barcode;
+    @Column(name = "message")
+    private String message;
 
     @Size(max = 255)
-    @Column(name = "qr_code")
-    private String qrCode;
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "payment_time")
+    private Date paymentTime;
+
+    @OneToMany(mappedBy = "bill")
+    private Set<BillDetail> billDetails = new LinkedHashSet<>();
 
 }

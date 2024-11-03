@@ -34,7 +34,7 @@ public class BillController {
     @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
     @GetMapping("/getBill")
     public ResponseData<?> getAllBill() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", this.billService.getAllBills());
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", this.billService.getAllBill());
     }
 
     @Operation(summary = "Thêm hóa đơn với chỉ mã", description = "Thêm hóa đơn chỉ với mã mà không cần thông tin khác")

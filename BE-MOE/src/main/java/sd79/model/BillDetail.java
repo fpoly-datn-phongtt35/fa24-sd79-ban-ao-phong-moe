@@ -49,8 +49,4 @@ public class BillDetail {
 
     @Column(name = "update_at")
     private Date updateAt;
-
-
-
-
 }

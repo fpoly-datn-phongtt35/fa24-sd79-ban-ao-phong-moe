@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.BillDetailRequest;
 import sd79.dto.requests.BillRequest;
+import sd79.dto.requests.common.BillParamFilter;
+import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.response.PageableResponse;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
@@ -13,7 +16,9 @@ import sd79.exception.EntityNotFoundException;
 import sd79.model.*;
 import sd79.repositories.*;
 import sd79.repositories.auth.UserRepository;
+import sd79.repositories.customQuery.BillCustomizeQuery;
 import sd79.repositories.products.ProductDetailRepository;
+import sd79.repositories.products.ProductRepository;
 import sd79.service.BillService;
 
 import java.math.BigDecimal;
@@ -34,6 +39,7 @@ public class BillServiceImpl implements BillService {
     private final ProductDetailRepository productDetailRepository;
     private final BillStatusRepo billStatusRepository;
     private final UserRepository userRepository;
+    private final BillCustomizeQuery billCustomizeQuery;
 
     //them lan 1
     @Override
@@ -42,18 +48,24 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
+    public List<BillResponse> getAllBill() { // get bill hien tai
+        return this.billCustomizeQuery.getAllBills();
+    }
+
+    @Override
     public long storeBill(BillRequest billRequest) {
         long currentBillCount = billRepository.count() + 1;
+
+        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
+                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
 
         Bill bill = Bill.builder()
                 .code(generateRandomCode(currentBillCount))
                 .customer(null)
                 .coupon(null)
-                .billStatus(null)
-                .shippingCost(null)
-                .totalAmount(null)
-                .barcode(null)
-                .qrCode(null)
+                .billStatus(billStatus)
+                .shipping(null)
+                .total(null)
                 .build();
 
         bill.setCreatedBy(getUserById(billRequest.getUserId()));
@@ -233,16 +245,15 @@ public class BillServiceImpl implements BillService {
                         .customer(customer)
                         .coupon(coupon)
                         .billStatus(billStatus)
-                        .shippingCost(billRequest.getShippingCost() != null ? billRequest.getShippingCost() : BigDecimal.ZERO)
-                        .totalAmount(billRequest.getTotalAmount() != null ? billRequest.getTotalAmount() : BigDecimal.ZERO)
-                        .barcode(billRequest.getBarcode())
-                        .qrCode(billRequest.getQrCode())
+                        .shipping(billRequest.getShippingCost() != null ? billRequest.getShippingCost() : BigDecimal.ZERO)
+                        .total(billRequest.getTotalAmount() != null ? billRequest.getTotalAmount() : BigDecimal.ZERO)
+
                         .build());
 
         // Set or update bill attributes from billRequest
         bill.setUpdatedBy(getUserById(billRequest.getUserId()));
-        bill.setShippingCost(billRequest.getShippingCost() != null ? billRequest.getShippingCost() : BigDecimal.ZERO);
-        bill.setTotalAmount(billRequest.getTotalAmount() != null ? billRequest.getTotalAmount() : BigDecimal.ZERO);
+        bill.setShipping(billRequest.getShippingCost() != null ? billRequest.getShippingCost() : BigDecimal.ZERO);
+        bill.setTotal(billRequest.getTotalAmount() != null ? billRequest.getTotalAmount() : BigDecimal.ZERO);
         bill.setBillStatus(billStatus);
         bill.setCreatedBy(bill.getCreatedBy() != null ? bill.getCreatedBy() : getUserById(billRequest.getUserId()));
 
@@ -289,7 +300,7 @@ public class BillServiceImpl implements BillService {
 
         // Update the total amount of the bill if not set in billRequest
         if (billRequest.getTotalAmount() == null) {
-            bill.setTotalAmount(totalBillAmount);
+            bill.setTotal(totalBillAmount);
         }
 
         // Save the final bill with updated total amount

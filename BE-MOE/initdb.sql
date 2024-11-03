@@ -185,6 +185,7 @@ CREATE TABLE coupons (
   max_value DECIMAL(15,0),
   conditions DECIMAL(15,0),
   quantity INT,
+  usage_count INT,
   type ENUM('PUBLIC', 'PERSONAL'),
   start_date DATETIME,
   end_date DATETIME,
@@ -242,13 +243,18 @@ CREATE TABLE bill_status (
 CREATE TABLE bill (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(10),
+  bank_code VARCHAR(255),
   customer_id BIGINT,
   coupon_id BIGINT,
   bill_status_id INT,
-  shipping_cost DECIMAL(15, 0),
-  total_amount DECIMAL(15, 0),
-  barcode VARCHAR(255),
-  qr_code VARCHAR(255),
+  shipping DECIMAL(15, 0),
+  subtotal DECIMAL(15,0),
+  saller_discount DECIMAL(15,0),
+  total DECIMAL(15, 0),
+  payment_method ENUM('CASH','BANK','CASH_ON_DELIVERY'),
+  message VARCHAR(255),
+  note VARCHAR(255),
+  payment_time DATETIME,
   created_by BIGINT,
   updated_by BIGINT,
   create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -259,16 +265,14 @@ CREATE TABLE bill (
   FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
 );
 
--- tổng tiền của sản phẩm = số lượng * (giá gốc - giá giảm)
--- giá giảm = giá gốc - (product_promotion_id.promotion_id.promotion_value)
 CREATE TABLE bill_detail (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   product_detail_id BIGINT,
   bill_id BIGINT,
-  quantity INT, -- số lượng 
-  retail_price DECIMAL(15, 0),  -- giá gốc
-  discount_amount DECIMAL(15, 0), -- giá giảm
-  total_amount_product DECIMAL(15, 0), -- tổng tiền của sản phẩm
+  quantity INT,
+  retail_price DECIMAL(15, 0),  
+  discount_amount DECIMAL(15, 0), 
+  total_amount_product DECIMAL(15, 0), 
   create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
@@ -675,17 +679,17 @@ VALUES
     (2, 2, 2, '2024-07-01', 100.00);
 
 -- Coupons
-INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, type, start_date, end_date, description, created_by, updated_by) VALUES
-('COUP01', 'Summer Sale', 'PERCENTAGE', 10, 5000, 100, 100, 'PUBLIC', '2024-06-01 00:00:00', '2024-07-01 00:00:00', '10% off summer sale', 1, 1),
-('COUP02', 'Winter Offer', 'FIXED_AMOUNT', 500, 5000, 1000, 50, 'PERSONAL', '2024-12-01 00:00:00', '2024-12-31 00:00:00', '500 off winter offer', 2, 2),
-('COUP03', 'Black Friday', 'PERCENTAGE', 20, 10000, 500, 200, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 00:00:00', '20% off Black Friday', 3, 3),
-('COUP04', 'New Year Discount', 'FIXED_AMOUNT', 1000, 10000, 2000, 150, 'PERSONAL', '2024-12-31 00:00:00', '2025-01-01 23:59:59', '1000 off New Year Discount', 4, 4),
-('COUP05', 'Flash Sale', 'PERCENTAGE', 15, 8000, 300, 500, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-16 00:00:00', '15% off Flash Sale', 5, 5),
-('COUP06', 'Holiday Offer', 'FIXED_AMOUNT', 200, 2000, 1000, 300, 'PERSONAL', '2024-12-20 00:00:00', '2024-12-25 00:00:00', '200 off Holiday Offer', 6, 6),
-('COUP07', 'Exclusive Discount', 'PERCENTAGE', 5, 3000, 500, 50, 'PERSONAL', '2024-11-01 00:00:00', '2024-11-10 00:00:00', '5% Exclusive Discount', 7, 7),
-('COUP08', 'Limited Offer', 'FIXED_AMOUNT', 1500, 6000, 2000, 100, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-30 00:00:00', '1500 off Limited Offer', 8, 8),
-('COUP09', 'Birthday Special', 'PERCENTAGE', 25, 7000, 500, 50, 'PERSONAL', '2024-11-20 00:00:00', '2024-11-25 00:00:00', '25% off Birthday Special', 9, 9),
-('COUP10', 'Anniversary Deal', 'FIXED_AMOUNT', 300, 2000, 800, 50, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-10 00:00:00', '300 off Anniversary Deal', 10, 10);
+INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity,usage_count, type, start_date, end_date, description, created_by, updated_by) VALUES
+('COUP01', 'Summer Sale', 'PERCENTAGE', 10, 5000, 100, 100,0, 'PUBLIC', '2024-06-01 00:00:00', '2024-07-01 00:00:00', '10% off summer sale', 1, 1),
+('COUP02', 'Winter Offer', 'FIXED_AMOUNT', 500, 5000, 1000, 50,0, 'PERSONAL', '2024-12-01 00:00:00', '2024-12-31 00:00:00', '500 off winter offer', 2, 2),
+('COUP03', 'Black Friday', 'PERCENTAGE', 20, 10000, 500, 200,0, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 00:00:00', '20% off Black Friday', 3, 3),
+('COUP04', 'New Year Discount', 'FIXED_AMOUNT', 1000, 10000,0, 2000, 150, 'PERSONAL', '2024-12-31 00:00:00', '2025-01-01 23:59:59', '1000 off New Year Discount', 4, 4),
+('COUP05', 'Flash Sale', 'PERCENTAGE', 15, 8000, 300, 500,0, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-16 00:00:00', '15% off Flash Sale', 5, 5),
+('COUP06', 'Holiday Offer', 'FIXED_AMOUNT', 200, 2000, 1000,0, 300, 'PERSONAL', '2024-12-20 00:00:00', '2024-12-25 00:00:00', '200 off Holiday Offer', 6, 6),
+('COUP07', 'Exclusive Discount', 'PERCENTAGE', 5, 3000, 500, 50,0, 'PERSONAL', '2024-11-01 00:00:00', '2024-11-10 00:00:00', '5% Exclusive Discount', 7, 7),
+('COUP08', 'Limited Offer', 'FIXED_AMOUNT', 1500, 6000, 2000, 100,0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-30 00:00:00', '1500 off Limited Offer', 8, 8),
+('COUP09', 'Birthday Special', 'PERCENTAGE', 25, 7000, 500, 50,0, 'PERSONAL', '2024-11-20 00:00:00', '2024-11-25 00:00:00', '25% off Birthday Special', 9, 9),
+('COUP10', 'Anniversary Deal', 'FIXED_AMOUNT', 300, 2000, 800, 50,0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-10 00:00:00', '300 off Anniversary Deal', 10, 10);
 
 INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (1, 'https://example.com/images/coupon01.jpg', 'abc123'),
@@ -700,13 +704,15 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
     
 -- bill
-INSERT INTO bill_status (name, description) VALUES
-('Đã xác nhận đơn hàng', NULL),
-('Đã bàn giao cho đơn vị vận chuyển', NULL),
-('Đã xác nhận thông tin thanh toán', NULL),
-('Đơn hàng đã được giao thành công', NULL),
-('Đã hủy đơn hàng', NULL),
-('Khác', NULL);
+INSERT INTO bill_status (name) VALUES
+('Chưa xác nhận'),
+('Đã xác nhận đơn hàng'),
+('Đã bàn giao cho đơn vị vận chuyển'),
+('Đã xác nhận thông tin thanh toán'),
+('Đơn hàng đã được giao thành công'),
+('Đã hủy đơn hàng'),
+('Giao hàng thất bại'),
+('Khác');
 
 
 

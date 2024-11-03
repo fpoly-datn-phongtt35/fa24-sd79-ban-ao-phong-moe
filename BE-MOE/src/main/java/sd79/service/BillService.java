@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface BillService {
     //them lan 1
+    List<BillResponse> getAllBill();
     List<BillResponse> getAllBills();
     long storeBill(BillRequest billRequest);
     void deleteBill(long id);
