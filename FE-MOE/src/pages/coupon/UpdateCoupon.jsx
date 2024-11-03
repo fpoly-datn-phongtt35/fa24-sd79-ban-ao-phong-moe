@@ -121,6 +121,8 @@ const UpdateCoupon = () => {
             return;
         }
 
+        const incrementedUsageCount = data.usageCount;
+
         const coupon = {
             code: data.code,
             name: data.name,
@@ -128,6 +130,7 @@ const UpdateCoupon = () => {
             discountType: discountType,
             maxValue: data.maxValue,
             quantity: data.quantity,
+            usageCount : incrementedUsageCount,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
             endDate: formatDate(data.endDate),
@@ -195,6 +198,7 @@ const UpdateCoupon = () => {
             setValue('discountValue', couponData.discountValue);
             setValue('maxValue', couponData.maxValue);
             setValue('quantity', couponData.quantity);
+            setValue('usageCount', couponData.usageCount);
             setValue('conditions', couponData.conditions);
             setValue('startDate', couponData.startDate.split(' ')[0]);
             setValue('endDate', couponData.endDate.split(' ')[0]);

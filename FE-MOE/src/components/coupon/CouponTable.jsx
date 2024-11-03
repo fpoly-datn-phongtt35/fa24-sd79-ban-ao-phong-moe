@@ -25,9 +25,9 @@ const CouponTable = ({ coupons, sortBy, sort, handleRequestSort, onDelete, pageN
 
   return (
     <TableContainer component={Paper} sx={{ backgroundColor: "#0071bd", borderRadius: "8px" }}>
-      <Table>
+      <Table size="medium">
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#0071bd" }}> 
+          <TableRow sx={{ backgroundColor: "#0071bd" }}>
             <TableCell sx={{ color: "white", fontWeight: "bold" }}>STT</TableCell>
             <TableCell>
               <TableSortLabel
@@ -40,12 +40,49 @@ const CouponTable = ({ coupons, sortBy, sort, handleRequestSort, onDelete, pageN
               </TableSortLabel>
             </TableCell>
             <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Mã</TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Số lượng</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortBy === 'quantity'}
+                direction={sortBy === 'quantity' ? sort : 'asc'}
+                onClick={() => handleRequestSort('quantity')}
+                sx={{ color: "white", fontWeight: "bold" }}
+              >
+                Số lượng
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortBy === 'usageCount'}
+                direction={sortBy === 'usageCount' ? sort : 'asc'}
+                onClick={() => handleRequestSort('usageCount')}
+                sx={{ color: "white", fontWeight: "bold" }}
+              >
+                Sử dụng
+              </TableSortLabel>
+            </TableCell>
             <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Loại</TableCell>
             <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Kiểu</TableCell>
             <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Trạng thái</TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Bắt đầu</TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Kết thúc</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortBy === 'startDate'}
+                direction={sortBy === 'startDate' ? sort : 'asc'}
+                onClick={() => handleRequestSort('startDate')}
+                sx={{ color: "white", fontWeight: "bold" }}
+              >
+                Bắt đầu
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortBy === 'endDate'}
+                direction={sortBy === 'endDate' ? sort : 'asc'}
+                onClick={() => handleRequestSort('endDate')}
+                sx={{ color: "white", fontWeight: "bold" }}
+              >
+                Kết thúc
+              </TableSortLabel>
+            </TableCell>
             <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Hành động</TableCell>
           </TableRow>
         </TableHead>
@@ -68,7 +105,8 @@ const CouponTable = ({ coupons, sortBy, sort, handleRequestSort, onDelete, pageN
               <TableCell>{(pageNo - 1) * pageSize + index + 1}</TableCell>
               <TableCell>{coupon.name}</TableCell>
               <TableCell align="left">{coupon.code}</TableCell>
-              <TableCell align="left">{coupon.quantity}</TableCell>
+              <TableCell align="left" >{coupon.quantity}</TableCell>
+              <TableCell align="left">{coupon.usageCount}</TableCell>
               <TableCell align="left">
                 {coupon.discountType === "PERCENTAGE" ? <PercentIcon /> : <AttachMoneyIcon />}
               </TableCell>

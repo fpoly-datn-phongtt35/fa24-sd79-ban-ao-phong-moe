@@ -30,6 +30,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import CouponModal from '~/components/bill/CouponModal';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import { toast } from 'react-toastify';
 
 function Bill() {
     const [tabIndex, setTabIndex] = useState(0);
@@ -45,6 +46,7 @@ function Bill() {
     const handleTabChange = (event, newValue) => setTabIndex(newValue);
     const [currentOrder, setCurrentOrder] = useState(null);
     const [customerAmount, setCustomerAmount] = useState('');
+    const [isDisabled, setIsDisabled] = useState(false);
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -60,18 +62,23 @@ function Bill() {
     }, [selectedOrder]);
 
     //----------------------------------------------------------Bill--------------------------------------//
-    const onSubmit = async (data) => {
+    const onSubmit = async () => {
         const billData = {
-            code: data.code,
+            billStatus: 1,
             userId: localStorage.getItem("userId"),
         };
 
-        const response = await postBill(billData);
-        if (response?.data) {
-            setSelectedOrder(response.data.id);
+        try {
+            const response = await postBill(billData);
+            if (response?.data) {
+                setSelectedOrder(response.data.id);
+            }
+            await handleSetBill();
+            await handleSetCoupon(selectedOrder);
+        } catch (error) {
+            console.error("Error in onSubmit:", error);
+            toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
-        await handleSetBill();
-        await handleSetCoupon(selectedOrder);
     };
 
     const handleSetBill = async () => {
@@ -86,7 +93,13 @@ function Bill() {
             ];
 
             setBills(updatedBills);
-            setCurrentOrder(updatedBills[0]);
+
+            if (selectedOrder) {
+                const orderToSet = updatedBills.find(bill => bill.id === selectedOrder);
+                setCurrentOrder(orderToSet || null);
+            } else {
+                setCurrentOrder(updatedBills[0] || null);
+            }
         }
     };
 
@@ -98,6 +111,7 @@ function Bill() {
 
     const selectOrder = (order) => {
         setSelectedOrder(order.id);
+        setCurrentOrder(order);
     };
 
     //----------------------------------------------------------Product--------------------------------------//
@@ -207,7 +221,6 @@ function Bill() {
             setCoupons(response.data);
         }
         await handleSetBill();
-        console.log(response.data)
     };
 
     const handleRemoveCoupon = async () => {
@@ -245,14 +258,13 @@ function Bill() {
         if (!currentOrder || !currentOrder.coupon) return 0;
 
         const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
-
         if (subtotal < conditions) return 0;
 
         if (discountType === 'FIXED_AMOUNT') {
-            return discountValue;
+            return Math.min(discountValue, subtotal);
         } else if (discountType === 'PERCENTAGE') {
             const calculatedDiscount = (subtotal * discountValue) / 100;
-            return Math.min(calculatedDiscount, maxValue);
+            return Math.min(calculatedDiscount, maxValue || calculatedDiscount);
         }
 
         return 0;
@@ -272,13 +284,13 @@ function Bill() {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
             return;
         }
-    
+
         const billStoreRequest = {
-            billRequest: {             
+            billRequest: {
                 code: currentOrder.code,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: 1, 
+                billStatus: 2,
                 shippingCost: 0,
                 totalAmount: totalAfterDiscount,
                 barcode: "null",
@@ -292,19 +304,18 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-    
+
         try {
             const billId = await addPay(billStoreRequest);
             if (billId) {
                 toast.success("Hóa đơn đã được tạo thành công!");
-                await handleSetBill(); 
+                await handleSetBill();
             }
         } catch (error) {
             console.error("Failed to create invoice:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-    
 
     //----------------------------------------------------------Giao diện--------------------------------------//  
     return (
@@ -320,7 +331,18 @@ function Bill() {
                     <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
                 </Tabs>
 
-                <Button variant="contained" color="primary" onClick={onSubmit} sx={{ mb: 2, fontWeight: 'bold' }}>
+                {bills.length >= 5 && (
+                    <Typography color="error" sx={{ mb: 1 }}>
+                        Tối đa tạo 5 hóa đơn.
+                    </Typography>
+                )}
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={onSubmit}
+                    disabled={bills.length >= 5}
+                    sx={{ mb: 2, fontWeight: 'bold' }}
+                >
                     Tạo mới đơn hàng
                 </Button>
 
@@ -352,7 +374,7 @@ function Bill() {
             {/* Product */}
             <div>
                 <Typography variant="h6" fontWeight="bold">
-                    Đơn hàng {selectedOrder || 'Chưa chọn đơn hàng'}
+                    Đơn hàng {currentOrder ? currentOrder.code : 'Chưa chọn đơn hàng'}
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', mt: 3, justifyContent: 'flex-end' }}>
@@ -452,28 +474,30 @@ function Bill() {
             </div>
             {/* Coupon and Tính toán */}
             <div>
-                <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
-                    <Typography variant="h6" fontWeight="bold" color="textPrimary">
+                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}>
+                    <Typography variant="h5" fontWeight="bold" color="textPrimary" gutterBottom>
                         Thông tin thanh toán
                     </Typography>
-                    <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={4}>
-                            <img
+                    <Grid container spacing={4}>
+                        <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+                            <Box
+                                component="img"
                                 src="https://via.placeholder.com/300x300?text=Product+Image"
                                 alt="Shoe"
-                                style={{ maxWidth: '100%', borderRadius: '8px' }}
+                                sx={{ width: '100%', borderRadius: '12px', boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}
                             />
                         </Grid>
-                        {/* coupon */}
+
                         <Grid item xs={12} md={8}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                                 <Button
                                     startIcon={<DiscountIcon />}
-                                    variant="text"
+                                    variant="outlined"
                                     onClick={openCouponModal}
                                     disabled={!selectedOrder}
+                                    sx={{ borderColor: '#4caf50', color: '#4caf50' }}
                                 >
                                     Phiếu giảm giá
                                 </Button>
@@ -482,7 +506,6 @@ function Bill() {
                                 </Typography>
                             </Box>
 
-
                             <CouponModal
                                 open={isCouponModalOpen}
                                 onClose={closeCouponModal}
@@ -490,16 +513,16 @@ function Bill() {
                                 customerId={currentOrder?.customerId}
                             />
 
-                            <Grid container spacing={1}>
-                                <Grid item xs={6}><Typography>Tạm tính:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>{formatCurrencyVND(subtotal)}</Typography></Grid>
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}><Typography variant="body2">Tạm tính:</Typography></Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="body2">{formatCurrencyVND(subtotal)}</Typography></Grid>
 
-                                <Grid item xs={6}><Typography>Giảm giá:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography>{formatCurrencyVND(discountAmount)}</Typography></Grid>
+                                <Grid item xs={6}><Typography variant="body2">Giảm giá:</Typography></Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="body2">{formatCurrencyVND(discountAmount)}</Typography></Grid>
                             </Grid>
 
                             {coupons.map((coupon, index) => (
-                                <Box key={index} sx={{ backgroundColor: '#e6f4ea', p: 1, borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                                <Box key={index} sx={{ backgroundColor: '#e6f4ea', p: 1, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
                                     <Typography variant="body2" color="green">
                                         Áp dụng thành công phiếu giảm giá <strong>{coupon.name}</strong>
                                     </Typography>
@@ -510,8 +533,8 @@ function Bill() {
                                                 : `Giảm ${coupon.discountValue}% đơn tối thiểu ${formatCurrencyVND(coupon.conditions)}`
                                         }
                                         color="success"
+                                        size="small"
                                     />
-
                                     <IconButton color="error" size="small" onClick={handleRemoveCoupon}>
                                         <DeleteIcon />
                                     </IconButton>
@@ -538,32 +561,31 @@ function Bill() {
                                 </Typography>
                             )}
 
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Typography>Tiền thừa:</Typography>
-                                <Typography fontWeight="bold">
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                <Typography variant="body2">Tiền thừa:</Typography>
+                                <Typography fontWeight="bold" color="success.main">
                                     {changeAmount >= 0 ? formatCurrencyVND(changeAmount) : formatCurrencyVND(0)}
                                 </Typography>
                             </Box>
-                            <Divider sx={{ my: 2 }} />
 
+                            <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
                             <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán:</Typography>
-                            <Box display="flex" justifyContent="space-between">
-                                <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: 'black' }} startIcon={<LocalAtmIcon />}>
+                            <Box display="flex" justifyContent="space-between" gap={2}>
+                                <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: 'black', flex: 1 }} startIcon={<LocalAtmIcon />}>
                                     Tiền mặt
                                 </Button>
-                                <Button variant="contained" sx={{ backgroundColor: '#2196f3', color: 'white' }} startIcon={<CreditCardIcon />}>
+                                <Button variant="contained" sx={{ backgroundColor: '#2196f3', color: 'white', flex: 1 }} startIcon={<CreditCardIcon />}>
                                     Chuyển khoản
                                 </Button>
-                                <Button variant="contained" sx={{ backgroundColor: '#424242', color: 'white' }} startIcon={<LocalAtmIcon />}>
+                                <Button variant="contained" sx={{ backgroundColor: '#424242', color: 'white', flex: 1 }} startIcon={<LocalAtmIcon />}>
                                     Tiền mặt & Chuyển khoản
                                 </Button>
                             </Box>
 
-                            <Button variant="contained" color="primary" onClick={onPay} sx={{ mt: 2 }}>
+                            <Button variant="contained" color="primary" onClick={onPay} sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
                                 Tạo hóa đơn
                             </Button>
-
                         </Grid>
                     </Grid>
                 </Paper>

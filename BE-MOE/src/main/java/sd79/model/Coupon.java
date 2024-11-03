@@ -45,6 +45,9 @@ public class Coupon extends AbstractEntity<Long> implements Serializable {
     @Column(name = "quantity")
     private Integer quantity;
 
+    @Column(name = "usage_count")
+    private Integer usageCount;
+
     @Column(name = "conditions", precision = 15)
     private BigDecimal conditions;
 

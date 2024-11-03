@@ -19,4 +19,8 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
     @Query("SELECT COUNT(*) > 0 FROM Coupon c WHERE c.code = :code")
     boolean existsCouponByAttribute(String code);
 
+
+//    List<Coupon> findAllByStatusAndIsDeleted(String status, Boolean isDeleted);
+//    @Query("SELECT c FROM Coupon c JOIN c.couponShares cs WHERE cs.customer.id = :customerId AND c.isDeleted = false")
+//    List<Coupon> findAllByCustomerId(@Param("customerId") Long customerId);
 }
