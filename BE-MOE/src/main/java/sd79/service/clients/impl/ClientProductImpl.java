@@ -173,7 +173,7 @@ public class ClientProductImpl implements ClientProduct {
 
     @Override
     public UserInfoRes getUserInfo(long id) {
-        Customer customer = this.customerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         return UserInfoRes.builder()
                 .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
                 .phone(customer.getPhoneNumber())
