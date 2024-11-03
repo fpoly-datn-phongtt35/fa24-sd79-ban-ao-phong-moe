@@ -10,7 +10,6 @@ const CommonContext = createContext();
 function CommonProvider({ children }) {
   const [amoutCart, setAmoutCart] = useState(null);
   const [carts, setCarts] = useState(null);
-  const [tempCarts, setTempCarts] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
@@ -34,8 +33,6 @@ function CommonProvider({ children }) {
     setAmoutCart,
     carts,
     handleFetchCarts,
-    tempCarts,
-    setTempCarts,
   };
 
   return (

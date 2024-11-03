@@ -46,3 +46,12 @@ cloudinary:
   cloud-name: dnvsezlqx
   api-secret: Q_CCV07_nZjRJbzwyK8_23WK3KQ
   api-key: 734814185473685
+payment:
+  vnPay:
+    url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    tmnCode: TCPEL8TY
+    secretKey: OJFYW30VMNUQTYE1NFLZDQBRN8CWSIVX
+    returnUrl: http://localhost:${server.port}/api/${api.version}/payment/vn-pay-callback
+    version: ${api.version}
+    command: pay
+    orderType: OTHER

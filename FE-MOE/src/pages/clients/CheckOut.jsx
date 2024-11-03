@@ -35,10 +35,21 @@ function CheckOut() {
   const context = useContext(CommonContext);
   const [items, setItems] = useState(null);
 
+  const [message, setMessage] = useState("");
+  const [subTotal, setSubTotal] = useState(0);
+  const [shipping, setShipping] = useState(24000);
+  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
+  const [discount, setDiscount] = useState(100000);
+  const [couponId, setCouponId] = useState(1);
+
   useEffect(() => {
     ScrollToTop();
-    setItems(context.tempCarts);
-  });
+    setItems(JSON.parse(localStorage.getItem("orderItems")));
+  }, []);
+
+  useEffect(() => {
+    setSubTotal(calculateTotalPrice());
+  }, [items]);
 
   const calculateTotalPrice = () => {
     return items?.reduce(
@@ -47,7 +58,26 @@ function CheckOut() {
     );
   };
 
-  const totalPrice = calculateTotalPrice();
+  const onPay = () => {
+    if (paymentMethod === "BANK") {
+      console.log("Bank Payment");
+      return;
+    }
+    const data = {
+      items,
+      message,
+      subTotal,
+      shipping,
+      paymentMethod,
+      discount,
+      couponId,
+      total: subTotal + shipping - discount,
+    };
+
+    console.log(data);
+
+    // localStorage.removeItem("orderItems")
+  };
 
   if (!items) {
     return (
@@ -182,6 +212,7 @@ function CheckOut() {
               <Box display="flex" alignItems="center">
                 <Typography level="title-md">Lời nhắn: </Typography>
                 <Input
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Lời nhắn gửi cho người bán..."
                   sx={{ minWidth: 300, marginLeft: 2 }}
                   size="md"
@@ -189,7 +220,7 @@ function CheckOut() {
               </Box>
               <Typography level="title-md">
                 Tổng số tiền ({items.length} sản phẩm):{" "}
-                {formatCurrencyVND(totalPrice)}
+                {formatCurrencyVND(subTotal)}
               </Typography>
             </Box>
           </Sheet>
@@ -228,13 +259,11 @@ function CheckOut() {
             Phương thức thanh toán
           </Typography>
           <FormControl>
-            <RadioGroup
-              defaultValue="CASH_ON_DELIVERY"
-              name="radio-buttons-group"
-            >
+            <RadioGroup value={paymentMethod} name="radio-buttons-group">
               <Radio
                 value="CASH_ON_DELIVERY"
                 label="Thanh toán khi nhận hàng"
+                onChange={(e) => setPaymentMethod(e.target.value)}
               />
               <Box
                 sx={{
@@ -244,7 +273,11 @@ function CheckOut() {
                   alignItems: "center",
                 }}
               >
-                <Radio value="BANK" label="Chuyển khoản" />
+                <Radio
+                  value="BANK"
+                  label="Chuyển khoản"
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
                 <Box>
                   <SvgIconDisplay icon={VNPaySvgIcon} />
                   <SvgIconDisplay icon={VisaSvgIcon} />
@@ -275,7 +308,7 @@ function CheckOut() {
                     Tổng tiền hàng
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    {formatCurrencyVND(totalPrice)}
+                    {formatCurrencyVND(subTotal)}
                   </Typography>
                 </Box>
                 <Box
@@ -289,7 +322,7 @@ function CheckOut() {
                     Giảm giá
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    0 đ
+                    {formatCurrencyVND(discount)}
                   </Typography>
                 </Box>
                 <Box
@@ -303,7 +336,7 @@ function CheckOut() {
                     Tổng tiền phí vận chuyển
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    FREE
+                    {shipping === 0 ? "FREE" : formatCurrencyVND(shipping)}
                   </Typography>
                 </Box>
                 <Box
@@ -317,7 +350,7 @@ function CheckOut() {
                     Tổng thanh toán
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="danger">
-                    {formatCurrencyVND(totalPrice)}
+                    {formatCurrencyVND(subTotal + shipping - discount)}
                   </Typography>
                 </Box>
               </Box>
@@ -335,7 +368,12 @@ function CheckOut() {
                 Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo &nbsp;
                 <Link>Điều khoản của chúng tôi</Link>
               </Typography>
-              <Button variant="outlined" size="lg" color="primary">
+              <Button
+                variant="outlined"
+                size="lg"
+                color="primary"
+                onClick={() => onPay()}
+              >
                 Mua Hàng
               </Button>
             </Box>
