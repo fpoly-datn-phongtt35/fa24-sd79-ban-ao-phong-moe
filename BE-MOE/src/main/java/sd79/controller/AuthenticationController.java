@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.auth.TokenResponse;
-import sd79.dto.response.auth.UserResponse;
 import sd79.enums.UserRole;
 import sd79.repositories.auth.UserAuthRepository;
 import sd79.service.AuthenticationService;

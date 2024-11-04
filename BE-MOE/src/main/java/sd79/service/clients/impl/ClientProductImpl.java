@@ -15,15 +15,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.CartReq;
 import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
+import sd79.model.Customer;
 import sd79.model.Product;
 import sd79.model.ProductDetail;
 import sd79.model.ProductImage;
 import sd79.model.redis_model.Cart;
 import sd79.repositories.CartRepository;
+import sd79.repositories.CustomerRepository;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.repositories.products.ProductDetailRepository;
 import sd79.repositories.products.ProductRepository;
@@ -43,6 +46,7 @@ import static sd79.enums.TokenType.ACCESS_TOKEN;
 @Service
 @RequiredArgsConstructor
 public class ClientProductImpl implements ClientProduct {
+
     private final ProductCustomizeQuery productCustomizeQuery;
 
     private final ProductRepository productRepository;
@@ -50,6 +54,8 @@ public class ClientProductImpl implements ClientProduct {
     private final ProductDetailRepository productDetailRepository;
 
     private final CartRepository cartRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final JwtService jwtService;
 
@@ -163,5 +169,16 @@ public class ClientProductImpl implements ClientProduct {
     public void deleteCart(String id, String username) {
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(id, username);
         isAlreadyExists.ifPresent(this.cartRepository::delete);
+    }
+
+    @Override
+    public UserInfoRes getUserInfo(long id) {
+        Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        return UserInfoRes.builder()
+                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
+                .phone(customer.getPhoneNumber())
+                .email(customer.getUser().getEmail())
+                .address(String.format("%s, %s, %s, %s", customer.getCustomerAddress().getStreetName(), customer.getCustomerAddress().getWard(), customer.getCustomerAddress().getDistrict(), customer.getCustomerAddress().getCity()))
+                .build();
     }
 }

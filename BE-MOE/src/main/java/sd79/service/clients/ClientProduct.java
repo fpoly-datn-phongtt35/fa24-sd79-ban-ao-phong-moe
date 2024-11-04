@@ -9,6 +9,7 @@ package sd79.service.clients;
 import jakarta.servlet.http.HttpServletRequest;
 import sd79.dto.requests.clients.CartReq;
 import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
 import sd79.model.redis_model.Cart;
@@ -30,4 +31,6 @@ public interface ClientProduct {
     void updateCart(CartReq req);
 
     void deleteCart(String id, String username);
+
+    UserInfoRes getUserInfo(long id);
 }

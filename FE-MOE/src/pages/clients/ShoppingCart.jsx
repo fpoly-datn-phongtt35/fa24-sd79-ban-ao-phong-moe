@@ -235,8 +235,7 @@ function ShoppingCart() {
                 size="sm"
                 startDecorator={<PaymentsOutlinedIcon />}
                 onClick={() => {
-                  console.log("Selected Carts: ", selectedCarts);
-                  context.setTempCarts(selectedCarts);
+                  localStorage.setItem("orderItems", JSON.stringify(selectedCarts));
                   navigate("/checkout");
                 }}
               >

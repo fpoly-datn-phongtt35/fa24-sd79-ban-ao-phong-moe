@@ -54,3 +54,9 @@ export const updateCart = async (data) => {
     .put(`${API_ROOT}/client/update-cart`, data)
     .then((res) => res.data);
 };
+
+export const getUserAddressCart = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/user-address?id=${localStorage.getItem("userId")}`)
+    .then((res) => res.data);
+}
