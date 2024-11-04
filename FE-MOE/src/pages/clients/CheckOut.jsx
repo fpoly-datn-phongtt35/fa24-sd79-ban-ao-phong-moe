@@ -58,13 +58,24 @@ function CheckOut() {
   }, []);
 
   useEffect(() => {
-    setSubTotal(calculateTotalPrice());
+    let total = calculateTotalPrice();
+    setShipping(total < 100000 ? 24000 : 0);
+    setSubTotal(total);
   }, [items]);
 
   const fetchUsers = async () => {
     await getUserAddressCart().then((res) => {
       setUserInfo(res.data);
     });
+  };
+
+  const handleDiscount = (type, value) => {
+    if (type === "PERCENT") {
+      setDiscount(subTotal * (value / 100));
+    } else {
+      setDiscount(subTotal - value);
+    }
+    setSubTotal(calculateTotalPrice());
   };
 
   const calculateTotalPrice = () => {
@@ -264,7 +275,7 @@ function CheckOut() {
           >
             Giảm giá
           </Typography>
-          <VoucherModal />
+          <VoucherModal handleDiscount={handleDiscount} />
         </Box>
         {/* Payment method */}
         <Box

@@ -26,7 +26,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     padding: theme.spacing(1),
   },
 }));
-function VoucherModal() {
+function VoucherModal({ handleDiscount }) {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -113,7 +113,14 @@ function VoucherModal() {
                   borderColor: "divider",
                 }}
               >
-                <Button size="sm" color="primary">
+                <Button
+                  size="sm"
+                  color="primary"
+                  onClick={() => {
+                    handleDiscount("PERCENT", 50);
+                    handleClose();
+                  }}
+                >
                   ÁP DỤNG
                 </Button>
               </CardOverflow>
