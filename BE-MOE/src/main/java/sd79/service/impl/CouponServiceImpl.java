@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.CouponResponse;
@@ -51,21 +52,11 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public PageableResponse getAllCouponDate(CouponParamFilter param) {
-
+    public PageableResponse getAllCouponCustomer(Long customerId,BillCouponFilter param) {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-        return this.couponCustomizeQuery.getAllCouponDate(param);
-    }
-
-    @Override
-    public PageableResponse getAllCouponDatePersonal(CouponParamFilter param) {
-
-        if (param.getPageNo() < 1) {
-            param.setPageNo(1);
-        }
-        return this.couponCustomizeQuery.getAllCouponDatePersonal(param);
+        return this.couponCustomizeQuery.getAllCouponCustomer(customerId,param);
     }
 
     @Override
@@ -327,46 +318,47 @@ public class CouponServiceImpl implements CouponService {
         return (image != null) ? image.getImageUrl() : null;
     }
 //-----------------------------------------------------------------------------------------------
-//    public List<CouponCustomerResponse> getAllCouponCustomers(Long customerId) {
-//        List<CouponCustomerResponse> coupons;
-//
-//        if (customerId == null || !customerRepository.existsById(customerId)) {
-//            // Lấy các phiếu giảm giá có trạng thái "BẮT ĐẦU" và isDeleted = false
-//            coupons = couponRepo.findAllByStatusAndIsDeleted("START", false)
-//                    .stream()
-//                    .map(this::convertToCouponCustomerResponse)
-//                    .collect(Collectors.toList());
-//        } else {
-//            // Lấy tất cả các phiếu giảm giá liên quan đến khách hàng
-//            coupons = couponRepo.findAllByCustomerId(customerId)
-//                    .stream()
-//                    .map(this::convertToCouponCustomerResponse)
-//                    .collect(Collectors.toList());
-//        }
-//
-//        return coupons;
-//    }
-//
-//    private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
-//        return CouponCustomerResponse.builder()
-//                .id(coupon.getId())
-//                .code(coupon.getCode())
-//                .name(coupon.getName())
-//                .type(coupon.getType())
-//                .discountValue(coupon.getDiscountValue())
-//                .discountType(coupon.getDiscountType())
-//                .maxValue(coupon.getMaxValue())
-//                .quantity(coupon.getQuantity())
-//                .usageCount(coupon.getUsageCount())
-//                .conditions(coupon.getConditions())
-//                .startDate(coupon.getStartDate())
-//                .endDate(coupon.getEndDate())
-//                .status(coupon.getStatus())
-//                .description(coupon.getDescription())
-//                .imageUrl(coupon.getCouponImage() != null ? coupon.getCouponImage().getImageUrl() : null)
-//                .customers(coupon.getCouponShares().stream()
-//                        .map(CouponShare::getCustomer)
-//                        .collect(Collectors.toList()))
-//                .build();
-//    }
+    public List<CouponCustomerResponse> getAllCouponCustomers(Long customerId) {
+    List<CouponCustomerResponse> coupons;
+
+    if (customerId == null || !customerRepository.existsById(customerId)) {
+        // Case 2: Only show public coupons in the "started" state if customer ID is not found
+        coupons = couponRepo.findAllPublicCouponsWithStartStatus()
+                .stream()
+                .map(this::convertToCouponCustomerResponse)
+                .collect(Collectors.toList());
+    } else {
+        // Case 1: Show both public and specific customer coupons in the "started" state
+        coupons = couponRepo.findAllCustomerAndPublicCouponsWithStartStatus(customerId)
+                .stream()
+                .map(this::convertToCouponCustomerResponse)
+                .collect(Collectors.toList());
+    }
+
+    return coupons;
+}
+
+    private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
+        return CouponCustomerResponse.builder()
+                .id(coupon.getId())
+                .code(coupon.getCode())
+                .name(coupon.getName())
+                .type(coupon.getType())
+                .discountValue(coupon.getDiscountValue())
+                .discountType(coupon.getDiscountType())
+                .maxValue(coupon.getMaxValue())
+                .quantity(coupon.getQuantity())
+                .usageCount(coupon.getUsageCount())
+                .conditions(coupon.getConditions())
+                .startDate(coupon.getStartDate())
+                .endDate(coupon.getEndDate())
+                .status(coupon.getStatus())
+                .description(coupon.getDescription())
+                .imageUrl(coupon.getCouponImage() != null ? coupon.getCouponImage().getImageUrl() : null)
+                .customers(coupon.getCouponShares().stream()
+                        .map(couponShare -> couponShare.getCustomer().getId())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
 }

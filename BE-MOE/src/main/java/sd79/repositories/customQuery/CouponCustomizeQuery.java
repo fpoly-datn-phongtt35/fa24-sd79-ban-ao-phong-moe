@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PageableResponse;
@@ -196,126 +197,58 @@ public class CouponCustomizeQuery {
         return (image != null) ? image.getImageUrl() : null;
     }
 
-    public PageableResponse getAllCouponDate(CouponParamFilter param) {
-        log.info("Executing query coupon with keyword={}", param.getKeyword());
+    public PageableResponse getAllCouponCustomer( Long customerId,BillCouponFilter param) {
+        log.info("Executing coupon query for customerId={} with search by name or code only", customerId);
 
-        // Date formatting
-        Date startDate = null;
-        Date endDate = null;
-        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            if (StringUtils.hasLength(param.getStartDate())) {
-                startDate = inputFormat.parse(param.getStartDate());
-            }
-            if (StringUtils.hasLength(param.getEndDate())) {
-                endDate = inputFormat.parse(param.getEndDate());
-            }
-        } catch (ParseException e) {
-            log.error("Error parsing dates: {}", e.getMessage());
-        }
+        String sql = getString(param, customerId);
 
-        // Build the main query
-        StringBuilder sql = new StringBuilder("SELECT c FROM Coupon c WHERE c.isDeleted = false AND Date(c.startDate) <= CURRENT_DATE AND Date(c.endDate) >= CURRENT_DATE AND c.type = 'PUBLIC'");
+        // Create the main query
+        TypedQuery<Coupon> query = entityManager.createQuery(sql, Coupon.class);
 
-        // Keyword filtering
-        if (StringUtils.hasLength(param.getKeyword())) {
-            sql.append(" AND (lower(c.name) LIKE lower(:keyword) OR lower(c.code) LIKE lower(:keyword))");
-        }
-
-        // Status filtering
-        if ("PENDING".equals(param.getStatus())) {
-            sql.append(" AND Date(c.startDate) > CURRENT_DATE");
-        } else if ("START".equals(param.getStatus())) {
-            sql.append(" AND Date(c.startDate) <= CURRENT_DATE AND c.endDate >= CURRENT_DATE");
-        } else if ("END".equals(param.getStatus())) {
-            sql.append(" AND Date(c.endDate) < CURRENT_DATE");
-        }
-
-        // Type filtering
-        if (param.getType() == TodoType.PUBLIC) {
-            sql.append(" AND c.type = 'PUBLIC'");
-        } else if (param.getType() == TodoType.PERSONAL) {
-            sql.append(" AND c.type = 'PERSONAL'");
-        }
-
-        // Discount Type filtering
-        if (param.getDiscountType() == TodoDiscountType.PERCENTAGE) {
-            sql.append(" AND c.discountType = 'PERCENTAGE'");
-        } else if (param.getDiscountType() == TodoDiscountType.FIXED_AMOUNT) {
-            sql.append(" AND c.discountType = 'FIXED_AMOUNT'");
-        }
-
-        // Date range filtering
-        if (startDate != null && endDate != null) {
-            sql.append(" AND ((c.startDate BETWEEN :startDate AND :endDate) OR (c.endDate BETWEEN :startDate AND :endDate))");
-        }
-
-        // Sorting logic
-        if (StringUtils.hasLength(param.getSort()) && StringUtils.hasLength(param.getDirection())) {
-            sql.append(" ORDER BY c.").append(param.getSort()).append(" ").append(param.getDirection().toUpperCase());
-        } else {
-            sql.append(" ORDER BY c.startDate ASC, c.endDate ASC");
-        }
-
-        // Create the query
-        TypedQuery<Coupon> query = entityManager.createQuery(sql.toString(), Coupon.class);
-
-        // Set query parameters
+        // Set parameters for keyword and customerId if applicable
         if (StringUtils.hasLength(param.getKeyword())) {
             query.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
-        if (startDate != null && endDate != null) {
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
+        if (customerId != null) {
+            query.setParameter("customerId", customerId);
         }
 
-        // Pagination settings
+        // Apply pagination settings
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        // Fetch data
-        List<CouponResponse> data = query.getResultList().stream().map(this::convertCouponResponse).toList();
+        // Fetch results and map to CouponResponse
+        List<CouponResponse> data = query.getResultList().stream()
+                .map(this::convertCouponResponse)
+                .collect(Collectors.toList());
 
-        // Build count query for pagination
-        StringBuilder countSql = new StringBuilder("SELECT count(c) FROM Coupon c WHERE c.isDeleted = false AND Date(c.startDate) <= CURRENT_DATE AND Date(c.endDate) >= CURRENT_DATE AND c.type = 'PUBLIC'");
-
-        // Reapply filters for count query
+        // Count query for total elements
+        String countSql = "SELECT COUNT(c) FROM Coupon c WHERE c.isDeleted = false ";
+        if (customerId == null) {
+            countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+        } else {
+            countSql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
+        }
         if (StringUtils.hasLength(param.getKeyword())) {
-            countSql.append(" AND (lower(c.name) LIKE lower(:keyword) OR lower(c.code) LIKE lower(:keyword))");
-        }
-        if ("PENDING".equals(param.getStatus())) {
-            countSql.append(" AND c.startDate > CURRENT_DATE");
-        } else if ("START".equals(param.getStatus())) {
-            countSql.append(" AND c.startDate <= CURRENT_DATE AND c.endDate >= CURRENT_DATE");
-        } else if ("END".equals(param.getStatus())) {
-            countSql.append(" AND c.endDate < CURRENT_DATE");
-        }
-        if (param.getType() == TodoType.PUBLIC) {
-            countSql.append(" AND c.type = 'PUBLIC'");
-        } else if (param.getType() == TodoType.PERSONAL) {
-            countSql.append(" AND c.type = 'PERSONAL'");
-        }
-        if (param.getDiscountType() == TodoDiscountType.PERCENTAGE) {
-            countSql.append(" AND c.discountType = 'PERCENTAGE'");
-        } else if (param.getDiscountType() == TodoDiscountType.FIXED_AMOUNT) {
-            countSql.append(" AND c.discountType = 'FIXED_AMOUNT'");
-        }
-        if (startDate != null && endDate != null) {
-            countSql.append(" AND ((c.startDate BETWEEN :startDate AND :endDate) OR (c.endDate BETWEEN :startDate AND :endDate))");
+            countSql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
 
-        // Count query
-        TypedQuery<Long> countQuery = entityManager.createQuery(countSql.toString(), Long.class);
+        // Create count query
+        TypedQuery<Long> countQuery = entityManager.createQuery(countSql, Long.class);
+
+        // Set parameters for count query
         if (StringUtils.hasLength(param.getKeyword())) {
             countQuery.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
-        if (startDate != null && endDate != null) {
-            countQuery.setParameter("startDate", startDate);
-            countQuery.setParameter("endDate", endDate);
+        if (customerId != null) {
+            countQuery.setParameter("customerId", customerId);
         }
+
+        // Fetch total elements count
         Long totalElements = countQuery.getSingleResult();
 
-        // Build page response
+        // Build pageable response
         Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<CouponResponse> page = new PageImpl<>(data, pageable, totalElements);
 
@@ -323,134 +256,24 @@ public class CouponCustomizeQuery {
                 .pageNumber(param.getPageNo())
                 .pageSize(param.getPageSize())
                 .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
+                .totalElements(totalElements)
                 .content(data)
                 .build();
     }
 
-    public PageableResponse getAllCouponDatePersonal(CouponParamFilter param) {
-        log.info("Executing query coupon with keyword={}", param.getKeyword());
+    private String getString(BillCouponFilter param, Long customerId) {
+        String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false ";
 
-        // Date formatting
-        Date startDate = null;
-        Date endDate = null;
-        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            if (StringUtils.hasLength(param.getStartDate())) {
-                startDate = inputFormat.parse(param.getStartDate());
-            }
-            if (StringUtils.hasLength(param.getEndDate())) {
-                endDate = inputFormat.parse(param.getEndDate());
-            }
-        } catch (ParseException e) {
-            log.error("Error parsing dates: {}", e.getMessage());
-        }
-
-        // Build the main query
-        StringBuilder sql = new StringBuilder("SELECT c FROM Coupon c LEFT JOIN CouponShare cs ON c.id = cs.coupon.id WHERE " +
-                "c.isDeleted = false AND DATE(c.startDate) <= CURRENT_DATE AND DATE(c.endDate) >= CURRENT_DATE " +
-                "AND c.type = 'PERSONAL' ");
-
-        // Add customer ID filter if provided
-        if (param.getCustomerId() != null) {
-            sql.append(" AND cs.customer.id = :customerId"); // Corrected parameter usage
-        }
-
-        // Keyword filtering
-        if (StringUtils.hasLength(param.getKeyword())) {
-            sql.append(" AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword))");
-        }
-
-        // Status filtering
-        if ("PENDING".equals(param.getStatus())) {
-            sql.append(" AND DATE(c.startDate) > CURRENT_DATE");
-        } else if ("START".equals(param.getStatus())) {
-            sql.append(" AND DATE(c.startDate) <= CURRENT_DATE AND DATE(c.endDate) >= CURRENT_DATE");
-        } else if ("END".equals(param.getStatus())) {
-            sql.append(" AND DATE(c.endDate) < CURRENT_DATE");
-        }
-
-        // Type filtering
-        if (param.getType() == TodoType.PUBLIC) {
-            sql.append(" AND c.type = 'PUBLIC'");
-        } else if (param.getType() == TodoType.PERSONAL) {
-            sql.append(" AND c.type = 'PERSONAL'");
-        }
-
-        // Discount Type filtering
-        if (param.getDiscountType() == TodoDiscountType.PERCENTAGE) {
-            sql.append(" AND c.discountType = 'PERCENTAGE'");
-        } else if (param.getDiscountType() == TodoDiscountType.FIXED_AMOUNT) {
-            sql.append(" AND c.discountType = 'FIXED_AMOUNT'");
-        }
-
-        // Date range filtering
-        if (startDate != null && endDate != null) {
-            sql.append(" AND ((c.startDate BETWEEN :startDate AND :endDate) OR (c.endDate BETWEEN :startDate AND :endDate))");
-        }
-
-        // Sorting logic
-        if (StringUtils.hasLength(param.getSort()) && StringUtils.hasLength(param.getDirection())) {
-            sql.append(" ORDER BY c.").append(param.getSort()).append(" ").append(param.getDirection().toUpperCase());
+        if (customerId == null) {
+            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
         } else {
-            sql.append(" ORDER BY c.startDate ASC, c.endDate ASC");
+            sql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
         }
-
-        // Create the query
-        TypedQuery<Coupon> query = entityManager.createQuery(sql.toString(), Coupon.class);
-
-        // Set query parameters
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", "%" + param.getKeyword() + "%");
+            sql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
-        if (param.getCustomerId() != null) {
-            query.setParameter("customerId", param.getCustomerId()); // Correct parameter setting
-        }
-        if (startDate != null && endDate != null) {
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-        }
-
-        // Pagination settings
-        query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
-        query.setMaxResults(param.getPageSize());
-
-        // Fetch data
-        List<CouponResponse> data = query.getResultList().stream().map(this::convertCouponResponse).toList();
-
-        // Build count query for pagination
-        StringBuilder countSql = new StringBuilder("SELECT count(c) FROM Coupon c LEFT JOIN CouponShare cs ON c.id = cs.coupon.id WHERE c.isDeleted = false AND DATE(c.startDate) <= CURRENT_DATE AND DATE(c.endDate) >= CURRENT_DATE AND c.type = 'PERSONAL'");
-
-        // Reapply customer ID filter for count query if provided
-        if (param.getCustomerId() != null) {
-            countSql.append(" AND cs.customer.id = :customerId"); // Corrected for count query
-        }
-
-        // Count query
-        TypedQuery<Long> countQuery = entityManager.createQuery(countSql.toString(), Long.class);
-        if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", "%" + param.getKeyword() + "%");
-        }
-        if (param.getCustomerId() != null) {
-            countQuery.setParameter("customerId", param.getCustomerId()); // Use correct parameter here
-        }
-        if (startDate != null && endDate != null) {
-            countQuery.setParameter("startDate", startDate);
-            countQuery.setParameter("endDate", endDate);
-        }
-        Long totalElements = countQuery.getSingleResult();
-
-        // Build page response
-        Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
-        Page<CouponResponse> page = new PageImpl<>(data, pageable, totalElements);
-
-        return PageableResponse.builder()
-                .pageNumber(param.getPageNo())
-                .pageSize(param.getPageSize())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .content(data)
-                .build();
+        return sql;
     }
 
 

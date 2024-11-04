@@ -41,6 +41,8 @@ public class BillCustomizeQuery {
                 .name(coupon.getName())
                 .discountValue(coupon.getDiscountValue())
                 .discountType(coupon.getDiscountType())
+                .maxValue(coupon.getMaxValue())
+                .conditions(coupon.getConditions())
                 .build();
     }
 }

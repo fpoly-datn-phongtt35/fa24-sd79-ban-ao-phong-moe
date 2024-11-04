@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import {
     Paper,
     Typography,
@@ -20,7 +20,8 @@ import { deleteCustomer, fetchBill } from '~/apis/billsApi';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Input } from '@mui/joy';
 
-export default function CustomerList({ selectedOrder, onAddCustomer }) {
+export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCouponCustomer }) {
+
     const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -100,11 +101,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer }) {
         });
         setSearchTerm(selectedCustomer.fullName);
         setShowDropdown(false);
-        handleAddCustomer(selectedCustomer);
+        onAddCustomer(selectedCustomer);  
     };
 
     const handleAddCustomer = (customer) => {
-        onAddCustomer(customer);
+        onAddCustomer(customer);  
     };
 
     const handleDeleteCustomer = async (customerId) => {
@@ -112,13 +113,13 @@ export default function CustomerList({ selectedOrder, onAddCustomer }) {
             await deleteCustomer(customerId);
             setCustomer(null);
             setSearchTerm('');
-            setFilteredCustomers(customers);
+            setFilteredCustomers(customers);  
+            onAddCustomer({ id: 0 });
         } catch (error) {
-            toast.error("Failed to delete customer.");
             console.error("Error deleting customer:", error);
         }
     };
-
+    
     const findCustomerInBills = (orderId) => {
         const billWithCustomer = bills.find(bill => bill.id === orderId);
         return billWithCustomer ? billWithCustomer.customer : null;
