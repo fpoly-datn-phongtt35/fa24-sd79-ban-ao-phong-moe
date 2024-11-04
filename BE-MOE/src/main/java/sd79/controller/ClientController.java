@@ -117,6 +117,6 @@ public class ClientController {
 
     @PostMapping("/order")
     public ResponseData<?> getUserAddress(@RequestBody BillClientRequest.BillCreate req) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Create successfully bill", this.clientProduct.saveBill(req));
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientProduct.saveBill(req));
     }
 }

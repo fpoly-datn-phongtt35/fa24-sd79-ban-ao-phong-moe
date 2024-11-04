@@ -53,6 +53,7 @@ function ShoppingCart() {
   }, [selectedCarts, context.carts]);
 
   const handleDeleteCart = async (id) => {
+    setSelectedCarts([]);
     await deleteItemCart(id).then((res) => {
       context.handleFetchCarts();
       toast.success(res.message);

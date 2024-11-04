@@ -227,10 +227,27 @@ export const ViewDetail = () => {
                         height: 40,
                         flexShrink: 0,
                         bgcolor: color.hex_code,
+                        border: "1px solid #dde4ea",
                         borderRadius: "50%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+
+                        [`& .${radioClasses.checked}`]: {
+                          [`& .${radioClasses.label}`]: {
+                            fontWeight: "lg",
+                          },
+                          [`& .${radioClasses.action}`]: {
+                            "--variant-borderWidth": "2px",
+                            borderColor: "text.secondary",
+                            border: "2px solid gray",
+                          },
+                        },
+
+                        [`& .${radioClasses.action}.${radioClasses.focusVisible}`]:
+                          {
+                            outlineWidth: "2px",
+                          },
                       }}
                     >
                       <Radio

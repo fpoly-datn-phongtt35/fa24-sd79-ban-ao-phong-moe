@@ -1,12 +1,20 @@
 import { toast } from "react-toastify";
+import { createOrder } from "~/apis/client/productApiClient";
 
-export const handleVerifyBanking = (status) => {
-  if (status === "00") {
-    toast.success("Giao dịch thành công ");
-    console.log(JSON.parse(localStorage.getItem("temp_data")));
+const handleBanking = async () => {
+  const data = JSON.parse(localStorage.getItem("temp_data"));
+  await createOrder(data).then(() => {
     localStorage.removeItem("temp_data");
-    localStorage.removeItem("orderItems")
-    //TODO: save data into db
+    localStorage.removeItem("orderItems");
+  });
+};
+
+export const handleVerifyBanking = (status, bankCode) => {
+  if (status === "00") {
+    let data = JSON.parse(localStorage.getItem("temp_data"));
+    data.bankCode = bankCode;
+    localStorage.setItem("temp_data", JSON.stringify(data));
+    handleBanking();
     return true;
   } else if (status === "01") {
     toast.error("Giao dịch chưa hoàn tất");

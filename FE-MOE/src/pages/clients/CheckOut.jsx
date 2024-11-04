@@ -24,6 +24,7 @@ import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import VisaSvgIcon from "~/assert/icon/visa.svg";
 import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
+import SuccessfullyOrderIcon from "~/assert/icon/correct-success-tick-svgrepo-com.svg";
 import { CommonContext } from "~/context/CommonContext";
 import { useContext, useEffect, useState } from "react";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
@@ -36,6 +37,7 @@ import {
   getUserAddressCart,
 } from "~/apis/client/productApiClient";
 import VoucherModal from "~/components/clients/modals/VoucherModal";
+import { toast } from "react-toastify";
 
 function CheckOut() {
   const navigate = useNavigate();
@@ -48,16 +50,22 @@ function CheckOut() {
   const [shipping, setShipping] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [discount, setDiscount] = useState(0);
-  const [couponId, setCouponId] = useState(null);
+  const [couponId, setCouponId] = useState(1);
+  const [bankCode, setBankCode] = useState(null);
 
   const [userInfo, setUserInfo] = useState(null);
 
+  const [orderSuccessfully, setOrderSuccessfully] = useState(false);
+
   useEffect(() => {
+    setOrderSuccessfully(false);
     ScrollToTop();
     fetchUsers();
     setItems(JSON.parse(localStorage.getItem("orderItems")));
-    handleVerifyBanking(searchParams.get("vnp_TransactionStatus")) &&
-      navigate("/cart");
+    handleVerifyBanking(
+      searchParams.get("vnp_TransactionStatus"),
+      searchParams.get("vnp_BankTranNo")
+    ) && setOrderSuccessfully(true);
   }, []);
 
   useEffect(() => {
@@ -90,7 +98,7 @@ function CheckOut() {
 
   const onPay = async () => {
     const data = {
-      bankCode: "DEMO",
+      bankCode,
       customerId: userInfo?.id,
       couponId,
       shipping,
@@ -103,17 +111,64 @@ function CheckOut() {
       // items,
     };
     if (paymentMethod === "BANK") {
-      console.log("Bank Payment");
       localStorage.setItem("temp_data", JSON.stringify(data));
       await reqPay(data);
+    } else {
+      await createOrder(data).then((res) => {
+        localStorage.removeItem("orderItems");
+        setOrderSuccessfully(true);
+      });
     }
-    await createOrder(data).then(() => {
-      localStorage.removeItem("orderItems");
-      console.log("Successful Order");
-      navigate("/cart")
-    });
-    console.log(data);
   };
+
+  if (orderSuccessfully) {
+    ScrollToTop();
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="95vw"
+      >
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          textAlign="center"
+          bgcolor="white"
+          padding="24px"
+          borderRadius="8px"
+          boxShadow="0px 4px 12px rgba(0, 0, 0, 0.1)"
+        >
+          <SvgIconDisplay
+            icon={SuccessfullyOrderIcon}
+            width="80px"
+            height="80px"
+            mb={2}
+          />
+          <Typography variant="h5" mb={1}>
+            Cảm ơn bạn đã đặt hàng!
+          </Typography>
+          <Typography level="title-md" mb={3} color="textSecondary">
+            Đơn hàng của bạn sẽ sớm được giao cho đơn vị vận chuyển!
+          </Typography>
+          <Box display="flex" gap={2}>
+            <Button variant="outlined" onClick={() => navigate("/cart")}>
+              Xem đơn hàng
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/")}
+            >
+              Tiếp tục mua sắm
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   if (!items) {
     return (
@@ -126,6 +181,9 @@ function CheckOut() {
         onClick={() => navigate("/cart")}
       >
         <CircularProgress />
+        <Typography marginLeft={2} level="body-md">
+          Không tìm thấy đơn hàng!
+        </Typography>
       </Box>
     );
   }

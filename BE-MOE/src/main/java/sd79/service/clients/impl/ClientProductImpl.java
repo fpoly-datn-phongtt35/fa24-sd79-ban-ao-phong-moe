@@ -27,10 +27,7 @@ import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
 import sd79.model.*;
 import sd79.model.redis_model.Cart;
-import sd79.repositories.BillRepo;
-import sd79.repositories.BillStatusRepo;
-import sd79.repositories.CartRepository;
-import sd79.repositories.CustomerRepository;
+import sd79.repositories.*;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.repositories.products.ProductDetailRepository;
 import sd79.repositories.products.ProductRepository;
@@ -63,6 +60,8 @@ public class ClientProductImpl implements ClientProduct {
     private final BillRepo billRepository;
 
     private final BillStatusRepo billStatusRepository;
+
+    private final CouponRepo couponRepo;
 
     private final JwtService jwtService;
 
@@ -227,7 +226,7 @@ public class ClientProductImpl implements ClientProduct {
         Bill bill = Bill.builder()
                 .code(String.format("HD%s", RandomNumberGenerator.generateEightDigitRandomNumber()))
                 .bankCode(req.getBankCode())
-                .coupon(null)
+                .coupon(this.couponRepo.findById(req.getCouponId()).orElse(null))
                 .sellerDiscount(req.getSellerDiscount())
                 .shipping(req.getShipping())
                 .subtotal(req.getSubtotal())
