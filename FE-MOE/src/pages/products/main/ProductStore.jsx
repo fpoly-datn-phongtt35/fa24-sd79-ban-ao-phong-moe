@@ -128,7 +128,7 @@ export const ProductStore = () => {
     }
 
     if (name === "retailPrice") {
-      const isValidPrice = value >= 10000;
+      const isValidPrice = value >= 10000 && value <= 1000000;
       setAttributesError((prev) => {
         const newErrors = [...prev];
         newErrors[index] = { ...newErrors[index], retailPrice: !isValidPrice };
@@ -143,7 +143,7 @@ export const ProductStore = () => {
     }
 
     if (name === "quantity") {
-      const isValidQuantity = value >= 0;
+      const isValidQuantity = value >= 0 && value <= 10000;
       setAttributesError((prev) => {
         const newErrors = [...prev];
         newErrors[index] = { ...newErrors[index], quantity: !isValidQuantity };

@@ -13,18 +13,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.clients.CartReq;
-import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.requests.clients.bills.BillClientRequest;
+import sd79.dto.requests.clients.cart.CartReq;
+import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
+import sd79.dto.response.clients.product.ValidProduct;
+import sd79.enums.PaymentMethod;
+import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
-import sd79.model.Customer;
-import sd79.model.Product;
-import sd79.model.ProductDetail;
-import sd79.model.ProductImage;
+import sd79.model.*;
 import sd79.model.redis_model.Cart;
+import sd79.repositories.BillRepo;
+import sd79.repositories.BillStatusRepo;
 import sd79.repositories.CartRepository;
 import sd79.repositories.CustomerRepository;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
@@ -32,11 +36,10 @@ import sd79.repositories.products.ProductDetailRepository;
 import sd79.repositories.products.ProductRepository;
 import sd79.service.JwtService;
 import sd79.service.clients.ClientProduct;
+import sd79.utils.RandomNumberGenerator;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -57,6 +60,10 @@ public class ClientProductImpl implements ClientProduct {
 
     private final CustomerRepository customerRepository;
 
+    private final BillRepo billRepository;
+
+    private final BillStatusRepo billStatusRepository;
+
     private final JwtService jwtService;
 
     @Override
@@ -68,7 +75,7 @@ public class ClientProductImpl implements ClientProduct {
     }
 
     @Override
-    public List<ProductClientResponse> getBestSellingProducts() {
+    public Set<ProductClientResponse> getBestSellingProducts() {
         return this.productCustomizeQuery.getBestSellingProducts();
     }
 
@@ -110,14 +117,45 @@ public class ClientProductImpl implements ClientProduct {
     }
 
     @Override
-    public Set<Cart> getCarts(HttpServletRequest request) {
+    public List<CartResponse> getCarts(HttpServletRequest request) {
         String authorization = request.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
         }
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        return this.cartRepository.findByUsername(username);
+        List<Cart> cart = this.cartRepository.findByUsername(username);
+        List<CartResponse> cartResponses = new ArrayList<>();
+
+        cart.forEach(i -> {
+            Optional<ProductDetail> productDetail = productDetailRepository.findById(Long.valueOf(i.getId()));
+            ValidProduct validProduct = new ValidProduct();
+            if (productDetail.isPresent()) {
+                ProductDetail prd = productDetail.get();
+                boolean status = prd.getStatus() == ProductStatus.ACTIVE && prd.getProduct().getStatus() == ProductStatus.ACTIVE;
+                validProduct.setId(prd.getId());
+                validProduct.setStatus(status);
+                validProduct.setQuantity(prd.getQuantity());
+                validProduct.setMessage(String.format("Product id %d is valid", prd.getId()));
+            } else {
+                validProduct.setId(Long.parseLong(i.getId()));
+                validProduct.setStatus(false);
+                validProduct.setQuantity(0);
+                validProduct.setMessage(String.format("Product id %s is valid", i.getId()));
+            }
+            cartResponses.add(CartResponse.builder()
+                    .id(i.getId())
+                    .imageUrl(i.getImageUrl())
+                    .name(i.getName())
+                    .origin(i.getOrigin())
+                    .retailPrice(i.getRetailPrice())
+                    .sellPrice(i.getSellPrice())
+                    .quantity(i.getQuantity())
+                    .validProduct(validProduct)
+                    .username(i.getUsername())
+                    .build());
+        });
+        return cartResponses;
     }
 
     @Override
@@ -175,10 +213,36 @@ public class ClientProductImpl implements ClientProduct {
     public UserInfoRes getUserInfo(long id) {
         Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         return UserInfoRes.builder()
+                .id(customer.getId())
                 .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
                 .phone(customer.getPhoneNumber())
                 .email(customer.getUser().getEmail())
                 .address(String.format("%s, %s, %s, %s", customer.getCustomerAddress().getStreetName(), customer.getCustomerAddress().getWard(), customer.getCustomerAddress().getDistrict(), customer.getCustomerAddress().getCity()))
                 .build();
     }
+
+    @Override
+    public long saveBill(BillClientRequest.BillCreate req) {
+        Customer customer = this.customerRepository.findById(req.getCustomerId()).orElse(null);
+        Bill bill = Bill.builder()
+                .code(String.format("HD%s", RandomNumberGenerator.generateEightDigitRandomNumber()))
+                .bankCode(req.getBankCode())
+                .coupon(null)
+                .sellerDiscount(req.getSellerDiscount())
+                .shipping(req.getShipping())
+                .subtotal(req.getSubtotal())
+                .total(req.getTotal())
+                .paymentMethod(req.getPaymentMethod())
+                .message(req.getMessage())
+                .customer(customer)
+                .billStatus(this.billStatusRepository.findById(1).orElse(null))
+                //Bill status
+                .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
+                .build();
+        assert customer != null;
+        bill.setCreatedBy(customer.getUser());
+        bill.setUpdatedBy(customer.getUser());
+        return this.billRepository.save(bill).getId();
+    }
+
 }

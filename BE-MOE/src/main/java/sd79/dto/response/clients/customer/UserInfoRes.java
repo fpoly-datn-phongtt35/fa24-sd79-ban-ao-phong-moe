@@ -12,6 +12,8 @@ import lombok.Getter;
 @Builder
 @Getter
 public class UserInfoRes {
+    private Long id;
+
     private String fullName;
 
     private String email;

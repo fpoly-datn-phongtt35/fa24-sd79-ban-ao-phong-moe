@@ -43,7 +43,12 @@ function ShoppingCart() {
 
   useEffect(() => {
     if (context.carts && context.carts.length > 0) {
-      setSelectAll(selectedCarts.length === context.carts.length);
+      const validCarts = context.carts.filter(
+        (cart) => cart.validProduct.status
+      );
+      setSelectAll(
+        validCarts.length > 0 && selectedCarts.length === validCarts.length
+      );
     }
   }, [selectedCarts, context.carts]);
 
@@ -67,6 +72,7 @@ function ShoppingCart() {
       quantity: quantity,
       username: localStorage.getItem("username"),
     };
+    setSelectedCarts([]);
     await updateCart(data).then(() => context.handleFetchCarts());
   };
 
@@ -88,7 +94,10 @@ function ShoppingCart() {
     if (selectAll) {
       setSelectedCarts([]);
     } else {
-      setSelectedCarts(context.carts);
+      const validCarts = context.carts.filter(
+        (cart) => cart.validProduct.status
+      );
+      setSelectedCarts(validCarts);
     }
     setSelectAll(!selectAll);
   };
@@ -167,6 +176,7 @@ function ShoppingCart() {
                       <tr key={cart.id}>
                         <td className="text-center">
                           <Checkbox
+                            disabled={!cart.validProduct.status}
                             size="sm"
                             checked={selectedCarts.includes(cart)}
                             onChange={() => handleCheckboxChange(cart)}
@@ -176,21 +186,38 @@ function ShoppingCart() {
                           <CardShoppingCard data={cart} />
                         </td>
                         <td className="text-center">
-                          <Typography level="title-md">
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.validProduct.status ? "danger" : "neutral"
+                            }
+                          >
                             {formatCurrencyVND(cart.retailPrice)}
                           </Typography>
                         </td>
                         <td className="text-center">
                           <Input
+                            disabled={!cart.validProduct.status}
                             defaultValue={cart.quantity}
                             type="number"
+                            slotProps={{
+                              input: {
+                                min: 1,
+                                max: cart.validProduct.quantity,
+                              },
+                            }}
                             onChange={(e) =>
                               onUpdateQuantity(cart.id, e.target.value)
                             }
                           />
                         </td>
                         <td className="text-center">
-                          <Typography level="title-md">
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.validProduct.status ? "danger" : "neutral"
+                            }
+                          >
                             {formatCurrencyVND(
                               cart.retailPrice * cart.quantity
                             )}
@@ -235,7 +262,10 @@ function ShoppingCart() {
                 size="sm"
                 startDecorator={<PaymentsOutlinedIcon />}
                 onClick={() => {
-                  localStorage.setItem("orderItems", JSON.stringify(selectedCarts));
+                  localStorage.setItem(
+                    "orderItems",
+                    JSON.stringify(selectedCarts)
+                  );
                   navigate("/checkout");
                 }}
               >

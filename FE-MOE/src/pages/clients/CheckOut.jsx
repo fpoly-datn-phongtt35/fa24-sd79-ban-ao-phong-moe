@@ -31,7 +31,10 @@ import { formatCurrencyVND } from "~/utils/format";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { reqPay } from "~/apis";
 import { handleVerifyBanking } from "~/exceptions/PaymentException";
-import { getUserAddressCart } from "~/apis/client/productApiClient";
+import {
+  createOrder,
+  getUserAddressCart,
+} from "~/apis/client/productApiClient";
 import VoucherModal from "~/components/clients/modals/VoucherModal";
 
 function CheckOut() {
@@ -40,12 +43,12 @@ function CheckOut() {
   const context = useContext(CommonContext);
   const [items, setItems] = useState(null);
 
-  const [message, setMessage] = useState("");
-  const [subTotal, setSubTotal] = useState(0);
+  const [message, setMessage] = useState(null);
+  const [subtotal, setSubtotal] = useState(0);
   const [shipping, setShipping] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [discount, setDiscount] = useState(0);
-  const [couponId, setCouponId] = useState(1);
+  const [couponId, setCouponId] = useState(null);
 
   const [userInfo, setUserInfo] = useState(null);
 
@@ -60,7 +63,7 @@ function CheckOut() {
   useEffect(() => {
     let total = calculateTotalPrice();
     setShipping(total < 100000 ? 24000 : 0);
-    setSubTotal(total);
+    setSubtotal(total);
   }, [items]);
 
   const fetchUsers = async () => {
@@ -71,11 +74,11 @@ function CheckOut() {
 
   const handleDiscount = (type, value) => {
     if (type === "PERCENT") {
-      setDiscount(subTotal * (value / 100));
+      setDiscount(subtotal * (value / 100));
     } else {
-      setDiscount(subTotal - value);
+      setDiscount(subtotal - value);
     }
-    setSubTotal(calculateTotalPrice());
+    setSubtotal(calculateTotalPrice());
   };
 
   const calculateTotalPrice = () => {
@@ -87,23 +90,29 @@ function CheckOut() {
 
   const onPay = async () => {
     const data = {
-      items,
-      message,
-      subTotal,
-      shipping,
-      paymentMethod,
-      discount,
+      bankCode: "DEMO",
+      customerId: userInfo?.id,
       couponId,
-      total: subTotal + shipping - discount,
+      shipping,
+      subtotal,
+      sellerDiscount: discount,
+      total: subtotal + shipping - discount,
+      paymentMethod,
+      message,
+
+      // items,
     };
     if (paymentMethod === "BANK") {
       console.log("Bank Payment");
       localStorage.setItem("temp_data", JSON.stringify(data));
       await reqPay(data);
     }
+    await createOrder(data).then(() => {
+      localStorage.removeItem("orderItems");
+      console.log("Successful Order");
+      navigate("/cart")
+    });
     console.log(data);
-
-    // localStorage.removeItem("orderItems")
   };
 
   if (!items) {
@@ -253,7 +262,7 @@ function CheckOut() {
               </Box>
               <Typography level="title-md">
                 Tổng số tiền ({items.length} sản phẩm):{" "}
-                {formatCurrencyVND(subTotal)}
+                {formatCurrencyVND(subtotal)}
               </Typography>
             </Box>
           </Sheet>
@@ -351,7 +360,7 @@ function CheckOut() {
                     Tổng tiền hàng
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    {formatCurrencyVND(subTotal)}
+                    {formatCurrencyVND(subtotal)}
                   </Typography>
                 </Box>
                 <Box
@@ -393,7 +402,7 @@ function CheckOut() {
                     Tổng thanh toán
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="danger">
-                    {formatCurrencyVND(subTotal + shipping - discount)}
+                    {formatCurrencyVND(subtotal + shipping - discount)}
                   </Typography>
                 </Box>
               </Box>
