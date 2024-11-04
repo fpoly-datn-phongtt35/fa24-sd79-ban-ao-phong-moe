@@ -295,9 +295,9 @@ export const AddCustomer = () => {
         });
     } catch (error) {
       setIsLoading(false);
-      toast.error('Thêm thất bại!');
+      // toast.error('Thêm thất bại!');
     }
-    toast.success('Thêm thành công');
+    // toast.success('Thêm thành công');
   };
 
   const handleImageChange = (event) => {

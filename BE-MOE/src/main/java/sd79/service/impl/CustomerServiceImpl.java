@@ -214,6 +214,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setUser(user);
         populateCustomerData(customer, customerRequest);
         return customerRepository.save(customer).getId();
+        
     }
 
     @Transactional
