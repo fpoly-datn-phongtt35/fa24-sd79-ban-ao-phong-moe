@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Paper, Avatar, FormControlLabel } from '@mui/material';
+import { Container, Box, Grid, Typography, Paper, Avatar } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Radio, RadioGroup, Select } from '@mui/joy';
@@ -12,15 +12,15 @@ const host = "https://provinces.open-api.vn/api/";
 
 export const EmployeeUpdate = () => {
     const [employeeData, setEmployeeData] = useState({
-
-        email: '',
-        first_name: '',
         last_name: '',
+        first_name: '',
+        email: '',
         phone_number: '',
+        salary: '',
+        position: '',
         gender: '',
         date_of_birth: '',
-        avatar: '',
-        salary: '',
+        streetName: '',
     });
 
     const [imagePreview, setImagePreview] = useState(null);
@@ -30,7 +30,6 @@ export const EmployeeUpdate = () => {
     const navigate = useNavigate();
     const [positions, setPositions] = useState([]);
     const [position, setPosition] = useState(null);
-    const [streetName, setStreetName] = useState('');
     /*---Start handle address---*/
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -38,6 +37,7 @@ export const EmployeeUpdate = () => {
     const [selectedCity, setSelectedCity] = useState("");
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedWard, setSelectedWard] = useState("");
+    const [streetName, setStreetName] = useState('');
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -169,7 +169,7 @@ export const EmployeeUpdate = () => {
         const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const minAge = 16;
-    
+
         const calculateAge = (dob) => {
             const birthDate = new Date(dob);
             const today = new Date();
@@ -180,7 +180,7 @@ export const EmployeeUpdate = () => {
             }
             return age;
         };
-    
+
         switch (name) {
             case 'last_name':
                 if (value.length > 20) {
@@ -191,7 +191,7 @@ export const EmployeeUpdate = () => {
                     delete newErrors.last_name;
                 }
                 break;
-    
+
             case 'first_name':
                 if (value.length > 50) {
                     newErrors.first_name = "Tên không được vượt quá 50 ký tự";
@@ -201,7 +201,7 @@ export const EmployeeUpdate = () => {
                     delete newErrors.first_name;
                 }
                 break;
-    
+
             case 'phone_number':
                 if (!phoneRegex.test(value)) {
                     newErrors.phone_number = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
@@ -209,7 +209,7 @@ export const EmployeeUpdate = () => {
                     delete newErrors.phone_number;
                 }
                 break;
-    
+
             case 'gender':
                 if (!value) {
                     newErrors.gender = "Phải chọn giới tính";
@@ -217,7 +217,7 @@ export const EmployeeUpdate = () => {
                     delete newErrors.gender;
                 }
                 break;
-    
+
             case 'date_of_birth':
                 const age = calculateAge(value);
                 if (age < minAge) {
@@ -226,7 +226,7 @@ export const EmployeeUpdate = () => {
                     delete newErrors.date_of_birth;
                 }
                 break;
-    
+
             case 'username':
                 if (!usernameRegex.test(value)) {
                     newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
@@ -242,18 +242,18 @@ export const EmployeeUpdate = () => {
                     delete newErrors.email;
                 }
                 break;
-    
+
             case 'salary':
                 if (parseInt(value) <= 1000) {
                     newErrors.salary = "Lương phải lớn hơn 1000";
                 } else {
                     delete newErrors.salary;
                 }
-                break; 
+                break;
             default:
                 break;
         }
-    
+
         // Cập nhật employeeData và errors
         setEmployeeData((prevData) => ({ ...prevData, [name]: value }));
         setErrors(newErrors);
@@ -262,7 +262,7 @@ export const EmployeeUpdate = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateInputs()) return;
-        
+
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
         const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
@@ -277,6 +277,7 @@ export const EmployeeUpdate = () => {
                 ward: wardName,
                 streetName: streetName
             },
+            position: employeeData.position,
             date_of_birth: formatDate(employeeData.date_of_birth),
         };
         setIsLoading(true);
@@ -374,7 +375,7 @@ export const EmployeeUpdate = () => {
                                                     value={employeeData.last_name}
                                                     name="last_name"
                                                     onChange={handleChange}
-                                                    
+
                                                     placeholder='Họ'
                                                 />
                                                 {errors.last_name && (
@@ -386,7 +387,7 @@ export const EmployeeUpdate = () => {
                                             <FormControl>
                                                 <FormLabel required>Tên</FormLabel>
                                                 <Input
-                                                    value={employeeData.first_name}
+                                                    value={employeeData.first_name || ''}
                                                     name="first_name"
                                                     onChange={handleChange}
                                                     placeholder='Tên'
@@ -401,7 +402,7 @@ export const EmployeeUpdate = () => {
                                             <FormControl>
                                                 <FormLabel required>Email</FormLabel>
                                                 <Input
-                                                    value={employeeData.email}
+                                                    value={employeeData.email || ''}
                                                     name="email"
                                                     onChange={handleChange}
                                                     placeholder='Email'
@@ -416,7 +417,7 @@ export const EmployeeUpdate = () => {
                                             <FormControl>
                                                 <FormLabel required>Số Điện Thoại</FormLabel>
                                                 <Input
-                                                    value={employeeData.phone_number}
+                                                    value={employeeData.phone_number || ''}
                                                     name="phone_number"
                                                     onChange={handleChange}
                                                     placeholder='Số Điện Thoại'
@@ -430,7 +431,7 @@ export const EmployeeUpdate = () => {
                                             <FormControl>
                                                 <FormLabel required>Lương</FormLabel>
                                                 <Input
-                                                    value={employeeData.salary}
+                                                    value={employeeData.salary || ''}
                                                     name='salary'
                                                     onChange={handleChange}
                                                     type="number"
@@ -443,14 +444,20 @@ export const EmployeeUpdate = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Chức vụ</FormLabel>
-                                                <Select value={employeeData.position} placeholder="Chọn chức vụ" onChange={(e, v) => setPosition(v)}>
-                                                    {
-                                                        positions?.map((item) => (
-                                                            <Option key={item.id} value={item.id}>{item.name}</Option>
-                                                        ))
-                                                    }
+                                                <Select
+                                                    value={position || employeeData.position || ""} // Đặt giá trị mặc định là chuỗi rỗng
+                                                    placeholder="Chọn chức vụ"
+                                                    onChange={(e, v) => {
+                                                        setPosition(v);
+                                                        setEmployeeData((prevData) => ({ ...prevData, position: v })); // Cập nhật trực tiếp vào employeeData
+                                                    }}
+                                                >
+                                                    {positions?.map((item) => (
+                                                        <Option key={item.id} value={item.id}>{item.name}</Option>
+                                                    ))}
                                                 </Select>
                                             </FormControl>
+
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
@@ -502,7 +509,7 @@ export const EmployeeUpdate = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel >Thành phố</FormLabel>
-                                                <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                                                <Select value={selectedCity || ''} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
                                                     <Option value="" disabled>
                                                         Chọn tỉnh thành
                                                     </Option>
@@ -517,7 +524,7 @@ export const EmployeeUpdate = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel >Quận/Huyện</FormLabel>
-                                                <Select value={selectedDistrict}
+                                                <Select value={selectedDistrict || ''}
                                                     onChange={(e, v) => handleDistrictChange(v)}
                                                     placeholder="Chọn quận huyện">
                                                     <Option value="" disabled>
@@ -534,7 +541,7 @@ export const EmployeeUpdate = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel >Phường/Xã</FormLabel>
-                                                <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                                                <Select value={selectedWard || ''} onChange={(e, v) => handleWardChange(v)}
                                                     placeholder="Chọn phường xã">
                                                     <Option value="" disabled>
                                                         Chọn phường xã

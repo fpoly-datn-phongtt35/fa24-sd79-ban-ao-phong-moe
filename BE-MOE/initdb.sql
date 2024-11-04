@@ -252,7 +252,7 @@ CREATE TABLE bill (
   bill_status_id INT,
   shipping DECIMAL(15, 0),
   subtotal DECIMAL(15,0),
-  saller_discount DECIMAL(15,0),
+  seller_discount DECIMAL(15,0),
   total DECIMAL(15, 0),
   payment_method ENUM('CASH','BANK','CASH_ON_DELIVERY'),
   message VARCHAR(255),

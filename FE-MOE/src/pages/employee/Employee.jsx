@@ -284,9 +284,9 @@ export const Employee = () => {
                                         {typeof emp.position === 'object' ? (emp.position.name || 'N/A') : (emp.position || 'N/A')}
                                     </TableCell>
                                     <TableCell>
-                                        <IconButton onClick={() => removeEmployee(emp.id)}>
+                                        {/* <IconButton onClick={() => removeEmployee(emp.id)}>
                                             <DeleteIcon color="error" />
-                                        </IconButton>
+                                        </IconButton> */}
 
                                         <IconButton onClick={() => updateEmployee(emp.id)}>
                                             <EditIcon />

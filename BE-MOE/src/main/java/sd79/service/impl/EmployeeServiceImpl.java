@@ -127,7 +127,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Tìm và cập nhật thông tin người dùng
         User user = this.userRepository.findById(employee.getUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin user"));
-        user.setIsLocked(req.getIsLocked());
         user.setEmail(req.getEmail());
         this.userRepository.save(user); // Lưu riêng đối tượng User trước khi gán vào Employee
 
