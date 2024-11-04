@@ -1,57 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, TextField, Pagination } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
-import { fetchAllCouponDate, fetchAllCouponDatePersonal } from '~/apis/billsApi';
+import { fetchAllCouponCustomer } from '~/apis/billsApi';
+
 
 export default function CouponModal({ open, onClose, onSelectCoupon, customerId }) {
 
     const [coupons, setCoupons] = useState([]);
-    const [couponCustomer, setCouponCustomer] = useState([]);
     const [page, setPage] = useState(1);
     const [pageSize] = useState(5);
     const [totalPages, setTotalPages] = useState(0);
     const [keyword, setKeyword] = useState('');
 
-    const handleSetCoupon = async () => {
-        try {
-            const res = await fetchAllCouponDate(page, keyword, undefined, undefined, undefined, undefined, undefined, pageSize, 'name', 'asc');
-            setCoupons(res.data.content);
-            setTotalPages(res.data.totalPages);
-
-        } catch (error) {
-            console.error('Failed to fetch coupons:', error);
-        }
-    };
-
-    const handleSetCouponPersonal = async (customerId) => {
-        try {
-            const res = await fetchAllCouponDatePersonal(
-                page,
-                keyword,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                pageSize,
-                'name',
-                'asc',
-                customerId
-            );
-            setCouponCustomer(res.data.content);
-            setTotalPages(res.data.totalPages);
-        } catch (error) {
-            console.error('Failed to fetch coupons:', error);
-        }
-    };
+    const validCustomerId = customerId ?? 0;
 
     useEffect(() => {
-        if (customerId) {
-            handleSetCouponPersonal(customerId);
-        } else {
-            handleSetCoupon();
+        if (open) {
+            handleSetCouponCustomer();
         }
-    }, [customerId]);
+    }, [open, page, keyword]);
+
+    useEffect(() => {
+        if (validCustomerId) {
+            handleSetCouponCustomer();
+        }
+    }, [validCustomerId]);
+
+    const handleSetCouponCustomer = async () => {
+        try {
+            const res = await fetchAllCouponCustomer(validCustomerId, page, keyword, pageSize);
+            setCoupons(res.data.content);
+            setTotalPages(res.data.totalPages);
+        } catch (error) {
+            console.error('Failed to fetch coupons:', error);
+        }
+    };
 
     const handlePageChange = (event, value) => {
         setPage(value);
@@ -59,7 +42,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId 
 
     const handleSearchChange = (event) => {
         setKeyword(event.target.value);
-        setPage(1);
+        setPage(1); // Reset to the first page on new search
     };
 
     const formatDate = (dateString) => {
@@ -69,7 +52,6 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId 
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-
         return `${hours}:${minutes} ${day}/${month}/${year}`;
     };
 
@@ -92,51 +74,6 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId 
 
                 {coupons.length > 0 ? (
                     coupons.map((coupon, index) => (
-                        <Box
-                            key={index}
-                            sx={{
-                                position: 'relative',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                p: 1,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 1,
-                                mb: 1,
-                                bgcolor: '#f9f9f9',
-                                boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => {
-                                onSelectCoupon(coupon);
-                                onClose();
-                            }}
-                        >
-                            <Box sx={{ flex: 1 }}>
-                                <Typography variant="body2" color="textPrimary" sx={{ fontWeight: 'bold' }}>
-                                    <span style={{ color: '#FFD700' }}>[{coupon.code}]</span> {coupon.name}
-                                    <Box component="span" sx={{ ml: 1, bgcolor: '#FFD700', color: 'black', px: 1, borderRadius: '4px', fontSize: '12px' }}>
-                                        {coupon.discountType === 'FIXED_AMOUNT' ? `${formatCurrencyVND(coupon.discountValue)}` : `${coupon.discountValue}%`}
-                                    </Box>
-                                </Typography>
-                                <Typography variant="caption" color="textSecondary">
-                                    Đơn tối thiểu: {formatCurrencyVND(coupon.conditions)}
-                                </Typography>
-                                <br />
-                                <Typography variant="caption" color="textSecondary">
-                                    Ngày kết thúc: {formatDate(coupon.endDate)}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    ))
-                ) : (
-                    <Box sx={{ textAlign: 'center', py: 3 }}>
-                        <Typography color="textSecondary">Không có phiếu giảm giá nào khả dụng</Typography>
-                    </Box>
-                )}
-
-                {couponCustomer.length > 0 ? (
-                    couponCustomer.map((coupon, index) => (
                         <Box
                             key={index}
                             sx={{

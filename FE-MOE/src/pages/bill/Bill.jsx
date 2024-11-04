@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Box,
     Button,
@@ -33,6 +33,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
 
 function Bill() {
+
     const [tabIndex, setTabIndex] = useState(0);
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -47,6 +48,8 @@ function Bill() {
     const [currentOrder, setCurrentOrder] = useState(null);
     const [customerAmount, setCustomerAmount] = useState('');
     const [isDisabled, setIsDisabled] = useState(false);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+    const [customerId, setCustomerId] = useState(null);
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -196,6 +199,10 @@ function Bill() {
         }
     };
 
+    const handleAddCustomer = (customer) => {
+        setCustomerId(customer.id); 
+    };
+
     //----------------------------------------------------------Coupon--------------------------------------//  
     const onCoupon = async (coupon) => {
         if (!selectedOrder) {
@@ -240,6 +247,33 @@ function Bill() {
 
     const openCouponModal = () => setCouponModalOpen(true);
     const closeCouponModal = () => setCouponModalOpen(false);
+    
+    //----------------------------------------------------------Tính toán--------------------------------------//  
+    const subtotal = products.reduce((total, product) => {
+        return total + product.productDetail.price * product.quantity;
+    }, 0);
+
+    const discountAmount = (() => {
+        if (!currentOrder || !currentOrder.coupon) return 0;
+        console.log(currentOrder)
+    
+        const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
+        if (subtotal < conditions) return 0;
+    
+        if (discountType === 'FIXED_AMOUNT') {
+            return Math.min(discountValue, subtotal);
+        } else if (discountType === 'PERCENTAGE') {
+            const calculatedDiscount = (subtotal * discountValue) / 100;
+            return Math.min(calculatedDiscount, maxValue);
+        }
+    
+        return 0;
+    })();
+
+    const handleCustomerAmountChange = (event) => {
+        const value = parseFloat(event.target.value) || 0;
+        setCustomerAmount(value);
+    };
 
     const handleQuantityChange = (productId, newQuantity) => {
         setProducts(prevProducts =>
@@ -249,36 +283,16 @@ function Bill() {
         );
     };
 
-    //----------------------------------------------------------Tính toán--------------------------------------//  
-    const subtotal = products.reduce((total, product) => {
-        return total + product.productDetail.price * product.quantity;
-    }, 0);
-
-    const discountAmount = (() => {
-        if (!currentOrder || !currentOrder.coupon) return 0;
-
-        const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
-        if (subtotal < conditions) return 0;
-
-        if (discountType === 'FIXED_AMOUNT') {
-            return Math.min(discountValue, subtotal);
-        } else if (discountType === 'PERCENTAGE') {
-            const calculatedDiscount = (subtotal * discountValue) / 100;
-            return Math.min(calculatedDiscount, maxValue || calculatedDiscount);
-        }
-
-        return 0;
-    })();
-
-    const handleCustomerAmountChange = (event) => {
-        const value = parseFloat(event.target.value) || 0;
-        setCustomerAmount(value);
-    };
-
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
 
     //----------------------------------------------------------Them lan cuoi----------------------------------//
+    const PaymentMethod = {
+        CASH: 0,
+        BANK: 1,
+        CASH_ON_DELIVERY: 2,
+    };
+
     const onPay = async () => {
         if (!currentOrder || products.length === 0) {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
@@ -288,13 +302,18 @@ function Bill() {
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
+                bankCode: "null",
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
                 billStatus: 2,
-                shippingCost: 0,
-                totalAmount: totalAfterDiscount,
-                barcode: "null",
-                qrCode: "null",
+                shipping: 0,
+                subtotal: subtotal,
+                sellerDiscount: discountAmount,
+                total: totalAfterDiscount,
+                paymentMethod: selectedPaymentMethod,
+                message: "null",
+                note: "null",
+                paymentTime: "null",
                 userId: localStorage.getItem("userId"),
             },
             billDetails: products.map(product => ({
@@ -308,14 +327,16 @@ function Bill() {
         try {
             const billId = await addPay(billStoreRequest);
             if (billId) {
-                toast.success("Hóa đơn đã được tạo thành công!");
-                await handleSetBill();
+                toast.success("Hóa đơn đã được tạo thành công!");              
             }
         } catch (error) {
             console.error("Failed to create invoice:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
+        await handleSetBill();
     };
+
+  
 
     //----------------------------------------------------------Giao diện--------------------------------------//  
     return (
@@ -470,7 +491,7 @@ function Bill() {
             </div>
             {/* Customer */}
             <div>
-                <CustomerList selectedOrder={selectedOrder} onAddCustomer={onCustomer} />
+                <CustomerList selectedOrder={selectedOrder} onAddCustomer={handleAddCustomer} />
             </div>
             {/* Coupon and Tính toán */}
             <div>
@@ -510,7 +531,7 @@ function Bill() {
                                 open={isCouponModalOpen}
                                 onClose={closeCouponModal}
                                 onSelectCoupon={onCoupon}
-                                customerId={currentOrder?.customerId}
+                                 customerId={customerId} 
                             />
 
                             <Grid container spacing={2}>
@@ -572,18 +593,31 @@ function Bill() {
 
                             <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán:</Typography>
                             <Box display="flex" justifyContent="space-between" gap={2}>
-                                <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: 'black', flex: 1 }} startIcon={<LocalAtmIcon />}>
+                                <Button
+                                    variant="contained"
+                                    sx={{ backgroundColor: selectedPaymentMethod === PaymentMethod.CASH ? '#FFD700' : 'gray', color: 'black', flex: 1 }}
+                                    startIcon={<LocalAtmIcon />}
+                                    onClick={() => setSelectedPaymentMethod(PaymentMethod.CASH)}
+                                >
                                     Tiền mặt
                                 </Button>
-                                <Button variant="contained" sx={{ backgroundColor: '#2196f3', color: 'white', flex: 1 }} startIcon={<CreditCardIcon />}>
+                                <Button
+                                    variant="contained"
+                                    sx={{ backgroundColor: selectedPaymentMethod === PaymentMethod.BANK ? '#2196f3' : 'gray', color: 'white', flex: 1 }}
+                                    startIcon={<CreditCardIcon />}
+                                    onClick={() => setSelectedPaymentMethod(PaymentMethod.BANK)}
+                                >
                                     Chuyển khoản
-                                </Button>
-                                <Button variant="contained" sx={{ backgroundColor: '#424242', color: 'white', flex: 1 }} startIcon={<LocalAtmIcon />}>
-                                    Tiền mặt & Chuyển khoản
                                 </Button>
                             </Box>
 
-                            <Button variant="contained" color="primary" onClick={onPay} sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={onPay}
+                                sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
+                                disabled={customerAmount < totalAfterDiscount}
+                            >
                                 Tạo hóa đơn
                             </Button>
                         </Grid>

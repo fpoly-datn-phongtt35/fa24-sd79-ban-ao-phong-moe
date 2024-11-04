@@ -112,116 +112,34 @@ export const deleteCustomer = async (billId) => {
     });
 };
 
-
 //them lan 4
-export const fetchAllCouponDate = async (
-  pageNo,
-  keyword,
-  startDate,
-  endDate,
-  discountType,
-  type,
-  status,
-  pageSize,
-  sort,
-  direction
+export const fetchAllCouponCustomer = async (
+  customerId,
+  pageNo = 1, 
+  keyword = '', 
+  pageSize = 5 
 ) => {
-  let uri = "/coupon/getAllCouponDate?";
-  let queryParams = [];
+  const uri = `/coupon/getAllCouponCustomers/${customerId}`; // Include customerId in the URL path
+  const params = new URLSearchParams();
 
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
+  if (pageNo !== null && pageNo >= 1) { 
+    params.append('pageNo', pageNo);
   }
   if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
-  }
-  if (startDate) {
-    queryParams.push(`startDate=${startDate}`);
-  }
-  if (endDate) {
-    queryParams.push(`endDate=${endDate}`);
-  }
-  if (discountType) {
-    queryParams.push(`discountType=${discountType}`);
-  }
-  if (type) {
-    queryParams.push(`type=${type}`);
-  }
-  if (status !== null && status !== undefined) {
-    queryParams.push(`status=${status}`);
+    params.append('keyword', keyword);
   }
   if (pageSize !== undefined && pageSize !== null) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (sort) {
-    queryParams.push(`sort=${sort}`);
-  }
-  if (direction) {
-    queryParams.push(`direction=${direction}`);
+    params.append('pageSize', pageSize);
   }
 
-  uri += queryParams.join("&");
-
+ 
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
-};
-
-export const fetchAllCouponDatePersonal = async (
-  pageNo,
-  keyword,
-  startDate,
-  endDate,
-  discountType,
-  type,
-  status,
-  pageSize,
-  sort,
-  direction,
-  customerId 
-) => {
-  let uri = "/coupon/getAllCouponDatePersonal?";
-  let queryParams = [];
-
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
-  }
-  if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
-  }
-  if (startDate) {
-    queryParams.push(`startDate=${startDate}`);
-  }
-  if (endDate) {
-    queryParams.push(`endDate=${endDate}`);
-  }
-  if (discountType) {
-    queryParams.push(`discountType=${discountType}`);
-  }
-  if (type) {
-    queryParams.push(`type=${type}`);
-  }
-  if (status !== null && status !== undefined) {
-    queryParams.push(`status=${status}`);
-  }
-  if (pageSize !== undefined && pageSize !== null) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (sort) {
-    queryParams.push(`sort=${sort}`);
-  }
-  if (direction) {
-    queryParams.push(`direction=${direction}`);
-  }
-  if (customerId !== null && customerId !== undefined) { 
-    queryParams.push(`customerId=${customerId}`); 
-  }
-
-  uri += queryParams.join("&");
-
-  return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
+    .get(`${API_ROOT}${uri}?${params.toString()}`) 
+    .then((res) => res.data)
+    .catch((error) => {
+      console.error("Error fetching coupon data:", error);
+      throw error;
+    });
 };
 
 export const fetchCoupon = async (billId) => { 

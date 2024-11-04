@@ -13,3 +13,6 @@ export const formatDateWithoutTime = (dateTimeString) => {
     const [datePart] = dateTimeString.split(" | ");
     return datePart;
 }
+
+
+    
