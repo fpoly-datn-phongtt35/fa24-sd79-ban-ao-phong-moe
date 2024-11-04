@@ -18,6 +18,8 @@ import sd79.model.Customer;
 import sd79.service.CouponService;
 import sd79.utils.CloudinaryUtils;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/${api.version}/coupon")
 @Tag(name = "Coupon Controller", description = "Quản lý thêm, sửa, xóa phiếu giảm giá sản phẩm")
@@ -129,5 +131,18 @@ public class CouponController {
         couponService.sendCouponEmail(coupon, customer);
         return new ResponseData<>(HttpStatus.OK.value(), "Gửi email phiếu giảm giá thành công");
     }
+
+//    @Operation(
+//            summary = "Lấy danh sách khách hàng của một phiếu giảm giá",
+//            description = "Lấy tất cả khách hàng liên kết với một phiếu giảm giá cụ thể từ cơ sở dữ liệu"
+//    )
+//    @GetMapping("/getAllCouponCustomers/{couponId}")
+//    public ResponseData<?> getAllCouponCustomers(@PathVariable Long couponId) {
+//        // Fetch all customers for the given coupon ID
+//        List<Customer> customers = couponService.getAllCouponCustomers(couponId);
+//
+//        // Return the response with the customer list
+//        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách khách hàng thành công", customers);
+//    }
 
 }

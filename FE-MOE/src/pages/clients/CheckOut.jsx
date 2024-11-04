@@ -1,7 +1,12 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   Breadcrumbs,
   Button,
+  CircularProgress,
   FormControl,
   Grid,
   Input,
@@ -12,16 +17,109 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import RoomOutlinedIcon from "@mui/icons-material/RoomOutlined";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import VisaSvgIcon from "~/assert/icon/visa.svg";
-import MasterCardSvgIcon from "~/assert/icon/mastercard.svg";
+import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
+import { CommonContext } from "~/context/CommonContext";
+import { useContext, useEffect, useState } from "react";
+import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
+import { formatCurrencyVND } from "~/utils/format";
+import { ScrollToTop } from "~/utils/defaultScroll";
+import { reqPay } from "~/apis";
+import { handleVerifyBanking } from "~/exceptions/PaymentException";
+import { getUserAddressCart } from "~/apis/client/productApiClient";
+import VoucherModal from "~/components/clients/modals/VoucherModal";
 
 function CheckOut() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const context = useContext(CommonContext);
+  const [items, setItems] = useState(null);
+
+  const [message, setMessage] = useState("");
+  const [subTotal, setSubTotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
+  const [discount, setDiscount] = useState(0);
+  const [couponId, setCouponId] = useState(1);
+
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    ScrollToTop();
+    fetchUsers();
+    setItems(JSON.parse(localStorage.getItem("orderItems")));
+    handleVerifyBanking(searchParams.get("vnp_TransactionStatus")) &&
+      navigate("/cart");
+  }, []);
+
+  useEffect(() => {
+    let total = calculateTotalPrice();
+    setShipping(total < 100000 ? 24000 : 0);
+    setSubTotal(total);
+  }, [items]);
+
+  const fetchUsers = async () => {
+    await getUserAddressCart().then((res) => {
+      setUserInfo(res.data);
+    });
+  };
+
+  const handleDiscount = (type, value) => {
+    if (type === "PERCENT") {
+      setDiscount(subTotal * (value / 100));
+    } else {
+      setDiscount(subTotal - value);
+    }
+    setSubTotal(calculateTotalPrice());
+  };
+
+  const calculateTotalPrice = () => {
+    return items?.reduce(
+      (total, items) => total + items.retailPrice * items.quantity,
+      0
+    );
+  };
+
+  const onPay = async () => {
+    const data = {
+      items,
+      message,
+      subTotal,
+      shipping,
+      paymentMethod,
+      discount,
+      couponId,
+      total: subTotal + shipping - discount,
+    };
+    if (paymentMethod === "BANK") {
+      console.log("Bank Payment");
+      localStorage.setItem("temp_data", JSON.stringify(data));
+      await reqPay(data);
+    }
+    console.log(data);
+
+    // localStorage.removeItem("orderItems")
+  };
+
+  if (!items) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="95vw"
+        onClick={() => navigate("/cart")}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
   return (
     <Box>
       <Grid container spacing={2} alignItems="center" height={"50px"}>
@@ -73,8 +171,14 @@ function CheckOut() {
           >
             Địa chỉ nhận hàng
           </Typography>
-          <Typography level="body-lg">
-            180/23, Đường Phú Mỹ, Phường Mỹ Đình 2, Quận Nam Từ Liêm, Hà Nội{" "}
+          <Typography level="body-lg" margin={2}>
+            Người nhận: {userInfo?.fullName}
+          </Typography>
+          <Typography level="body-lg" margin={2}>
+            Số điện thoại: {userInfo?.phone}
+          </Typography>
+          <Typography level="body-lg" margin={2}>
+            Địa chỉ: {userInfo?.address}
             <Typography
               color="primary"
               level="body-xs"
@@ -95,29 +199,44 @@ function CheckOut() {
           }}
         >
           <Sheet>
-            <Table borderAxis="none">
+            <Table borderAxis="y">
               <thead>
                 <tr>
-                  <th>Sản phẩm</th>
-                  <th>Đơn giá</th>
-                  <th>Số lượng</th>
-                  <th>Thành tiền</th>
+                  <th className="text-center" width="30%">
+                    Sản phẩm
+                  </th>
+                  <th className="text-center">Đơn giá</th>
+                  <th className="text-center">Số lượng</th>
+                  <th className="text-center">Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                  <td>Comming soon!</td>
-                </tr>
+                {items &&
+                  items.map((i) => (
+                    <tr key={i.id}>
+                      <td>
+                        <CardShoppingCard data={i} />
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">
+                          {formatCurrencyVND(i.retailPrice)}
+                        </Typography>
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">{i.quantity}</Typography>
+                      </td>
+                      <td className="text-center">
+                        <Typography level="title-md">
+                          {formatCurrencyVND(i.retailPrice * i.quantity)}
+                        </Typography>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </Table>
             <Box
               sx={{
-                marginTop: 5,
-                Top: 5,
-                Top: 5,
+                marginTop: 2,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -126,13 +245,15 @@ function CheckOut() {
               <Box display="flex" alignItems="center">
                 <Typography level="title-md">Lời nhắn: </Typography>
                 <Input
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Lời nhắn gửi cho người bán..."
                   sx={{ minWidth: 300, marginLeft: 2 }}
                   size="md"
                 />
               </Box>
-              <Typography level="title-lg" color="neutral">
-                Tổng số tiền (1 sản phẩm): 100.000 đ
+              <Typography level="title-md">
+                Tổng số tiền ({items.length} sản phẩm):{" "}
+                {formatCurrencyVND(subTotal)}
               </Typography>
             </Box>
           </Sheet>
@@ -154,9 +275,7 @@ function CheckOut() {
           >
             Giảm giá
           </Typography>
-          <Button variant="plain" size="sm">
-            Chọn phiếu giảm giá
-          </Button>
+          <VoucherModal handleDiscount={handleDiscount} />
         </Box>
         {/* Payment method */}
         <Box
@@ -171,13 +290,11 @@ function CheckOut() {
             Phương thức thanh toán
           </Typography>
           <FormControl>
-            <RadioGroup
-              defaultValue="CASH_ON_DELIVERY"
-              name="radio-buttons-group"
-            >
+            <RadioGroup value={paymentMethod} name="radio-buttons-group">
               <Radio
                 value="CASH_ON_DELIVERY"
                 label="Thanh toán khi nhận hàng"
+                onChange={(e) => setPaymentMethod(e.target.value)}
               />
               <Box
                 sx={{
@@ -187,11 +304,27 @@ function CheckOut() {
                   alignItems: "center",
                 }}
               >
-                <Radio value="BANK" label="Chuyển khoản" />
+                <Radio
+                  value="BANK"
+                  label="Chuyển khoản"
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
                 <Box>
-                  <SvgIconDisplay icon={VNPaySvgIcon} />
-                  <SvgIconDisplay icon={VisaSvgIcon} />
-                  <SvgIconDisplay icon={MasterCardSvgIcon} />
+                  <SvgIconDisplay
+                    width={"60px"}
+                    height={"60px"}
+                    icon={VNPaySvgIcon}
+                  />
+                  <SvgIconDisplay
+                    width={"60px"}
+                    height={"60px"}
+                    icon={VisaSvgIcon}
+                  />
+                  <SvgIconDisplay
+                    width={"25px"}
+                    height={"25px"}
+                    icon={MBankIcon}
+                  />
                 </Box>
               </Box>
             </RadioGroup>
@@ -218,7 +351,7 @@ function CheckOut() {
                     Tổng tiền hàng
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    100.000 đ
+                    {formatCurrencyVND(subTotal)}
                   </Typography>
                 </Box>
                 <Box
@@ -232,7 +365,7 @@ function CheckOut() {
                     Giảm giá
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    0 đ
+                    {formatCurrencyVND(discount)}
                   </Typography>
                 </Box>
                 <Box
@@ -246,7 +379,7 @@ function CheckOut() {
                     Tổng tiền phí vận chuyển
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    FREE
+                    {shipping === 0 ? "FREE" : formatCurrencyVND(shipping)}
                   </Typography>
                 </Box>
                 <Box
@@ -260,7 +393,7 @@ function CheckOut() {
                     Tổng thanh toán
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="danger">
-                    100.000 đ
+                    {formatCurrencyVND(subTotal + shipping - discount)}
                   </Typography>
                 </Box>
               </Box>
@@ -278,7 +411,12 @@ function CheckOut() {
                 Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo &nbsp;
                 <Link>Điều khoản của chúng tôi</Link>
               </Typography>
-              <Button variant="outlined" size="lg" color="primary">
+              <Button
+                variant="outlined"
+                size="lg"
+                color="primary"
+                onClick={() => onPay()}
+              >
                 Mua Hàng
               </Button>
             </Box>

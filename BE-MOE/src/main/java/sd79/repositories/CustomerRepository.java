@@ -11,11 +11,11 @@ import sd79.model.Customer;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-
-
+    Optional<Customer> findByUserId(Long userId);
 
     @Query("SELECT c FROM Customer c " +
             "JOIN c.user u " + // Join to access user attributes
@@ -25,7 +25,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "OR u.email LIKE %:keyword% " + // Searching by email
             "OR c.phoneNumber LIKE %:keyword%) " + // Searching by phone number
             "AND (:gender IS NULL OR c.gender LIKE %:gender%) " + // Exact match for gender
-            "AND (:dateOfBirth IS NULL OR Date(c.dateOfBirth) = :dateOfBirth)") // Exact match for date of birth
+            "AND (:dateOfBirth IS NULL OR Date(c.dateOfBirth) = :dateOfBirth)")
+        // Exact match for date of birth
     Page<Customer> searchCustomers(@Param("keyword") String keyword,
                                    @Param("gender") Gender gender,
                                    @Param("dateOfBirth") Date dateOfBirth,

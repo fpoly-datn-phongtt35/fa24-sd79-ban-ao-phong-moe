@@ -91,7 +91,7 @@ public class CouponCustomizeQuery {
 
         // Date range filtering
         if (startDate != null && endDate != null) {
-            sql.append(" AND ((c.startDate BETWEEN :startDate AND :endDate) OR (c.endDate BETWEEN :startDate AND :endDate))");
+            sql.append(" AND (Date(c.startDate) >= :startDate AND Date(c.endDate) <= :endDate)");
         }
 
         // Sorting logic
@@ -145,7 +145,7 @@ public class CouponCustomizeQuery {
             countSql.append(" AND c.discountType = 'FIXED_AMOUNT'");
         }
         if (startDate != null && endDate != null) {
-            countSql.append(" AND ((c.startDate BETWEEN :startDate AND :endDate) OR (c.endDate BETWEEN :startDate AND :endDate))");
+            countSql.append(" AND (Date(c.startDate) >= :startDate AND Date(c.endDate) <= :endDate)");
         }
 
         // Count query
@@ -182,6 +182,7 @@ public class CouponCustomizeQuery {
                 .discountValue(coupon.getDiscountValue())
                 .maxValue(coupon.getMaxValue())
                 .quantity(coupon.getQuantity())
+                .usageCount(coupon.getUsageCount())
                 .conditions(coupon.getConditions())
                 .startDate(coupon.getStartDate())
                 .endDate(coupon.getEndDate())

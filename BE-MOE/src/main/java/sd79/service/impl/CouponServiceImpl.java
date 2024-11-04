@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.CouponResponse;
-import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
@@ -26,7 +26,6 @@ import sd79.utils.Email;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,6 +88,7 @@ public class CouponServiceImpl implements CouponService {
                 .discountType(couponRequest.getDiscountType())
                 .maxValue(couponRequest.getMaxValue())
                 .quantity(couponRequest.getQuantity())
+                .usageCount(couponRequest.getUsageCount())
                 .conditions(couponRequest.getConditions())
                 .type(couponRequest.getType())
                 .startDate(couponRequest.getStartDate())
@@ -163,7 +163,6 @@ public class CouponServiceImpl implements CouponService {
         }
     }
 
-
     public CouponImage findByImage(Long couponId) {
         return this.couponImageRepo.findByCouponId(couponId)
                 .orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
@@ -197,7 +196,6 @@ public class CouponServiceImpl implements CouponService {
             }
         }
     }
-
 
     private String extractPublicId(String url) {
         String[] parts = url.split("/upload/");
@@ -238,6 +236,7 @@ public class CouponServiceImpl implements CouponService {
         coupon.setDiscountType(couponRequest.getDiscountType());
         coupon.setMaxValue(couponRequest.getMaxValue());
         coupon.setQuantity(couponRequest.getQuantity());
+        coupon.setUsageCount(coupon.getUsageCount());
         coupon.setConditions(couponRequest.getConditions());
         coupon.setType(couponRequest.getType());
         coupon.setStartDate(couponRequest.getStartDate());
@@ -268,14 +267,12 @@ public class CouponServiceImpl implements CouponService {
         return couponRepo.save(coupon).getId();
     }
 
-
     @Transactional
     @Override
     public void deleteCoupon(Long id) {//xoa phieu giam gia
         Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
         couponRepo.delete(coupon);
     }
-
 
     @Override
     public void deleteCouponImage(Long couponId) {
@@ -311,6 +308,7 @@ public class CouponServiceImpl implements CouponService {
                 .discountValue(coupon.getDiscountValue())
                 .maxValue(coupon.getMaxValue())
                 .quantity(coupon.getQuantity())
+                .usageCount(coupon.getUsageCount())
                 .conditions(coupon.getConditions())
                 .startDate(coupon.getStartDate())
                 .endDate(coupon.getEndDate())
@@ -328,5 +326,47 @@ public class CouponServiceImpl implements CouponService {
     private String convertToUrl(CouponImage image) {
         return (image != null) ? image.getImageUrl() : null;
     }
-
+//-----------------------------------------------------------------------------------------------
+//    public List<CouponCustomerResponse> getAllCouponCustomers(Long customerId) {
+//        List<CouponCustomerResponse> coupons;
+//
+//        if (customerId == null || !customerRepository.existsById(customerId)) {
+//            // Lấy các phiếu giảm giá có trạng thái "BẮT ĐẦU" và isDeleted = false
+//            coupons = couponRepo.findAllByStatusAndIsDeleted("START", false)
+//                    .stream()
+//                    .map(this::convertToCouponCustomerResponse)
+//                    .collect(Collectors.toList());
+//        } else {
+//            // Lấy tất cả các phiếu giảm giá liên quan đến khách hàng
+//            coupons = couponRepo.findAllByCustomerId(customerId)
+//                    .stream()
+//                    .map(this::convertToCouponCustomerResponse)
+//                    .collect(Collectors.toList());
+//        }
+//
+//        return coupons;
+//    }
+//
+//    private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
+//        return CouponCustomerResponse.builder()
+//                .id(coupon.getId())
+//                .code(coupon.getCode())
+//                .name(coupon.getName())
+//                .type(coupon.getType())
+//                .discountValue(coupon.getDiscountValue())
+//                .discountType(coupon.getDiscountType())
+//                .maxValue(coupon.getMaxValue())
+//                .quantity(coupon.getQuantity())
+//                .usageCount(coupon.getUsageCount())
+//                .conditions(coupon.getConditions())
+//                .startDate(coupon.getStartDate())
+//                .endDate(coupon.getEndDate())
+//                .status(coupon.getStatus())
+//                .description(coupon.getDescription())
+//                .imageUrl(coupon.getCouponImage() != null ? coupon.getCouponImage().getImageUrl() : null)
+//                .customers(coupon.getCouponShares().stream()
+//                        .map(CouponShare::getCustomer)
+//                        .collect(Collectors.toList()))
+//                .build();
+//    }
 }

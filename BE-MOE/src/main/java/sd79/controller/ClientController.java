@@ -27,9 +27,7 @@ import sd79.service.clients.ClientProduct;
 @Tag(name = "Client Controller", description = "Client controller")
 @RequiredArgsConstructor
 @Validated
-public class ProductClientController {
-
-    private final ProductService productService;
+public class ClientController {
 
     private final ClientProduct clientProduct;
 
@@ -110,5 +108,10 @@ public class ProductClientController {
     public ResponseData<?> deleteCart(@PathVariable String id, @PathVariable String username) {
         this.clientProduct.deleteCart(id, username);
         return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
+    }
+
+    @GetMapping("/user-address")
+    public ResponseData<?> getUserAddress(@RequestParam Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get successfully user", this.clientProduct.getUserInfo(id));
     }
 }

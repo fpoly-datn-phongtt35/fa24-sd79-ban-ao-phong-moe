@@ -43,6 +43,8 @@ public class CouponRequest {
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
+    private Integer usageCount;
+
     @NotNull(message = "Conditions order value is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Minimum order value must be greater than zero")
     private BigDecimal conditions;

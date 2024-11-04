@@ -125,6 +125,7 @@ const CreateCoupon = () => {
             discountType: discountType,
             maxValue: data.maxValue || 0,
             quantity: data.quantity,
+            usageCount : 0,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
             endDate: formatDate(data.endDate),
