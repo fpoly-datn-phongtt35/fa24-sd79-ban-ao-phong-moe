@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import { ScrollToTop } from "~/utils/defaultScroll";
-import { deleteItemCart, updateCart } from "~/apis/client/productApiClient";
+import { deleteItemCart, updateCart } from "~/apis/client/apiClient";
 import { formatCurrencyVND } from "~/utils/format";
 import { MoeAlert } from "~/components/other/MoeAlert";
 import { toast } from "react-toastify";
@@ -44,8 +44,9 @@ function ShoppingCart() {
   useEffect(() => {
     if (context.carts && context.carts.length > 0) {
       const validCarts = context.carts.filter(
-        (cart) => cart.productCart.status
+        (cart) => cart.productCart.status && cart.productCart.quantity > 0
       );
+
       setSelectAll(
         validCarts.length > 0 && selectedCarts.length === validCarts.length
       );
@@ -78,7 +79,7 @@ function ShoppingCart() {
   };
 
   const onUpdateQuantity = (id, quantity) => {
-    debouncedQuantity(id, quantity);
+    quantity > 0 && debouncedQuantity(id, quantity);
   };
 
   const handleCheckboxChange = (cart) => {
@@ -92,12 +93,13 @@ function ShoppingCart() {
   };
 
   const handleSelectAll = () => {
+    const validCarts = context.carts.filter(
+      (cart) => cart.productCart.status && cart.productCart.quantity > 0
+    );
+
     if (selectAll) {
       setSelectedCarts([]);
     } else {
-      const validCarts = context.carts.filter(
-        (cart) => cart.productCart.status
-      );
       setSelectedCarts(validCarts);
     }
     setSelectAll(!selectAll);
@@ -177,7 +179,10 @@ function ShoppingCart() {
                       <tr key={cart.id}>
                         <td className="text-center">
                           <Checkbox
-                            disabled={!cart.productCart.status}
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
+                            }
                             size="sm"
                             checked={selectedCarts.includes(cart)}
                             onChange={() => handleCheckboxChange(cart)}
@@ -207,9 +212,21 @@ function ShoppingCart() {
                           )}
                         </td>
                         <td className="text-center">
+                          {cart.quantity > cart.productCart.quantity &&
+                            onUpdateQuantity(
+                              cart.id,
+                              cart.productCart.quantity
+                            )}
                           <Input
-                            disabled={!cart.productCart.status}
-                            defaultValue={cart.quantity}
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
+                            }
+                            defaultValue={
+                              cart.quantity > cart.productCart.quantity
+                                ? cart.productCart.quantity
+                                : cart.quantity
+                            }
                             type="number"
                             slotProps={{
                               input: {
@@ -217,9 +234,14 @@ function ShoppingCart() {
                                 max: cart.productCart.quantity,
                               },
                             }}
-                            onChange={(e) =>
-                              onUpdateQuantity(cart.id, e.target.value)
-                            }
+                            onChange={(e) => {
+                              if (e.target.value > cart.productCart.quantity) {
+                                e.target.value = cart.productCart.quantity;
+                                onUpdateQuantity(cart.id, e.target.value);
+                              } else {
+                                onUpdateQuantity(cart.id, e.target.value);
+                              }
+                            }}
                           />
                         </td>
                         <td className="text-center">

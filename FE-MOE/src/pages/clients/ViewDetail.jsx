@@ -28,7 +28,7 @@ import Done from "@mui/icons-material/Done";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { useContext, useEffect, useState } from "react";
 import { formatCurrencyVND, formatDateWithoutTime } from "~/utils/format";
-import { fetchProduct, storeCart } from "~/apis/client/productApiClient";
+import { fetchProduct, storeCart } from "~/apis/client/apiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";

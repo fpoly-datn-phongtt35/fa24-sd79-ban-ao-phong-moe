@@ -1,5 +1,9 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { toast } from "react-toastify";
-import { createOrder } from "~/apis/client/productApiClient";
+import { createOrder } from "~/apis/client/apiClient";
 
 const handleBanking = async () => {
   const data = JSON.parse(localStorage.getItem("temp_data"));

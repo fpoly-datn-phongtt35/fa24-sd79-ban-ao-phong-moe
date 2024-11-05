@@ -3,7 +3,7 @@
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { createContext, useEffect, useState } from "react";
-import { fetchCarts } from "~/apis/client/productApiClient";
+import { fetchCarts } from "~/apis/client/apiClient";
 
 const CommonContext = createContext();
 

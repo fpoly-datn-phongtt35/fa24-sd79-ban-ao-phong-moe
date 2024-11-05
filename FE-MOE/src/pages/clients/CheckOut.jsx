@@ -25,8 +25,8 @@ import VisaSvgIcon from "~/assert/icon/visa.svg";
 import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
 import SuccessfullyOrderIcon from "~/assert/icon/correct-success-tick-svgrepo-com.svg";
-import { CommonContext } from "~/context/CommonContext";
-import { useContext, useEffect, useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { useEffect, useState } from "react";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import { formatCurrencyVND } from "~/utils/format";
 import { ScrollToTop } from "~/utils/defaultScroll";
@@ -34,15 +34,17 @@ import { reqPay } from "~/apis";
 import { handleVerifyBanking } from "~/exceptions/PaymentException";
 import {
   createOrder,
+  fetchAllVouchers,
   getUserAddressCart,
-} from "~/apis/client/productApiClient";
+} from "~/apis/client/apiClient";
 import VoucherModal from "~/components/clients/modals/VoucherModal";
 import { toast } from "react-toastify";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 function CheckOut() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const context = useContext(CommonContext);
+
   const [items, setItems] = useState(null);
 
   const [message, setMessage] = useState(null);
@@ -50,24 +52,36 @@ function CheckOut() {
   const [shipping, setShipping] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [discount, setDiscount] = useState(0);
-  const [couponId, setCouponId] = useState(1);
-  const [bankCode, setBankCode] = useState(null);
+  const [couponId, setCouponId] = useState(null);
 
   const [userInfo, setUserInfo] = useState(null);
+  const [vouchers, setVouchers] = useState(null);
+
+  const [voucher, setVoucher] = useState(null);
+
+  const [ketword, setKeword] = useState(null);
 
   const [orderSuccessfully, setOrderSuccessfully] = useState(false);
 
+  const handleClodeVoucher = () => {
+    setVoucher(null);
+    setDiscount(0);
+    setCouponId(null);
+  };
   useEffect(() => {
-    setOrderSuccessfully(false);
-    ScrollToTop();
-    fetchUsers();
-    setItems(JSON.parse(localStorage.getItem("orderItems")));
-    handleVerifyBanking(
-      searchParams.get("vnp_TransactionStatus"),
-      searchParams.get("vnp_BankTranNo")
-    ) && setOrderSuccessfully(true);
-    navigate("/checkout");
+    init();
   }, []);
+
+  useEffect(() => {
+    const res = async () => {
+      await fetchAllVouchers(userInfo?.id, ketword).then(async (res) => {
+        setVouchers(res);
+      });
+    };
+    if (ketword !== null) {
+      res();
+    }
+  }, [ketword]);
 
   useEffect(() => {
     let total = calculateTotalPrice();
@@ -75,18 +89,38 @@ function CheckOut() {
     setSubtotal(total);
   }, [items]);
 
+  const init = () => {
+    setOrderSuccessfully(false);
+    ScrollToTop();
+    fetchUsers();
+    setItems(JSON.parse(localStorage.getItem("orderItems")));
+
+    handleVerifyBanking(
+      searchParams.get("vnp_TransactionStatus"),
+      searchParams.get("vnp_BankTranNo")
+    ) && setOrderSuccessfully(true);
+    navigate("/checkout");
+  };
+
   const fetchUsers = async () => {
-    await getUserAddressCart().then((res) => {
+    await getUserAddressCart().then(async (res) => {
       setUserInfo(res.data);
+      await fetchAllVouchers(res.data.id, ketword).then(async (res) => {
+        setVouchers(res);
+      });
     });
   };
 
-  const handleDiscount = (type, value) => {
-    if (type === "PERCENT") {
-      setDiscount(subtotal * (value / 100));
+  const handleDiscount = (data) => {
+    if (data.discountType === "PERCENTAGE") {
+      let result = subtotal * (data.discountValue / 100);
+      result = result > data.maxValue ? data.maxValue : result;
+      setDiscount(result);
     } else {
-      setDiscount(subtotal - value);
+      setDiscount(data.discountValue);
     }
+    setCouponId(data.id);
+    setVoucher(data);
     setSubtotal(calculateTotalPrice());
   };
 
@@ -99,7 +133,6 @@ function CheckOut() {
 
   const onPay = async () => {
     const data = {
-      bankCode,
       customerId: userInfo?.id,
       couponId,
       shipping,
@@ -109,7 +142,17 @@ function CheckOut() {
       paymentMethod,
       message,
 
-      // items,
+      items,
+    };
+
+    const transformedData = {
+      ...data,
+      items: data.items.map((item) => ({
+        id: Number(item.id),
+        retailPrice: item.retailPrice,
+        sellPrice: item.productCart.sellPrice,
+        quantity: item.quantity,
+      })),
     };
 
     if (data.total > 50000000) {
@@ -118,10 +161,10 @@ function CheckOut() {
     }
 
     if (paymentMethod === "BANK") {
-      localStorage.setItem("temp_data", JSON.stringify(data));
-      await reqPay(data);
-    } else {
-      await createOrder(data).then((res) => {
+      localStorage.setItem("temp_data", JSON.stringify(transformedData));
+      await reqPay(transformedData);
+    } else {  
+      await createOrder(transformedData).then(() => {
         localStorage.removeItem("orderItems");
         setOrderSuccessfully(true);
       });
@@ -361,7 +404,33 @@ function CheckOut() {
           >
             Giảm giá
           </Typography>
-          <VoucherModal handleDiscount={handleDiscount} />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {voucher && (
+              <Typography
+                level="title-sm"
+                variant="solid"
+                color="danger"
+                borderRadius={50}
+                endDecorator={
+                  <CloseIcon onClick={() => handleClodeVoucher()} />
+                }
+              >
+                Giảm &nbsp;
+                {voucher.discountType === "PERCENTAGE"
+                  ? `${voucher.discountValue}%`
+                  : formatCurrencyVND(voucher.discountValue)}
+                &nbsp; đơn tối đa {formatCurrencyVND(voucher.conditions)}
+              </Typography>
+            )}
+            {!voucher && (
+              <VoucherModal
+                handleDiscount={handleDiscount}
+                vouchers={vouchers}
+                totalAmout={subtotal}
+                setKeword={setKeword}
+              />
+            )}
+          </Box>
         </Box>
         {/* Payment method */}
         <Box
@@ -497,14 +566,16 @@ function CheckOut() {
                 Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo &nbsp;
                 <Link>Điều khoản của chúng tôi</Link>
               </Typography>
-              <Button
-                variant="outlined"
-                size="lg"
-                color="primary"
-                onClick={() => onPay()}
-              >
-                Đặt Hàng
-              </Button>
+              <MoeAlert
+                title="Xác nhận đơn hàng"
+                message="Bạn có muốn tiếp tục không?"
+                event={() => onPay()}
+                button={
+                  <Button variant="solid" size="lg" color="primary">
+                    Đặt Hàng
+                  </Button>
+                }
+              />
             </Box>
           </FormControl>
         </Box>

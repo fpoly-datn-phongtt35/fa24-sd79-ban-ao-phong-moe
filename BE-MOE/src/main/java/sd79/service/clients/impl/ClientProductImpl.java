@@ -60,6 +60,8 @@ public class ClientProductImpl implements ClientProduct {
 
     private final BillRepo billRepository;
 
+    private final BillDetailRepo billDetailRepository;
+
     private final BillStatusRepo billStatusRepository;
 
     private final CouponRepo couponRepo;
@@ -258,10 +260,14 @@ public class ClientProductImpl implements ClientProduct {
     @Override
     public long saveBill(BillClientRequest.BillCreate req) {
         Customer customer = this.customerRepository.findById(req.getCustomerId()).orElse(null);
+        Coupon couponId = null;
+        if (req.getCouponId() != null) {
+            couponId = this.couponRepo.findById(req.getCouponId()).orElse(null);
+        }
         Bill bill = Bill.builder()
                 .code(String.format("HD%s", RandomNumberGenerator.generateEightDigitRandomNumber()))
                 .bankCode(req.getBankCode())
-                .coupon(this.couponRepo.findById(req.getCouponId()).orElse(null))
+                .coupon(couponId)
                 .sellerDiscount(req.getSellerDiscount())
                 .shipping(req.getShipping())
                 .subtotal(req.getSubtotal())
@@ -270,7 +276,6 @@ public class ClientProductImpl implements ClientProduct {
                 .message(req.getMessage())
                 .customer(customer)
                 .billStatus(this.billStatusRepository.findById(1).orElse(null))
-                //Bill status
                 .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
                 .build();
         assert customer != null;
@@ -284,6 +289,27 @@ public class ClientProductImpl implements ClientProduct {
             coupon.setUsageCount(coupon.getUsageCount() + 1);
             this.couponRepo.save(coupon);
         }
+
+        req.getItems().forEach(item -> {
+            ProductDetail prd = this.productDetailRepository.findById(item.getId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            if (prd.getQuantity() - item.getQuantity() < 0) {
+                billSave.setBillStatus(this.billStatusRepository.findById(6).orElse(null));
+                this.billRepository.delete(billSave);
+                throw new InvalidDataException("Giao dịch thất bại vui lòng thử lại!");
+            }
+            this.billDetailRepository.save(BillDetail.builder()
+                    .productDetail(prd)
+                    .bill(bill)
+                    .quantity(item.getQuantity())
+                    .retailPrice(item.getRetailPrice())
+                    .discountAmount(item.getSellPrice())
+                    .totalAmountProduct(item.getSellPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .createAt(new Date())
+                    .updateAt(new Date())
+                    .build());
+            prd.setQuantity(prd.getQuantity() - item.getQuantity());
+            this.productDetailRepository.save(prd);
+        });
 
         return billSave.getId();
     }
