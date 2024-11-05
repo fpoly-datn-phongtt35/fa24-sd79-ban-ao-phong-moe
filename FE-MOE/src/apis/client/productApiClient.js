@@ -59,4 +59,12 @@ export const getUserAddressCart = async () => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/client/user-address?id=${localStorage.getItem("userId")}`)
     .then((res) => res.data);
-}
+};
+
+export const createOrder = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/client/order`, data)
+    .then((res) => res.data);
+};
+
+

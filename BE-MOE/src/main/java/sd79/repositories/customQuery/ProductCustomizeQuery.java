@@ -31,6 +31,7 @@ import sd79.repositories.products.ProductDetailRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -456,7 +457,7 @@ public class ProductCustomizeQuery {
                 ).toList();
     }
 
-    public List<ProductClientResponse> getBestSellingProducts() {
+    public Set<ProductClientResponse> getBestSellingProducts() {
         StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
         query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
         query.append(" ORDER BY prd.updateAt DESC");
@@ -473,7 +474,7 @@ public class ProductCustomizeQuery {
                         .rate(4)
                         .rateCount(104)
                         .build()
-                ).toList();
+                ).collect(Collectors.toSet());
     }
 
     private ProductResponse convertToProductResponse(Product product) {

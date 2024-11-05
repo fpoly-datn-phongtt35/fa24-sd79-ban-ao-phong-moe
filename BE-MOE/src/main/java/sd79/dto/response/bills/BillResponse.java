@@ -2,9 +2,12 @@ package sd79.dto.response.bills;
 
 import lombok.Builder;
 import lombok.Getter;
+import sd79.model.BillDetail;
 import sd79.model.BillStatus;
 import sd79.model.Coupon;
 import sd79.model.Customer;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,4 +17,5 @@ public class BillResponse {
     private Integer billStatus;
     private Customer customer;
     private BillCouponResponse coupon;
+    private List<BillDetailResponse> billDetails;
 }

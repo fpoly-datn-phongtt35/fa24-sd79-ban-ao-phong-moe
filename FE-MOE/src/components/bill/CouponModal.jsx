@@ -4,7 +4,7 @@ import { formatCurrencyVND } from '~/utils/format';
 import { fetchAllCouponCustomer } from '~/apis/billsApi';
 
 
-export default function CouponModal({ open, onClose, onSelectCoupon, customerId }) {
+export default function CouponModal({ open, onClose, onSelectCoupon, customerId, subtotal }) {
 
     const [coupons, setCoupons] = useState([]);
     const [page, setPage] = useState(1);
@@ -73,49 +73,63 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId 
                 </Typography>
 
                 {coupons.length > 0 ? (
-                    coupons.map((coupon, index) => (
-                        <Box
-                            key={index}
-                            sx={{
-                                position: 'relative',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                p: 1,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 1,
-                                mb: 1,
-                                bgcolor: '#f9f9f9',
-                                boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => {
-                                onSelectCoupon(coupon);
-                                onClose();
-                            }}
-                        >
-                            <Box sx={{ flex: 1 }}>
-                                <Typography variant="body2" color="textPrimary" sx={{ fontWeight: 'bold' }}>
-                                    <span style={{ color: '#FFD700' }}>[{coupon.code}]</span> {coupon.name}
-                                    <Box component="span" sx={{ ml: 1, bgcolor: '#FFD700', color: 'black', px: 1, borderRadius: '4px', fontSize: '12px' }}>
-                                        {coupon.discountType === 'FIXED_AMOUNT' ? `${formatCurrencyVND(coupon.discountValue)}` : `${coupon.discountValue}%`}
-                                    </Box>
-                                </Typography>
-                                <Typography variant="caption" color="textSecondary">
-                                    Đơn tối thiểu: {formatCurrencyVND(coupon.conditions)}
-                                </Typography>
-                                <br />
-                                <Typography variant="caption" color="textSecondary">
-                                    Ngày kết thúc: {formatDate(coupon.endDate)}
-                                </Typography>
+                    coupons.map((coupon, index) => {
+                        // Check if coupon meets the subtotal condition
+                        const isEligible = subtotal >= coupon.conditions;
+
+                        return (
+                            <Box
+                                key={index}
+                                sx={{
+                                    position: 'relative',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    p: 1,
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: 1,
+                                    mb: 1,
+                                    bgcolor: isEligible ? '#f9f9f9' : '#e0e0e0', // Gray out if not eligible
+                                    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
+                                    cursor: isEligible ? 'pointer' : 'not-allowed', // Disable pointer if not eligible
+                                    opacity: isEligible ? 1 : 0.5 // Lower opacity for ineligible coupons
+                                }}
+                                onClick={() => {
+                                    if (isEligible) {
+                                        onSelectCoupon(coupon);
+                                        onClose();
+                                    }
+                                }}
+                            >
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body2" color="textPrimary" sx={{ fontWeight: 'bold' }}>
+                                        <span style={{ color: '#FFD700' }}>[{coupon.code}]</span> {coupon.name}
+                                        <Box component="span" sx={{ ml: 1, bgcolor: '#FFD700', color: 'black', px: 1, borderRadius: '4px', fontSize: '12px' }}>
+                                            {coupon.discountType === 'FIXED_AMOUNT' ? `${formatCurrencyVND(coupon.discountValue)}` : `${coupon.discountValue}%`}
+                                        </Box>
+                                    </Typography>
+                                    <Typography variant="caption" color="textSecondary">
+                                        Đơn tối thiểu: {formatCurrencyVND(coupon.conditions)}
+                                    </Typography>
+                                    <br />
+                                    <Typography variant="caption" color="textSecondary">
+                                        Ngày kết thúc: {formatDate(coupon.endDate)}
+                                    </Typography>
+                                    {!isEligible && (
+                                        <Typography variant="caption" color="error" sx={{ mt: 1 }}>
+                                            Không đủ điều kiện sử dụng
+                                        </Typography>
+                                    )}
+                                </Box>
                             </Box>
-                        </Box>
-                    ))
+                        );
+                    })
                 ) : (
                     <Box sx={{ textAlign: 'center', py: 3 }}>
                         <Typography color="textSecondary">Không có phiếu giảm giá nào khả dụng</Typography>
                     </Box>
                 )}
+
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Pagination

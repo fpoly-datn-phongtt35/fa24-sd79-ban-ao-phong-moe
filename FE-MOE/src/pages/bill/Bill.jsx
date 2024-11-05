@@ -31,8 +31,10 @@ import CouponModal from '~/components/bill/CouponModal';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function Bill() {
+    const navigate = useNavigate();
     const [tabIndex, setTabIndex] = useState(0);
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -56,6 +58,15 @@ function Bill() {
     }, []);
 
     useEffect(() => {
+        const storedSelectedOrder = localStorage.getItem('selectedOrder');
+        if (storedSelectedOrder) {
+            const parsedOrderId = typeof storedSelectedOrder === 'string' ? parseInt(storedSelectedOrder, 10) : storedSelectedOrder;
+            setSelectedOrder(parsedOrderId);
+            handleSetBill(parsedOrderId);
+        }
+    }, []);
+
+    useEffect(() => {
         if (selectedOrder) {
             handleSetProduct(selectedOrder);
             handleSetCoupon(selectedOrder);
@@ -66,44 +77,47 @@ function Bill() {
     //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async () => {
         const billData = {
-            billStatus: 1,
+            billStatus: null,
             userId: localStorage.getItem("userId"),
         };
 
         try {
             const response = await postBill(billData);
             if (response?.data) {
-                setSelectedOrder(response.data.id);
+                const newOrderId = response.data.id;
+                setSelectedOrder(newOrderId);
+                localStorage.setItem('selectedOrder', newOrderId);
             }
             await handleSetBill();
-            await handleSetCoupon(selectedOrder);
         } catch (error) {
             console.error("Error in onSubmit:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
 
-    const handleSetBill = async () => {
-        const response = await fetchBill();
-        if (response?.data) {
-            const updatedBills = [
-                ...bills.filter(bill => !response.data.some(newBill => newBill.id === bill.id)),
-                ...response.data.map(bill => ({
+    const handleSetBill = async (orderId = selectedOrder) => {
+        try {
+            const response = await fetchBill();
+            if (response?.data) {
+                const updatedBills = response.data.map(bill => ({
                     ...bill,
                     customerId: bill.customer ? bill.customer.id : null,
-                }))
-            ];
+                }));
 
-            setBills(updatedBills);
+                setBills(updatedBills);
 
-            if (selectedOrder) {
-                const orderToSet = updatedBills.find(bill => bill.id === selectedOrder);
-                setCurrentOrder(orderToSet || null);
-            } else {
-                setCurrentOrder(updatedBills[0] || null);
+                if (orderId) {
+                    const orderToSet = updatedBills.find(bill => bill.id === orderId);
+                    setCurrentOrder(orderToSet || null);
+                } else {
+                    setCurrentOrder(updatedBills[0] || null);
+                }
             }
+        } catch (error) {
+            console.error("Error fetching bills:", error);
         }
     };
+
 
     const deleteOrder = async (orderToDelete) => {
         await deleteBill(orderToDelete);
@@ -114,6 +128,7 @@ function Bill() {
     const selectOrder = (order) => {
         setSelectedOrder(order.id);
         setCurrentOrder(order);
+        localStorage.setItem('selectedOrder', order.id.toString());
     };
 
     //----------------------------------------------------------Product--------------------------------------//
@@ -196,6 +211,7 @@ function Bill() {
         if (response?.data) {
             setCustomers(response.data);
         }
+        await handleSetBill();
     };
 
     const handleAddCustomer = (customer) => {
@@ -249,13 +265,25 @@ function Bill() {
     const closeCouponModal = () => setCouponModalOpen(false);
 
     //----------------------------------------------------------Tính toán--------------------------------------//  
+    const handleCustomerAmountChange = (event) => {
+        const value = parseFloat(event.target.value) || 0;
+        setCustomerAmount(value);
+    };
+
+    const handleQuantityChange = (productId, newQuantity) => {
+        setProducts(prevProducts =>
+            prevProducts.map(product =>
+                product.id === productId ? { ...product, quantity: newQuantity } : product
+            )
+        );
+    };
+   
     const subtotal = products.reduce((total, product) => {
         return total + product.productDetail.price * product.quantity;
     }, 0);
 
     const discountAmount = (() => {
         if (!currentOrder || !currentOrder.coupon) return 0;
-        console.log(currentOrder)
 
         const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
         if (subtotal < conditions) return 0;
@@ -269,19 +297,6 @@ function Bill() {
 
         return 0;
     })();
-
-    const handleCustomerAmountChange = (event) => {
-        const value = parseFloat(event.target.value) || 0;
-        setCustomerAmount(value);
-    };
-
-    const handleQuantityChange = (productId, newQuantity) => {
-        setProducts(prevProducts =>
-            prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: newQuantity } : product
-            )
-        );
-    };
 
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
@@ -350,6 +365,20 @@ function Bill() {
         return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
     };
 
+    const clearData = () => {
+        setSelectedOrder(null);
+        setCurrentOrder(null);
+        setProducts([]);
+        setCoupons([]);
+        setCustomers([]);
+        setCustomerAmount('');
+        setSelectedCoupon(null);
+        setSelectedPaymentMethod(null);
+        setCustomerId(null); // Reset customer ID for CustomerList
+        localStorage.removeItem('selectedOrder');
+        window.scrollTo(0, 0);
+    };
+
     const onPay = async () => {
         if (!currentOrder || products.length === 0) {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
@@ -396,8 +425,11 @@ function Bill() {
 
         try {
             const billId = await addPay(billStoreRequest);
+            navigate("/bill");
+            clearData();
             if (billId) {
                 toast.success("Hóa đơn đã được tạo thành công!");
+
             }
         } catch (error) {
             console.error("Failed to create invoice:", error);
@@ -409,13 +441,29 @@ function Bill() {
         }
     };
 
+
     return (
+
         <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
             {/* Bill */}
             <div>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                    Quản lý đơn hàng
-                </Typography>
+                <div className="d-flex" style={{ justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                    <Typography
+                        variant="h5"
+                        gutterBottom
+                        sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'center' }} 
+                    >
+                        QUẢN LÝ ĐƠN HÀNG
+                    </Typography>
+                    <Typography
+                        variant="h5"
+                        gutterBottom
+                        sx={{ fontWeight: 'medium', color: '#0071bd', textAlign: 'center' }}
+                    >
+                        {currentOrder ? currentOrder.code : 'Chưa chọn đơn hàng'}
+                    </Typography>
+                </div>
+
 
                 <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
                     <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
@@ -432,11 +480,17 @@ function Bill() {
                     color="primary"
                     onClick={onSubmit}
                     disabled={bills.length >= 5}
-                    sx={{ mb: 2, fontWeight: 'bold' }}
+                    sx={{
+                        mb: 2,
+                        fontWeight: 'bold',
+                        background: bills.length < 5 ? 'linear-gradient(90deg, #4a90e2, #007AFF)' : 'gray',
+                        '&:hover': {
+                            background: bills.length < 5 ? 'linear-gradient(90deg, #3a70d2, #0068D8)' : 'gray'
+                        }
+                    }}
                 >
                     Tạo mới đơn hàng
                 </Button>
-
                 <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
                     {bills.map((order, index) => (
                         <Button
@@ -447,27 +501,39 @@ function Bill() {
                             sx={{
                                 borderRadius: '20px',
                                 padding: '12px 32px',
-                                marginBottom: '8px'
+                                marginBottom: '8px',
+                                backgroundColor: selectedOrder === order.id ? '#e3f2fd' : 'white',
+                                borderColor: selectedOrder === order.id ? 'primary.main' : 'secondary.main',
+                                '&:hover': {
+                                    backgroundColor: '#f0f4ff'
+                                },
+                                transition: 'background-color 0.3s ease'
                             }}
                         >
                             {order.code}
                             <span
                                 onClick={(e) => { e.stopPropagation(); deleteOrder(order.id); }}
-                                style={{ color: 'red', marginLeft: 8, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                style={{
+                                    color: 'red',
+                                    marginLeft: 8,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '4px',
+                                    borderRadius: '50%',
+                                    backgroundColor: '#fdd',
+                                    transition: 'background-color 0.3s ease'
+                                }}
                             >
                                 <DeleteIcon fontSize="small" />
                             </span>
                         </Button>
                     ))}
                 </Box>
-
             </div>
+
             {/* Product */}
             <div>
-                <Typography variant="h6" fontWeight="bold">
-                    Đơn hàng {currentOrder ? currentOrder.code : 'Chưa chọn đơn hàng'}
-                </Typography>
-
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', mt: 3, justifyContent: 'flex-end' }}>
                     <Button
                         variant="contained"
@@ -559,15 +625,17 @@ function Bill() {
                     ))}
                 </List>
             </div>
+
             {/* Customer */}
             <div>
                 <CustomerList
                     selectedOrder={selectedOrder}
                     onAddCustomer={handleAddCustomer}
                     customerId={customerId}
-                    setCustomerId={setCustomerId} // Pass setCustomerId as a prop
+                    setCustomerId={setCustomerId}
                 />
             </div>
+
             {/* Coupon and Tính toán */}
             <div>
                 <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}>
@@ -607,6 +675,7 @@ function Bill() {
                                 onClose={closeCouponModal}
                                 onSelectCoupon={onCoupon}
                                 customerId={customerId}
+                                subtotal={subtotal}
                             />
 
                             <Grid container spacing={2}>
@@ -702,7 +771,9 @@ function Bill() {
                     </Grid>
                 </Paper>
             </div>
+
         </Container >
+
     );
 }
 

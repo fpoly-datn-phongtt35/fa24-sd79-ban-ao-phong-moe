@@ -1,46 +1,17 @@
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { API_ROOT } from "~/utils/constants";
 import { toast } from "react-toastify";
-export const fetchAllBillProducts = async (
-  pageNo,
-  pageSize,
-  name,
-  size,
-  color,
-  brand
-) => {
-  let uri = "/product/product-details?";
-  let queryParams = [];
 
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
-  }
-  if (pageSize !== null && pageSize !== undefined) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (name) {
-    queryParams.push(`name=${name}`);
-  }
-  if (size) {
-    queryParams.push(`size=${size}`);
-  }
-  if (color) {
-    queryParams.push(`color=${color}`);
-  }
-  if (brand) {
-    queryParams.push(`brand=${brand}`);
-  }
-
-  uri += queryParams.join("&");
-
-  return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
-};
 //them lan 1
 export const fetchBill = async (data) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/bill/getBill`,data)
+    .then((res) => res.data);  
+};
+
+export const fetchBillDetailById = async (id) => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/bill/getBillDetail/${id}`)
     .then((res) => res.data);  
 };
 
@@ -59,6 +30,43 @@ export const deleteBill = async (id) => {
 };
 
 //them lan 2
+export const fetchAllBillProducts = async (
+  pageNo,
+  pageSize,
+  keyword,
+  size,
+  color,
+  brand
+) => {
+  let uri = "/product/product-details?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (size) {
+    queryParams.push(`size=${size}`);
+  }
+  if (color) {
+    queryParams.push(`color=${color}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
 export const fetchProduct = async (billId) => { 
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/bill/getProduct/${billId}`) 

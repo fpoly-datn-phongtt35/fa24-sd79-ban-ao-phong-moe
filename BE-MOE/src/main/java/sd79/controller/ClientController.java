@@ -14,12 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.clients.CartReq;
-import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.requests.clients.bills.BillClientRequest;
+import sd79.dto.requests.clients.cart.CartReq;
+import sd79.dto.requests.clients.other.FilterForCartReq;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
-import sd79.service.ProductService;
 import sd79.service.clients.ClientProduct;
+
 
 @Slf4j
 @RestController
@@ -41,7 +42,6 @@ public class ClientController {
     public ResponseData<?> getAllProducts(@RequestParam(required = false, defaultValue = "0") Integer page) {
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.clientProduct.getExploreOurProducts(page));
     }
-
 
     @Operation(
             summary = "Top 5 Best Selling Products",
@@ -113,5 +113,10 @@ public class ClientController {
     @GetMapping("/user-address")
     public ResponseData<?> getUserAddress(@RequestParam Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get successfully user", this.clientProduct.getUserInfo(id));
+    }
+
+    @PostMapping("/order")
+    public ResponseData<?> getUserAddress(@RequestBody BillClientRequest.BillCreate req) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientProduct.saveBill(req));
     }
 }

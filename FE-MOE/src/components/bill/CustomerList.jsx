@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     Paper,
     Typography,
@@ -14,10 +14,10 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
-import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
-import AddCustomerModal from './AddCustomerModal';
-import { deleteCustomer, fetchBill } from '~/apis/billsApi';
 import ClearIcon from '@mui/icons-material/Clear';
+import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
+import { deleteCustomer, fetchBill } from '~/apis/billsApi';
+import AddCustomerModal from './AddCustomerModal';
 
 export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
     const [customer, setCustomer] = useState(null);
@@ -28,10 +28,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const [bills, setBills] = useState([]);
+    const searchRef = useRef(null);
 
     useEffect(() => {
-        handleSetCustomer();
-        handleSetBill();
+        loadCustomers();
+        loadBills();
     }, []);
 
     useEffect(() => {
@@ -39,12 +40,21 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
             const customerFromBill = findCustomerInBills(selectedOrder);
             setCustomer(customerFromBill);
             if (customerFromBill) {
-                setCustomerId(customerFromBill.id); 
+                setCustomerId(customerFromBill.id);
             }
+        } else {
+            setCustomer(null);
         }
-    }, [selectedOrder, bills, setCustomerId]); 
+    }, [selectedOrder, bills, setCustomerId]);
 
-    const handleSetBill = async () => {
+    useEffect(() => {
+        if (customerId === null) {
+            setCustomer(null);
+            setSearchTerm('');
+        }
+    }, [customerId]);
+
+    const loadBills = async () => {
         try {
             const response = await fetchBill();
             if (response?.data) {
@@ -55,7 +65,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         }
     };
 
-    const handleSetCustomer = async () => {
+    const loadCustomers = async () => {
         setLoading(true);
         try {
             const response = await fetchAllCustomer();
@@ -70,7 +80,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         }
     };
 
-    const handleSearchKeywordAndDate = async (keyword) => {
+    const handleSearch = async (keyword) => {
         setLoading(true);
         try {
             const res = await searchKeywordAndDate(keyword || '', '', '');
@@ -88,7 +98,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         const term = event.target.value;
         setSearchTerm(term);
         if (term.trim()) {
-            handleSearchKeywordAndDate(term);
+            handleSearch(term);
         } else {
             setFilteredCustomers(customers);
         }
@@ -96,22 +106,19 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     };
 
     const handleCustomerSelect = (selectedCustomer) => {
-        setCustomer({
-            ...selectedCustomer,
-            user: selectedCustomer.user || {}
-        });
+        setCustomer(selectedCustomer);
         setSearchTerm(selectedCustomer.fullName);
         setShowDropdown(false);
         onAddCustomer(selectedCustomer);
-        setCustomerId(selectedCustomer.id); // Update customerId when a customer is selected
+        setCustomerId(selectedCustomer.id);
     };
 
-    const handleDeleteCustomer = async (customerId) => {
+    const handleDeleteCustomer = async (id) => {
         try {
-            await deleteCustomer(customerId);
+            await deleteCustomer(id);
             setCustomer(null);
             setSearchTerm('');
-            setFilteredCustomers(customers);  
+            setFilteredCustomers(customers);
             onAddCustomer({ id: 0 });
         } catch (error) {
             console.error("Error deleting customer:", error);
@@ -139,7 +146,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                                 <>
                                     <span>{customer.firstName} {customer.lastName}</span>
                                     <Button
-                                        onClick={() => handleDeleteCustomer(customer.id)} // Use customer.id here
+                                        onClick={() => handleDeleteCustomer(customer.id)}
                                         size="small"
                                         sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
                                     >
@@ -157,6 +164,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                             onFocus={() => setShowDropdown(true)}
                             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                             disabled={!selectedOrder}
+                            inputRef={searchRef}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">

@@ -19,7 +19,7 @@ public class BillCustomizeQuery {
     private EntityManager entityManager;
 
     public List<BillResponse> getAllBills() {
-        String sql = "SELECT b FROM Bill b WHERE b.billStatus.id = 1";
+        String sql = "SELECT b FROM Bill b WHERE b.billStatus.id IS NULL";
         TypedQuery<Bill> query = entityManager.createQuery(sql, Bill.class);
         List<Bill> bills = query.getResultList();
         return bills.stream().map(this::convertToBillResponse).collect(Collectors.toList());

@@ -16,6 +16,7 @@ public interface BillService {
     //them lan 1
     List<BillResponse> getAllBill();
     List<BillResponse> getAllBills();
+    BillResponse getBillId(Long id);
     long storeBill(BillRequest billRequest);
     void deleteBill(long id);
     //them lan 2

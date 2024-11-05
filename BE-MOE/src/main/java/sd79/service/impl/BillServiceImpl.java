@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.BillDetailRequest;
 import sd79.dto.requests.BillRequest;
+import sd79.dto.response.CouponResponse;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
@@ -17,10 +18,7 @@ import sd79.repositories.products.ProductDetailRepository;
 import sd79.service.BillService;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +33,7 @@ public class BillServiceImpl implements BillService {
     private final BillStatusRepo billStatusRepository;
     private final UserRepository userRepository;
     private final BillCustomizeQuery billCustomizeQuery;
+    private final BillRepo billRepo;
 
     //them lan 1
     @Override
@@ -48,15 +47,22 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
+    public BillResponse getBillId(Long id) {
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found with id " + id));
+        return convertToBillDetail(bill);
+    }
+
+    @Override
     public long storeBill(BillRequest billRequest) {
         long currentBillCount = billRepository.count() + 1;
 
-        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
-                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
+//        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
+//                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
 
         Bill bill = Bill.builder()
                 .code(generateRandomCode(currentBillCount))
-                .billStatus(billStatus)
+                .billStatus(null)
                 .build();
 
         bill.setCreatedBy(getUserById(billRequest.getUserId()));
@@ -389,6 +395,7 @@ public class BillServiceImpl implements BillService {
                 .collect(Collectors.toList());
     }
 
+    //Modal bill coupon
     private BillCouponResponse convertToBillCouponResponse(Coupon coupon) {
         if (coupon == null) return null;
 
@@ -403,6 +410,7 @@ public class BillServiceImpl implements BillService {
                 .build();
     }
 
+    //Get bill
     private BillResponse convertToBillResponse(Bill bill) {
         return BillResponse.builder()
                 .id(bill.getId())
@@ -410,6 +418,24 @@ public class BillServiceImpl implements BillService {
                 .customer(bill.getCustomer())
                 .coupon(convertToBillCouponResponse(bill.getCoupon()))
                 .build();
+    }
+
+    //Detail bill
+    private BillResponse convertToBillDetail(Bill bill) {
+        BillResponse.BillResponseBuilder billResponseBuilder = BillResponse.builder();
+        billResponseBuilder
+                .id(bill.getId())
+                .code(bill.getCode())
+                .customer(bill.getCustomer())
+                .coupon(convertToBillCouponResponse(bill.getCoupon()))
+                .billDetails(bill.getBillDetails().stream()
+                        .map(this::convertToBillResponse)
+                        .collect(Collectors.toList())
+                );
+
+        billResponseBuilder.billStatus(bill.getBillStatus().getId());
+
+        return billResponseBuilder.build();
     }
 
     private BillCouponResponse convertToBillCoupon(Coupon coupon) {
@@ -424,6 +450,7 @@ public class BillServiceImpl implements BillService {
                 .build();
     }
 
+    //Modal product bill
     private BillDetailResponse convertToBillResponse(BillDetail billDetail) {
         ProductDetailResponse2 productDetailResponse = ProductDetailResponse2.builder()
                 .id(billDetail.getProductDetail().getId())

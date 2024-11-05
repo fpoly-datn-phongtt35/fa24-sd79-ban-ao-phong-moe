@@ -24,33 +24,58 @@ import { fetchAllBillProducts } from '~/apis/billsApi';
 import { FormLabel, FormControl, Input, Select, Option } from '@mui/joy';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '../common/ImageRotator ';
+import { attributeProducts } from '~/apis/productApi';
+
+function debounce(func, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
 function ProductListModal({ onAddProduct, onClose }) {
-    const pageSize = 5; // If pageSize is constant, we can define it here.
+    const pageSize = 5;
     const [products, setProducts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
     const [keyword, setKeyword] = useState('');
     const [size, setSize] = useState('');
     const [color, setColor] = useState('');
+    const handlePageChange = (event, value) => setCurrentPage(value);
+    const [attributes, setAttributes] = useState('');
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const res = await fetchAllBillProducts(currentPage, pageSize, keyword, size, color);
-                console.log(res.data); 
-                setProducts(res.data.content || []); 
-                setTotalProducts(res.data.totalElements || 0);
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
-        };
+        fetchFilterOptions();
+    }, []);
 
+    useEffect(() => {
+        console.log('Size:', size, 'Color:', color); // Debugging statement
+    }, [size, color]);
+
+    useEffect(() => {
+        const debouncedSearch = debounce(() => {
+            setCurrentPage(1);
+            fetchProducts();
+        }, 1000);
+
+        debouncedSearch();
+        return () => clearTimeout(debouncedSearch);
+    }, [keyword, size, color]);
+
+    useEffect(() => {
         fetchProducts();
     }, [currentPage, keyword, size, color]);
 
-    const handlePageChange = (event, value) => {
-        setCurrentPage(value);
+    const fetchProducts = async () => {
+        const res = await fetchAllBillProducts(currentPage, pageSize, keyword, size, color);
+        setProducts(res.data.content);
+        setTotalProducts(res.data.totalElements);
+    };
+
+    const fetchFilterOptions = async () => {
+        const res = await attributeProducts();
+        setAttributes(res);
     };
 
     const handleRefresh = () => {
@@ -60,15 +85,13 @@ function ProductListModal({ onAddProduct, onClose }) {
         setColor('');
     };
 
-    const handleAddProduct = (product) => {
-        onAddProduct(product);
-    };
+    const handleAddProduct = (product) => onAddProduct(product);
 
     const totalPages = Math.ceil(totalProducts / pageSize) || 1;
 
     return (
         <Dialog open={true} onClose={onClose} maxWidth="lg" fullWidth>
-            <Container maxWidth="maxWidth" sx={{ position: 'relative' }}>
+            <Container maxWidth="lg" sx={{ position: 'relative' }}>
                 <IconButton
                     aria-label="close"
                     onClick={onClose}
@@ -84,10 +107,8 @@ function ProductListModal({ onAddProduct, onClose }) {
                 <Typography variant="h6" gutterBottom align="center">
                     Danh sách sản phẩm
                 </Typography>
-
-                {/* Filter and Search Fields */}
                 <Grid container spacing={2} mb={2}>
-                    <Grid item xs={3}> {/* Add item={true} */}
+                    <Grid item xs={3}>
                         <FormControl sx={{ width: '100%' }}>
                             <FormLabel>Tìm kiếm</FormLabel>
                             <Input
@@ -97,33 +118,51 @@ function ProductListModal({ onAddProduct, onClose }) {
                             />
                         </FormControl>
                     </Grid>
-                    <Grid item xs={3}> {/* Add item={true} */}
+                    <Grid item xs={3}>
                         <FormControl sx={{ width: '100%' }}>
                             <FormLabel>Kích cỡ</FormLabel>
                             <Select
                                 placeholder="Chọn kích cỡ"
-                                value={size}
-                                onChange={(e) => setSize(e.target.value)}
+                                value={size || ''}
+                                onChange={(e,v) => {
+                                    const selectedValue = v; 
+                                    console.log('Selected Size:', selectedValue);
+                                    setSize(selectedValue); 
+                                }}
                             >
                                 <Option value="">Chọn kích cỡ</Option>
-                                <Option value="39">39</Option>
+                                {attributes?.sizes?.map((s) => (
+                                    <Option key={s.id} value={s.name}>
+                                        {s.name}
+                                    </Option>
+                                ))}
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={3}> {/* Add item={true} */}
+
+                    <Grid item xs={3}>
                         <FormControl sx={{ width: '100%' }}>
                             <FormLabel>Màu sắc</FormLabel>
                             <Select
                                 placeholder="Chọn màu sắc"
-                                value={color}
-                                onChange={(e) => setColor(e.target.value)}
+                                value={color || ''}
+                                onChange={(e,v) => {
+                                    const selectedValue = v; 
+                                    console.log('Selected Color:', selectedValue);
+                                    setColor(selectedValue); 
+                                }}
                             >
                                 <Option value="">Chọn màu sắc</Option>
-                                <Option value="Trắng">Trắng</Option>
+                                {attributes?.colors?.map((c) => (
+                                    <Option key={c.id} value={c.name}>
+                                        {c.name}
+                                    </Option>
+                                ))}
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={3}> {/* Add item={true} */}
+
+                    <Grid item xs={3}>
                         <Button
                             variant="contained"
                             color="secondary"
@@ -136,7 +175,6 @@ function ProductListModal({ onAddProduct, onClose }) {
                     </Grid>
                 </Grid>
 
-                {/* Product List Table */}
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                     <Table>
                         <TableHead>
@@ -184,7 +222,6 @@ function ProductListModal({ onAddProduct, onClose }) {
                     </Table>
                 </TableContainer>
 
-                {/* Pagination */}
                 <Box display="flex" justifyContent="center" alignItems="center" padding={3}>
                     {totalPages > 1 && (
                         <Stack>
