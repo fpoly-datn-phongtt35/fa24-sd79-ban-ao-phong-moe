@@ -9,17 +9,23 @@ package sd79.dto.response.clients.product;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
-public class ValidProduct {
+public class ProductCart {
     private long id;
 
     private boolean status;
 
     private int quantity;
+
+    private BigDecimal sellPrice;
+
+    private Integer percent;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;

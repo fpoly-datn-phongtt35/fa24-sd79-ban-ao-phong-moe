@@ -27,7 +27,9 @@ import sd79.enums.ProductStatus;
 import sd79.model.Product;
 import sd79.model.ProductDetail;
 import sd79.model.ProductImage;
+import sd79.model.PromotionDetail;
 import sd79.repositories.products.ProductDetailRepository;
+import sd79.repositories.promotions.PromotionDetailRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,6 +44,8 @@ public class ProductCustomizeQuery {
     private EntityManager entityManager;
 
     private final ProductDetailRepository productDetailRepository;
+
+    private final PromotionDetailRepository promotionDetailRepository;
 
     private static final String LIKE_FORMAT = "%%%s%%";
 
@@ -349,21 +353,32 @@ public class ProductCustomizeQuery {
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        List<ProductDetailResponse2> data = query.getResultList().stream().map(item ->
-                ProductDetailResponse2.builder()
-                        .id(item.getId())
-                        .productName(String.format("%s [%s - %s]", item.getProduct().getName(), item.getSize().getName(), item.getColor().getName()))
-                        .imageUrl(convertToUrl(item.getProduct().getProductImages()))
-                        .brand(item.getProduct().getBrand().getName())
-                        .category(item.getProduct().getCategory().getName())
-                        .material(item.getProduct().getMaterial().getName())
-                        .color(item.getColor().getName())
-                        .size(item.getSize().getName())
-                        .origin(item.getProduct().getOrigin())
-                        .price(item.getRetailPrice())
-                        .quantity(item.getQuantity())
-                        .build()
-        ).toList();
+        List<ProductDetailResponse2> data = query.getResultList().stream().map(item -> {
+            PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(item.getProduct().getId());
+            BigDecimal retailPrice = item.getRetailPrice();
+            BigDecimal discountPercent = promotionDetail != null
+                    ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                    : BigDecimal.ZERO;
+
+            BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+
+            return ProductDetailResponse2.builder()
+                    .id(item.getId())
+                    .productName(String.format("%s [%s - %s]", item.getProduct().getName(), item.getSize().getName(), item.getColor().getName()))
+                    .imageUrl(convertToUrl(item.getProduct().getProductImages()))
+                    .brand(item.getProduct().getBrand().getName())
+                    .category(item.getProduct().getCategory().getName())
+                    .material(item.getProduct().getMaterial().getName())
+                    .color(item.getColor().getName())
+                    .size(item.getSize().getName())
+                    .origin(item.getProduct().getOrigin())
+                    .price(item.getRetailPrice())
+                    .sellPrice(discountPrice)
+                    .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                    .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                    .quantity(item.getQuantity())
+                    .build();
+        }).toList();
 
         // TODO count product
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM ProductDetail prd WHERE prd.product.isDeleted = false AND prd.status = 'ACTIVE' AND prd.product.status = 'ACTIVE' AND prd.quantity > 0");
@@ -445,15 +460,27 @@ public class ProductCustomizeQuery {
         execute.setMaxResults(10);
 
         return execute.getResultList().stream()
-                .map(s -> ProductClientResponse.builder()
-                        .productId(s.getId())
-                        .imageUrl(s.getProductImages().getFirst().getImageUrl())
-                        .name(s.getName())
-                        .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
-                        .discountPrice(s.getProductDetails().getFirst().getRetailPrice().multiply(BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(0.50))))
-                        .rate(4)
-                        .rateCount(104)
-                        .build()
+                .map(s -> {
+                            PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(s.getId());
+                            BigDecimal retailPrice = s.getProductDetails().getFirst().getRetailPrice();
+                            BigDecimal discountPercent = promotionDetail != null
+                                    ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                                    : BigDecimal.ZERO;
+
+                            BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+
+                            return ProductClientResponse.builder()
+                                    .productId(s.getId())
+                                    .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                                    .name(s.getName())
+                                    .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                                    .discountPrice(discountPrice)
+                                    .rate(4)
+                                    .rateCount(104)
+                                    .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                                    .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                                    .build();
+                        }
                 ).toList();
     }
 
@@ -465,15 +492,27 @@ public class ProductCustomizeQuery {
         execute.setMaxResults(6);
 
         return execute.getResultList().stream()
-                .map(s -> ProductClientResponse.builder()
-                        .productId(s.getId())
-                        .imageUrl(s.getProductImages().getFirst().getImageUrl())
-                        .name(s.getName())
-                        .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
-                        .discountPrice(s.getProductDetails().getFirst().getRetailPrice().multiply(BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(0.50))))
-                        .rate(4)
-                        .rateCount(104)
-                        .build()
+                .map(s -> {
+                            PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(s.getId());
+                            BigDecimal retailPrice = s.getProductDetails().getFirst().getRetailPrice();
+                            BigDecimal discountPercent = promotionDetail != null
+                                    ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                                    : BigDecimal.ZERO;
+
+                            BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+                            return ProductClientResponse.builder()
+                                    .productId(s.getId())
+                                    .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                                    .name(s.getName())
+                                    .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                                    .discountPrice(discountPrice)
+                                    .rate(4)
+                                    .rateCount(104)
+                                    .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                                    .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                                    .build();
+                        }
+
                 ).collect(Collectors.toSet());
     }
 

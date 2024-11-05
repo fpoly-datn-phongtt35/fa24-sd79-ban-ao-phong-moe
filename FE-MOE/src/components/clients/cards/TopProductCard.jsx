@@ -27,7 +27,7 @@ const TopProductCard = ({ product }) => {
         backgroundColor: "#fff",
         textAlign: "start",
         position: "relative",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -53,7 +53,7 @@ const TopProductCard = ({ product }) => {
           position: "absolute",
           top: "50%",
           left: "50%",
-          transform: "translate(-50%, -150%)", 
+          transform: "translate(-50%, -150%)",
           color: "#fff",
           backgroundColor: "rgba(0, 0, 0, 0.2)",
           padding: "10px 20px",
@@ -66,6 +66,24 @@ const TopProductCard = ({ product }) => {
       >
         Xem chi tiết
       </Typography>
+      {product.percent !== null && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            backgroundColor: "#ff0000",
+            color: "#fff",
+            padding: "5px 10px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            borderRadius: "5px",
+            zIndex: 2,
+          }}
+        >
+          -{product.percent}%
+        </div>
+      )}
 
       <Typography
         fontWeight="bold"
@@ -76,7 +94,12 @@ const TopProductCard = ({ product }) => {
         {product.name}
       </Typography>
       <Box
-        sx={{ display: "flex", justifyContent: "start", alignItems: "center", zIndex: 2 }}
+        sx={{
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+          zIndex: 2,
+        }}
       >
         <Typography
           color="danger"
@@ -85,17 +108,26 @@ const TopProductCard = ({ product }) => {
         >
           {formatCurrencyVND(product.discountPrice)}
         </Typography>
-        <Typography
-          sx={{
-            textDecoration: "line-through",
-            color: "grey",
-          }}
-        >
-          {formatCurrencyVND(product.retailPrice)}
-        </Typography>
+        {product.percent !== null && (
+          <Typography
+            sx={{
+              textDecoration: "line-through",
+              color: "grey",
+            }}
+          >
+            {formatCurrencyVND(product.retailPrice)}
+          </Typography>
+        )}
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", marginTop: "8px", zIndex: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: "8px",
+          zIndex: 2,
+        }}
+      >
         <Rating
           name="read-only"
           value={product.rate}

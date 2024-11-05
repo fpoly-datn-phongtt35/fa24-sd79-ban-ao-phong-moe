@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartReq;
 import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
+import sd79.service.CouponService;
 import sd79.service.clients.ClientProduct;
 
 
@@ -33,6 +35,8 @@ public class ClientController {
     private final ClientProduct clientProduct;
 
     private final CategoryService categoryService;
+
+    private final CouponService couponService;
 
     @Operation(
             summary = "Get all product listings",
@@ -116,7 +120,12 @@ public class ClientController {
     }
 
     @PostMapping("/order")
-    public ResponseData<?> getUserAddress(@RequestBody BillClientRequest.BillCreate req) {
+    public ResponseData<?> orderRequest(@RequestBody BillClientRequest.BillCreate req) {
         return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientProduct.saveBill(req));
+    }
+
+    @GetMapping("/vouchers/{customerId}")
+    public ResponseData<?> getVouchers(@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get Voucher Successfully", this.couponService.getAllCouponCustomer(customerId, param));
     }
 }

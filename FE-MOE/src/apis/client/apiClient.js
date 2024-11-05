@@ -67,4 +67,12 @@ export const createOrder = async (data) => {
     .then((res) => res.data);
 };
 
-
+export const fetchAllVouchers = async (id, keword) => {
+  return await authorizedAxiosInstance
+    .get(
+      `${API_ROOT}/client/vouchers/${id}?pageNo=1&pageSize=100${
+        keword ? `&keyword=${keword}` : ""
+      }`
+    )
+    .then((res) => res.data?.data?.content);
+};
