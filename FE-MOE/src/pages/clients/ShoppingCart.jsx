@@ -44,7 +44,7 @@ function ShoppingCart() {
   useEffect(() => {
     if (context.carts && context.carts.length > 0) {
       const validCarts = context.carts.filter(
-        (cart) => cart.validProduct.status
+        (cart) => cart.productCart.status
       );
       setSelectAll(
         validCarts.length > 0 && selectedCarts.length === validCarts.length
@@ -96,7 +96,7 @@ function ShoppingCart() {
       setSelectedCarts([]);
     } else {
       const validCarts = context.carts.filter(
-        (cart) => cart.validProduct.status
+        (cart) => cart.productCart.status
       );
       setSelectedCarts(validCarts);
     }
@@ -105,7 +105,7 @@ function ShoppingCart() {
 
   const calculateTotalPrice = () => {
     return selectedCarts.reduce(
-      (total, cart) => total + cart.retailPrice * cart.quantity,
+      (total, cart) => total + cart.productCart.sellPrice * cart.quantity,
       0
     );
   };
@@ -177,7 +177,7 @@ function ShoppingCart() {
                       <tr key={cart.id}>
                         <td className="text-center">
                           <Checkbox
-                            disabled={!cart.validProduct.status}
+                            disabled={!cart.productCart.status}
                             size="sm"
                             checked={selectedCarts.includes(cart)}
                             onChange={() => handleCheckboxChange(cart)}
@@ -190,21 +190,31 @@ function ShoppingCart() {
                           <Typography
                             level="title-md"
                             color={
-                              !cart.validProduct.status ? "danger" : "neutral"
+                              !cart.productCart.status ? "danger" : "neutral"
                             }
                           >
-                            {formatCurrencyVND(cart.retailPrice)}
+                            {formatCurrencyVND(cart.productCart.sellPrice)}
                           </Typography>
+                          {cart.productCart.percent !== null && (
+                            <Typography
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "grey",
+                              }}
+                            >
+                              {formatCurrencyVND(cart.retailPrice)}
+                            </Typography>
+                          )}
                         </td>
                         <td className="text-center">
                           <Input
-                            disabled={!cart.validProduct.status}
+                            disabled={!cart.productCart.status}
                             defaultValue={cart.quantity}
                             type="number"
                             slotProps={{
                               input: {
                                 min: 1,
-                                max: cart.validProduct.quantity,
+                                max: cart.productCart.quantity,
                               },
                             }}
                             onChange={(e) =>
@@ -216,11 +226,11 @@ function ShoppingCart() {
                           <Typography
                             level="title-md"
                             color={
-                              !cart.validProduct.status ? "danger" : "neutral"
+                              !cart.productCart.status ? "danger" : "neutral"
                             }
                           >
                             {formatCurrencyVND(
-                              cart.retailPrice * cart.quantity
+                              cart.productCart.sellPrice * cart.quantity
                             )}
                           </Typography>
                         </td>

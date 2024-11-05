@@ -8,7 +8,7 @@ package sd79.dto.response.clients.cart;
 
 import lombok.Builder;
 import lombok.Getter;
-import sd79.dto.response.clients.product.ValidProduct;
+import sd79.dto.response.clients.product.ProductCart;
 
 import java.math.BigDecimal;
 
@@ -26,11 +26,9 @@ public class CartResponse {
 
     private BigDecimal retailPrice;
 
-    private BigDecimal sellPrice;
-
     private int quantity;
 
-    private ValidProduct validProduct;
+    private ProductCart productCart;
 
     private String username;
 }

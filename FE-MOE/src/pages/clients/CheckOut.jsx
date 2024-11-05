@@ -66,6 +66,7 @@ function CheckOut() {
       searchParams.get("vnp_TransactionStatus"),
       searchParams.get("vnp_BankTranNo")
     ) && setOrderSuccessfully(true);
+    navigate("/checkout");
   }, []);
 
   useEffect(() => {
@@ -91,7 +92,7 @@ function CheckOut() {
 
   const calculateTotalPrice = () => {
     return items?.reduce(
-      (total, items) => total + items.retailPrice * items.quantity,
+      (total, items) => total + items.productCart.sellPrice * items.quantity,
       0
     );
   };
@@ -110,6 +111,12 @@ function CheckOut() {
 
       // items,
     };
+
+    if (data.total > 50000000) {
+      toast.warning("Quá hạn mức thanh toán, vui lòng tách đơn!");
+      return;
+    }
+
     if (paymentMethod === "BANK") {
       localStorage.setItem("temp_data", JSON.stringify(data));
       await reqPay(data);
@@ -286,15 +293,27 @@ function CheckOut() {
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">
-                          {formatCurrencyVND(i.retailPrice)}
+                          {formatCurrencyVND(i.productCart.sellPrice)}
                         </Typography>
+                        {i.productCart.percent !== null && (
+                          <Typography
+                            sx={{
+                              textDecoration: "line-through",
+                              color: "grey",
+                            }}
+                          >
+                            {formatCurrencyVND(i.retailPrice)}
+                          </Typography>
+                        )}
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">{i.quantity}</Typography>
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">
-                          {formatCurrencyVND(i.retailPrice * i.quantity)}
+                          {formatCurrencyVND(
+                            i.productCart.sellPrice * i.quantity
+                          )}
                         </Typography>
                       </td>
                     </tr>
@@ -484,7 +503,7 @@ function CheckOut() {
                 color="primary"
                 onClick={() => onPay()}
               >
-                Mua Hàng
+                Đặt Hàng
               </Button>
             </Box>
           </FormControl>

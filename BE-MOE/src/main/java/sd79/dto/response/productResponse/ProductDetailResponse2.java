@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -34,6 +35,12 @@ public class ProductDetailResponse2 {
     private String origin;
 
     private BigDecimal price;
+
+    private BigDecimal sellPrice;
+
+    private Integer percent;
+
+    private Date expiredDate;
 
     private int quantity;
 }
