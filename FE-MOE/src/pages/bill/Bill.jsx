@@ -20,7 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, reqPay } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
@@ -33,7 +33,6 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
 
 function Bill() {
-
     const [tabIndex, setTabIndex] = useState(0);
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -200,7 +199,8 @@ function Bill() {
     };
 
     const handleAddCustomer = (customer) => {
-        setCustomerId(customer.id); 
+        setCustomerId(customer.id);
+        onCustomer(customer);
     };
 
     //----------------------------------------------------------Coupon--------------------------------------//  
@@ -247,7 +247,7 @@ function Bill() {
 
     const openCouponModal = () => setCouponModalOpen(true);
     const closeCouponModal = () => setCouponModalOpen(false);
-    
+
     //----------------------------------------------------------Tính toán--------------------------------------//  
     const subtotal = products.reduce((total, product) => {
         return total + product.productDetail.price * product.quantity;
@@ -256,17 +256,17 @@ function Bill() {
     const discountAmount = (() => {
         if (!currentOrder || !currentOrder.coupon) return 0;
         console.log(currentOrder)
-    
+
         const { discountType, discountValue, conditions, maxValue } = currentOrder.coupon;
         if (subtotal < conditions) return 0;
-    
+
         if (discountType === 'FIXED_AMOUNT') {
             return Math.min(discountValue, subtotal);
         } else if (discountType === 'PERCENTAGE') {
             const calculatedDiscount = (subtotal * discountValue) / 100;
             return Math.min(calculatedDiscount, maxValue);
         }
-    
+
         return 0;
     })();
 
@@ -293,9 +293,79 @@ function Bill() {
         CASH_ON_DELIVERY: 2,
     };
 
+    // const onPay = async () => {
+    //     if (!currentOrder || products.length === 0) {
+    //         toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
+    //         return;
+    //     }
+
+    //     const billStoreRequest = {
+    //         billRequest: {
+    //             code: currentOrder.code,
+    //             bankCode: "null",
+    //             customer: currentOrder.customerId || null,
+    //             coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
+    //             billStatus: 2,
+    //             shipping: 0,
+    //             subtotal: subtotal,
+    //             sellerDiscount: discountAmount,
+    //             total: totalAfterDiscount,
+    //             paymentMethod: selectedPaymentMethod,
+    //             message: "null",
+    //             note: "null",
+    //             paymentTime: "null",
+    //             userId: localStorage.getItem("userId"),
+    //         },
+    //         billDetails: products.map(product => ({
+    //             productDetail: product.productDetail.id,
+    //             quantity: product.quantity,
+    //             price: product.productDetail.price,
+    //             discountAmount: product.discountAmount,
+    //         })),
+    //     };
+
+    //     try {
+    //         const billId = await addPay(billStoreRequest);
+    //         if (billId) {
+    //             toast.success("Hóa đơn đã được tạo thành công!");              
+    //         }
+    //     } catch (error) {
+    //         console.error("Failed to create invoice:", error);
+    //         toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
+    //     }
+    //     await handleSetBill();
+    // };
+
+    //----------------------------------------------------------Giao diện--------------------------------------//  
+
+    const formatDate = (dateTimeString) => {
+        const date = new Date(dateTimeString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
+    };
+
     const onPay = async () => {
         if (!currentOrder || products.length === 0) {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
+            return;
+        }
+
+        if (selectedPaymentMethod === PaymentMethod.BANK) {
+            try {
+                await reqPay({
+                    total: totalAfterDiscount,
+                    message: `Thanh toán cho hóa đơn #${currentOrder.code}`
+                });
+            } catch (error) {
+                console.error("Failed to initiate VNPay payment:", error);
+                toast.error("Có lỗi xảy ra khi bắt đầu thanh toán qua VNPay.");
+            }
             return;
         }
 
@@ -311,9 +381,9 @@ function Bill() {
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
                 paymentMethod: selectedPaymentMethod,
-                message: "null",
-                note: "null",
-                paymentTime: "null",
+                message: "Hóa đơn thanh toán bằng tiền mặt",
+                note: "Thanh toán bằng tiền mặt",
+                paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
             billDetails: products.map(product => ({
@@ -327,18 +397,18 @@ function Bill() {
         try {
             const billId = await addPay(billStoreRequest);
             if (billId) {
-                toast.success("Hóa đơn đã được tạo thành công!");              
+                toast.success("Hóa đơn đã được tạo thành công!");
             }
         } catch (error) {
             console.error("Failed to create invoice:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
-        await handleSetBill();
+
+        if (selectedPaymentMethod === PaymentMethod.CASH) {
+            await handleSetBill();
+        }
     };
 
-  
-
-    //----------------------------------------------------------Giao diện--------------------------------------//  
     return (
         <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
             {/* Bill */}
@@ -491,7 +561,12 @@ function Bill() {
             </div>
             {/* Customer */}
             <div>
-                <CustomerList selectedOrder={selectedOrder} onAddCustomer={handleAddCustomer} />
+                <CustomerList
+                    selectedOrder={selectedOrder}
+                    onAddCustomer={handleAddCustomer}
+                    customerId={customerId}
+                    setCustomerId={setCustomerId} // Pass setCustomerId as a prop
+                />
             </div>
             {/* Coupon and Tính toán */}
             <div>
@@ -531,7 +606,7 @@ function Bill() {
                                 open={isCouponModalOpen}
                                 onClose={closeCouponModal}
                                 onSelectCoupon={onCoupon}
-                                 customerId={customerId} 
+                                customerId={customerId}
                             />
 
                             <Grid container spacing={2}>
@@ -567,27 +642,30 @@ function Bill() {
                                 <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">{formatCurrencyVND(totalAfterDiscount)}</Typography></Grid>
                             </Grid>
 
-                            <TextField
-                                label="Tiền khách đưa"
-                                variant="outlined"
-                                fullWidth
-                                sx={{ mb: 2 }}
-                                value={customerAmount}
-                                onChange={handleCustomerAmountChange}
-                            />
+                            {selectedPaymentMethod === PaymentMethod.CASH && (
+                                <TextField
+                                    label="Tiền khách đưa"
+                                    variant="outlined"
+                                    fullWidth
+                                    sx={{ mb: 2 }}
+                                    value={customerAmount}
+                                    onChange={handleCustomerAmountChange}
+                                />
+                            )}
 
-                            {customerAmount < totalAfterDiscount && (
+                            {selectedPaymentMethod === PaymentMethod.CASH && customerAmount < totalAfterDiscount && (
                                 <Typography variant="body2" color="error" sx={{ mb: 2 }}>
                                     Vui lòng nhập đủ tiền khách đưa!
                                 </Typography>
                             )}
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                <Typography variant="body2">Tiền thừa:</Typography>
-                                <Typography fontWeight="bold" color="success.main">
-                                    {changeAmount >= 0 ? formatCurrencyVND(changeAmount) : formatCurrencyVND(0)}
-                                </Typography>
-                            </Box>
+                            {selectedPaymentMethod === PaymentMethod.CASH && (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                    <Typography variant="body2">Tiền thừa:</Typography>
+                                    <Typography fontWeight="bold" color="success.main">
+                                        {changeAmount >= 0 ? formatCurrencyVND(changeAmount) : formatCurrencyVND(0)}
+                                    </Typography>
+                                </Box>
+                            )}
 
                             <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
@@ -616,7 +694,7 @@ function Bill() {
                                 color="primary"
                                 onClick={onPay}
                                 sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
-                                disabled={customerAmount < totalAfterDiscount}
+                                disabled={selectedPaymentMethod === PaymentMethod.CASH && customerAmount < totalAfterDiscount}
                             >
                                 Tạo hóa đơn
                             </Button>

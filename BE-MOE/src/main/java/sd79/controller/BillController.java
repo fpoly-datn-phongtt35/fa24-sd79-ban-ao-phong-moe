@@ -15,11 +15,13 @@ import sd79.dto.requests.productRequests.BillStoreRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
+import sd79.model.BillStatus;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.BillService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/${api.version}/bill")
@@ -156,5 +158,6 @@ public class BillController {
 //            logger.error("Unexpected error occurred while adding pay: ", e);
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
         }
+
 
 }

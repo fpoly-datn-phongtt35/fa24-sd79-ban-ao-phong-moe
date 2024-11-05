@@ -201,28 +201,18 @@ public class CouponCustomizeQuery {
         log.info("Executing coupon query for customerId={} with search by name or code only", customerId);
 
         String sql = getString(param, customerId);
-
-        // Create the main query
         TypedQuery<Coupon> query = entityManager.createQuery(sql, Coupon.class);
-
-        // Set parameters for keyword and customerId if applicable
         if (StringUtils.hasLength(param.getKeyword())) {
             query.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
         if (customerId != null) {
             query.setParameter("customerId", customerId);
         }
-
-        // Apply pagination settings
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
-
-        // Fetch results and map to CouponResponse
         List<CouponResponse> data = query.getResultList().stream()
                 .map(this::convertCouponResponse)
                 .collect(Collectors.toList());
-
-        // Count query for total elements
         String countSql = "SELECT COUNT(c) FROM Coupon c WHERE c.isDeleted = false ";
         if (customerId == null) {
             countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
@@ -233,22 +223,14 @@ public class CouponCustomizeQuery {
         if (StringUtils.hasLength(param.getKeyword())) {
             countSql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
-
-        // Create count query
         TypedQuery<Long> countQuery = entityManager.createQuery(countSql, Long.class);
-
-        // Set parameters for count query
         if (StringUtils.hasLength(param.getKeyword())) {
             countQuery.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
         if (customerId != null) {
             countQuery.setParameter("customerId", customerId);
         }
-
-        // Fetch total elements count
         Long totalElements = countQuery.getSingleResult();
-
-        // Build pageable response
         Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<CouponResponse> page = new PageImpl<>(data, pageable, totalElements);
 

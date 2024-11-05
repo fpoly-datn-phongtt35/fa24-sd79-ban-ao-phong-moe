@@ -154,9 +154,14 @@ public class BillServiceImpl implements BillService {
     public long storeCustomer(Long billId, Long customerId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + customerId));
-        bill.setCustomer(customer);
+        if (customerId == null || customerId == 0) {
+            bill.setCustomer(null);
+        } else {
+            Customer customer = customerRepository.findById(customerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + customerId));
+            bill.setCustomer(customer);
+        }
+
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
         return bill.getId();
@@ -191,9 +196,16 @@ public class BillServiceImpl implements BillService {
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
-
+        if (coupon.getQuantity() != null && coupon.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
+        }
         bill.setCoupon(coupon);
+        if (coupon.getQuantity() != null) {
+            coupon.setQuantity(coupon.getQuantity() - 1);
+        }
+        coupon.setUsageCount((coupon.getUsageCount() != null ? coupon.getUsageCount() : 0) + 1);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+        couponRepository.save(coupon);
         billRepository.save(bill);
 
         return bill.getId();
@@ -203,9 +215,20 @@ public class BillServiceImpl implements BillService {
     public long deleteCoupon(long billId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
+
+        Coupon coupon = bill.getCoupon();
+        if (coupon != null) {
+            coupon.setQuantity(coupon.getQuantity() + 1);
+            coupon.setUsageCount((coupon.getUsageCount() != null && coupon.getUsageCount() > 0)
+                    ? coupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(coupon);
+        }
+
         bill.setCoupon(null);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
+
         return bill.getId();
     }
 
@@ -352,7 +375,9 @@ public class BillServiceImpl implements BillService {
         return billRepository.save(bill);
     }
 
-    //ket thuc
+    //thanh toan
+
+    //----
 
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));

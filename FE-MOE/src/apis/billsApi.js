@@ -65,7 +65,6 @@ export const fetchProduct = async (billId) => {
     .then((res) => res.data);
 };
 
-
 export const postProduct = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/bill/storeProduct`, data)
@@ -188,3 +187,17 @@ export const addPay = async (billStoreRequest) => {
   }
 };
 
+export const reqPay = async (data) => {
+  try {
+      const response = await authorizedAxiosInstance.get(
+          `${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB`
+      );
+
+      if (response.status === 200) {
+          window.location.href = response.data.data; 
+      }
+  } catch (error) {
+      console.error("Failed to redirect to VNPay:", error);
+      toast.error("Có lỗi xảy ra khi chuyển hướng sang VNPay.");
+  }
+};

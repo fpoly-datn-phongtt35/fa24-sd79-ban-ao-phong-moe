@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Paper,
     Typography,
@@ -18,10 +18,8 @@ import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
 import AddCustomerModal from './AddCustomerModal';
 import { deleteCustomer, fetchBill } from '~/apis/billsApi';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Input } from '@mui/joy';
 
-export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCouponCustomer }) {
-
+export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
     const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -40,8 +38,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
         if (selectedOrder) {
             const customerFromBill = findCustomerInBills(selectedOrder);
             setCustomer(customerFromBill);
+            if (customerFromBill) {
+                setCustomerId(customerFromBill.id); 
+            }
         }
-    }, [selectedOrder, bills]);
+    }, [selectedOrder, bills, setCustomerId]); 
 
     const handleSetBill = async () => {
         try {
@@ -101,11 +102,8 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
         });
         setSearchTerm(selectedCustomer.fullName);
         setShowDropdown(false);
-        onAddCustomer(selectedCustomer);  
-    };
-
-    const handleAddCustomer = (customer) => {
-        onAddCustomer(customer);  
+        onAddCustomer(selectedCustomer);
+        setCustomerId(selectedCustomer.id); // Update customerId when a customer is selected
     };
 
     const handleDeleteCustomer = async (customerId) => {
@@ -119,7 +117,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
             console.error("Error deleting customer:", error);
         }
     };
-    
+
     const findCustomerInBills = (orderId) => {
         const billWithCustomer = bills.find(bill => bill.id === orderId);
         return billWithCustomer ? billWithCustomer.customer : null;
@@ -141,7 +139,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
                                 <>
                                     <span>{customer.firstName} {customer.lastName}</span>
                                     <Button
-                                        onClick={() => handleDeleteCustomer(selectedOrder)}
+                                        onClick={() => handleDeleteCustomer(customer.id)} // Use customer.id here
                                         size="small"
                                         sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
                                     >
