@@ -59,9 +59,7 @@ export const CustomerDetailPage = () => {
       email: customerData.email ? '' : 'Email không được để trống',
 
     };
-
-
-
+    
     setErrors(newErrors);
 
     return Object.values(newErrors).every((error) => error === '');
@@ -116,8 +114,8 @@ export const CustomerDetailPage = () => {
   const formatDate2 = (dateTimeString) => {
     // Split date and time parts
     const [datePart] = dateTimeString.split(' ');
-    const [year, month, day] = datePart.split('-'); 
-    return `${year}-${month}-${day}`; 
+    const [year, month, day] = datePart.split('-');
+    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
@@ -603,7 +601,7 @@ export const CustomerDetailPage = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                       Cập Nhật Người Dùng
                     </Button>
-                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

@@ -20,6 +20,9 @@ export const EmployeeUpdate = () => {
         position: '',
         gender: '',
         date_of_birth: '',
+        city: '',
+        district: '',
+        ward: '',
         streetName: '',
     });
 
@@ -31,6 +34,7 @@ export const EmployeeUpdate = () => {
     const [positions, setPositions] = useState([]);
     const [position, setPosition] = useState(null);
     /*---Start handle address---*/
+
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
@@ -40,47 +44,48 @@ export const EmployeeUpdate = () => {
     const [streetName, setStreetName] = useState('');
 
     useEffect(() => {
-        const fetchCities = async () => {
-            const response = await axios.get(`${host}?depth=1`);
-            setCities(response.data);
-        };
-        fetchCities();
-    }, []);
-    useEffect(() => {
         const fetchPosition = async () => {
             await getAllPositions().then((res) => setPositions(res.data))
         }
         fetchPosition();
     }, [])
 
-    const handleCityChange = async (e) => {
-        const provinceId = e;
-        setSelectedCity(provinceId);
+    useEffect(() => {
+        const fetchCities = async () => {
+          const response = await axios.get(`${host}?depth=1`);
+          setCities(response.data);
+        };
+        fetchCities();
+      }, []);
+    
+      const handleCityChange = async (e) => {
+        const cityId = e;
+        setSelectedCity(cityId);
         setSelectedDistrict("");
         setSelectedWard("");
-        if (provinceId) {
-            const response = await axios.get(`${host}p/${provinceId}?depth=2`);
-            setDistricts(response.data.districts);
+        if (cityId) {
+          const response = await axios.get(`${host}p/${cityId}?depth=2`);
+          setDistricts(response.data.districts);
         } else {
-            setDistricts([]);
+          setDistricts([]);
         }
-    };
-
-    const handleDistrictChange = async (e) => {
+      };
+    
+      const handleDistrictChange = async (e) => {
         const districtId = e;
         setSelectedDistrict(districtId);
         setSelectedWard(""); // Reset ward
         if (districtId) {
-            const response = await axios.get(`${host}d/${districtId}?depth=2`);
-            setWards(response.data.wards);
+          const response = await axios.get(`${host}d/${districtId}?depth=2`);
+          setWards(response.data.wards);
         } else {
-            setWards([]);
+          setWards([]);
         }
-    };
-
-    const handleWardChange = (e) => {
+      };
+    
+      const handleWardChange = (e) => {
         setSelectedWard(e);
-    };
+      };
     /*---END---*/
 
     const formatDate2 = (dateTimeString) => {
@@ -123,17 +128,19 @@ export const EmployeeUpdate = () => {
         return Object.keys(tempErrors).length === 0;
     }
 
+    // Thêm kiểm tra để đảm bảo các options được load xong trước khi gán vào state
     useEffect(() => {
         const fetchEmployeeDetail = async () => {
             try {
                 const response = await getEmployee(id);
                 console.log("API Response:", response.data);
+
                 const employeeData = response.data;
 
-                // console.log(formatDate2(employeeData.date_of_birth));
-                handleCityChange(employeeData.employee_address.provinceId);
-                handleDistrictChange(employeeData.employee_address.districtId)
-                handleWardChange(employeeData.employee_address.ward)
+                // Gọi API để lấy danh sách thành phố, quận/huyện, phường/xã trước khi set state
+                await handleCityChange(employeeData.employee_address.cityId);
+                await handleDistrictChange(employeeData.employee_address.districtId);
+
                 setEmployeeData({
                     first_name: employeeData.first_name,
                     last_name: employeeData.last_name,
@@ -143,23 +150,27 @@ export const EmployeeUpdate = () => {
                     salary: employeeData.salaries,
                     position: employeeData.position.id,
                     avatar: employeeData.avatar,
-                    provinceId: employeeData.employee_address.provinceId,
+                    email: employeeData.email,
+                    city: employeeData.employee_address.city,
                     district: employeeData.employee_address.district,
                     ward: employeeData.employee_address.ward,
-                    email: employeeData.email,
                     streetName: employeeData.employee_address.streetName,
-
                 });
+
+                // Set lại các state của thành phố, quận, xã
+                setSelectedCity(employeeData.employee_address.cityId);
+                setSelectedDistrict(employeeData.employee_address.districtId);
+                setSelectedWard(employeeData.employee_address.ward);
+
                 setImagePreview(employeeData.avatar);
             } catch (error) {
-                console.error("Error details:", error);
+                console.error("Error fetching employee details:", error);
                 toast.error('Error fetching employee details: ' + (error.response?.data?.message || error.message));
             }
         };
 
         fetchEmployeeDetail();
     }, [id]);
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -261,7 +272,6 @@ export const EmployeeUpdate = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateInputs()) return;
 
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
@@ -269,17 +279,15 @@ export const EmployeeUpdate = () => {
 
         const updatedEmploye = {
             ...employeeData,
-            address: {
-                province: cityName,
-                provinceId: selectedCity,
-                district: districtName,
-                districtId: selectedDistrict,
-                ward: wardName,
-                streetName: streetName
-            },
+            city: cityName,
+            city_id: selectedCity,
+            district: districtName,
+            district_id: selectedDistrict,
+            ward: wardName,
             position: employeeData.position,
             date_of_birth: formatDate(employeeData.date_of_birth),
         };
+        console.log("Dữ liệu cập nhật nhân viên:", updatedEmploye);
         setIsLoading(true);
         await putEmployee(updatedEmploye, id).then(async (res) => {
             if (imageObject === null) {

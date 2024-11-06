@@ -23,7 +23,7 @@ export const EmployeeStore = () => {
     const [selectedWard, setSelectedWard] = useState("");
 
     const [position, setPosition] = useState(null);
-    const [streetName, setStreetName] = useState('');
+    // const [streetName, setStreetName] = useState('');
 
     const [positions, setPositions] = useState([]);
 
@@ -109,7 +109,7 @@ export const EmployeeStore = () => {
         email: '',
         password: '',
         username: '',
-        streetName: '',
+        // streetName: '',
     });
 
     const validateInputs = () => {
@@ -124,10 +124,10 @@ export const EmployeeStore = () => {
         if (!employeeData.date_of_birth) tempErrors.date_of_birth = "Ngày sinh là bắt buộc.";
         if (!employeeData.salary) tempErrors.salary = "Lương là bắt buộc.";
         // if (!employeeData.position) tempErrors.position = "Vui lòng chọn chức vụ.";
-        if (!employeeData.city) tempErrors.city = "Thành phố là bắt buộc.";
-        if (!employeeData.district) tempErrors.district = "Quận/huyện là bắt buộc.";
-        if (!employeeData.ward) tempErrors.ward = "Phường/xã là bắt buộc.";
-        if (!employeeData.streetName) tempErrors.streetName = "Tên đường là bắt buộc.";
+        // if (!employeeData.city) tempErrors.city = "Thành phố là bắt buộc.";
+        // if (!employeeData.district) tempErrors.district = "Quận/huyện là bắt buộc.";
+        // if (!employeeData.ward) tempErrors.ward = "Phường/xã là bắt buộc.";
+        // if (!employeeData.streetName) tempErrors.streetName = "Tên đường là bắt buộc.";
         // console.log('Validation Result:', tempErrors);
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
@@ -253,15 +253,11 @@ export const EmployeeStore = () => {
 
         const customerWithTimestamps = {
             ...employeeData,
-            address: {
-                province: cityName,
-                provinceId: selectedCity,
-                district: districtName,
-                districtId: selectedDistrict,
-                ward: wardName,
-                streetName: streetName
-                //
-            },
+            city: cityName,
+            city_id: selectedCity,
+            district: districtName,
+            district_id: selectedDistrict,
+            ward: wardName,
             position: position,
             date_of_birth: formatDate(employeeData.date_of_birth),
             createdAt: currentDate,
@@ -291,7 +287,6 @@ export const EmployeeStore = () => {
                 });
         } catch (error) {
             setIsLoading(false);
-            toast.error('Thêm thất bại!');
         }
     };
 
@@ -404,6 +399,15 @@ export const EmployeeStore = () => {
                                                     name="username"
                                                     onChange={handleChange}
                                                     placeholder='Tên tài khoản'
+                                                    sx={{
+                                                        border: `1px solid ${errors.username ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                                                        '&:hover:not(.Mui-disabled):before': {
+                                                          borderColor: errors.username ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                        },
+                                                        '&.Mui-focused': {
+                                                          borderColor: errors.username ? 'red' : 'primary.main',
+                                                        },
+                                                      }}
                                                 />
                                                 {errors.username && (
                                                     <Typography color="error" variant="body2">{errors.username}</Typography>
@@ -434,6 +438,15 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Email'
                                                     type="email"
+                                                    sx={{
+                                                        border: `1px solid ${errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                                                        '&:hover:not(.Mui-disabled):before': {
+                                                          borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                        },
+                                                        '&.Mui-focused': {
+                                                          borderColor: errors.email ? 'red' : 'primary.main',
+                                                        },
+                                                      }}
                                                 />
                                                 {errors.email && (
                                                     <Typography color="error" variant="body2">{errors.email}</Typography>
@@ -448,6 +461,15 @@ export const EmployeeStore = () => {
                                                     name="phone_number"
                                                     onChange={handleChange}
                                                     placeholder='Số Điện Thoại'
+                                                    sx={{
+                                                        border: `1px solid ${errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                                                        '&:hover:not(.Mui-disabled):before': {
+                                                          borderColor: errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                        },
+                                                        '&.Mui-focused': {
+                                                          borderColor: errors.phoneNumber ? 'red' : 'primary.main',
+                                                        },
+                                                      }}
                                                 />
                                                 {errors.phone_number && (
                                                     <Typography color="error" variant="body2">{errors.phone_number}</Typography>
@@ -593,11 +615,9 @@ export const EmployeeStore = () => {
                                                 <FormLabel>Tên đường</FormLabel>
                                                 <Input
                                                     name="streetName"
+                                                    value={employeeData.streetName}
                                                     placeholder='Tên đường'
-                                                    onChange={(e) => {
-                                                        setStreetName(e.target.value);
-                                                        setErrors((prevErrors) => ({ ...prevErrors, streetName: '' })); // Xóa lỗi khi người dùng nhập
-                                                    }}
+                                                    onChange={handleChange}
                                                 />
                                             </FormControl>
                                         </Grid>
