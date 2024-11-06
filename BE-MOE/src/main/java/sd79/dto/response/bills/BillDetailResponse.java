@@ -14,5 +14,4 @@ public class BillDetailResponse {
     private Integer quantity;
     private BigDecimal retailPrice;
     private BigDecimal discountAmount;
-
 }

@@ -18,6 +18,7 @@ import sd79.repositories.products.ProductDetailRepository;
 import sd79.service.BillService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -110,7 +111,7 @@ public class BillServiceImpl implements BillService {
             }
 
             billDetail.setQuantity(newQuantity);
-            totalAmountProduct = retailPrice.subtract(discountAmount).multiply(new BigDecimal(newQuantity));
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(newQuantity));
             billDetail.setTotalAmountProduct(totalAmountProduct);
             billDetail.setUpdateAt(new Date());
         } else {
@@ -118,7 +119,7 @@ public class BillServiceImpl implements BillService {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            totalAmountProduct = retailPrice.subtract(discountAmount).multiply(new BigDecimal(quantityToAdd));
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(quantityToAdd));
             billDetail = BillDetail.builder()
                     .productDetail(productDetail)
                     .bill(bill)
@@ -381,10 +382,6 @@ public class BillServiceImpl implements BillService {
         return billRepository.save(bill);
     }
 
-    //thanh toan
-
-    //----
-
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));
     }
@@ -452,6 +449,17 @@ public class BillServiceImpl implements BillService {
 
     //Modal product bill
     private BillDetailResponse convertToBillResponse(BillDetail billDetail) {
+        BigDecimal retailPrice = billDetail.getRetailPrice();
+        BigDecimal discountAmount = billDetail.getDiscountAmount();
+        BigDecimal sellPrice = retailPrice.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
+
+        Integer percent = null;
+        if (discountAmount != null && retailPrice.compareTo(BigDecimal.ZERO) > 0) {
+            percent = discountAmount.multiply(BigDecimal.valueOf(100))
+                    .divide(retailPrice, 2, RoundingMode.HALF_UP)
+                    .intValue();
+        }
+
         ProductDetailResponse2 productDetailResponse = ProductDetailResponse2.builder()
                 .id(billDetail.getProductDetail().getId())
                 .productName(String.format("%s [%s - %s]",
@@ -465,7 +473,9 @@ public class BillServiceImpl implements BillService {
                 .color(billDetail.getProductDetail().getColor().getName())
                 .size(billDetail.getProductDetail().getSize().getName())
                 .origin(billDetail.getProductDetail().getProduct().getOrigin())
-                .price(billDetail.getProductDetail().getRetailPrice())
+                .price(retailPrice)
+                .sellPrice(sellPrice)
+                .percent(percent)
                 .quantity(billDetail.getProductDetail().getQuantity())
                 .build();
 
@@ -473,8 +483,8 @@ public class BillServiceImpl implements BillService {
                 .id(billDetail.getId())
                 .productDetail(productDetailResponse)
                 .quantity(billDetail.getQuantity())
-                .retailPrice(billDetail.getRetailPrice())
-                .discountAmount(billDetail.getDiscountAmount())
+                .retailPrice(retailPrice)
+                .discountAmount(discountAmount)
                 .build();
     }
 

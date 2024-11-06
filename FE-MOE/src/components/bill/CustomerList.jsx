@@ -15,7 +15,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
+import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/apis/customerApi';
 import { deleteCustomer, fetchBill } from '~/apis/billsApi';
 import AddCustomerModal from './AddCustomerModal';
 
@@ -29,11 +29,21 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const [openModal, setOpenModal] = useState(false);
     const [bills, setBills] = useState([]);
     const searchRef = useRef(null);
+    const [customerData, setCustomerData] = useState({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        city: '',
+        district: '',
+        ward: '',
+        streetName: ''
+    });
 
     useEffect(() => {
         loadCustomers();
         loadBills();
     }, []);
+
 
     useEffect(() => {
         if (selectedOrder) {
@@ -130,6 +140,40 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         return billWithCustomer ? billWithCustomer.customer : null;
     };
 
+    useEffect(() => {
+        if (customerId) {
+            fetchCustomerDetail();
+        } else {
+            setCustomerData(null);
+        }
+    }, [customerId]);
+
+    const fetchCustomerDetail = async () => {
+        if (!customerId) {
+            console.error("Customer ID is missing");
+            return;
+        }
+
+        try {
+            const response = await fetchCustomerById(customerId);
+            const customerData = response.data;
+            console.log(customerData)
+
+            setCustomerData({
+                firstName: customerData.firstName,
+                lastName: customerData.lastName,
+                phoneNumber: customerData.phoneNumber,
+                email: customerData.email,
+                city: customerData.city,
+                district: customerData.district,
+                ward: customerData.ward,
+                streetName: customerData.streetName
+            });
+        } catch (error) {
+            console.error("Failed to fetch customer detail:", error);
+        }
+    };
+
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => setOpenModal(false);
 
@@ -223,11 +267,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                 </Box>
             </Box>
 
-            {customer ? (
+            {customerData ? (
                 <Box>
-                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customer.firstName} {customer.lastName}</Typography>
-                    <Typography variant="body1"><strong>Email:</strong> {customer.user ? customer.user.email : 'N/A'}</Typography>
-                    <Typography variant="body1"><strong>Số điện thoại:</strong> {customer.phoneNumber}</Typography>
+                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customerData.lastName} {customerData.firstName}</Typography>
+                    <Typography variant="body1"> <strong>Email:</strong> {customerData.email}</Typography>
+                    <Typography variant="body1"><strong>Số điện thoại:</strong> {customerData.phoneNumber}</Typography>
                 </Box>
             ) : (
                 <Typography variant="body1" align="center" sx={{ mt: 2 }}>
