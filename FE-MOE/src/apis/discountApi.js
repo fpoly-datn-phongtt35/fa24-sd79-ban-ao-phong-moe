@@ -45,5 +45,3 @@ export const searchDiscounts = async (keyword, startDate, endDate) => {
     .then((res) => res.data);
 };
 
-
-
