@@ -28,7 +28,7 @@ import Done from "@mui/icons-material/Done";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { useContext, useEffect, useState } from "react";
 import { formatCurrencyVND, formatDateWithoutTime } from "~/utils/format";
-import { fetchProduct, storeCart } from "~/apis/client/apiClient";
+import { buyNow, fetchProduct, storeCart } from "~/apis/client/apiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";
@@ -94,7 +94,7 @@ export const ViewDetail = () => {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!color) {
       toast.error("Vui lòng chọn màu");
       return;
@@ -105,7 +105,20 @@ export const ViewDetail = () => {
       toast.error("Số lượng phải lớn hơn 0");
       return;
     } else {
-      toast.success("Đã mua");
+      let data = {
+        productId: id,
+        sizeId: size,
+        colorId: color,
+        quantity: quantity,
+        username: localStorage.getItem("username"),
+      };
+      console.log(data);
+      await buyNow(data).then((res) => {
+        console.log(res);
+
+        localStorage.setItem("orderItems", JSON.stringify([res.data]));
+        navigate("/checkout");
+      });
     }
   };
   return (

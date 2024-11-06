@@ -35,6 +35,13 @@ export const storeCart = async (data) => {
     .then((res) => res.data);
 };
 
+export const buyNow = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/client/buy`, data)
+    .then((res) => res.data)
+    .catch();
+};
+
 export const fetchCarts = async () => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/client/cart`)

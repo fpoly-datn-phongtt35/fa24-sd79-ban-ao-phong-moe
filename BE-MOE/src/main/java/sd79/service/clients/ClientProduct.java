@@ -29,6 +29,8 @@ public interface ClientProduct {
 
     void addToCart(FilterForCartReq req);
 
+    CartResponse buyNow(FilterForCartReq req);
+
     void updateCart(CartReq req);
 
     void deleteCart(String id, String username);

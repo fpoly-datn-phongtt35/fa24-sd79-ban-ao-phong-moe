@@ -94,6 +94,11 @@ public class ClientController {
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công");
     }
 
+    @PostMapping("/buy")
+    public ResponseData<?> buyNow(@RequestBody FilterForCartReq cartReq) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Chờ thanh toán", this.clientProduct.buyNow(cartReq));
+    }
+
     @Operation(
             summary = "Update Cart",
             description = "Update an item in the shopping cart based on the provided request data"

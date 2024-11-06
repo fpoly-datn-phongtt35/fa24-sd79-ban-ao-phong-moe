@@ -224,6 +224,35 @@ public class ClientProductImpl implements ClientProduct {
     }
 
     @Override
+    public CartResponse buyNow(FilterForCartReq req) {
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
+        BigDecimal discountPercent = promotionDetail != null
+                ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                : BigDecimal.ZERO;
+        BigDecimal retailPrice = prd.getRetailPrice();
+        BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+        boolean status = prd.getStatus() == ProductStatus.ACTIVE && prd.getProduct().getStatus() == ProductStatus.ACTIVE;
+        ProductCart productCart = ProductCart.builder()
+                .id(prd.getId())
+                .status(status)
+                .quantity(prd.getQuantity())
+                .sellPrice(discountPrice)
+                .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                .build();
+        return CartResponse.builder()
+                .id(String.valueOf(prd.getId()))
+                .imageUrl(prd.getProduct().getProductImages().getFirst().getImageUrl())
+                .name(String.format("%s [%s - %s]", prd.getProduct().getName(), prd.getColor().getName(), prd.getSize().getName()))
+                .origin(prd.getProduct().getOrigin())
+                .retailPrice(prd.getRetailPrice())
+                .quantity(req.getQuantity())
+                .username(req.getUsername())
+                .productCart(productCart)
+                .build();
+    }
+
+    @Override
     public void updateCart(CartReq req) {
         ProductDetail prd = this.productDetailRepository.findById(req.getProductDetailId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(req.getProductDetailId()), req.getUsername());
