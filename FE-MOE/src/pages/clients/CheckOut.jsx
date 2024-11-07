@@ -163,7 +163,7 @@ function CheckOut() {
     if (paymentMethod === "BANK") {
       localStorage.setItem("temp_data", JSON.stringify(transformedData));
       await reqPay(transformedData);
-    } else {  
+    } else {
       await createOrder(transformedData).then(() => {
         localStorage.removeItem("orderItems");
         setOrderSuccessfully(true);
@@ -204,9 +204,6 @@ function CheckOut() {
             Đơn hàng của bạn sẽ sớm được giao cho đơn vị vận chuyển!
           </Typography>
           <Box display="flex" gap={2}>
-            <Button variant="outlined" onClick={() => navigate("/cart")}>
-              Xem đơn hàng
-            </Button>
             <Button
               variant="contained"
               color="primary"

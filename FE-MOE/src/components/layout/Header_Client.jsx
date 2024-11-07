@@ -65,7 +65,7 @@ const Header_Client = () => {
 
   const handleLogout = async () => {
     await handleLogoutAPI();
-    localStorage.removeItem("orderItems")
+    localStorage.removeItem("orderItems");
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
     context.setAmoutCart(null);
@@ -127,7 +127,7 @@ const Header_Client = () => {
             <Input
               type="search"
               sx={{ width: 350, border: "none" }}
-              startDecorator={<SearchIcon color="primary"/>}
+              startDecorator={<SearchIcon color="primary" />}
               placeholder="Tìm kiếm"
             />
           </Box>
@@ -161,7 +161,7 @@ const Header_Client = () => {
               Quản lý tài khoản
             </Typography>
           </MenuItem>
-          <MenuItem onClick={handleMenuClose}>
+          <MenuItem onClick={() => navigate("/my-order")}>
             <Typography
               level="tile-md"
               startDecorator={<ShoppingCartOutlinedIcon />}

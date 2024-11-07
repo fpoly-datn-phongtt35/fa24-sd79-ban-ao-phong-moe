@@ -23,7 +23,7 @@ payment:
 logging:
   level:
     root: INFO
-    web: OFF
+    web: INFO
     org.springframework: INFO
-    org.apache: OFF
-    kafka: OFF
+    org.apache: ERROR
+    kafka: ERROR
