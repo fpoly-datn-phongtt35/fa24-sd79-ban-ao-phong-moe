@@ -6,12 +6,14 @@
  */
 package sd79.dto.response.clients.product;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import sd79.dto.response.productResponse.ColorResponse;
 import sd79.dto.response.productResponse.SizeResponse;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -27,6 +29,8 @@ public class ProductDetailClientResponse {
     private BigDecimal retailPrice;
 
     private BigDecimal discountPrice;
+
+    private Integer percent;
 
     private float rate;
 
@@ -47,6 +51,9 @@ public class ProductDetailClientResponse {
     private String brand;
 
     private String description;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Date expiredDate;
 
     private List<ProductClientResponse> relatedItem;
 }

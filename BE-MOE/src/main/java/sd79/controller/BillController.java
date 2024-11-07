@@ -15,11 +15,13 @@ import sd79.dto.requests.productRequests.BillStoreRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
+import sd79.model.BillStatus;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.BillService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/${api.version}/bill")
@@ -34,7 +36,13 @@ public class BillController {
     @Operation(summary = "Lấy thông tin hóa đơn", description = "Lấy thông tin hóa đơn cụ thể là mã hóa đơn")
     @GetMapping("/getBill")
     public ResponseData<?> getAllBill() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", this.billService.getAllBills());
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn thành công", this.billService.getAllBill());
+    }
+
+    @Operation(summary = "Lấy thông tin hóa đơn chi tiết", description = "Lấy thông tin hóa đơn chi tiết")
+    @GetMapping("/getBillDetail/{id}")
+    public ResponseData<?> getBillDetail(@PathVariable Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy thông tin hóa đơn chi tiết thành công", this.billService.getBillId(id));
     }
 
     @Operation(summary = "Thêm hóa đơn với chỉ mã", description = "Thêm hóa đơn chỉ với mã mà không cần thông tin khác")
@@ -156,5 +164,6 @@ public class BillController {
 //            logger.error("Unexpected error occurred while adding pay: ", e);
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
         }
+
 
 }

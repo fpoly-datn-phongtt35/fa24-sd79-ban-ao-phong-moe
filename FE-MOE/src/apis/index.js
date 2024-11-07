@@ -43,3 +43,13 @@ export const accessUserAPI = async (role) => {
       }
     });
 };
+
+export const reqPay = async (data) => {
+  await authorizedAxiosInstance
+    .get(`${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB`)
+    .then((res) => {
+      if (res.status === 200) {
+        window.location.href = res.data.data;
+      }
+    });
+};

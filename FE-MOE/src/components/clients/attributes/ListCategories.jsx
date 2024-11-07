@@ -8,7 +8,7 @@ import ListItem from "@mui/joy/ListItem";
 import ListSubheader from "@mui/joy/ListSubheader";
 import ListItemButton from "@mui/joy/ListItemButton";
 import Sheet from "@mui/joy/Sheet";
-import { fetchCategories } from "~/apis/client/productApiClient";
+import { fetchCategories } from "~/apis/client/apiClient";
 
 export default function ListCategories() {
   const [categories, setCategories] = React.useState([]);

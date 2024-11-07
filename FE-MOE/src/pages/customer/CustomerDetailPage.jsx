@@ -29,13 +29,14 @@ export const CustomerDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  
+
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
+
 
   const [errors, setErrors] = useState({
     lastName: '',
@@ -46,6 +47,7 @@ export const CustomerDetailPage = () => {
     email: '',
   });
 
+
   const validateForm = () => {
 
     const newErrors = {
@@ -54,11 +56,11 @@ export const CustomerDetailPage = () => {
       phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
       gender: customerData.gender ? '' : 'Phải chọn giới tính',
       dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: customerData.email ? '': 'Email không được để trống',
+      email: customerData.email ? '' : 'Email không được để trống',
 
     };
 
-    
+
 
     setErrors(newErrors);
 
@@ -111,6 +113,12 @@ export const CustomerDetailPage = () => {
     return `${day}/${month}/${year} | ${time}`;
   };
 
+  const formatDate2 = (dateTimeString) => {
+    // Split date and time parts
+    const [datePart] = dateTimeString.split(' ');
+    const [year, month, day] = datePart.split('-'); 
+    return `${year}-${month}-${day}`; 
+  };
 
   useEffect(() => {
     const fetchCustomerDetail = async () => {
@@ -119,6 +127,9 @@ export const CustomerDetailPage = () => {
         console.log("API Response:", response.data);
 
         const customerData = response.data;
+        console.log(customerData.dateOfBirth);
+
+        console.log(formatDate2(customerData.dateOfBirth))
 
         handleCityChange(customerData.city_id);
         handleDistrictChange(customerData.district_id)
@@ -128,7 +139,7 @@ export const CustomerDetailPage = () => {
           lastName: customerData.lastName,
           phoneNumber: customerData.phoneNumber,
           gender: customerData.gender,
-          dateOfBirth: customerData.dateOfBirth.split('T')[0],
+          dateOfBirth: formatDate2(customerData.dateOfBirth),
           image: customerData.image,
           city: customerData.city,
           district: customerData.district,
@@ -149,9 +160,9 @@ export const CustomerDetailPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>0-9]/g; 
+    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
     const phoneRegex = /^0\d{9,11}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
 
     const calculateAge = (dob) => {
@@ -168,39 +179,49 @@ export const CustomerDetailPage = () => {
     if (name === 'lastName') {
       if (value.length > 20) {
         newErrors.lastName = "Họ không được vượt quá 20 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
-        delete newErrors.lastName; 
+        delete newErrors.lastName;
+        setIsLoading(false);
       }
     }
 
-    
+
     if (name === 'firstName') {
       if (value.length > 50) {
         newErrors.firstName = "Tên không được vượt quá 50 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
-        delete newErrors.firstName; 
+        delete newErrors.firstName;
+        setIsLoading(false);
       }
     }
 
     if (name === 'phoneNumber') {
       if (!phoneRegex.test(value)) {
         newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+        setIsLoading(true);
       } else {
         delete newErrors.phoneNumber;
+        setIsLoading(false);
       }
     }
-    
+
 
 
     if (name === 'gender') {
       if (!value) {
         newErrors.gender = "Phải chọn giới tính";
+        setIsLoading(true);
       } else {
         delete newErrors.gender;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, gender: value });
     } else {
@@ -211,34 +232,43 @@ export const CustomerDetailPage = () => {
       const age = calculateAge(value);
       if (age < minAge) {
         newErrors.dateOfBirth = "Phải trên 16 tuổi";
+        setIsLoading(true);
       } else {
         delete newErrors.dateOfBirth;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, dateOfBirth: value });
     } else {
       setCustomerData({ ...customerData, [name]: value });
     }
-  if (name === 'email') {
-    if (!emailRegex.test(value)) {
-      newErrors.email = "Email không đúng định dạng";
-    } else {
-      delete newErrors.email;
+    if (name === 'email') {
+      if (!emailRegex.test(value)) {
+        newErrors.email = "Email không đúng định dạng";
+        setIsLoading(true);
+      } else {
+        delete newErrors.email;
+        setIsLoading(false);
+      }
     }
-  }
     setCustomerData({ ...customerData, [name]: value });
 
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: value ? '' : prevErrors[name],
     }));
-   
+
 
     setErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
+    if (!validateForm()) {
+      console.log("Form không hợp lệ, dừng xử lý.");
+      return;
+    }
+
     const cityName = cities.find((city) => city.code == selectedCity)?.name;
     const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
     const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
@@ -280,6 +310,8 @@ export const CustomerDetailPage = () => {
     setImagePreview(url)
     setImageObject(file)
   }
+
+
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px" }}>
       <Box mt={4} mb={4}>
@@ -490,7 +522,7 @@ export const CustomerDetailPage = () => {
                           value={customerData.dateOfBirth}
                           onChange={handleChange}
                           placeholder='Ngày sinh'
-                          type='text'
+                          type='date'
                           sx={{
                             border: `1px solid ${errors.dateOfBirth ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
                             '&:hover:not(.Mui-disabled):before': {
@@ -571,7 +603,7 @@ export const CustomerDetailPage = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                       Cập Nhật Người Dùng
                     </Button>
-                    <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

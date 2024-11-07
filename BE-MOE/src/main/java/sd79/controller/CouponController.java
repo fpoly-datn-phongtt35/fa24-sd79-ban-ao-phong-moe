@@ -11,12 +11,16 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.ResponseData;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.CouponService;
 import sd79.utils.CloudinaryUtils;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/${api.version}/coupon")
@@ -42,18 +46,9 @@ public class CouponController {
             summary = "Lấy danh sách phiếu giảm giá trạng thái đang diễn ra",
             description = "Lấy tất cả phiếu giảm giá trạng thái đang diễn ra từ cơ sở dữ liệu"
     )
-    @GetMapping("/getAllCouponDate")
-    public ResponseData<?> getAllCouponDate(CouponParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm trạng thái đang diễn ra giá thành công", this.couponService.getAllCouponDate(param));
-    }
-
-    @Operation(
-            summary = "Lấy danh sách phiếu giảm giá cá nhân",
-            description = "Lấy tất cả phiếu giảm giá tcá nhâ từ cơ sở dữ liệu"
-    )
-    @GetMapping("/getAllCouponDatePersonal")
-    public ResponseData<?> getAllCouponDatePersonal(CouponParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm cá nhân thành công", this.couponService.getAllCouponDatePersonal(param));
+    @GetMapping("/getAllCouponCustomers/{customerId}")
+    public ResponseData<?> getAllCouponCustomer (@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm trạng thái đang diễn ra giá thành công", this.couponService.getAllCouponCustomer(customerId,param));
     }
 
     // Lấy thông tin phiếu giảm giá theo ID

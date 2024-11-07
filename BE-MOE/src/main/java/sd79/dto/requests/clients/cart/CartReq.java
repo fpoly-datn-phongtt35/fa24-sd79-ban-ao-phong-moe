@@ -4,7 +4,7 @@
  * Github: https://github.com/JavaTech04
  * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
  */
-package sd79.dto.requests.clients;
+package sd79.dto.requests.clients.cart;
 
 import lombok.*;
 

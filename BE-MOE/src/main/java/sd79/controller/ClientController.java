@@ -14,12 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.clients.CartReq;
-import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.requests.clients.bills.BillClientRequest;
+import sd79.dto.requests.clients.cart.CartReq;
+import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.response.ResponseData;
 import sd79.service.CategoryService;
-import sd79.service.ProductService;
+import sd79.service.CouponService;
 import sd79.service.clients.ClientProduct;
+
 
 @Slf4j
 @RestController
@@ -27,13 +30,13 @@ import sd79.service.clients.ClientProduct;
 @Tag(name = "Client Controller", description = "Client controller")
 @RequiredArgsConstructor
 @Validated
-public class ProductClientController {
-
-    private final ProductService productService;
+public class ClientController {
 
     private final ClientProduct clientProduct;
 
     private final CategoryService categoryService;
+
+    private final CouponService couponService;
 
     @Operation(
             summary = "Get all product listings",
@@ -43,7 +46,6 @@ public class ProductClientController {
     public ResponseData<?> getAllProducts(@RequestParam(required = false, defaultValue = "0") Integer page) {
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.clientProduct.getExploreOurProducts(page));
     }
-
 
     @Operation(
             summary = "Top 5 Best Selling Products",
@@ -92,6 +94,11 @@ public class ProductClientController {
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công");
     }
 
+    @PostMapping("/buy")
+    public ResponseData<?> buyNow(@RequestBody FilterForCartReq cartReq) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Chờ thanh toán", this.clientProduct.buyNow(cartReq));
+    }
+
     @Operation(
             summary = "Update Cart",
             description = "Update an item in the shopping cart based on the provided request data"
@@ -110,5 +117,20 @@ public class ProductClientController {
     public ResponseData<?> deleteCart(@PathVariable String id, @PathVariable String username) {
         this.clientProduct.deleteCart(id, username);
         return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
+    }
+
+    @GetMapping("/user-address")
+    public ResponseData<?> getUserAddress(@RequestParam Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get successfully user", this.clientProduct.getUserInfo(id));
+    }
+
+    @PostMapping("/order")
+    public ResponseData<?> orderRequest(@RequestBody BillClientRequest.BillCreate req) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientProduct.saveBill(req));
+    }
+
+    @GetMapping("/vouchers/{customerId}")
+    public ResponseData<?> getVouchers(@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get Voucher Successfully", this.couponService.getAllCouponCustomer(customerId, param));
     }
 }

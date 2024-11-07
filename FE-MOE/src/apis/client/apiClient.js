@@ -35,6 +35,13 @@ export const storeCart = async (data) => {
     .then((res) => res.data);
 };
 
+export const buyNow = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/client/buy`, data)
+    .then((res) => res.data)
+    .catch();
+};
+
 export const fetchCarts = async () => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/client/cart`)
@@ -53,4 +60,26 @@ export const updateCart = async (data) => {
   return await authorizedAxiosInstance
     .put(`${API_ROOT}/client/update-cart`, data)
     .then((res) => res.data);
+};
+
+export const getUserAddressCart = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/user-address?id=${localStorage.getItem("userId")}`)
+    .then((res) => res.data);
+};
+
+export const createOrder = async (data) => {
+  return await authorizedAxiosInstance
+    .post(`${API_ROOT}/client/order`, data)
+    .then((res) => res.data);
+};
+
+export const fetchAllVouchers = async (id, keword) => {
+  return await authorizedAxiosInstance
+    .get(
+      `${API_ROOT}/client/vouchers/${id}?pageNo=1&pageSize=100${
+        keword ? `&keyword=${keword}` : ""
+      }`
+    )
+    .then((res) => res.data?.data?.content);
 };

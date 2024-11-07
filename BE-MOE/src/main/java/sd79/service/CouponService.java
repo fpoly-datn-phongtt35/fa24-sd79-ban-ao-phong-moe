@@ -2,18 +2,19 @@ package sd79.service;
 
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
-import sd79.dto.requests.CouponShareReq;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.CouponResponse;
-import sd79.dto.response.CustomerResponse;
 import sd79.dto.response.PageableResponse;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 
+import java.util.List;
+
 public interface CouponService {
     PageableResponse getAllCoupon(CouponParamFilter param);
-    PageableResponse getAllCouponDate(CouponParamFilter param);
-    PageableResponse getAllCouponDatePersonal(CouponParamFilter param);
+    PageableResponse getAllCouponCustomer(Long customerId,BillCouponFilter param);
     CouponResponse getCouponById(Long id);
     long storeCoupon(CouponRequest couponRequest);
     void storeCouponImages(CouponImageReq req);

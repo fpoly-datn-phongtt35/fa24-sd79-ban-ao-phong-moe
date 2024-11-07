@@ -37,3 +37,4 @@ export const deleteMaterial = async (id) => {
     .patch(`${API_ROOT}/material/is-delete/${id}`)
     .then((res) => toast.success(res.data.message));
 };
+

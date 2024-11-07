@@ -7,11 +7,13 @@
 package sd79.service.clients;
 
 import jakarta.servlet.http.HttpServletRequest;
-import sd79.dto.requests.clients.CartReq;
-import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.requests.clients.bills.BillClientRequest;
+import sd79.dto.requests.clients.cart.CartReq;
+import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.response.clients.cart.CartResponse;
+import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
-import sd79.model.redis_model.Cart;
 
 import java.util.List;
 import java.util.Set;
@@ -19,15 +21,21 @@ import java.util.Set;
 public interface ClientProduct {
     List<ProductClientResponse> getExploreOurProducts(Integer page);
 
-    List<ProductClientResponse> getBestSellingProducts();
+    Set<ProductClientResponse> getBestSellingProducts();
 
     ProductDetailClientResponse getProductDetail(Long id);
 
-    Set<Cart> getCarts(HttpServletRequest request);
+    List<CartResponse> getCarts(HttpServletRequest request);
 
     void addToCart(FilterForCartReq req);
+
+    CartResponse buyNow(FilterForCartReq req);
 
     void updateCart(CartReq req);
 
     void deleteCart(String id, String username);
+
+    UserInfoRes getUserInfo(long id);
+
+    long saveBill(BillClientRequest.BillCreate req);
 }

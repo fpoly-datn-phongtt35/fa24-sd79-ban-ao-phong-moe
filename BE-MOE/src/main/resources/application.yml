@@ -5,5 +5,25 @@
 spring:
   application:
     name: BE-MOE
+  main:
+    banner-mode: console
+  banner:
+    location: static/banner.txt
   profiles:
     active: @spring.profiles.active@
+payment:
+  vnPay:
+    url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    tmnCode: TCPEL8TY
+    secretKey: OJFYW30VMNUQTYE1NFLZDQBRN8CWSIVX
+    returnUrl: http://localhost:1004/checkout
+    version: 2.1.0
+    command: pay
+    orderType: OTHER
+logging:
+  level:
+    root: INFO
+    web: OFF
+    org.springframework: INFO
+    org.apache: OFF
+    kafka: OFF

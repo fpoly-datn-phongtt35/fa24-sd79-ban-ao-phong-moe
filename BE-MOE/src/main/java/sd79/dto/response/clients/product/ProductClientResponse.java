@@ -6,10 +6,12 @@
  */
 package sd79.dto.response.clients.product;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Getter
 @Builder
@@ -28,7 +30,12 @@ public class ProductClientResponse {
 
     private long rateCount;
 
-    public ProductClientResponse(Long productId, String imageUrl, String name, BigDecimal retailPrice, BigDecimal discountPrice, float rate, long rateCount) {
+    private Integer percent;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Date expiredDate;
+
+    public ProductClientResponse(Long productId, String imageUrl, String name, BigDecimal retailPrice, BigDecimal discountPrice, float rate, long rateCount, Integer percent, Date expiredDate) {
         this.productId = productId;
         this.imageUrl = imageUrl;
         this.name = name;
@@ -36,5 +43,7 @@ public class ProductClientResponse {
         this.discountPrice = discountPrice;
         this.rate = rate;
         this.rateCount = rateCount;
+        this.percent = percent;
+        this.expiredDate = expiredDate;
     }
 }

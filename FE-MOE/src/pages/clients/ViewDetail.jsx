@@ -27,8 +27,8 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import Done from "@mui/icons-material/Done";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { useContext, useEffect, useState } from "react";
-import { formatCurrencyVND } from "~/utils/format";
-import { fetchProduct, storeCart } from "~/apis/client/productApiClient";
+import { formatCurrencyVND, formatDateWithoutTime } from "~/utils/format";
+import { buyNow, fetchProduct, storeCart } from "~/apis/client/apiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";
@@ -94,7 +94,7 @@ export const ViewDetail = () => {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!color) {
       toast.error("Vui lòng chọn màu");
       return;
@@ -105,7 +105,20 @@ export const ViewDetail = () => {
       toast.error("Số lượng phải lớn hơn 0");
       return;
     } else {
-      toast.success("Đã mua");
+      let data = {
+        productId: id,
+        sizeId: size,
+        colorId: color,
+        quantity: quantity,
+        username: localStorage.getItem("username"),
+      };
+      console.log(data);
+      await buyNow(data).then((res) => {
+        console.log(res);
+
+        localStorage.setItem("orderItems", JSON.stringify([res.data]));
+        navigate("/checkout");
+      });
     }
   };
   return (
@@ -185,15 +198,73 @@ export const ViewDetail = () => {
                 Còn hàng
               </Typography>
             </Box>
-
-            <Typography
-              variant="h5"
-              level="title-lg"
-              color="error"
-              sx={{ mb: 2 }}
+            <Box
+              sx={{
+                backgroundColor: product?.percent !== null && "#c41c1c21",
+              }}
             >
-              {formatCurrencyVND(product?.retailPrice)}
-            </Typography>
+              {product?.percent !== null && (
+                <Box
+                  marginBottom={2}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    backgroundColor: "#c41c1c",
+                    borderRadius: 4,
+                    padding: 2,
+                  }}
+                >
+                  <Typography sx={{ color: "#fff" }} level="title-lg">
+                    Kết thúc vào ngày
+                  </Typography>
+                  <Typography sx={{ color: "#fff" }} level="title-lg">
+                    {product?.expiredDate &&
+                      formatDateWithoutTime(product?.expiredDate)}
+                  </Typography>
+                </Box>
+              )}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "start",
+                  alignItems: "center",
+                  zIndex: 2,
+                  marginBottom: 3,
+                }}
+              >
+                <Typography
+                  color="danger"
+                  fontWeight="bold"
+                  sx={{
+                    marginRight: "8px",
+                    padding: product?.percent !== null ? 2 : "",
+                  }}
+                  level="h4"
+                >
+                  {formatCurrencyVND(product?.discountPrice)}
+                </Typography>
+                {product?.percent !== null && (
+                  <>
+                    <Typography
+                      sx={{
+                        textDecoration: "line-through",
+                        color: "grey",
+                      }}
+                    >
+                      {formatCurrencyVND(product?.retailPrice)}
+                    </Typography>
+                    <Typography
+                      color="primary"
+                      level="title-sm"
+                      marginLeft={3}
+                      variant="outlined"
+                    >
+                      -50%
+                    </Typography>
+                  </>
+                )}
+              </Box>
+            </Box>
 
             <Typography variant="h3" sx={{ mb: 3 }}>
               Đã bán: 40
@@ -227,10 +298,27 @@ export const ViewDetail = () => {
                         height: 40,
                         flexShrink: 0,
                         bgcolor: color.hex_code,
+                        border: "1px solid #dde4ea",
                         borderRadius: "50%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+
+                        [`& .${radioClasses.checked}`]: {
+                          [`& .${radioClasses.label}`]: {
+                            fontWeight: "lg",
+                          },
+                          [`& .${radioClasses.action}`]: {
+                            "--variant-borderWidth": "2px",
+                            borderColor: "text.secondary",
+                            border: "2px solid gray",
+                          },
+                        },
+
+                        [`& .${radioClasses.action}.${radioClasses.focusVisible}`]:
+                          {
+                            outlineWidth: "2px",
+                          },
                       }}
                     >
                       <Radio

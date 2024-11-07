@@ -1,46 +1,17 @@
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { API_ROOT } from "~/utils/constants";
 import { toast } from "react-toastify";
-export const fetchAllBillProducts = async (
-  pageNo,
-  pageSize,
-  name,
-  size,
-  color,
-  brand
-) => {
-  let uri = "/product/product-details?";
-  let queryParams = [];
 
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
-  }
-  if (pageSize !== null && pageSize !== undefined) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (name) {
-    queryParams.push(`name=${name}`);
-  }
-  if (size) {
-    queryParams.push(`size=${size}`);
-  }
-  if (color) {
-    queryParams.push(`color=${color}`);
-  }
-  if (brand) {
-    queryParams.push(`brand=${brand}`);
-  }
-
-  uri += queryParams.join("&");
-
-  return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
-};
 //them lan 1
 export const fetchBill = async (data) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/bill/getBill`,data)
+    .then((res) => res.data);  
+};
+
+export const fetchBillDetailById = async (id) => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/bill/getBillDetail/${id}`)
     .then((res) => res.data);  
 };
 
@@ -59,12 +30,48 @@ export const deleteBill = async (id) => {
 };
 
 //them lan 2
+export const fetchAllBillProducts = async (
+  pageNo,
+  pageSize,
+  keyword,
+  size,
+  color,
+  brand
+) => {
+  let uri = "/product/product-details?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  if (size) {
+    queryParams.push(`size=${size}`);
+  }
+  if (color) {
+    queryParams.push(`color=${color}`);
+  }
+  if (brand) {
+    queryParams.push(`brand=${brand}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
 export const fetchProduct = async (billId) => { 
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/bill/getProduct/${billId}`) 
     .then((res) => res.data);
 };
-
 
 export const postProduct = async (data) => {
   return await authorizedAxiosInstance
@@ -112,116 +119,34 @@ export const deleteCustomer = async (billId) => {
     });
 };
 
-
 //them lan 4
-export const fetchAllCouponDate = async (
-  pageNo,
-  keyword,
-  startDate,
-  endDate,
-  discountType,
-  type,
-  status,
-  pageSize,
-  sort,
-  direction
+export const fetchAllCouponCustomer = async (
+  customerId,
+  pageNo = 1, 
+  keyword = '', 
+  pageSize = 5 
 ) => {
-  let uri = "/coupon/getAllCouponDate?";
-  let queryParams = [];
+  const uri = `/coupon/getAllCouponCustomers/${customerId}`; // Include customerId in the URL path
+  const params = new URLSearchParams();
 
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
+  if (pageNo !== null && pageNo >= 1) { 
+    params.append('pageNo', pageNo);
   }
   if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
-  }
-  if (startDate) {
-    queryParams.push(`startDate=${startDate}`);
-  }
-  if (endDate) {
-    queryParams.push(`endDate=${endDate}`);
-  }
-  if (discountType) {
-    queryParams.push(`discountType=${discountType}`);
-  }
-  if (type) {
-    queryParams.push(`type=${type}`);
-  }
-  if (status !== null && status !== undefined) {
-    queryParams.push(`status=${status}`);
+    params.append('keyword', keyword);
   }
   if (pageSize !== undefined && pageSize !== null) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (sort) {
-    queryParams.push(`sort=${sort}`);
-  }
-  if (direction) {
-    queryParams.push(`direction=${direction}`);
+    params.append('pageSize', pageSize);
   }
 
-  uri += queryParams.join("&");
-
+ 
   return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
-};
-
-export const fetchAllCouponDatePersonal = async (
-  pageNo,
-  keyword,
-  startDate,
-  endDate,
-  discountType,
-  type,
-  status,
-  pageSize,
-  sort,
-  direction,
-  customerId 
-) => {
-  let uri = "/coupon/getAllCouponDatePersonal?";
-  let queryParams = [];
-
-  if (pageNo !== null && pageNo !== undefined) {
-    queryParams.push(`pageNo=${pageNo}`);
-  }
-  if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
-  }
-  if (startDate) {
-    queryParams.push(`startDate=${startDate}`);
-  }
-  if (endDate) {
-    queryParams.push(`endDate=${endDate}`);
-  }
-  if (discountType) {
-    queryParams.push(`discountType=${discountType}`);
-  }
-  if (type) {
-    queryParams.push(`type=${type}`);
-  }
-  if (status !== null && status !== undefined) {
-    queryParams.push(`status=${status}`);
-  }
-  if (pageSize !== undefined && pageSize !== null) {
-    queryParams.push(`pageSize=${pageSize}`);
-  }
-  if (sort) {
-    queryParams.push(`sort=${sort}`);
-  }
-  if (direction) {
-    queryParams.push(`direction=${direction}`);
-  }
-  if (customerId !== null && customerId !== undefined) { 
-    queryParams.push(`customerId=${customerId}`); 
-  }
-
-  uri += queryParams.join("&");
-
-  return await authorizedAxiosInstance
-    .get(`${API_ROOT}${uri}`)
-    .then((res) => res.data);
+    .get(`${API_ROOT}${uri}?${params.toString()}`) 
+    .then((res) => res.data)
+    .catch((error) => {
+      console.error("Error fetching coupon data:", error);
+      throw error;
+    });
 };
 
 export const fetchCoupon = async (billId) => { 
@@ -270,3 +195,17 @@ export const addPay = async (billStoreRequest) => {
   }
 };
 
+export const reqPay = async (data) => {
+  try {
+      const response = await authorizedAxiosInstance.get(
+          `${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB`
+      );
+
+      if (response.status === 200) {
+          window.location.href = response.data.data; 
+      }
+  } catch (error) {
+      console.error("Failed to redirect to VNPay:", error);
+      toast.error("Có lỗi xảy ra khi chuyển hướng sang VNPay.");
+  }
+};

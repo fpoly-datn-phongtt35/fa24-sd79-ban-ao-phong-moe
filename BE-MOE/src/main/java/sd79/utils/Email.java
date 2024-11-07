@@ -8,9 +8,10 @@ import java.util.Properties;
 
 @Service
 public class Email {
-
-    private final String fromEmail = "thanhkvph34331@fpt.edu.vn";
-    private final String password = "oisr ezhc zrgh oeaq";
+    //thanhkvph34331@fpt.edu.vn
+    //oisr ezhc zrgh oeaq
+    private final String fromEmail = "nguyenchuc812@gmail.com";
+    private final String password = "dkmr nqzc lfuz htje";
     private final String defaultToEmail = "chienngoclong2k4@gmail.com";
 
     public void sendEmail(String toEmail, String subject, String body) {

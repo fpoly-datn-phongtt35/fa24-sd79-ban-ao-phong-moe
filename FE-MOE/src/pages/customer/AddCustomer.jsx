@@ -41,12 +41,12 @@ export const AddCustomer = () => {
       phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
       gender: customerData.gender ? '' : 'Phải chọn giới tính',
       dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: customerData.email ? '': 'Email không được để trống',
+      email: customerData.email ? '' : 'Email không được để trống',
       password: customerData.password ? '' : 'Mật khẩu không được để trống',
       username: customerData.username ? '' : 'Tên tài khoản không được để trống',
     };
 
-    
+
 
     setErrors(newErrors);
 
@@ -77,7 +77,7 @@ export const AddCustomer = () => {
   const handleDistrictChange = async (e) => {
     const districtId = e;
     setSelectedDistrict(districtId);
-    setSelectedWard(""); 
+    setSelectedWard("");
     if (districtId) {
       const response = await axios.get(`${host}d/${districtId}?depth=2`);
       setWards(response.data.wards);
@@ -127,11 +127,11 @@ export const AddCustomer = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>0-9]/g; 
+    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
     const phoneRegex = /^0\d{9,11}$/;
     const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
 
     const calculateAge = (dob) => {
@@ -148,39 +148,49 @@ export const AddCustomer = () => {
     if (name === 'lastName') {
       if (value.length > 20) {
         newErrors.lastName = "Họ không được vượt quá 20 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
-        delete newErrors.lastName; 
+        delete newErrors.lastName;
+        setIsLoading(false);
       }
     }
 
-    
+
     if (name === 'firstName') {
       if (value.length > 50) {
         newErrors.firstName = "Tên không được vượt quá 50 ký tự";
+        setIsLoading(true);
       } else if (specialCharRegex.test(value)) {
         newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
+        setIsLoading(true);
       } else {
-        delete newErrors.firstName; 
+        delete newErrors.firstName;
+        setIsLoading(false);
       }
     }
 
     if (name === 'phoneNumber') {
       if (!phoneRegex.test(value)) {
         newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+        setIsLoading(true);
       } else {
         delete newErrors.phoneNumber;
+        setIsLoading(false);
       }
     }
-    
+
 
 
     if (name === 'gender') {
       if (!value) {
         newErrors.gender = "Phải chọn giới tính";
+        setIsLoading(true);
       } else {
         delete newErrors.gender;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, gender: value });
     } else {
@@ -191,8 +201,10 @@ export const AddCustomer = () => {
       const age = calculateAge(value);
       if (age < minAge) {
         newErrors.dateOfBirth = "Phải trên 16 tuổi";
+        setIsLoading(true);
       } else {
         delete newErrors.dateOfBirth;
+        setIsLoading(false);
       }
       setCustomerData({ ...customerData, dateOfBirth: value });
     } else {
@@ -201,28 +213,34 @@ export const AddCustomer = () => {
 
     if (name === 'username') {
       if (!usernameRegex.test(value)) {
-          newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+        newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+        setIsLoading(true);
       } else {
-          delete newErrors.username;
+        delete newErrors.username;
+        setIsLoading(false);
       }
-  }
-
-  if (name === 'password') {
-      if (!passwordRegex.test(value)) {
-          newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
-      } else {
-          delete newErrors.password;
-      }
-  }
-  if (name === 'email') {
-    if (!emailRegex.test(value)) {
-      newErrors.email = "Email không đúng định dạng";
-    } else {
-      delete newErrors.email;
     }
-  }
 
-  setCustomerData((prevData) => ({ ...prevData, [name]: value }));
+    if (name === 'password') {
+      if (!passwordRegex.test(value)) {
+        newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
+        setIsLoading(true);
+      } else {
+        delete newErrors.password;
+        setIsLoading(false);
+      }
+    }
+    if (name === 'email') {
+      if (!emailRegex.test(value)) {
+        newErrors.email = "Email không đúng định dạng";
+        setIsLoading(true);
+      } else {
+        delete newErrors.email;
+        setIsLoading(false);
+      }
+    }
+
+    setCustomerData((prevData) => ({ ...prevData, [name]: value }));
 
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -534,7 +552,7 @@ export const AddCustomer = () => {
                                 '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
                               }}
                             />
-                        
+
                           </Box>
                           {errors.gender && (
                             <Typography color="error" variant="body2">{errors.gender}</Typography>
@@ -633,7 +651,7 @@ export const AddCustomer = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                       Thêm Người Dùng
                     </Button>
-                    <Button disabled={isLoading} variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

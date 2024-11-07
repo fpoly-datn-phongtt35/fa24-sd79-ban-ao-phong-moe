@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Breadcrumbs,
@@ -21,8 +21,7 @@ import { useNavigate } from "react-router-dom";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import { ScrollToTop } from "~/utils/defaultScroll";
-import { useContext } from "react";
-import { deleteItemCart, updateCart } from "~/apis/client/productApiClient";
+import { deleteItemCart, updateCart } from "~/apis/client/apiClient";
 import { formatCurrencyVND } from "~/utils/format";
 import { MoeAlert } from "~/components/other/MoeAlert";
 import { toast } from "react-toastify";
@@ -32,25 +31,35 @@ import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import debounce from "lodash.debounce";
 
 function ShoppingCart() {
-  ScrollToTop();
   const navigate = useNavigate();
   const context = useContext(CommonContext);
 
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedCarts, setSelectedCarts] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
+    ScrollToTop();
+  }, []);
+
+  useEffect(() => {
     if (context.carts && context.carts.length > 0) {
-      setSelectAll(selectedIds.length === context.carts.length);
+      const validCarts = context.carts.filter(
+        (cart) => cart.productCart.status && cart.productCart.quantity > 0
+      );
+
+      setSelectAll(
+        validCarts.length > 0 && selectedCarts.length === validCarts.length
+      );
     }
-  }, [selectedIds, context.carts]);
+  }, [selectedCarts, context.carts]);
 
   const handleDeleteCart = async (id) => {
+    setSelectedCarts([]);
     await deleteItemCart(id).then((res) => {
       context.handleFetchCarts();
       toast.success(res.message);
-      setSelectedIds((prevSelectedIds) =>
-        prevSelectedIds.filter((itemId) => itemId !== id)
+      setSelectedCarts((prevSelectedCarts) =>
+        prevSelectedCarts.filter((cart) => cart.id !== id)
       );
     });
   };
@@ -65,35 +74,42 @@ function ShoppingCart() {
       quantity: quantity,
       username: localStorage.getItem("username"),
     };
+    setSelectedCarts([]);
     await updateCart(data).then(() => context.handleFetchCarts());
   };
 
   const onUpdateQuantity = (id, quantity) => {
-    debouncedQuantity(id, quantity);
+    quantity > 0 && debouncedQuantity(id, quantity);
   };
 
-  const handleCheckboxChange = (id) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((itemId) => itemId !== id));
+  const handleCheckboxChange = (cart) => {
+    if (selectedCarts.includes(cart)) {
+      setSelectedCarts(
+        selectedCarts.filter((selectedCart) => selectedCart.id !== cart.id)
+      );
     } else {
-      setSelectedIds([...selectedIds, id]);
+      setSelectedCarts([...selectedCarts, cart]);
     }
   };
 
   const handleSelectAll = () => {
+    const validCarts = context.carts.filter(
+      (cart) => cart.productCart.status && cart.productCart.quantity > 0
+    );
+
     if (selectAll) {
-      setSelectedIds([]);
+      setSelectedCarts([]);
     } else {
-      const allIds = context.carts.map((cart) => cart.id);
-      setSelectedIds(allIds);
+      setSelectedCarts(validCarts);
     }
     setSelectAll(!selectAll);
   };
 
   const calculateTotalPrice = () => {
-    return context.carts
-      ?.filter((cart) => selectedIds.includes(cart.id))
-      .reduce((total, cart) => total + cart.retailPrice * cart.quantity, 0);
+    return selectedCarts.reduce(
+      (total, cart) => total + cart.productCart.sellPrice * cart.quantity,
+      0
+    );
   };
 
   const totalPrice = calculateTotalPrice();
@@ -119,19 +135,8 @@ function ShoppingCart() {
       </Grid>
       <Box margin={5}>
         {context.carts?.length === 0 && (
-          <Box
-            sx={{
-              textAlign: "center",
-              p: 2,
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                mb: 2,
-              }}
-            >
+          <Box sx={{ textAlign: "center", p: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
               <SvgIconDisplay icon={BagSvgIcon} width="100px" height="100px" />
             </Box>
             <Typography level="h5" fontWeight="bold" color="neutral">
@@ -170,73 +175,116 @@ function ShoppingCart() {
                     </tr>
                   </thead>
                   <tbody>
-                    {context.carts &&
-                      context.carts.map((cart) => (
-                        <tr key={cart.id}>
-                          <td className="text-center">
-                            <Checkbox
-                              size="sm"
-                              checked={selectedIds.includes(cart.id)}
-                              onChange={() => handleCheckboxChange(cart.id)}
-                            />
-                          </td>
-                          <td>
-                            <CardShoppingCard data={cart} />
-                          </td>
-                          <td className="text-center">
-                            <Typography level="title-md">
+                    {context.carts.map((cart) => (
+                      <tr key={cart.id}>
+                        <td className="text-center">
+                          <Checkbox
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
+                            }
+                            size="sm"
+                            checked={selectedCarts.includes(cart)}
+                            onChange={() => handleCheckboxChange(cart)}
+                          />
+                        </td>
+                        <td>
+                          <CardShoppingCard data={cart} />
+                        </td>
+                        <td className="text-center">
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.productCart.status ? "danger" : "neutral"
+                            }
+                          >
+                            {formatCurrencyVND(cart.productCart.sellPrice)}
+                          </Typography>
+                          {cart.productCart.percent !== null && (
+                            <Typography
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "grey",
+                              }}
+                            >
                               {formatCurrencyVND(cart.retailPrice)}
                             </Typography>
-                          </td>
-                          <td className="text-center">
-                            <Input
-                              defaultValue={cart.quantity}
-                              type="number"
-                              onChange={(e) =>
-                                onUpdateQuantity(cart.id, e.target.value)
+                          )}
+                        </td>
+                        <td className="text-center">
+                          {cart.quantity > cart.productCart.quantity &&
+                            onUpdateQuantity(
+                              cart.id,
+                              cart.productCart.quantity
+                            )}
+                          <Input
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
+                            }
+                            defaultValue={
+                              cart.quantity > cart.productCart.quantity
+                                ? cart.productCart.quantity
+                                : cart.quantity
+                            }
+                            type="number"
+                            slotProps={{
+                              input: {
+                                min: 1,
+                                max: cart.productCart.quantity,
+                              },
+                            }}
+                            onChange={(e) => {
+                              if (e.target.value > cart.productCart.quantity) {
+                                e.target.value = cart.productCart.quantity;
+                                onUpdateQuantity(cart.id, e.target.value);
+                              } else {
+                                onUpdateQuantity(cart.id, e.target.value);
                               }
-                            />
-                          </td>
-                          <td className="text-center">
-                            <Typography level="title-md">
-                              {formatCurrencyVND(
-                                cart.retailPrice * cart.quantity
-                              )}
-                            </Typography>
-                          </td>
-                          <td className="text-center">
-                            <MoeAlert
-                              title="Xóa sản phẩm"
-                              message="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?"
-                              event={() => handleDeleteCart(cart.id)}
-                              button={
-                                <Tooltip
-                                  title="Xóa khỏi giỏ hàng"
-                                  variant="plain"
-                                >
-                                  <Typography level="title-md" color="danger">
-                                    Xóa
-                                  </Typography>
-                                </Tooltip>
-                              }
-                            />
-                          </td>
-                        </tr>
-                      ))}
+                            }}
+                          />
+                        </td>
+                        <td className="text-center">
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.productCart.status ? "danger" : "neutral"
+                            }
+                          >
+                            {formatCurrencyVND(
+                              cart.productCart.sellPrice * cart.quantity
+                            )}
+                          </Typography>
+                        </td>
+                        <td className="text-center">
+                          <MoeAlert
+                            title="Xóa sản phẩm"
+                            message="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?"
+                            event={() => handleDeleteCart(cart.id)}
+                            button={
+                              <Tooltip
+                                title="Xóa khỏi giỏ hàng"
+                                variant="plain"
+                              >
+                                <Typography level="title-md" color="danger">
+                                  Xóa
+                                </Typography>
+                              </Tooltip>
+                            }
+                          />
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </Table>
               </Sheet>
             </Grid>
           )}
           <Divider sx={{ my: 1, width: "100%" }} />
-
-          {context.carts?.length > 0 && selectedIds.length > 0 && (
+          {context.carts?.length > 0 && selectedCarts.length > 0 && (
             <Grid
               xs={12}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
+              sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography level="title-md">
                 Tổng tiền: {formatCurrencyVND(totalPrice)}
@@ -247,7 +295,10 @@ function ShoppingCart() {
                 size="sm"
                 startDecorator={<PaymentsOutlinedIcon />}
                 onClick={() => {
-                  console.log("Selected IDs: ", selectedIds);
+                  localStorage.setItem(
+                    "orderItems",
+                    JSON.stringify(selectedCarts)
+                  );
                   navigate("/checkout");
                 }}
               >

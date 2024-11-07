@@ -8,7 +8,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import {
   fetchAllProducts,
   fetchBestSellingProducts,
-} from "~/apis/client/productApiClient";
+} from "~/apis/client/apiClient";
 import AdBanner from "~/components/clients/events/AdBanner";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import { ProductCard } from "~/components/clients/cards/ProductCard";

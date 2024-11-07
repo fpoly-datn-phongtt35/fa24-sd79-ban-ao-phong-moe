@@ -10,6 +10,7 @@ export const fetchAllDiscounts = async (page = 0, size = 5) => {
   .then((res) => res.data); 
 };
 
+
 export const postDiscount = async (promotionData) => {
   return await authorizedAxiosInstance.post(`${API_ROOT}/promotion/store`, promotionData)
     .then((res) => {

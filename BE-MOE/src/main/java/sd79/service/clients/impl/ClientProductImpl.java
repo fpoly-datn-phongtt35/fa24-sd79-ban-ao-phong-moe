@@ -13,27 +13,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.clients.CartReq;
-import sd79.dto.requests.clients.FilterForCartReq;
+import sd79.dto.requests.clients.bills.BillClientRequest;
+import sd79.dto.requests.clients.cart.CartReq;
+import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.response.clients.cart.CartResponse;
+import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
+import sd79.dto.response.clients.product.ProductCart;
+import sd79.enums.PaymentMethod;
+import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
-import sd79.model.Product;
-import sd79.model.ProductDetail;
-import sd79.model.ProductImage;
+import sd79.model.*;
 import sd79.model.redis_model.Cart;
-import sd79.repositories.CartRepository;
+import sd79.repositories.*;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.repositories.products.ProductDetailRepository;
 import sd79.repositories.products.ProductRepository;
+import sd79.repositories.promotions.PromotionDetailRepository;
 import sd79.service.JwtService;
 import sd79.service.clients.ClientProduct;
+import sd79.utils.RandomNumberGenerator;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -43,6 +47,7 @@ import static sd79.enums.TokenType.ACCESS_TOKEN;
 @Service
 @RequiredArgsConstructor
 public class ClientProductImpl implements ClientProduct {
+
     private final ProductCustomizeQuery productCustomizeQuery;
 
     private final ProductRepository productRepository;
@@ -50,6 +55,18 @@ public class ClientProductImpl implements ClientProduct {
     private final ProductDetailRepository productDetailRepository;
 
     private final CartRepository cartRepository;
+
+    private final CustomerRepository customerRepository;
+
+    private final BillRepo billRepository;
+
+    private final BillDetailRepo billDetailRepository;
+
+    private final BillStatusRepo billStatusRepository;
+
+    private final CouponRepo couponRepo;
+
+    private final PromotionDetailRepository promotionDetailRepository;
 
     private final JwtService jwtService;
 
@@ -62,22 +79,43 @@ public class ClientProductImpl implements ClientProduct {
     }
 
     @Override
-    public List<ProductClientResponse> getBestSellingProducts() {
+    public Set<ProductClientResponse> getBestSellingProducts() {
         return this.productCustomizeQuery.getBestSellingProducts();
     }
 
     @Override
     public ProductDetailClientResponse getProductDetail(Long id) {
         Product product = this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-        List<ProductClientResponse> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> ProductClientResponse.builder()
-                .productId(s.getId())
-                .imageUrl(s.getProductImages().getFirst().getImageUrl())
-                .name(s.getName())
-                .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
-                .discountPrice(s.getProductDetails().getFirst().getRetailPrice().multiply(BigDecimal.valueOf(1).subtract(BigDecimal.valueOf(0.50))))
-                .rate(4)
-                .rateCount(104)
-                .build()
+        PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(product.getId());
+        BigDecimal retailPrice = product.getProductDetails().getFirst().getRetailPrice();
+        BigDecimal discountPercent = promotionDetail != null
+                ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                : BigDecimal.ZERO;
+
+        BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+
+        List<ProductClientResponse> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> {
+                    PromotionDetail promotionDetail2 = this.promotionDetailRepository.findByProductId(s.getId());
+
+                    BigDecimal retailPrice2 = s.getProductDetails().getFirst().getRetailPrice();
+
+                    BigDecimal discountPercent2 = promotionDetail2 != null
+                            ? BigDecimal.valueOf(promotionDetail2.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                            : BigDecimal.ZERO;
+                    BigDecimal discountPrice2 = retailPrice2.multiply(BigDecimal.valueOf(1).subtract(discountPercent2));
+
+                    return ProductClientResponse.builder()
+                            .productId(s.getId())
+                            .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                            .name(s.getName())
+                            .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                            .discountPrice(discountPrice2)
+                            .percent(promotionDetail2 != null ? promotionDetail2.getPromotion().getPercent() : null)
+                            .expiredDate(promotionDetail2 != null ? promotionDetail2.getPromotion().getEndDate() : null)
+                            .rate(4)
+                            .rateCount(104)
+                            .build();
+                }
         ).toList();
         return ProductDetailClientResponse.builder()
                 .productId(id)
@@ -100,18 +138,60 @@ public class ClientProductImpl implements ClientProduct {
                 .description(product.getDescription())
                 //TODO related items
                 .relatedItem(relatedItem)
+                .discountPrice(discountPrice)
+                .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
                 .build();
     }
 
     @Override
-    public Set<Cart> getCarts(HttpServletRequest request) {
+    public List<CartResponse> getCarts(HttpServletRequest request) {
         String authorization = request.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
         }
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        return this.cartRepository.findByUsername(username);
+        List<Cart> cart = this.cartRepository.findByUsername(username);
+        List<CartResponse> cartResponses = new ArrayList<>();
+
+        cart.forEach(i -> {
+            Optional<ProductDetail> productDetail = productDetailRepository.findById(Long.valueOf(i.getId()));
+            ProductCart validProduct = new ProductCart();
+            if (productDetail.isPresent()) {
+                ProductDetail prd = productDetail.get();
+                PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
+                BigDecimal retailPrice = prd.getRetailPrice();
+                BigDecimal discountPercent = promotionDetail != null
+                        ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                        : BigDecimal.ZERO;
+
+                BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+                boolean status = prd.getStatus() == ProductStatus.ACTIVE && prd.getProduct().getStatus() == ProductStatus.ACTIVE;
+                validProduct.setId(prd.getId());
+                validProduct.setStatus(status);
+                validProduct.setQuantity(prd.getQuantity());
+                validProduct.setPercent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null);
+                validProduct.setSellPrice(discountPrice);
+                validProduct.setMessage(String.format("Product id %d is valid", prd.getId()));
+            } else {
+                validProduct.setId(Long.parseLong(i.getId()));
+                validProduct.setStatus(false);
+                validProduct.setQuantity(0);
+                validProduct.setMessage(String.format("Product id %s is valid", i.getId()));
+            }
+            cartResponses.add(CartResponse.builder()
+                    .id(i.getId())
+                    .imageUrl(i.getImageUrl())
+                    .name(i.getName())
+                    .origin(i.getOrigin())
+                    .retailPrice(i.getRetailPrice())
+                    .quantity(i.getQuantity())
+                    .productCart(validProduct)
+                    .username(i.getUsername())
+                    .build());
+        });
+        return cartResponses;
     }
 
     @Override
@@ -144,6 +224,35 @@ public class ClientProductImpl implements ClientProduct {
     }
 
     @Override
+    public CartResponse buyNow(FilterForCartReq req) {
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
+        BigDecimal discountPercent = promotionDetail != null
+                ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                : BigDecimal.ZERO;
+        BigDecimal retailPrice = prd.getRetailPrice();
+        BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+        boolean status = prd.getStatus() == ProductStatus.ACTIVE && prd.getProduct().getStatus() == ProductStatus.ACTIVE;
+        ProductCart productCart = ProductCart.builder()
+                .id(prd.getId())
+                .status(status)
+                .quantity(prd.getQuantity())
+                .sellPrice(discountPrice)
+                .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                .build();
+        return CartResponse.builder()
+                .id(String.valueOf(prd.getId()))
+                .imageUrl(prd.getProduct().getProductImages().getFirst().getImageUrl())
+                .name(String.format("%s [%s - %s]", prd.getProduct().getName(), prd.getColor().getName(), prd.getSize().getName()))
+                .origin(prd.getProduct().getOrigin())
+                .retailPrice(prd.getRetailPrice())
+                .quantity(req.getQuantity())
+                .username(req.getUsername())
+                .productCart(productCart)
+                .build();
+    }
+
+    @Override
     public void updateCart(CartReq req) {
         ProductDetail prd = this.productDetailRepository.findById(req.getProductDetailId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(req.getProductDetailId()), req.getUsername());
@@ -164,4 +273,74 @@ public class ClientProductImpl implements ClientProduct {
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(id, username);
         isAlreadyExists.ifPresent(this.cartRepository::delete);
     }
+
+    @Override
+    public UserInfoRes getUserInfo(long id) {
+        Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        return UserInfoRes.builder()
+                .id(customer.getId())
+                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
+                .phone(customer.getPhoneNumber())
+                .email(customer.getUser().getEmail())
+                .address(String.format("%s, %s, %s, %s", customer.getCustomerAddress().getStreetName(), customer.getCustomerAddress().getWard(), customer.getCustomerAddress().getDistrict(), customer.getCustomerAddress().getCity()))
+                .build();
+    }
+
+    @Override
+    public long saveBill(BillClientRequest.BillCreate req) {
+        Customer customer = this.customerRepository.findById(req.getCustomerId()).orElse(null);
+        Coupon couponId = null;
+        if (req.getCouponId() != null) {
+            couponId = this.couponRepo.findById(req.getCouponId()).orElse(null);
+        }
+        Bill bill = Bill.builder()
+                .code(String.format("HD%s", RandomNumberGenerator.generateEightDigitRandomNumber()))
+                .bankCode(req.getBankCode())
+                .coupon(couponId)
+                .sellerDiscount(req.getSellerDiscount())
+                .shipping(req.getShipping())
+                .subtotal(req.getSubtotal())
+                .total(req.getTotal())
+                .paymentMethod(req.getPaymentMethod())
+                .message(req.getMessage())
+                .customer(customer)
+                .billStatus(this.billStatusRepository.findById(1).orElse(null))
+                .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
+                .build();
+        assert customer != null;
+        bill.setCreatedBy(customer.getUser());
+        bill.setUpdatedBy(customer.getUser());
+
+        Bill billSave = this.billRepository.save(bill);
+        if (req.getCouponId() != null) {
+            Coupon coupon = this.couponRepo.findById(req.getCouponId()).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
+            coupon.setQuantity(coupon.getQuantity() - 1);
+            coupon.setUsageCount(coupon.getUsageCount() + 1);
+            this.couponRepo.save(coupon);
+        }
+
+        req.getItems().forEach(item -> {
+            ProductDetail prd = this.productDetailRepository.findById(item.getId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            if (prd.getQuantity() - item.getQuantity() < 0) {
+                billSave.setBillStatus(this.billStatusRepository.findById(6).orElse(null));
+                this.billRepository.delete(billSave);
+                throw new InvalidDataException("Giao dịch thất bại vui lòng thử lại!");
+            }
+            this.billDetailRepository.save(BillDetail.builder()
+                    .productDetail(prd)
+                    .bill(bill)
+                    .quantity(item.getQuantity())
+                    .retailPrice(item.getRetailPrice())
+                    .discountAmount(item.getSellPrice())
+                    .totalAmountProduct(item.getSellPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .createAt(new Date())
+                    .updateAt(new Date())
+                    .build());
+            prd.setQuantity(prd.getQuantity() - item.getQuantity());
+            this.productDetailRepository.save(prd);
+        });
+
+        return billSave.getId();
+    }
+
 }

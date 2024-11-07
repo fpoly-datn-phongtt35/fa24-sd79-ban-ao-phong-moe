@@ -10,6 +10,7 @@ import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.InvalidDataException;
 import sd79.model.*;
 import sd79.repositories.auth.UserRepository;
 import sd79.repositories.products.ProductRepository;
@@ -69,22 +70,35 @@ public class PromotionsServiceImpl implements PromotionService {
 
     @Override
     public Integer storePromotion(PromotionRequest req) {
+        // Kiểm tra tất cả các sản phẩm xem có sản phẩm nào đã có khuyến mãi trước đó không
+        for (Long productId : req.getProductIds()) {
+            if (promotionDetailRepository.findActivePromotionByProductId(productId).isPresent()) {
+                throw new InvalidDataException("Sản phẩm với ID " + productId + " đã được áp dụng khuyến mãi trước đó.");
+            }
+        }
+
+        // Nếu không có lỗi, tiến hành tạo đợt giảm giá mới
         Promotion promotion = this.promotionRepository.save(Promotion.builder()
-                        .name(req.getName())
-                        .percent(req.getPercent())
-                        .code(req.getCode())
-                        .startDate(req.getStartDate())
-                        .endDate(req.getEndDate())
-                        .note(req.getNote())
+                .name(req.getName())
+                .percent(req.getPercent())
+                .code(req.getCode())
+                .startDate(req.getStartDate())
+                .endDate(req.getEndDate())
+                .note(req.getNote())
                 .build());
 
+        // Thêm các chi tiết khuyến mãi cho từng sản phẩm
         for (Long productId : req.getProductIds()) {
-            sd79.model.PromotionDetail promotionDetail = sd79.model.PromotionDetail.builder()
+            PromotionDetail promotionDetail = PromotionDetail.builder()
                     .promotion(promotion)
                     .product(getProduct(productId))
                     .build();
+
+            // Lưu chi tiết khuyến mãi vào cơ sở dữ liệu
             this.promotionDetailRepository.save(promotionDetail);
         }
+
+        // Trả về ID của đợt khuyến mãi đã lưu
         return promotion.getId();
     }
 

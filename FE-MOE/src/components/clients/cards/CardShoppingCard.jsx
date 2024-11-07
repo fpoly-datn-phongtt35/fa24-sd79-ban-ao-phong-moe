@@ -18,13 +18,34 @@ function CardShoppingCard({ data }) {
           flexBasis ? { flexBasis: `${flexBasis}px` } : { flexBasis: null },
         ]}
       >
-        <img src={data.imageUrl} alt={data.name}/>
+        <img src={data.imageUrl} alt={data.name} />
       </AspectRatio>
       <div style={{ width: "100%" }}>
-        <Typography level="title-sm" noWrap={false}>
+        <Typography
+          level="title-sm"
+          noWrap={false}
+          color={
+            !data.productCart.status || data.productCart.quantity < 1
+              ? "danger"
+              : "neutral"
+          }
+        >
           {data.name}
         </Typography>
-        <Typography level="body-sm">{data.origin}</Typography>
+        <Typography
+          level="body-sm"
+          color={
+            !data.productCart.status || data.productCart.quantity < 1
+              ? "danger"
+              : "neutral"
+          }
+        >
+          {!data.productCart.status
+            ? "Sản phẩm không tồn tại"
+            : data.productCart.quantity < 1
+            ? "Hết hàng"
+            : data.origin}
+        </Typography>
       </div>
     </Card>
   );

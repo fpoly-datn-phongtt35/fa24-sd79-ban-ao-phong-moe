@@ -71,22 +71,24 @@ export const ProductCard = ({ product }) => {
           Xem chi tiết
         </Typography>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          backgroundColor: "#ff0000",
-          color: "#fff",
-          padding: "5px 10px",
-          fontSize: "12px",
-          fontWeight: "bold",
-          borderRadius: "5px",
-          zIndex: 2,
-        }}
-      >
-        -50%
-      </div>
+      {product.percent !== null && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            backgroundColor: "#ff0000",
+            color: "#fff",
+            padding: "5px 10px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            borderRadius: "5px",
+            zIndex: 2,
+          }}
+        >
+          -{product.percent}%
+        </div>
+      )}
 
       <CardContent>
         <Typography
@@ -98,16 +100,30 @@ export const ProductCard = ({ product }) => {
           {product.name}
         </Typography>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          style={{ textDecoration: "line-through", color: "#aaa" }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
         >
-          {formatCurrencyVND(product.retailPrice)}
-        </Typography>
-        <Typography variant="h6" component="div" style={{ color: "#ff0000" }}>
-          {formatCurrencyVND(product.discountPrice)}
-        </Typography>
+          <Typography variant="h6" component="div" style={{ color: "#ff0000" }}>
+            {formatCurrencyVND(product.discountPrice)}
+          </Typography>
+          {product.percent !== null && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              style={{
+                textDecoration: "line-through",
+                color: "#aaa",
+                marginLeft: "10px",
+              }}
+            >
+              {formatCurrencyVND(product.retailPrice)}
+            </Typography>
+          )}
+        </div>
         <Typography
           variant="body2"
           color="text.secondary"

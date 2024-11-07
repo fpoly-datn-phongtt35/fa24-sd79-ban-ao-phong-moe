@@ -1,6 +1,7 @@
 package sd79.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.TodoDiscountType;
@@ -23,6 +24,7 @@ public class CouponResponse {
     private TodoDiscountType discountType; // kieu giam gia % hay tien
     private BigDecimal maxValue;
     private Integer quantity; // so luong phieu giam gia su dung
+    private Integer usageCount;
     private BigDecimal conditions;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private Date startDate; // ngay bat dau
@@ -31,6 +33,7 @@ public class CouponResponse {
     private String status; //trang thai
     private String description;
     private String imageUrl;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Customer> customers;
 
 }

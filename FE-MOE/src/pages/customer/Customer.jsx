@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Box, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton, Pagination,
+  TableContainer, TableHead, TableRow, Paper, IconButton, Pagination
+
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate } from '~/apis/customerApi';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { fetchAllCustomer, deleteCustomer, searchKeywordAndDate, setLocked } from '~/apis/customerApi';
 import { toast } from 'react-toastify';
 import swal from 'sweetalert';
 import HomeIcon from "@mui/icons-material/Home";
-import { Avatar, Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Option, Select, Typography } from '@mui/joy';
+import { Avatar, Breadcrumbs, Button, FormControl, FormLabel, Input, Link, Modal, ModalClose, Option, Select, Sheet, Switch, Typography } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
+
 
 export const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -23,6 +26,9 @@ export const Customer = () => {
   const [gender, setGender] = useState('');
   const [birth, setBirth] = useState('');
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [lockedStates, setLockedStates] = useState({});
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const navigate = useNavigate()
 
@@ -35,6 +41,7 @@ export const Customer = () => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+ 
   const mapGender = (gender) => {
     switch (gender) {
       case 'MALE':
@@ -120,6 +127,30 @@ export const Customer = () => {
     setPage(1);
     handleSetCustomer();
   };
+  const onSetLocked = async (id, currentLockedState) => {
+    const updatedLockedState = !currentLockedState;
+
+    try {
+
+      await setLocked(id, updatedLockedState);
+
+
+      setLockedStates((prevStates) => ({
+        ...prevStates,
+        [id]: updatedLockedState,
+      }));
+
+      console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
+    } catch (error) {
+      console.error("Failed to update lock status:", error);
+    }
+  };
+
+  const onDetailsClick = (customer) => {
+    setSelectedCustomer(customer);
+    setOpen(true);
+  };
+
   return (
     <Container maxWidth="max-width"
       sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
@@ -189,12 +220,12 @@ export const Customer = () => {
           <TableHead>
             <TableRow>
               <TableCell>Ảnh</TableCell>
-              <TableCell>username</TableCell>
+              <TableCell>Tên tài khoản</TableCell>
               <TableCell>Họ và tên</TableCell>
-              <TableCell>Email</TableCell>
               <TableCell>Số điện thoại</TableCell>
               <TableCell>Giới tính</TableCell>
               <TableCell>Ngày sinh</TableCell>
+              <TableCell>Trạng thái</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -205,13 +236,21 @@ export const Customer = () => {
                   <TableCell><Avatar src={customer?.image} variant="solid" /></TableCell>
                   <TableCell>{customer.username}</TableCell>
                   <TableCell>{customer.fullName}</TableCell>
-                  <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
                   <TableCell>
+                    <Switch size="lg"
+                      checked={lockedStates[customer.id] ?? customer.isLocked}
+                      onClick={() => onSetLocked(customer.id, lockedStates[customer.id] ?? customer.isLocked)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => onDetailsClick(customer)}>
+                      <RemoveRedEyeIcon color="warning" />
+                    </IconButton>
                     <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
-                      <EditIcon />
+                      <EditIcon color="primary" />
                     </IconButton>
                     <IconButton onClick={() => onDelete(customer.id)}>
                       <DeleteIcon color="error" />
@@ -234,7 +273,44 @@ export const Customer = () => {
         color="primary"
         style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
       />
-
+      <Modal
+        aria-labelledby="modal-title"
+        aria-describedby="modal-desc"
+        open={open}
+        onClose={() => setOpen(false)}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Sheet
+          variant="outlined"
+          sx={{ maxWidth: 500, borderRadius: 'md', p: 3, boxShadow: 'lg' }}
+        >
+          <ModalClose variant="plain" sx={{ m: 1 }} />
+          <Typography
+            component="h2"
+            id="modal-title"
+            level="h4"
+            textColor="inherit"
+            sx={{ fontWeight: 'lg', mb: 1 }}
+          >
+            Thông tin chi tiết
+          </Typography>
+          {selectedCustomer && (
+            <>
+              <Typography id="modal-desc" textColor="text.tertiary">
+                <strong>Tên tài khoản:</strong> {selectedCustomer.username}<br />
+                <strong>Họ và tên:</strong> {selectedCustomer.fullName}<br />
+                <strong>Email:</strong> {selectedCustomer.email}<br />
+                <strong>Số điện thoại:</strong> {selectedCustomer.phoneNumber}<br />
+                <strong>Giới tính:</strong> {mapGender(selectedCustomer.gender)}<br />
+                <strong>Ngày sinh:</strong> {formatDate(selectedCustomer.dateOfBirth)}<br />
+                <strong>Địa chỉ:</strong> {selectedCustomer.streetName} {', '+selectedCustomer.ward}{', '+selectedCustomer.district}{', '+selectedCustomer.city}<br />
+                <strong>Ngày tạo:</strong> {formatDate(selectedCustomer.createdAt)}<br />
+                <strong>Ngày cập nhật:</strong> {formatDate(selectedCustomer.updatedAt)}<br />
+              </Typography>
+            </>
+          )}
+        </Sheet>
+      </Modal>
     </Container>
   );
 };
