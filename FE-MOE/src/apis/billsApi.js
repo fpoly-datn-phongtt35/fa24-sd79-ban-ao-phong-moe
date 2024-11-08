@@ -106,6 +106,11 @@ export const postCustomer = async (data) => {
     });
 };
 
+export const putCustomer = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/bill/update/${id}`, data);
+}
+
 export const deleteCustomer = async (billId) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/bill/deleteCustomer`, null, {

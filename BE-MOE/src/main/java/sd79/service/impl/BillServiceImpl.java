@@ -1,10 +1,13 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.BillDetailRequest;
-import sd79.dto.requests.BillRequest;
-import sd79.dto.response.CouponResponse;
+import org.springframework.transaction.annotation.Transactional;
+import sd79.dto.requests.billRequest.BillCustomerRequest;
+import sd79.dto.requests.billRequest.BillDetailRequest;
+import sd79.dto.requests.billRequest.BillRequest;
+import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
@@ -35,6 +38,7 @@ public class BillServiceImpl implements BillService {
     private final UserRepository userRepository;
     private final BillCustomizeQuery billCustomizeQuery;
     private final BillRepo billRepo;
+    private final CustomerAddressRepository customerAddressRepository;
 
     //them lan 1
     @Override
@@ -91,6 +95,8 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public long storeProduct(BillDetailRequest billDetailRequest) {
+        int requestedQuantity = billDetailRequest.getQuantity() != null ? billDetailRequest.getQuantity() : 1;
+
         ProductDetail productDetail = productDetailRepository.findById(billDetailRequest.getProductDetail())
                 .orElseThrow(() -> new IllegalArgumentException("ProductDetail not found with ID: " + billDetailRequest.getProductDetail()));
         Bill bill = billRepository.findById(billDetailRequest.getBill())
@@ -100,38 +106,44 @@ public class BillServiceImpl implements BillService {
         BillDetail billDetail;
         BigDecimal retailPrice = billDetailRequest.getPrice();
         BigDecimal discountAmount = billDetailRequest.getDiscountAmount();
-        int quantityToAdd = billDetailRequest.getQuantity();
         BigDecimal totalAmountProduct;
 
         if (existingBillDetailOptional.isPresent()) {
             billDetail = existingBillDetailOptional.get();
-            int newQuantity = billDetail.getQuantity() + quantityToAdd;
-            if (newQuantity > productDetail.getQuantity()) {
+
+            int currentQuantity = billDetail.getQuantity();
+            int quantityDifference = requestedQuantity - currentQuantity;
+
+            if (quantityDifference > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            billDetail.setQuantity(newQuantity);
-            totalAmountProduct = discountAmount.multiply(new BigDecimal(newQuantity));
+            billDetail.setQuantity(requestedQuantity);
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail.setTotalAmountProduct(totalAmountProduct);
             billDetail.setUpdateAt(new Date());
+
+            productDetail.setQuantity(productDetail.getQuantity() - quantityDifference);
         } else {
-            if (quantityToAdd > productDetail.getQuantity()) {
+            if (requestedQuantity > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            totalAmountProduct = discountAmount.multiply(new BigDecimal(quantityToAdd));
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail = BillDetail.builder()
                     .productDetail(productDetail)
                     .bill(bill)
-                    .quantity(quantityToAdd)
+                    .quantity(requestedQuantity)
                     .retailPrice(retailPrice)
                     .discountAmount(discountAmount)
                     .totalAmountProduct(totalAmountProduct)
                     .createAt(new Date())
                     .updateAt(new Date())
                     .build();
+
+            productDetail.setQuantity(productDetail.getQuantity() - requestedQuantity);
         }
-        productDetail.setQuantity(productDetail.getQuantity() - quantityToAdd);
+
         productDetailRepository.save(productDetail);
         billDetail = billDetailRepository.save(billDetail);
 
@@ -172,6 +184,39 @@ public class BillServiceImpl implements BillService {
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
         return bill.getId();
+    }
+
+    @Transactional
+    @Override
+    public long updateCustomer(Long id, BillCustomerRequest billCustomerRequest) {
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        CustomerAddress customerAddress = customer.getCustomerAddress();
+        if (customerAddress == null) {
+            customerAddress = new CustomerAddress();
+        }
+        User user = customer.getUser();
+
+        if (this.customerRepository.existsByPhoneNumber(billCustomerRequest.getPhoneNumber()) &&
+                !customer.getPhoneNumber().equals(billCustomerRequest.getPhoneNumber())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
+        if (user == null) {
+            user = new User();
+        }
+        customerAddress.setCity(billCustomerRequest.getCity());
+        customerAddress.setCityId(billCustomerRequest.getCity_id());
+        customerAddress.setDistrict(billCustomerRequest.getDistrict());
+        customerAddress.setDistrictId(billCustomerRequest.getDistrict_id());
+        customerAddress.setWard(billCustomerRequest.getWard());
+        customerAddress.setStreetName(billCustomerRequest.getStreetName());
+        customerAddress = customerAddressRepository.save(customerAddress);
+        user = userRepository.save(user);
+        customer.setCustomerAddress(customerAddress);
+        customer.setUser(user);
+        populateCustomerData(customer, billCustomerRequest);
+        return customerRepository.save(customer).getId();
     }
 
     @Override
@@ -486,6 +531,14 @@ public class BillServiceImpl implements BillService {
                 .retailPrice(retailPrice)
                 .discountAmount(discountAmount)
                 .build();
+    }
+
+    //customer
+    private void populateCustomerData(Customer customer, BillCustomerRequest billCustomerRequest) {
+        customer.setFirstName(billCustomerRequest.getFirstName());
+        customer.setLastName(billCustomerRequest.getLastName());
+        customer.setPhoneNumber(billCustomerRequest.getPhoneNumber());
+        customer.setUpdatedAt(new Date());
     }
 
     private String generateRandomCode(long currentId) {

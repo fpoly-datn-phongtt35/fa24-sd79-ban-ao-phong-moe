@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/apis/customerApi';
-import { deleteCustomer, fetchBill } from '~/apis/billsApi';
+import { deleteCustomer, fetchBill, fetchCustomer } from '~/apis/billsApi';
 import AddCustomerModal from './AddCustomerModal';
 
 export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
@@ -27,7 +27,6 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
-    const [bills, setBills] = useState([]);
     const searchRef = useRef(null);
     const [customerData, setCustomerData] = useState({
         firstName: '',
@@ -41,21 +40,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
 
     useEffect(() => {
         loadCustomers();
-        loadBills();
     }, []);
-
-
-    useEffect(() => {
-        if (selectedOrder) {
-            const customerFromBill = findCustomerInBills(selectedOrder);
-            setCustomer(customerFromBill);
-            if (customerFromBill) {
-                setCustomerId(customerFromBill.id);
-            }
-        } else {
-            setCustomer(null);
-        }
-    }, [selectedOrder, bills, setCustomerId]);
 
     useEffect(() => {
         if (customerId === null) {
@@ -64,16 +49,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         }
     }, [customerId]);
 
-    const loadBills = async () => {
-        try {
-            const response = await fetchBill();
-            if (response?.data) {
-                setBills(response.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch bills:', error);
+    useEffect(() => {
+        if (selectedOrder) {
+            handleSetCustomer(selectedOrder);
         }
-    };
+    }, [selectedOrder]);
 
     const loadCustomers = async () => {
         setLoading(true);
@@ -126,18 +106,16 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const handleDeleteCustomer = async (id) => {
         try {
             await deleteCustomer(id);
+            setCustomers((prevCustomers) => prevCustomers.filter(c => c.id !== id));
+            setFilteredCustomers((prevFiltered) => prevFiltered.filter(c => c.id !== id));
+
             setCustomer(null);
             setSearchTerm('');
-            setFilteredCustomers(customers);
             onAddCustomer({ id: 0 });
+            loadCustomers();
         } catch (error) {
             console.error("Error deleting customer:", error);
         }
-    };
-
-    const findCustomerInBills = (orderId) => {
-        const billWithCustomer = bills.find(bill => bill.id === orderId);
-        return billWithCustomer ? billWithCustomer.customer : null;
     };
 
     useEffect(() => {
@@ -171,6 +149,15 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
             });
         } catch (error) {
             console.error("Failed to fetch customer detail:", error);
+        }
+    };
+
+    const handleSetCustomer = async (orderId) => {
+        const response = await fetchCustomer(orderId);
+        if (response?.data) {
+            setCustomers(response.data);
+            setCustomer(response.data[0]);
+            setCustomerId(response.data[0]?.id || null);
         }
     };
 
@@ -256,7 +243,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                                         tabIndex={0}
                                     >
                                         <ListItemText
-                                            primary={`${c.fullName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
+                                            primary={`${c.lastName + " " + c.firstName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
                                             secondary={null}
                                         />
                                     </ListItem>

@@ -1,4 +1,4 @@
-package sd79.dto.requests;
+package sd79.dto.requests.billRequest;
 
 import lombok.Builder;
 import lombok.Getter;

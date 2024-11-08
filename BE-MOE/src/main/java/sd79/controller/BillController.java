@@ -9,19 +9,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import sd79.dto.requests.BillDetailRequest;
-import sd79.dto.requests.BillRequest;
+import sd79.dto.requests.billRequest.BillCustomerRequest;
+import sd79.dto.requests.billRequest.BillDetailRequest;
+import sd79.dto.requests.billRequest.BillRequest;
 import sd79.dto.requests.productRequests.BillStoreRequest;
+import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
-import sd79.model.BillStatus;
-import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.BillService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("api/${api.version}/bill")
@@ -100,6 +99,15 @@ public class BillController {
     public ResponseData<?> addCustomer(@RequestParam Long billId, @RequestParam Long customerId) {
         long updatedBillId = billService.storeCustomer(billId, customerId);
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm khách hàng vào hóa đơn thành công", updatedBillId);
+    }
+
+    @Operation(
+            summary = "Update Customer",
+            description = "Update customer information in the database"
+    )
+    @PutMapping("/update/{id}")
+    public ResponseData<?> updateCustomer(@PathVariable Long id, @Valid @RequestBody BillCustomerRequest billCustomerRequest) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin khách hàng thành công", billService.updateCustomer(id, billCustomerRequest));
     }
 
     @Operation(summary = "Xóa khách hàng khỏi hóa đơn", description = "Xóa khách hàng khỏi hóa đơn hiện có")

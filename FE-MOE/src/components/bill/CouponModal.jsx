@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, TextField, Pagination } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
 import { fetchAllCouponCustomer } from '~/apis/billsApi';
 
-
 export default function CouponModal({ open, onClose, onSelectCoupon, customerId, subtotal }) {
-
     const [coupons, setCoupons] = useState([]);
     const [page, setPage] = useState(1);
     const [pageSize] = useState(5);
@@ -25,6 +23,25 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
             handleSetCouponCustomer();
         }
     }, [validCustomerId]);
+
+    // Function to apply the best eligible coupon automatically
+    const applyBestCouponAutomatically = () => {
+        if (coupons.length > 0) {
+            const bestCoupon = coupons
+                .filter(coupon => subtotal >= coupon.conditions) // filter eligible coupons
+                .reduce((prev, current) => {
+                    // Find the coupon with the highest discount value
+                    const prevDiscount = prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
+                    const currentDiscount = current.discountType === 'FIXED_AMOUNT' ? current.discountValue : subtotal * (current.discountValue / 100);
+                    return prevDiscount > currentDiscount ? prev : current;
+                });
+
+            if (bestCoupon) {
+                onSelectCoupon(bestCoupon); // apply the best coupon
+                onClose(); // close the modal
+            }
+        }
+    };
 
     const handleSetCouponCustomer = async () => {
         try {
@@ -89,10 +106,10 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                                     border: '1px solid #e0e0e0',
                                     borderRadius: 1,
                                     mb: 1,
-                                    bgcolor: isEligible ? '#f9f9f9' : '#e0e0e0', // Gray out if not eligible
+                                    bgcolor: isEligible ? '#f9f9f9' : '#e0e0e0', 
                                     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
-                                    cursor: isEligible ? 'pointer' : 'not-allowed', // Disable pointer if not eligible
-                                    opacity: isEligible ? 1 : 0.5 // Lower opacity for ineligible coupons
+                                    cursor: isEligible ? 'pointer' : 'not-allowed', 
+                                    opacity: isEligible ? 1 : 0.5 
                                 }}
                                 onClick={() => {
                                     if (isEligible) {
@@ -130,7 +147,6 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                     </Box>
                 )}
 
-
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <Pagination
                         count={totalPages}
@@ -141,6 +157,9 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 </Box>
             </DialogContent>
             <DialogActions>
+                <Button onClick={applyBestCouponAutomatically} color="primary">
+                    Áp dụng phiếu giảm giá tốt nhất
+                </Button>
                 <Button onClick={onClose} color="primary">
                     Đóng
                 </Button>

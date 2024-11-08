@@ -20,11 +20,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, reqPay } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, putCustomer, reqPay } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
-import { FormControl, FormLabel, Input, MenuItem, Option, Select, Switch } from '@mui/joy';
+import { FormControl, FormHelperText, FormLabel, Input, MenuItem, Option, Select, Switch } from '@mui/joy';
 import CustomerList from '~/components/bill/CustomerList';
 import DiscountIcon from '@mui/icons-material/Discount';
 import CouponModal from '~/components/bill/CouponModal';
@@ -57,6 +57,8 @@ function Bill() {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
     const [customerId, setCustomerId] = useState(null);
     const [isDeliveryEnabled, setDeliveryEnabled] = useState(true);
+    const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -75,7 +77,6 @@ function Bill() {
         ward: '',
         streetName: ''
     });
-
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -143,7 +144,6 @@ function Bill() {
         }
     };
 
-
     const deleteOrder = async (orderToDelete) => {
         await deleteBill(orderToDelete);
         setBills(prevBills => prevBills.filter(order => order.id !== orderToDelete));
@@ -157,6 +157,8 @@ function Bill() {
     };
 
     //----------------------------------------------------------Product--------------------------------------//
+    let initialQuantity = {};
+
     const onProduct = async (pr) => {
         if (!selectedOrder) {
             console.error('No order selected. Order object:', selectedOrder);
@@ -167,13 +169,67 @@ function Bill() {
             bill: selectedOrder,
             quantity: 1,
             price: parseFloat(pr.price),
-            discountAmount: pr.sellPrice,
+            discountAmount: pr.sellPrice || 0,
         };
         try {
             await postProduct(product);
             handleSetProduct(selectedOrder);
+            initialQuantity[pr.id] = 1;
         } catch (error) {
             console.error('Failed to add product:', error);
+        }
+    };
+
+    const handleQuantityChange = (productId, newQuantity) => {
+        if (newQuantity === null || newQuantity === '') {
+            setErrorMessage("Số lượng chưa nhập");
+        } else {
+            setErrorMessage("");
+        }
+
+        const productToUpdate = products.find(p => p.id === productId);
+        if (!productToUpdate) return;
+
+        const maxQuantity = productToUpdate.productDetail.quantity + 1;
+        const updatedQuantity = newQuantity > maxQuantity ? maxQuantity : newQuantity;
+
+        if (quantityTimeoutId) {
+            clearTimeout(quantityTimeoutId);
+        }
+
+        if (initialQuantity[productId] === undefined) {
+            initialQuantity[productId] = maxQuantity;
+        }
+
+        setProducts(prevProducts =>
+            prevProducts.map(product =>
+                product.id === productId ? { ...product, quantity: updatedQuantity } : product
+            )
+        );
+
+        const timeoutId = setTimeout(() => updateProductQuantity(productId, updatedQuantity), 1000);
+        setQuantityTimeoutId(timeoutId);
+    };
+
+    const updateProductQuantity = async (productId, newQuantity) => {
+        try {
+            const productToUpdate = products.find(p => p.id === productId);
+            if (!productToUpdate) return;
+
+            const product = {
+                productDetail: productToUpdate.productDetail.id,
+                bill: selectedOrder,
+                quantity: newQuantity,
+                price: productToUpdate.productDetail.price,
+                discountAmount: productToUpdate.discountAmount || 0,
+            };
+
+            await postProduct(product);
+
+            console.log(`Quantity for product ${productToUpdate.productDetail.id} updated to ${newQuantity}`);
+            initialQuantity[productId] = newQuantity;
+        } catch (error) {
+            console.error('Failed to update product quantity:', error);
         }
     };
 
@@ -295,13 +351,13 @@ function Bill() {
         setCustomerAmount(value);
     };
 
-    const handleQuantityChange = (productId, newQuantity) => {
-        setProducts(prevProducts =>
-            prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: newQuantity } : product
-            )
-        );
-    };
+    // const handleQuantityChange = (productId, newQuantity) => {
+    //     setProducts(prevProducts =>
+    //         prevProducts.map(product =>
+    //             product.id === productId ? { ...product, quantity: newQuantity } : product
+    //         )
+    //     );
+    // };
 
     const subtotal = products.reduce((total, product) => {
         return total + product.discountAmount * product.quantity;
@@ -399,7 +455,7 @@ function Bill() {
         setCustomerAmount('');
         setSelectedCoupon(null);
         setSelectedPaymentMethod(null);
-        setCustomerId(null); // Reset customer ID for CustomerList
+        setCustomerId(null);
         localStorage.removeItem('selectedOrder');
         window.scrollTo(0, 0);
     };
@@ -543,6 +599,39 @@ function Bill() {
             });
         } catch (error) {
             console.error("Failed to fetch customer detail:", error);
+        }
+    };
+
+    const updateCustomer = async (e) => {
+        e.preventDefault();
+
+        try {
+            const cityName = cities.find((city) => city.code == selectedCity)?.name;
+            const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+            const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
+            const updatedCustomer = {
+                ...customerData,
+                city: cityName,
+                city_id: selectedCity,
+                district: districtName,
+                district_id: selectedDistrict,
+                ward: wardName,
+                dateOfBirth: formatDate(customerData.dateOfBirth),
+                updatedAt: new Date().toISOString(),
+            };
+
+            const response = await putCustomer(updatedCustomer, customerId);
+
+            if (response && response.status === 200) {
+                toast.success('Cập nhật thành công');
+                navigate('/bill');
+            } else {
+                toast.error('Cập nhật không thành công, vui lòng thử lại.');
+            }
+        } catch (error) {
+            console.error("Failed to update customer:", error);
+            toast.error('Có lỗi xảy ra khi cập nhật thông tin khách hàng.');
         }
     };
 
@@ -697,11 +786,11 @@ function Bill() {
                                         Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
                                     </Typography>
                                 </Grid>
-                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center">
+                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
                                     <Input
                                         type="number"
                                         value={product.quantity}
-                                        onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
+                                        onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || '')}
                                         sx={{
                                             width: '80%',
                                             '& input': {
@@ -709,7 +798,13 @@ function Bill() {
                                             }
                                         }}
                                     />
+                                    {errorMessage && (
+                                        <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
+                                            {errorMessage}
+                                        </Typography>
+                                    )}
                                 </Grid>
+
                                 <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
                                     <Typography variant="body2" sx={{ mr: 1 }}>
                                         {product.discountAmount === product.productDetail.price ? (
@@ -774,30 +869,51 @@ function Bill() {
                             customerData ? (
                                 <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
                                     <Grid container spacing={2} ml={0}>
-                                        <Grid container spacing={2} mb={3}>
-                                            <Grid item xs={12} md={6}>
-                                                <FormControl required>
-                                                    <FormLabel>Họ và tên</FormLabel>
-                                                    <Input
-                                                        value={`${customerData.lastName || ""} ${customerData.firstName || ""}`}
-                                                        variant="outlined"
-                                                        size="md"
-                                                        inputProps={{ sx: { textAlign: 'center' } }}
-                                                    />
-                                                </FormControl>
-                                            </Grid>
-                                            <Grid item xs={12} md={6}>
-                                                <FormControl required>
-                                                    <FormLabel>Số điện thoại</FormLabel>
-                                                    <Input
-                                                        value={customerData.phoneNumber || ""}
-                                                        variant="outlined"
-                                                        size="md"
-                                                        inputProps={{ sx: { textAlign: 'center' } }}
-                                                    />
-                                                </FormControl>
+                                        <Grid container spacing={2} ml={0}>
+                                            <Grid container spacing={2} mb={3}>
+                                                <Grid item xs={12} md={6}>
+                                                    <FormControl required error={!customerData.lastName || !customerData.firstName}>
+                                                        <FormLabel>Họ và tên</FormLabel>
+                                                        <Input
+                                                            value={`${customerData.lastName || ""} ${customerData.firstName || ""}`}
+                                                            onChange={(e) => {
+                                                                const [lastName, ...firstNameParts] = e.target.value.split(" ");
+                                                                setCustomerData({
+                                                                    ...customerData,
+                                                                    lastName,
+                                                                    firstName: firstNameParts.join(" "),
+                                                                });
+                                                            }}
+                                                            variant="outlined"
+                                                            size="md"
+                                                        />
+                                                        {!customerData.lastName || !customerData.firstName ? (
+                                                            <FormHelperText>Họ và tên không được bỏ trống</FormHelperText>
+                                                        ) : null}
+                                                    </FormControl>
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <FormControl required error={!customerData.phoneNumber}>
+                                                        <FormLabel>Số điện thoại</FormLabel>
+                                                        <Input
+                                                            value={customerData.phoneNumber || ""}
+                                                            onChange={(e) =>
+                                                                setCustomerData({
+                                                                    ...customerData,
+                                                                    phoneNumber: e.target.value,
+                                                                })
+                                                            }
+                                                            variant="outlined"
+                                                            size="md"
+                                                        />
+                                                        {!customerData.phoneNumber ? (
+                                                            <FormHelperText>Số điện thoại không được bỏ trống</FormHelperText>
+                                                        ) : null}
+                                                    </FormControl>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
+
 
                                         <Grid container spacing={2} mb={3}>
                                             <Grid item xs={12} md={4}>
@@ -863,13 +979,22 @@ function Bill() {
 
                                         <Grid container spacing={2} mb={2}>
                                             <Grid item xs={12} md={6}>
-                                                <FormControl required>
+                                                <FormControl required error={!customerData.streetName}>
                                                     <FormLabel>Địa chỉ cụ thể</FormLabel>
                                                     <Input
                                                         size="md"
                                                         value={customerData.streetName || ""}
+                                                        onChange={(e) =>
+                                                            setCustomerData({
+                                                                ...customerData,
+                                                                streetName: e.target.value,
+                                                            })
+                                                        }
                                                         variant="outlined"
                                                     />
+                                                    {!customerData.streetName ? (
+                                                        <FormHelperText>Địa chỉ cụ thể không được bỏ trống</FormHelperText>
+                                                    ) : null}
                                                 </FormControl>
                                             </Grid>
                                             <Grid item xs={12} md={6}>
@@ -881,12 +1006,22 @@ function Bill() {
                                             </Grid>
                                         </Grid>
                                     </Grid>
+                                    <Grid container justifyContent="center" mt={3}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={updateCustomer}
+                                            sx={{ px: 4, py: 1.5 }}
+                                        >
+                                            Cập nhật thông tin
+                                        </Button>
+                                    </Grid>
                                 </Grid>
                             ) : (
                                 <Grid item xs={12} md={6}>
                                     <Box
                                         component="img"
-                                        src="https://via.placeholder.com/300x300?text=Product+Image"
+                                        src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
                                         alt="No Delivery"
                                         sx={{
                                             width: '100%',
@@ -900,7 +1035,7 @@ function Bill() {
                             <Grid item xs={12} md={6}>
                                 <Box
                                     component="img"
-                                    src="https://via.placeholder.com/300x300?text=Product+Image"
+                                    src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
                                     alt="No Delivery"
                                     sx={{
                                         width: '100%',
@@ -912,7 +1047,7 @@ function Bill() {
                         )}
 
                         <Grid item xs={12} md={6}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt:1}}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt: 1 }}>
                                 <Button
                                     startIcon={<DiscountIcon />}
                                     variant="outlined"
