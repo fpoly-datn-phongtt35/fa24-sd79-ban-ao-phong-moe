@@ -141,7 +141,6 @@ function CheckOut() {
       total: subtotal + shipping - discount,
       paymentMethod,
       message,
-
       items,
     };
 

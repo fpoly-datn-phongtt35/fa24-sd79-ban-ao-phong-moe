@@ -24,7 +24,7 @@ public abstract class InvoiceResponse {
     public static class Param {
         private Integer pageNo = 1;
 
-        private Integer pageSize = 3;
+        private Integer pageSize = 5;
 
         private String keyword;
 
@@ -36,6 +36,8 @@ public abstract class InvoiceResponse {
     @Builder
     @Getter
     public static class Invoice {
+        private Long id;
+
         private String code;
 
         private int quantity;
@@ -56,7 +58,7 @@ public abstract class InvoiceResponse {
 
         private PaymentMethod paymentMethod;
 
-        private List<Product> products = new ArrayList<>();
+        private List<Product> products;
     }
 
     @Builder
@@ -77,5 +79,13 @@ public abstract class InvoiceResponse {
         private BigDecimal discountPrice;
 
         private BigDecimal totalAmount;
+    }
+
+    @Builder
+    @Getter
+    public static class BillStatus {
+        private Integer id;
+
+        private String name;
     }
 }

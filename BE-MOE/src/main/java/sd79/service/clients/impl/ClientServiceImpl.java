@@ -73,6 +73,8 @@ public class ClientServiceImpl implements ClientService {
 
     private final InvoiceRepository invoiceRepository;
 
+    private final BillStatusRepo billStatusRepo;
+
     private final JwtService jwtService;
 
     @Override
@@ -354,6 +356,30 @@ public class ClientServiceImpl implements ClientService {
             param.setPageNo(1);
         }
         return this.invoiceRepository.getAllInvoices(param);
+    }
+
+    @Override
+    public void cancelInvoice(long id, String message) {
+        Bill bill = this.billRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Bill not found"));
+        bill.setBillStatus(this.billStatusRepository.findById(6).orElse(null));
+        bill.setMessage(message);
+        bill.getBillDetails().forEach(detail -> {
+            ProductDetail productDetail = this.productDetailRepository.findById(detail.getProductDetail().getId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            assert productDetail != null;
+            productDetail.setQuantity(productDetail.getQuantity() + detail.getQuantity());
+            this.productDetailRepository.save(productDetail);
+        });
+        this.billRepository.save(bill);
+    }
+
+    @Override
+    public List<InvoiceResponse.BillStatus> getInvoiceStatuses() {
+        return this.billStatusRepo.findAll().stream().map(i ->
+                InvoiceResponse.BillStatus.builder()
+                        .id(i.getId())
+                        .name(i.getName())
+                        .build()
+        ).toList();
     }
 
 }
