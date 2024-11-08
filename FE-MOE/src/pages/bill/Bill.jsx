@@ -20,7 +20,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, putCustomer, reqPay } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, putCustomer } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
@@ -37,6 +37,7 @@ import axios from 'axios';
 import { fetchCustomerById } from '~/apis/customerApi';
 import SvgIconDisplay from '~/components/other/SvgIconDisplay';
 import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
+import { reqPay } from '~/apis';
 
 function Bill() {
     const navigate = useNavigate();
@@ -350,8 +351,6 @@ function Bill() {
         const value = parseFloat(event.target.value) || 0;
         setCustomerAmount(value);
     };
-
-    // const handleQuantityChange = (productId, newQuantity) => {
     //     setProducts(prevProducts =>
     //         prevProducts.map(product =>
     //             product.id === productId ? { ...product, quantity: newQuantity } : product
@@ -382,14 +381,13 @@ function Bill() {
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
 
+    const shippingCost = isDeliveryEnabled && subtotal < 100000 ? 24000 : 0;
+
     //----------------------------------------------------------Them lan cuoi----------------------------------//
     const PaymentMethod = {
         CASH: 0,
         BANK: 1,
-        CASH_ON_DELIVERY: 2,
     };
-
-    // const onPay = async () => {
     //     if (!currentOrder || products.length === 0) {
     //         toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
     //         return;
@@ -466,7 +464,14 @@ function Bill() {
             return;
         }
 
-        if (selectedPaymentMethod === PaymentMethod.BANK) {
+        console.log("Selected Payment Method:", selectedPaymentMethod);
+
+        const paymentMethodName = {
+            [PaymentMethod.CASH]: "CASH",
+            [PaymentMethod.BANK]: "BANK",
+        }[selectedPaymentMethod] || "UNKNOWN";
+
+        if (paymentMethodName === "BANK") {
             try {
                 await reqPay({
                     total: totalAfterDiscount,
@@ -479,20 +484,24 @@ function Bill() {
             return;
         }
 
+        const bankCode = paymentMethodName === "BANK" ? "BANK_CODE" : "null";
+        const message = paymentMethodName === "CASH" ? "Hóa đơn thanh toán bằng tiền mặt" : "Hóa đơn thanh toán qua ngân hàng";
+        const note = paymentMethodName === "CASH" ? "Thanh toán bằng tiền mặt" : "Thanh toán qua ngân hàng";
+
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
-                bankCode: "null",
+                bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
                 billStatus: 2,
-                shipping: 0,
+                shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
-                paymentMethod: selectedPaymentMethod,
-                message: "Hóa đơn thanh toán bằng tiền mặt",
-                note: "Thanh toán bằng tiền mặt",
+                paymentMethod: paymentMethodName,
+                message,
+                note,
                 paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
@@ -510,14 +519,13 @@ function Bill() {
             clearData();
             if (billId) {
                 toast.success("Hóa đơn đã được tạo thành công!");
-
             }
         } catch (error) {
             console.error("Failed to create invoice:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
 
-        if (selectedPaymentMethod === PaymentMethod.CASH) {
+        if (paymentMethodName === "CASH") {
             await handleSetBill();
         }
     };
@@ -552,7 +560,7 @@ function Bill() {
     const handleDistrictChange = async (e) => {
         const districtId = e;
         setSelectedDistrict(districtId);
-        setSelectedWard(""); // Reset ward
+        setSelectedWard("");
         if (districtId) {
             const response = await axios.get(`${host}d/${districtId}?depth=2`);
             setWards(response.data.wards);
@@ -968,7 +976,7 @@ function Bill() {
                                                             Chọn phường xã
                                                         </Option>
                                                         {wards.map((ward) => (
-                                                            <Option key={ward.code} value={ward.name}>
+                                                            <Option key={ward.name} value={ward.name}>
                                                                 {ward.name}
                                                             </Option>
                                                         ))}
@@ -1098,9 +1106,28 @@ function Bill() {
                                 </Box>
                             ))}
 
-                            <Grid container spacing={1} sx={{ mb: 2 }}>
-                                <Grid item xs={6}><Typography variant="h6">Tổng tiền:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">{formatCurrencyVND(totalAfterDiscount)}</Typography></Grid>
+                            <Grid container spacing={0} sx={{ mb: 2 }}>
+                                {isDeliveryEnabled && (
+                                    <Grid container spacing={1} sx={{ mb: 2 }}>
+                                        <Grid item xs={6}>
+                                            <Typography variant="body2">Phí vận chuyển:</Typography>
+                                        </Grid>
+                                        <Grid item xs={6} sx={{ textAlign: 'right' }}>
+                                            <Typography variant="body2">
+                                                {formatCurrencyVND(shippingCost)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                )}
+
+                                <Grid item xs={6}>
+                                    <Typography variant="h6">Tổng tiền:</Typography>
+                                </Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}>
+                                    <Typography variant="h6" color="error">
+                                        {formatCurrencyVND(totalAfterDiscount + shippingCost)}
+                                    </Typography>
+                                </Grid>
                             </Grid>
 
                             {selectedPaymentMethod === PaymentMethod.CASH && (

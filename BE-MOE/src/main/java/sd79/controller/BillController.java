@@ -143,35 +143,27 @@ public class BillController {
     @Operation(summary = "Thêm mới hóa đơn", description = "Thêm hóa đơn và các chi tiết hóa đơn vào cơ sở dữ liệu")
     @PostMapping("/storePay")
     public ResponseData<?> addPay(@Valid @RequestBody BillStoreRequest billStoreRequest, BindingResult bindingResult) {
-//        if (bindingResult.hasErrors()) {
-//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
-//        }
-//
-//        // Check if BillRequest is null
-//        if (billStoreRequest.getBillRequest() == null) {
-//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillRequest cannot be null", null);
-//        }
-
+        if (bindingResult.hasErrors()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Lỗi xác thực", bindingResult.getFieldErrors());
+        }
+        if (billStoreRequest.getBillRequest() == null) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillRequest cannot be null", null);
+        }
         BillRequest billRequest = billStoreRequest.getBillRequest();
         List<BillDetailRequest> billDetails = billStoreRequest.getBillDetails();
-
-//        // Additional check for billDetails
-//        if (billDetails == null || billDetails.isEmpty()) {
-//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillDetails cannot be empty", null);
-//        }
-//
-//        logger.info("Received request to add pay: {}", billStoreRequest);
-
-//        try {
+        if (billDetails == null || billDetails.isEmpty()) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillDetails cannot be empty", null);
+        }
+        logger.info("Received request to add pay: {}", billStoreRequest);
+        try {
             long billId = billService.storePay(billRequest, billDetails);
-//            return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
-//        } catch (IllegalArgumentException e) {
-//            logger.error("Error adding pay: {}", e.getMessage());
-//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
-//        } catch (Exception e) {
-//            logger.error("Unexpected error occurred while adding pay: ", e);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
+        } catch (IllegalArgumentException e) {
+            logger.error("Error adding pay: {}", e.getMessage());
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        } catch (Exception e) {
+            logger.error("Unexpected error occurred while adding pay: ", e);
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
         }
-
-
+    }
 }

@@ -1,14 +1,16 @@
 package sd79.dto.requests.billRequest;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import sd79.enums.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BillRequest {
     private Long id;
     private String code;
@@ -26,3 +28,4 @@ public class BillRequest {
     private Date paymentTime;
     private Long userId;
 }
+

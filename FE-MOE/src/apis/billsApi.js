@@ -202,8 +202,9 @@ export const addPay = async (billStoreRequest) => {
 
 export const reqPay = async (data) => {
   try {
+      const returnUrl = encodeURIComponent(`${API_ROOT}/vn-pay-callback`);
       const response = await authorizedAxiosInstance.get(
-          `${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB`
+          `${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB&returnUrl=${returnUrl}`
       );
 
       if (response.status === 200) {
