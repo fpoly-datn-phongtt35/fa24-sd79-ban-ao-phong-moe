@@ -242,22 +242,69 @@ public class BillServiceImpl implements BillService {
         return Collections.emptyList();
     }
 
+//    @Override
+//    public long storeCoupon(Long billId, Long couponId) {
+//        Bill bill = billRepository.findById(billId)
+//                .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
+//        Coupon coupon = couponRepository.findById(couponId)
+//                .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
+//        if (coupon.getQuantity() != null && coupon.getQuantity() <= 0) {
+//            throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
+//        }
+//        bill.setCoupon(coupon);
+//        if (coupon.getQuantity() != null) {
+//            coupon.setQuantity(coupon.getQuantity() - 1);
+//        }
+//        coupon.setUsageCount((coupon.getUsageCount() != null ? coupon.getUsageCount() : 0) + 1);
+//        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+//        couponRepository.save(coupon);
+//        billRepository.save(bill);
+//
+//        return bill.getId();
+//    }
+
     @Override
     public long storeCoupon(Long billId, Long couponId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-        Coupon coupon = couponRepository.findById(couponId)
+
+        // Remove existing coupon if there is one, regardless of the new coupon's ID
+        Coupon currentCoupon = bill.getCoupon();
+        if (currentCoupon != null) {
+            currentCoupon.setQuantity(currentCoupon.getQuantity() + 1);
+            currentCoupon.setUsageCount((currentCoupon.getUsageCount() != null && currentCoupon.getUsageCount() > 0)
+                    ? currentCoupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(currentCoupon);
+        }
+
+        // If the new coupon ID is null or 0, set the coupon on the bill to null and save
+        if (couponId == null || couponId == 0) {
+            bill.setCoupon(null);
+            bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+            billRepository.save(bill);
+            return bill.getId();
+        }
+
+        // Retrieve and validate the new coupon
+        Coupon newCoupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
-        if (coupon.getQuantity() != null && coupon.getQuantity() <= 0) {
+
+        if (newCoupon.getQuantity() != null && newCoupon.getQuantity() <= 0) {
             throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
         }
-        bill.setCoupon(coupon);
-        if (coupon.getQuantity() != null) {
-            coupon.setQuantity(coupon.getQuantity() - 1);
+
+        // Update the new coupon's quantity and usage count
+        if (newCoupon.getQuantity() != null) {
+            newCoupon.setQuantity(newCoupon.getQuantity() - 1);
         }
-        coupon.setUsageCount((coupon.getUsageCount() != null ? coupon.getUsageCount() : 0) + 1);
+        newCoupon.setUsageCount((newCoupon.getUsageCount() != null ? newCoupon.getUsageCount() : 0) + 1);
+
+        // Set the new coupon to the bill and save
+        bill.setCoupon(newCoupon);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
-        couponRepository.save(coupon);
+
+        couponRepository.save(newCoupon);
         billRepository.save(bill);
 
         return bill.getId();
@@ -542,13 +589,9 @@ public class BillServiceImpl implements BillService {
     }
 
     private String generateRandomCode(long currentId) {
-        long totalCodes = 26 * 26 * 100000000;
-        long index = currentId - 1;
-        char letter1 = (char) ('A' + (index / (100000000)));
-        char letter2 = (char) ('A' + (index % (100000000) / 10000000));
-        long numberPart = index % 100000000 + 1;
-        String formattedNumber = String.format("%08d", numberPart);
-        return "" + letter1 + letter2 + formattedNumber;
+        Random random = new Random();
+        int number = random.nextInt(100000000);
+        return String.format("HD%08d", number);
     }
 
 }

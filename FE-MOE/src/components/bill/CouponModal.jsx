@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, TextField, Pagination } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
-import { fetchAllCouponCustomer } from '~/apis/billsApi';
+import { deleteCoupon, fetchAllCouponCustomer } from '~/apis/billsApi';
 
 export default function CouponModal({ open, onClose, onSelectCoupon, customerId, subtotal }) {
     const [coupons, setCoupons] = useState([]);
@@ -9,47 +9,64 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
     const [pageSize] = useState(5);
     const [totalPages, setTotalPages] = useState(0);
     const [keyword, setKeyword] = useState('');
+    const [selectedCoupon, setSelectedCoupon] = useState(null);
+    const [isAutoApplied, setIsAutoApplied] = useState(false);
 
     const validCustomerId = customerId ?? 0;
 
     useEffect(() => {
-        if (open) {
-            handleSetCouponCustomer();
+        if (open && subtotal > 0 && !isAutoApplied) {
+            applyBestCouponAutomatically();
         }
-    }, [open, page, keyword]);
+    }, [open]);
+
+    useEffect(() => {
+        if (subtotal > 0) {
+            applyBestCouponAutomatically();
+        }
+    }, [subtotal]);
 
     useEffect(() => {
         if (validCustomerId) {
             handleSetCouponCustomer();
         }
-    }, [validCustomerId]);
+    }, [validCustomerId, page, keyword]);
 
-    // Function to apply the best eligible coupon automatically
-    const applyBestCouponAutomatically = () => {
-        if (coupons.length > 0) {
-            const bestCoupon = coupons
-                .filter(coupon => subtotal >= coupon.conditions) // filter eligible coupons
-                .reduce((prev, current) => {
-                    // Find the coupon with the highest discount value
-                    const prevDiscount = prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
-                    const currentDiscount = current.discountType === 'FIXED_AMOUNT' ? current.discountValue : subtotal * (current.discountValue / 100);
-                    return prevDiscount > currentDiscount ? prev : current;
-                });
-
-            if (bestCoupon) {
-                onSelectCoupon(bestCoupon); // apply the best coupon
-                onClose(); // close the modal
-            }
-        }
-    };
-
-    const handleSetCouponCustomer = async () => {
+    const handleSetCouponCustomer = async (allCoupons = false) => {
         try {
-            const res = await fetchAllCouponCustomer(validCustomerId, page, keyword, pageSize);
+            const size = allCoupons ? 1000 : pageSize;
+            const res = await fetchAllCouponCustomer(validCustomerId, page, keyword, size);
             setCoupons(res.data.content);
             setTotalPages(res.data.totalPages);
         } catch (error) {
             console.error('Failed to fetch coupons:', error);
+        }
+    };
+
+    const applyBestCouponAutomatically = async () => {
+        try {
+            const res = await fetchAllCouponCustomer(validCustomerId, 1, keyword, pageSize);
+            let allCoupons = res.data.content;
+
+            for (let currentPage = 2; currentPage <= res.data.totalPages; currentPage++) {
+                const nextRes = await fetchAllCouponCustomer(validCustomerId, currentPage, keyword, pageSize);
+                allCoupons = [...allCoupons, ...nextRes.data.content];
+            }
+
+            const eligibleCoupons = allCoupons.filter(coupon => subtotal >= coupon.conditions);
+            if (eligibleCoupons.length === 0) return;
+
+            const bestCoupon = eligibleCoupons.reduce((prev, current) => {
+                const prevDiscount = prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
+                const currentDiscount = current.discountType === 'FIXED_AMOUNT' ? current.discountValue : subtotal * (current.discountValue / 100);
+                return prevDiscount > currentDiscount ? prev : current;
+            });
+
+            onSelectCoupon(bestCoupon);
+            setSelectedCoupon(bestCoupon);
+            setIsAutoApplied(true);
+        } catch (error) {
+            console.error('Failed to apply the best coupon:', error);
         }
     };
 
@@ -59,17 +76,12 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
     const handleSearchChange = (event) => {
         setKeyword(event.target.value);
-        setPage(1); // Reset to the first page on new search
+        setPage(1);
     };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${hours}:${minutes} ${day}/${month}/${year}`;
+        return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} ${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
     };
 
     return (
@@ -91,14 +103,11 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
                 {coupons.length > 0 ? (
                     coupons.map((coupon, index) => {
-                        // Check if coupon meets the subtotal condition
                         const isEligible = subtotal >= coupon.conditions;
-
                         return (
                             <Box
                                 key={index}
                                 sx={{
-                                    position: 'relative',
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
@@ -106,14 +115,16 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                                     border: '1px solid #e0e0e0',
                                     borderRadius: 1,
                                     mb: 1,
-                                    bgcolor: isEligible ? '#f9f9f9' : '#e0e0e0', 
+                                    bgcolor: isEligible ? '#f9f9f9' : '#e0e0e0',
                                     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
-                                    cursor: isEligible ? 'pointer' : 'not-allowed', 
-                                    opacity: isEligible ? 1 : 0.5 
+                                    cursor: isEligible ? 'pointer' : 'not-allowed',
+                                    opacity: isEligible ? 1 : 0.5
                                 }}
                                 onClick={() => {
                                     if (isEligible) {
                                         onSelectCoupon(coupon);
+                                        setSelectedCoupon(coupon);
+                                        setIsAutoApplied(false);
                                         onClose();
                                     }
                                 }}
@@ -148,12 +159,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 )}
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={handlePageChange}
-                        color="primary"
-                    />
+                    <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
                 </Box>
             </DialogContent>
             <DialogActions>

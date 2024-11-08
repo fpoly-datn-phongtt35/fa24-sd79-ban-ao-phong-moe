@@ -135,7 +135,6 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         try {
             const response = await fetchCustomerById(customerId);
             const customerData = response.data;
-            console.log(customerData)
 
             setCustomerData({
                 firstName: customerData.firstName,

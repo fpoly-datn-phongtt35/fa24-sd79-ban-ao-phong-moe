@@ -512,7 +512,6 @@ public class ProductCustomizeQuery {
                                     .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
                                     .build();
                         }
-
                 ).collect(Collectors.toSet());
     }
 

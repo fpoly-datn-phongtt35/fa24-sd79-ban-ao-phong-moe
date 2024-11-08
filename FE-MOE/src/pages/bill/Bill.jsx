@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -16,11 +16,12 @@ import {
     Chip,
     Divider,
     TextField,
+    CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, putCustomer } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, handleVerifyBanking, postBill, postCoupon, postCustomer, postProduct, putCustomer, reqPay } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
@@ -31,13 +32,12 @@ import CouponModal from '~/components/bill/CouponModal';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import axios from 'axios';
 import { fetchCustomerById } from '~/apis/customerApi';
 import SvgIconDisplay from '~/components/other/SvgIconDisplay';
 import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
-import { reqPay } from '~/apis';
 
 function Bill() {
     const navigate = useNavigate();
@@ -51,15 +51,17 @@ function Bill() {
     const [products, setProducts] = useState([]);
     const [coupons, setCoupons] = useState([]);
     const [customers, setCustomers] = useState([]);
-    const handleTabChange = (event, newValue) => setTabIndex(newValue);
     const [currentOrder, setCurrentOrder] = useState(null);
     const [customerAmount, setCustomerAmount] = useState('');
     const [isDisabled, setIsDisabled] = useState(false);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
     const [customerId, setCustomerId] = useState(null);
-    const [isDeliveryEnabled, setDeliveryEnabled] = useState(true);
+    const [isDeliveryEnabled, setDeliveryEnabled] = useState(false);
     const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
+    const [searchParams] = useSearchParams();
+    const [bankCode, setBankCode] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -78,6 +80,19 @@ function Bill() {
         ward: '',
         streetName: ''
     });
+
+    const handleTabChange = (event, newValue) => {
+        setTabIndex(newValue);
+        setLoading(true);
+        setTimeout(() => {
+            if (newValue === 1) {
+                navigate('/bill-list');
+            } else {
+                navigate('/bill');
+            }
+            setLoading(false);
+        }, 500);
+    };
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -100,6 +115,20 @@ function Bill() {
             handleSetCustomer(selectedOrder);
         }
     }, [selectedOrder]);
+
+    useEffect(() => {
+        init();
+    }, []);
+
+    const init = () => {
+        setBankCode(searchParams.get("vnp_BankTranNo"))
+        localStorage.setItem("bankCode", searchParams.get("vnp_BankTranNo"))
+        handleVerifyBanking(
+            searchParams.get("vnp_TransactionStatus"),
+            searchParams.get("vnp_BankTranNo"),
+        )
+        navigate("/bill");
+    };
 
     //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async () => {
@@ -226,8 +255,6 @@ function Bill() {
             };
 
             await postProduct(product);
-
-            console.log(`Quantity for product ${productToUpdate.productDetail.id} updated to ${newQuantity}`);
             initialQuantity[productId] = newQuantity;
         } catch (error) {
             console.error('Failed to update product quantity:', error);
@@ -303,18 +330,13 @@ function Bill() {
 
     //----------------------------------------------------------Coupon--------------------------------------//  
     const onCoupon = async (coupon) => {
-        if (!selectedOrder) {
-            console.error("No order selected, cannot apply coupon.");
-            return;
-        }
         const couponData = {
-            bill: selectedOrder,
+            bill: localStorage.getItem('selectedOrder'),
             coupon: coupon.id
         };
         await postCoupon(couponData);
         await handleSetBill();
         await handleSetCoupon(selectedOrder);
-
     };
 
     const handleSetCoupon = async (orderId) => {
@@ -351,12 +373,6 @@ function Bill() {
         const value = parseFloat(event.target.value) || 0;
         setCustomerAmount(value);
     };
-    //     setProducts(prevProducts =>
-    //         prevProducts.map(product =>
-    //             product.id === productId ? { ...product, quantity: newQuantity } : product
-    //         )
-    //     );
-    // };
 
     const subtotal = products.reduce((total, product) => {
         return total + product.discountAmount * product.quantity;
@@ -388,47 +404,6 @@ function Bill() {
         CASH: 0,
         BANK: 1,
     };
-    //     if (!currentOrder || products.length === 0) {
-    //         toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
-    //         return;
-    //     }
-
-    //     const billStoreRequest = {
-    //         billRequest: {
-    //             code: currentOrder.code,
-    //             bankCode: "null",
-    //             customer: currentOrder.customerId || null,
-    //             coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-    //             billStatus: 2,
-    //             shipping: 0,
-    //             subtotal: subtotal,
-    //             sellerDiscount: discountAmount,
-    //             total: totalAfterDiscount,
-    //             paymentMethod: selectedPaymentMethod,
-    //             message: "null",
-    //             note: "null",
-    //             paymentTime: "null",
-    //             userId: localStorage.getItem("userId"),
-    //         },
-    //         billDetails: products.map(product => ({
-    //             productDetail: product.productDetail.id,
-    //             quantity: product.quantity,
-    //             price: product.productDetail.price,
-    //             discountAmount: product.discountAmount,
-    //         })),
-    //     };
-
-    //     try {
-    //         const billId = await addPay(billStoreRequest);
-    //         if (billId) {
-    //             toast.success("Hóa đơn đã được tạo thành công!");              
-    //         }
-    //     } catch (error) {
-    //         console.error("Failed to create invoice:", error);
-    //         toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
-    //     }
-    //     await handleSetBill();
-    // };
 
     //----------------------------------------------------------Giao diện--------------------------------------//  
 
@@ -464,34 +439,22 @@ function Bill() {
             return;
         }
 
-        console.log("Selected Payment Method:", selectedPaymentMethod);
-
         const paymentMethodName = {
             [PaymentMethod.CASH]: "CASH",
             [PaymentMethod.BANK]: "BANK",
         }[selectedPaymentMethod] || "UNKNOWN";
 
-        if (paymentMethodName === "BANK") {
-            try {
-                await reqPay({
-                    total: totalAfterDiscount,
-                    message: `Thanh toán cho hóa đơn #${currentOrder.code}`
-                });
-            } catch (error) {
-                console.error("Failed to initiate VNPay payment:", error);
-                toast.error("Có lỗi xảy ra khi bắt đầu thanh toán qua VNPay.");
-            }
-            return;
-        }
-
-        const bankCode = paymentMethodName === "BANK" ? "BANK_CODE" : "null";
-        const message = paymentMethodName === "CASH" ? "Hóa đơn thanh toán bằng tiền mặt" : "Hóa đơn thanh toán qua ngân hàng";
-        const note = paymentMethodName === "CASH" ? "Thanh toán bằng tiền mặt" : "Thanh toán qua ngân hàng";
+        const message = paymentMethodName === "CASH"
+            ? "Hóa đơn thanh toán bằng tiền mặt"
+            : "Hóa đơn thanh toán qua ngân hàng";
+        const note = paymentMethodName === "CASH"
+            ? "Thanh toán bằng tiền mặt"
+            : "Thanh toán qua ngân hàng";
 
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
-                bankCode,
+                bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
                 billStatus: 2,
@@ -505,7 +468,7 @@ function Bill() {
                 paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
-            billDetails: products.map(product => ({
+            billDetails: products.map((product) => ({
                 productDetail: product.productDetail.id,
                 quantity: product.quantity,
                 price: product.productDetail.price,
@@ -514,19 +477,20 @@ function Bill() {
         };
 
         try {
-            const billId = await addPay(billStoreRequest);
-            navigate("/bill");
-            clearData();
-            if (billId) {
+            if (paymentMethodName === "BANK") {
+                localStorage.setItem("temp_data", JSON.stringify(billStoreRequest));
+                await reqPay(billStoreRequest, "&uri=bill");
+                clearData();
+                return;
+            } else {
+                await addPay(billStoreRequest);
                 toast.success("Hóa đơn đã được tạo thành công!");
+                clearData();
+                await handleSetBill();
             }
         } catch (error) {
-            console.error("Failed to create invoice:", error);
+            console.error("Error processing payment:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
-        }
-
-        if (paymentMethodName === "CASH") {
-            await handleSetBill();
         }
     };
 
@@ -665,11 +629,37 @@ function Bill() {
                     </Typography>
                 </div>
 
+                {loading && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1
+                        }}
+                    >
+                        <CircularProgress size={80} />
+                    </div>
+                )}
 
-                <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
-                    <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
-                    <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
-                </Tabs>
+                {!loading && (
+                    <>                  
+                        <Tabs
+                            value={tabIndex}
+                            onChange={handleTabChange}
+                            sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+                        >
+                            <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
+                            <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
+                        </Tabs>
+                    </>
+                )}
 
                 {bills.length >= 5 && (
                     <Typography color="error" sx={{ mb: 1 }}>
@@ -878,8 +868,8 @@ function Bill() {
                                 <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
                                     <Grid container spacing={2} ml={0}>
                                         <Grid container spacing={2} ml={0}>
-                                            <Grid container spacing={2} mb={3}>
-                                                <Grid item xs={12} md={6}>
+                                            <Grid container spacing={2} mb={3} mt={0}>
+                                                <Grid item xs={12} md={6} >
                                                     <FormControl required error={!customerData.lastName || !customerData.firstName}>
                                                         <FormLabel>Họ và tên</FormLabel>
                                                         <Input
@@ -1066,7 +1056,7 @@ function Bill() {
                                     Phiếu giảm giá
                                 </Button>
                                 <Typography variant="body2" color="textSecondary">
-                                    Chọn hoặc nhập mã &gt;
+                                    Chọn mã giảm giá &gt;
                                 </Typography>
                             </Box>
 
@@ -1106,7 +1096,7 @@ function Bill() {
                                 </Box>
                             ))}
 
-                            <Grid container spacing={0} sx={{ mb: 2 }}>
+                            <Grid container spacing={0} sx={{ mb: 2, mt: 2 }}>
                                 {isDeliveryEnabled && (
                                     <Grid container spacing={1} sx={{ mb: 2 }}>
                                         <Grid item xs={6}>

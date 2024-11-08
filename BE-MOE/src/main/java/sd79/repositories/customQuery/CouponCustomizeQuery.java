@@ -215,9 +215,9 @@ public class CouponCustomizeQuery {
                 .collect(Collectors.toList());
         String countSql = "SELECT COUNT(c) FROM Coupon c WHERE c.isDeleted = false ";
         if (customerId == null) {
-            countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+            countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) AND c.quantity > 0";
         } else {
-            countSql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+            countSql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) AND c.quantity > 0" +
                     "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
         }
         if (StringUtils.hasLength(param.getKeyword())) {
@@ -247,16 +247,35 @@ public class CouponCustomizeQuery {
         String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false ";
 
         if (customerId == null) {
-            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) " +
+                    "AND c.quantity > 0 ";
         } else {
-            sql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+            sql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) " +
+                    "AND c.quantity > 0 ) " +
                     "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
         }
+
         if (StringUtils.hasLength(param.getKeyword())) {
             sql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
+
         return sql;
     }
 
+
+//    private String getString(BillCouponFilter param, Long customerId) {
+//        String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false ";
+//
+//        if (customerId == null) {
+//            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+//        } else {
+//            sql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+//                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
+//        }
+//        if (StringUtils.hasLength(param.getKeyword())) {
+//            sql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
+//        }
+//        return sql;
+//    }
 
 }

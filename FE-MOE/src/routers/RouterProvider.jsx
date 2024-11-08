@@ -40,6 +40,8 @@ import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
+import MyOrder from "~/pages/clients/orders/MyOrder";
+import BillList from "~/pages/bill/BillList";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -182,6 +184,7 @@ function RouterProvider() {
       <Route element={<ProtectedRoutes_USER />}>
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckOut />} />
+        <Route path="/my-order" element={<MyOrder />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -208,6 +211,7 @@ function RouterProvider() {
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
+        <Route path="/bill-list" element={<BillList />} />
       </Route>
     </Routes>
   );
