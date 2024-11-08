@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartReq;
 import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
+import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
 import sd79.dto.response.clients.product.ProductCart;
@@ -29,11 +31,12 @@ import sd79.model.*;
 import sd79.model.redis_model.Cart;
 import sd79.repositories.*;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
+import sd79.repositories.invoice_client.InvoiceRepository;
 import sd79.repositories.products.ProductDetailRepository;
 import sd79.repositories.products.ProductRepository;
 import sd79.repositories.promotions.PromotionDetailRepository;
 import sd79.service.JwtService;
-import sd79.service.clients.ClientProduct;
+import sd79.service.clients.ClientService;
 import sd79.utils.RandomNumberGenerator;
 
 import java.math.BigDecimal;
@@ -46,7 +49,7 @@ import static sd79.enums.TokenType.ACCESS_TOKEN;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ClientProductImpl implements ClientProduct {
+public class ClientServiceImpl implements ClientService {
 
     private final ProductCustomizeQuery productCustomizeQuery;
 
@@ -67,6 +70,8 @@ public class ClientProductImpl implements ClientProduct {
     private final CouponRepo couponRepo;
 
     private final PromotionDetailRepository promotionDetailRepository;
+
+    private final InvoiceRepository invoiceRepository;
 
     private final JwtService jwtService;
 
@@ -341,6 +346,14 @@ public class ClientProductImpl implements ClientProduct {
         });
 
         return billSave.getId();
+    }
+
+    @Override
+    public PageableResponse getInvoices(InvoiceResponse.Param param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.invoiceRepository.getAllInvoices(param);
     }
 
 }

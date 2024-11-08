@@ -162,7 +162,7 @@ function CheckOut() {
 
     if (paymentMethod === "BANK") {
       localStorage.setItem("temp_data", JSON.stringify(transformedData));
-      await reqPay(transformedData);
+      await reqPay(transformedData, "&uri=checkout");
     } else {
       await createOrder(transformedData).then(() => {
         localStorage.removeItem("orderItems");

@@ -10,15 +10,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartReq;
 import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
+import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.dto.response.clients.product.ProductClientResponse;
 import sd79.dto.response.clients.product.ProductDetailClientResponse;
 
 import java.util.List;
 import java.util.Set;
 
-public interface ClientProduct {
+public interface ClientService {
     List<ProductClientResponse> getExploreOurProducts(Integer page);
 
     Set<ProductClientResponse> getBestSellingProducts();
@@ -38,4 +40,6 @@ public interface ClientProduct {
     UserInfoRes getUserInfo(long id);
 
     long saveBill(BillClientRequest.BillCreate req);
+
+    PageableResponse getInvoices(InvoiceResponse.Param param);
 }

@@ -16,7 +16,7 @@ payment:
     url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     tmnCode: TCPEL8TY
     secretKey: OJFYW30VMNUQTYE1NFLZDQBRN8CWSIVX
-    returnUrl: http://localhost:1004/checkout
+    returnUrl: http://localhost:1004/
     version: 2.1.0
     command: pay
     orderType: OTHER

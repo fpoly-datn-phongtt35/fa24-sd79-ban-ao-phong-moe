@@ -83,3 +83,24 @@ export const fetchAllVouchers = async (id, keword) => {
     )
     .then((res) => res.data?.data?.content);
 };
+
+export const getOrders = async (pageNo, pageSize, keyword) => {
+  let uri = "client/order?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${keyword}`);
+  }
+  queryParams.push(`userId=${localStorage.getItem("userId")}`);
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/${uri}`)
+    .then((res) => res.data);
+};
