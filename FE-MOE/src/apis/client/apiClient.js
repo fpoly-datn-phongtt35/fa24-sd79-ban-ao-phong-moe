@@ -4,6 +4,7 @@
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
+import { toast } from "react-toastify";
 
 export const fetchAllProducts = async (pageNo) => {
   return await authorizedAxiosInstance
@@ -84,7 +85,7 @@ export const fetchAllVouchers = async (id, keword) => {
     .then((res) => res.data?.data?.content);
 };
 
-export const getOrders = async (pageNo, pageSize, keyword) => {
+export const getOrders = async (pageNo, pageSize, keyword, status) => {
   let uri = "client/order?";
   let queryParams = [];
 
@@ -97,10 +98,25 @@ export const getOrders = async (pageNo, pageSize, keyword) => {
   if (keyword) {
     queryParams.push(`keyword=${keyword}`);
   }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
   queryParams.push(`userId=${localStorage.getItem("userId")}`);
   uri += queryParams.join("&");
 
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/${uri}`)
+    .then((res) => res.data);
+};
+
+export const cancelInvoice = async (id, message) => {
+  return await authorizedAxiosInstance
+    .patch(`${API_ROOT}/client/cancel-order/${id}/${message}`)
+    .then((res) => toast.success(res.data.message));
+};
+
+export const billStatus = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/status.php`)
     .then((res) => res.data);
 };

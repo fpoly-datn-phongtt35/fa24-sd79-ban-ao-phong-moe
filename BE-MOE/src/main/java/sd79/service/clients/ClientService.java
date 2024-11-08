@@ -42,4 +42,8 @@ public interface ClientService {
     long saveBill(BillClientRequest.BillCreate req);
 
     PageableResponse getInvoices(InvoiceResponse.Param param);
+
+    void cancelInvoice(long id, String message);
+
+    List<InvoiceResponse.BillStatus> getInvoiceStatuses();
 }
