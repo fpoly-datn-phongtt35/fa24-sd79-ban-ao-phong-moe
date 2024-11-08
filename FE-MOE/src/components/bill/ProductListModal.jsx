@@ -124,10 +124,10 @@ function ProductListModal({ onAddProduct, onClose }) {
                             <Select
                                 placeholder="Chọn kích cỡ"
                                 value={size || ''}
-                                onChange={(e,v) => {
-                                    const selectedValue = v; 
+                                onChange={(e, v) => {
+                                    const selectedValue = v;
                                     console.log('Selected Size:', selectedValue);
-                                    setSize(selectedValue); 
+                                    setSize(selectedValue);
                                 }}
                             >
                                 <Option value="">Chọn kích cỡ</Option>
@@ -146,10 +146,10 @@ function ProductListModal({ onAddProduct, onClose }) {
                             <Select
                                 placeholder="Chọn màu sắc"
                                 value={color || ''}
-                                onChange={(e,v) => {
-                                    const selectedValue = v; 
+                                onChange={(e, v) => {
+                                    const selectedValue = v;
                                     console.log('Selected Color:', selectedValue);
-                                    setColor(selectedValue); 
+                                    setColor(selectedValue);
                                 }}
                             >
                                 <Option value="">Chọn màu sắc</Option>
@@ -189,12 +189,38 @@ function ProductListModal({ onAddProduct, onClose }) {
                         <TableBody>
                             {products.map((product, index) => (
                                 <TableRow key={product.id}>
-                                    <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                                    <TableCell align="center">
+                                        {(currentPage - 1) * pageSize + index + 1}
+                                    </TableCell>
+
                                     <TableCell>
-                                        <Box display="flex">
-                                            <ImageRotator imageUrl={product.imageUrl} w={100} h={110} />
+                                        <Box display="flex" alignItems="center" gap={2} position="relative">
+                                            <Box position="relative">
+                                                <ImageRotator imageUrl={product.imageUrl} w={110} h={120}/>
+                                                {product.percent && (
+                                                    <Box
+                                                        position="absolute"
+                                                        top={0}
+                                                        left={0}
+                                                        bgcolor="error.main"
+                                                        color="white"
+                                                        fontSize="0.5rem"
+                                                        fontWeight="bold"
+                                                        px={1}
+                                                        py={0.5}
+                                                        borderRadius="3px"
+                                                        sx={{
+                                                            transform: "translate(10%, -10%)",
+                                                        }}
+                                                    >
+                                                        -{product.percent}%
+                                                    </Box>
+                                                )}
+                                            </Box>
                                             <Box>
-                                                <Typography variant="h6">{product.productName}</Typography>
+                                                <Typography variant="h6" fontWeight="bold">
+                                                    {product.productName}
+                                                </Typography>
                                                 <Typography variant="body2" color="textSecondary">
                                                     Màu: {product.color} - Kích cỡ: {product.size}
                                                 </Typography>
@@ -204,14 +230,42 @@ function ProductListModal({ onAddProduct, onClose }) {
                                             </Box>
                                         </Box>
                                     </TableCell>
-                                    <TableCell align="center">{product.quantity}</TableCell>
-                                    <TableCell align="center">{formatCurrencyVND(product.price)}</TableCell>
+
+                                    <TableCell align="center">
+                                        <Typography variant="body2" fontWeight="medium">
+                                            {product.quantity}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {product.sellPrice && product.percent ? (
+                                            <Box display="flex" flexDirection="column" alignItems="center">
+                                                <Typography variant="body2" color="textSecondary" style={{ textDecoration: "line-through" }}>
+                                                    {formatCurrencyVND(product.price)}
+                                                </Typography>
+                                                <Typography variant="body2" color="error" fontWeight="bold">
+                                                    {formatCurrencyVND(product.sellPrice)}
+                                                </Typography>
+                                            </Box>
+                                        ) : (
+                                            <Typography variant="body2" fontWeight="medium">
+                                                {formatCurrencyVND(product.price)}
+                                            </Typography>
+                                        )}
+                                    </TableCell>
+
                                     <TableCell align="center">
                                         <Button
                                             variant="contained"
                                             color="primary"
+                                            size="small"
                                             startIcon={<AddShoppingCartIcon />}
                                             onClick={() => handleAddProduct(product)}
+                                            sx={{
+                                                padding: "4px 12px",
+                                                fontSize: "0.875rem",
+                                                fontWeight: "medium",
+                                            }}
                                         >
                                             Thêm
                                         </Button>
@@ -221,6 +275,7 @@ function ProductListModal({ onAddProduct, onClose }) {
                         </TableBody>
                     </Table>
                 </TableContainer>
+
 
                 <Box display="flex" justifyContent="center" alignItems="center" padding={3}>
                     {totalPages > 1 && (

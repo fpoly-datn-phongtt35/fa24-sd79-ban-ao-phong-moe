@@ -24,7 +24,7 @@ import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
-import { Input } from '@mui/joy';
+import { FormControl, FormLabel, Input, MenuItem, Option, Select, Switch } from '@mui/joy';
 import CustomerList from '~/components/bill/CustomerList';
 import DiscountIcon from '@mui/icons-material/Discount';
 import CouponModal from '~/components/bill/CouponModal';
@@ -32,6 +32,11 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import axios from 'axios';
+import { fetchCustomerById } from '~/apis/customerApi';
+import SvgIconDisplay from '~/components/other/SvgIconDisplay';
+import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
 
 function Bill() {
     const navigate = useNavigate();
@@ -51,6 +56,26 @@ function Bill() {
     const [isDisabled, setIsDisabled] = useState(false);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
     const [customerId, setCustomerId] = useState(null);
+    const [isDeliveryEnabled, setDeliveryEnabled] = useState(true);
+
+    const [cities, setCities] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedCity, setSelectedCity] = useState("");
+    const [selectedDistrict, setSelectedDistrict] = useState("");
+    const [selectedWard, setSelectedWard] = useState("");
+    const host = "https://provinces.open-api.vn/api/";
+
+    const [customerData, setCustomerData] = useState({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        city: '',
+        district: '',
+        ward: '',
+        streetName: ''
+    });
+
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -142,7 +167,7 @@ function Bill() {
             bill: selectedOrder,
             quantity: 1,
             price: parseFloat(pr.price),
-            discountAmount: 0,
+            discountAmount: pr.sellPrice,
         };
         try {
             await postProduct(product);
@@ -196,7 +221,7 @@ function Bill() {
         const customerData = {
             bill: selectedOrder,
             customer: customer.id,
-            customerId: orderData.customerId
+            customerId: orderData.customerId,
         };
 
         try {
@@ -277,9 +302,9 @@ function Bill() {
             )
         );
     };
-   
+
     const subtotal = products.reduce((total, product) => {
-        return total + product.productDetail.price * product.quantity;
+        return total + product.discountAmount * product.quantity;
     }, 0);
 
     const discountAmount = (() => {
@@ -441,6 +466,85 @@ function Bill() {
         }
     };
 
+    //dia chi
+
+    const handleToggleDelivery = () => {
+        setDeliveryEnabled((prev) => !prev);
+    };
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            const response = await axios.get(`${host}?depth=1`);
+            setCities(response.data);
+        };
+        fetchCities();
+    }, []);
+
+    const handleCityChange = async (e) => {
+        const provinceId = e;
+        setSelectedCity(provinceId);
+        setSelectedDistrict("");
+        setSelectedWard("");
+        if (provinceId) {
+            const response = await axios.get(`${host}p/${provinceId}?depth=2`);
+            setDistricts(response.data.districts);
+        } else {
+            setDistricts([]);
+        }
+    };
+
+    const handleDistrictChange = async (e) => {
+        const districtId = e;
+        setSelectedDistrict(districtId);
+        setSelectedWard(""); // Reset ward
+        if (districtId) {
+            const response = await axios.get(`${host}d/${districtId}?depth=2`);
+            setWards(response.data.wards);
+        } else {
+            setWards([]);
+        }
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e);
+    };
+
+    useEffect(() => {
+        if (customerId) {
+            fetchCustomerDetail();
+        } else {
+            setCustomerData(null);
+        }
+        handleSetBill();
+    }, [customerId]);
+
+    const fetchCustomerDetail = async () => {
+        if (!customerId) {
+            console.error("Customer ID is missing");
+            return;
+        }
+
+        try {
+            const response = await fetchCustomerById(customerId);
+            const customerData = response.data;
+
+            handleCityChange(customerData.city_id);
+            handleDistrictChange(customerData.district_id)
+            handleWardChange(customerData.ward)
+
+            setCustomerData({
+                firstName: customerData.firstName,
+                lastName: customerData.lastName,
+                phoneNumber: customerData.phoneNumber,
+                city: customerData.city,
+                district: customerData.district,
+                ward: customerData.ward,
+                streetName: customerData.streetName
+            });
+        } catch (error) {
+            console.error("Failed to fetch customer detail:", error);
+        }
+    };
 
     return (
 
@@ -451,7 +555,7 @@ function Bill() {
                     <Typography
                         variant="h5"
                         gutterBottom
-                        sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'center' }} 
+                        sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'center' }}
                     >
                         QUẢN LÝ ĐƠN HÀNG
                     </Typography>
@@ -592,11 +696,6 @@ function Bill() {
                                     <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                                         Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
                                     </Typography>
-                                    {product.discountAmount > 0 && (
-                                        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                                            Giảm giá: {formatCurrencyVND(product.discountAmount)}
-                                        </Typography>
-                                    )}
                                 </Grid>
                                 <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center">
                                     <Input
@@ -613,8 +712,20 @@ function Bill() {
                                 </Grid>
                                 <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
                                     <Typography variant="body2" sx={{ mr: 1 }}>
-                                        {formatCurrencyVND(product.productDetail.price * product.quantity)}
+                                        {product.discountAmount === product.productDetail.price ? (
+                                            formatCurrencyVND(product.productDetail.price * product.quantity)
+                                        ) : (
+                                            <>
+                                                <span style={{ textDecoration: "line-through", color: "gray", marginRight: 8 }}>
+                                                    {formatCurrencyVND(product.productDetail.price * product.quantity)}
+                                                </span>
+                                                <span style={{ color: "red" }}>
+                                                    {formatCurrencyVND(product.discountAmount * product.quantity)}
+                                                </span>
+                                            </>
+                                        )}
                                     </Typography>
+
                                     <IconButton color="error" onClick={() => handleDeleteProduct(product)}>
                                         <DeleteIcon />
                                     </IconButton>
@@ -639,23 +750,169 @@ function Bill() {
             {/* Coupon and Tính toán */}
             <div>
                 <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}>
-                    <Typography variant="h5" fontWeight="bold" color="textPrimary" gutterBottom>
-                        Thông tin thanh toán
-                    </Typography>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                        <Typography variant="h5" fontWeight="bold" color="textPrimary">
+                            Thông tin thanh toán
+                        </Typography>
+
+                        <Box display="flex" alignItems="center">
+                            <Switch checked={isDeliveryEnabled} onChange={handleToggleDelivery} />
+                            <Typography variant="body1">Giao hàng</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <LocationOnIcon color="success" />
+                            <Typography variant="body1" color="textSecondary">
+                                Địa chỉ
+                            </Typography>
+                        </Box>
+                    </Box>
                     <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
                     <Grid container spacing={4}>
-                        <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
-                            <Box
-                                component="img"
-                                src="https://via.placeholder.com/300x300?text=Product+Image"
-                                alt="Shoe"
-                                sx={{ width: '100%', borderRadius: '12px', boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}
-                            />
-                        </Grid>
+                        {isDeliveryEnabled ? (
+                            customerData ? (
+                                <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
+                                    <Grid container spacing={2} ml={0}>
+                                        <Grid container spacing={2} mb={3}>
+                                            <Grid item xs={12} md={6}>
+                                                <FormControl required>
+                                                    <FormLabel>Họ và tên</FormLabel>
+                                                    <Input
+                                                        value={`${customerData.lastName || ""} ${customerData.firstName || ""}`}
+                                                        variant="outlined"
+                                                        size="md"
+                                                        inputProps={{ sx: { textAlign: 'center' } }}
+                                                    />
+                                                </FormControl>
+                                            </Grid>
+                                            <Grid item xs={12} md={6}>
+                                                <FormControl required>
+                                                    <FormLabel>Số điện thoại</FormLabel>
+                                                    <Input
+                                                        value={customerData.phoneNumber || ""}
+                                                        variant="outlined"
+                                                        size="md"
+                                                        inputProps={{ sx: { textAlign: 'center' } }}
+                                                    />
+                                                </FormControl>
+                                            </Grid>
+                                        </Grid>
 
-                        <Grid item xs={12} md={8}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                        <Grid container spacing={2} mb={3}>
+                                            <Grid item xs={12} md={4}>
+                                                <FormControl required>
+                                                    <FormLabel>Tỉnh/thành phố</FormLabel>
+                                                    <Select
+                                                        value={selectedCity}
+                                                        onChange={(e, v) => handleCityChange(v)}
+                                                        placeholder="Chọn thành phố"
+                                                    >
+                                                        <Option value="" disabled>
+                                                            Chọn tỉnh thành
+                                                        </Option>
+                                                        {cities.map((city) => (
+                                                            <Option key={city.code} value={city.code}>
+                                                                {city.name}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+
+                                            <Grid item xs={12} md={4}>
+                                                <FormControl required>
+                                                    <FormLabel>Quận/huyện</FormLabel>
+                                                    <Select
+                                                        value={selectedDistrict}
+                                                        onChange={(e, v) => handleDistrictChange(v)}
+                                                        placeholder="Chọn quận huyện"
+                                                    >
+                                                        <Option value="" disabled>
+                                                            Chọn quận huyện
+                                                        </Option>
+                                                        {districts.map((district) => (
+                                                            <Option key={district.code} value={district.code}>
+                                                                {district.name}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+
+                                            <Grid item xs={12} md={4}>
+                                                <FormControl required>
+                                                    <FormLabel>Xã/phường/thị trấn</FormLabel>
+                                                    <Select
+                                                        value={selectedWard}
+                                                        onChange={(e, v) => handleWardChange(v)}
+                                                        placeholder="Chọn phường xã"
+                                                    >
+                                                        <Option value="" disabled>
+                                                            Chọn phường xã
+                                                        </Option>
+                                                        {wards.map((ward) => (
+                                                            <Option key={ward.code} value={ward.name}>
+                                                                {ward.name}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+                                        </Grid>
+
+                                        <Grid container spacing={2} mb={2}>
+                                            <Grid item xs={12} md={6}>
+                                                <FormControl required>
+                                                    <FormLabel>Địa chỉ cụ thể</FormLabel>
+                                                    <Input
+                                                        size="md"
+                                                        value={customerData.streetName || ""}
+                                                        variant="outlined"
+                                                    />
+                                                </FormControl>
+                                            </Grid>
+                                            <Grid item xs={12} md={6}>
+                                                <SvgIconDisplay
+                                                    width={"100%"}
+                                                    height={"90%"}
+                                                    icon={VanChuyenNhanh}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            ) : (
+                                <Grid item xs={12} md={6}>
+                                    <Box
+                                        component="img"
+                                        src="https://via.placeholder.com/300x300?text=Product+Image"
+                                        alt="No Delivery"
+                                        sx={{
+                                            width: '100%',
+                                            borderRadius: '12px',
+                                            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"
+                                        }}
+                                    />
+                                </Grid>
+                            )
+                        ) : (
+                            <Grid item xs={12} md={6}>
+                                <Box
+                                    component="img"
+                                    src="https://via.placeholder.com/300x300?text=Product+Image"
+                                    alt="No Delivery"
+                                    sx={{
+                                        width: '100%',
+                                        borderRadius: '12px',
+                                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"
+                                    }}
+                                />
+                            </Grid>
+                        )}
+
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt:1}}>
                                 <Button
                                     startIcon={<DiscountIcon />}
                                     variant="outlined"
@@ -773,7 +1030,6 @@ function Bill() {
             </div>
 
         </Container >
-
     );
 }
 
