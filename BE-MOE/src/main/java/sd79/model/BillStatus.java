@@ -1,7 +1,6 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import sd79.enums.InvoiceStatus;

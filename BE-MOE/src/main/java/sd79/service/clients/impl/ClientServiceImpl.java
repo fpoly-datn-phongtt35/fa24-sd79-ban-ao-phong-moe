@@ -14,15 +14,12 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.bills.BillClientRequest;
-import sd79.dto.requests.clients.cart.CartReq;
-import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.requests.clients.cart.CartRequest;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
-import sd79.dto.response.clients.product.ProductClientResponse;
-import sd79.dto.response.clients.product.ProductDetailClientResponse;
-import sd79.dto.response.clients.product.ProductCart;
+import sd79.dto.response.clients.product.ProductResponse;
 import sd79.enums.PaymentMethod;
 import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
@@ -78,7 +75,7 @@ public class ClientServiceImpl implements ClientService {
     private final JwtService jwtService;
 
     @Override
-    public List<ProductClientResponse> getExploreOurProducts(Integer page) {
+    public List<ProductResponse.Product> getExploreOurProducts(Integer page) {
         if (page < 1) {
             page = 1;
         }
@@ -86,12 +83,12 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Set<ProductClientResponse> getBestSellingProducts() {
+    public Set<ProductResponse.Product> getBestSellingProducts() {
         return this.productCustomizeQuery.getBestSellingProducts();
     }
 
     @Override
-    public ProductDetailClientResponse getProductDetail(Long id) {
+    public ProductResponse.ProductDetail getProductDetail(Long id) {
         Product product = this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
         PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(product.getId());
         BigDecimal retailPrice = product.getProductDetails().getFirst().getRetailPrice();
@@ -101,7 +98,7 @@ public class ClientServiceImpl implements ClientService {
 
         BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
 
-        List<ProductClientResponse> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> {
+        List<ProductResponse.Product> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> {
                     PromotionDetail promotionDetail2 = this.promotionDetailRepository.findByProductId(s.getId());
 
                     BigDecimal retailPrice2 = s.getProductDetails().getFirst().getRetailPrice();
@@ -111,7 +108,7 @@ public class ClientServiceImpl implements ClientService {
                             : BigDecimal.ZERO;
                     BigDecimal discountPrice2 = retailPrice2.multiply(BigDecimal.valueOf(1).subtract(discountPercent2));
 
-                    return ProductClientResponse.builder()
+                    return ProductResponse.Product.builder()
                             .productId(s.getId())
                             .imageUrl(s.getProductImages().getFirst().getImageUrl())
                             .name(s.getName())
@@ -124,7 +121,7 @@ public class ClientServiceImpl implements ClientService {
                             .build();
                 }
         ).toList();
-        return ProductDetailClientResponse.builder()
+        return ProductResponse.ProductDetail.builder()
                 .productId(id)
                 .imageUrl(product.getProductImages().stream()
                         .map(ProductImage::getImageUrl)
@@ -152,7 +149,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<CartResponse> getCarts(HttpServletRequest request) {
+    public List<CartResponse.Cart> getCarts(HttpServletRequest request) {
         String authorization = request.getHeader(AUTHORIZATION);
         if (StringUtils.isBlank(authorization)) {
             throw new InvalidDataAccessApiUsageException("Token must be not blank!");
@@ -160,11 +157,11 @@ public class ClientServiceImpl implements ClientService {
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
         List<Cart> cart = this.cartRepository.findByUsername(username);
-        List<CartResponse> cartResponses = new ArrayList<>();
+        List<CartResponse.Cart> cartResponses = new ArrayList<>();
 
         cart.forEach(i -> {
             Optional<ProductDetail> productDetail = productDetailRepository.findById(Long.valueOf(i.getId()));
-            ProductCart validProduct = new ProductCart();
+            CartResponse.ProductCart validProduct = new CartResponse.ProductCart();
             if (productDetail.isPresent()) {
                 ProductDetail prd = productDetail.get();
                 PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
@@ -187,7 +184,7 @@ public class ClientServiceImpl implements ClientService {
                 validProduct.setQuantity(0);
                 validProduct.setMessage(String.format("Product id %s is valid", i.getId()));
             }
-            cartResponses.add(CartResponse.builder()
+            cartResponses.add(CartResponse.Cart.builder()
                     .id(i.getId())
                     .imageUrl(i.getImageUrl())
                     .name(i.getName())
@@ -202,12 +199,14 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public void addToCart(FilterForCartReq req) {
+    public void addToCart(CartRequest.FilterParams req) {
         ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(prd.getId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
             Cart updatedCart = isAlreadyExists.get();
-            if ((updatedCart.getQuantity() + req.getQuantity()) > prd.getQuantity()) {
+            if (prd.getQuantity() <= 0) {
+                throw new InvalidDataException("Hết hàng!");
+            } else if ((updatedCart.getQuantity() + req.getQuantity()) > prd.getQuantity()) {
                 throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity() - updatedCart.getQuantity()));
             }
             updatedCart.setQuantity(updatedCart.getQuantity() + req.getQuantity());
@@ -231,7 +230,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public CartResponse buyNow(FilterForCartReq req) {
+    public CartResponse.Cart buyNow(CartRequest.FilterParams req) {
         ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
         PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
         BigDecimal discountPercent = promotionDetail != null
@@ -240,14 +239,14 @@ public class ClientServiceImpl implements ClientService {
         BigDecimal retailPrice = prd.getRetailPrice();
         BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
         boolean status = prd.getStatus() == ProductStatus.ACTIVE && prd.getProduct().getStatus() == ProductStatus.ACTIVE;
-        ProductCart productCart = ProductCart.builder()
+        CartResponse.ProductCart productCart = CartResponse.ProductCart.builder()
                 .id(prd.getId())
                 .status(status)
                 .quantity(prd.getQuantity())
                 .sellPrice(discountPrice)
                 .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
                 .build();
-        return CartResponse.builder()
+        return CartResponse.Cart.builder()
                 .id(String.valueOf(prd.getId()))
                 .imageUrl(prd.getProduct().getProductImages().getFirst().getImageUrl())
                 .name(String.format("%s [%s - %s]", prd.getProduct().getName(), prd.getColor().getName(), prd.getSize().getName()))
@@ -260,7 +259,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public void updateCart(CartReq req) {
+    public void updateCart(CartRequest.Param req) {
         ProductDetail prd = this.productDetailRepository.findById(req.getProductDetailId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(req.getProductDetailId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
@@ -378,6 +377,7 @@ public class ClientServiceImpl implements ClientService {
                 InvoiceResponse.InvoiceStatus.builder()
                         .id(i.getId())
                         .name(i.getName())
+                        .status(i.getStatus())
                         .build()
         ).toList();
     }

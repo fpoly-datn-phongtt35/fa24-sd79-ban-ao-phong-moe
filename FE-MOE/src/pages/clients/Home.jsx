@@ -2,7 +2,15 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import { Box, Button, Divider, Grid, IconButton, Typography } from "@mui/joy";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Grid,
+  IconButton,
+  Typography,
+} from "@mui/joy";
 import { useEffect, useState } from "react";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import {
@@ -75,6 +83,18 @@ const Home = () => {
               </Grid>
             ))}
         </Grid>
+        {bestSellingProducts?.length == 0 && (
+          <Grid
+            marginTop={2}
+            container
+            spacing={2}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <CircularProgress />
+          </Grid>
+        )}
       </Box>
       <Box>
         <Grid padding={3} container spacing={2}>
@@ -106,6 +126,18 @@ const Home = () => {
               </Grid>
             ))}
         </Grid>
+        {products?.length == 0 && (
+          <Grid
+            marginTop={2}
+            container
+            spacing={2}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <CircularProgress />
+          </Grid>
+        )}
         <Box sx={{ margin: 3, display: "flex", justifyContent: "center" }}>
           <Button color="neutral" variant="soft" onClick={() => viewMore()}>
             Xem thêm
