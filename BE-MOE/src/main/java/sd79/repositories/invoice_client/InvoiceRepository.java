@@ -82,7 +82,11 @@ public class InvoiceRepository {
                         .sellDiscount(i.getSellerDiscount())
                         .shippingFee(i.getShipping())
                         .totalAmount(i.getTotal())
-                        .status(i.getBillStatus().getName())
+                        .status(InvoiceResponse.InvoiceStatus.builder()
+                                .id(i.getBillStatus().getId())
+                                .name(i.getBillStatus().getName())
+                                .status(i.getBillStatus().getStatus())
+                                .build())
                         .paymentTime(i.getPaymentTime())
                         .orderDate(i.getCreateAt())
                         .products(i.getBillDetails().stream().map(prd ->
