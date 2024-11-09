@@ -37,6 +37,50 @@ function TableRow(props) {
     setValue(event.target.value);
     setMessage(event.target.value);
   };
+
+  const renderChip = (status) => {
+    switch (status) {
+      case "PENDING":
+        return <Chip color="warning">Đang chờ xử lý</Chip>;
+      case "PENDING_CONFIRMATION":
+        return <Chip color="warning">Đang chờ xác nhận</Chip>;
+      case "CONFIRMED":
+        return <Chip color="info">Đã xác nhận</Chip>;
+      case "SHIPPED":
+        return <Chip color="warning">Đang vận chuyển</Chip>;
+      case "DELIVERED":
+        return <Chip color="success">Đơn hàng hoàn tất</Chip>;
+      case "DELIVERY_FAILED":
+        return <Chip color="danger">Giao hàng thất bại</Chip>;
+      case "CANCELED":
+        return <Chip color="danger">Đã hủy đơn hàng</Chip>;
+      case "COMPLETED":
+        return <Chip color="success">Đơn hàng hoàn tất</Chip>;
+      default:
+        return <Chip color="warning">Đang cập nhật</Chip>;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "PENDING":
+      case "PENDING_CONFIRMATION":
+        return "warning";
+      case "CONFIRMED":
+        return "neutral";
+      case "SHIPPED":
+        return "info";
+      case "DELIVERED":
+      case "COMPLETED":
+        return "success";
+      case "DELIVERY_FAILED":
+      case "CANCELED":
+        return "danger";
+      default:
+        return "text";
+    }
+  };
+
   return (
     <React.Fragment>
       <tr>
@@ -94,13 +138,7 @@ function TableRow(props) {
           </Typography>
         </td>
         <td style={{ textAlign: "center", width: "20%" }}>
-          {props.item.paymentTime !== null ? (
-            <Chip color="success">Đã thanh toán</Chip>
-          ) : props.item.status.status === "CANCELED" ? (
-            <Chip color="danger">Đã hủy đơn hàng</Chip>
-          ) : (
-            <Chip color="warning">Chờ thanh toán</Chip>
-          )}
+          {renderChip(props.item.status.status)}
         </td>
         <td style={{ textAlign: "center", width: "20%" }}>
           <Typography level="title-sm">
@@ -208,7 +246,10 @@ function TableRow(props) {
                         >
                           Trạng thái đơn hàng:
                         </Typography>
-                        <Typography level="title-md" color="primary">
+                        <Typography
+                          level="title-md"
+                          color={getStatusColor(props.item.status.status)}
+                        >
                           {props.item.status.name}
                         </Typography>
                       </Box>
@@ -273,7 +314,7 @@ function TableRow(props) {
                     </Box>
                   </Box>
                   <Box marginTop={2}>
-                    {props.item.status === "Chưa xác nhận" &&
+                    {props.item.status.status === "PENDING_CONFIRMATION" &&
                       props.item.paymentMethod !== "BANK" && (
                         <Button color="danger" onClick={() => setOpen(true)}>
                           Hủy đơn

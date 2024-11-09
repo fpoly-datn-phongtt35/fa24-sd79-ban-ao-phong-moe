@@ -25,6 +25,7 @@ import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import EmptyOrderSvgIcon from "~/assert/icon/note-notepad-svgrepo-com.svg";
 import { Pagination } from "@mui/material";
 import debounce from "lodash.debounce";
+import { ScrollToTop } from "~/utils/defaultScroll";
 
 function MyOrder() {
   const navigate = useNavigate();
@@ -47,12 +48,14 @@ function MyOrder() {
   }, []);
 
   useEffect(() => {
+    ScrollToTop();
     handleGetInvoices();
   }, [pageNo, pageSize, keyword, status]);
 
   const debouncedSearch = debounce((value) => {
     setKeyword(value);
     setPageNo(1);
+    setOpenRow(null);
   }, 300);
 
   const onChangeSearch = (e) => {
@@ -62,6 +65,7 @@ function MyOrder() {
   const handleSetPageSize = (value) => {
     setPageNo(1);
     setPageSize(value);
+    setOpenRow(null);
   };
 
   const handleGetInvoices = async () => {
@@ -78,6 +82,7 @@ function MyOrder() {
 
   const handlePageChange = (event, value) => {
     setPageNo(value);
+    setOpenRow(null);
   };
 
   const handleRowToggle = (code) => {
@@ -126,7 +131,10 @@ function MyOrder() {
           <Select
             value={status}
             sx={{ minWidth: 300 }}
-            onChange={(event, value) => setStatus(value)}
+            onChange={(event, value) => {
+              setStatus(value);
+              setPageNo(1);
+            }}
           >
             <Option value={0}>Tất cả</Option>
             {statusOptions &&

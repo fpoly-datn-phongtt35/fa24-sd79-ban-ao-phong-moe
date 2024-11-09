@@ -66,6 +66,10 @@ public abstract class InvoiceResponse {
     public static class Product {
         private Long id; // id product detail
 
+        private Long productId;
+
+        private String category;
+
         private String name;
 
         private String imageUrl;

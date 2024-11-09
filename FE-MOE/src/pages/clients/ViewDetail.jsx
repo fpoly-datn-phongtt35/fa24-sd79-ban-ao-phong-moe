@@ -114,10 +114,12 @@ export const ViewDetail = () => {
       };
       console.log(data);
       await buyNow(data).then((res) => {
-        console.log(res);
-
-        localStorage.setItem("orderItems", JSON.stringify([res.data]));
-        navigate("/checkout");
+        if (res.data.productCart.quantity <= 0) {
+          toast.error("Sản phẩm đã hết hàng");
+        } else {
+          localStorage.setItem("orderItems", JSON.stringify([res.data]));
+          navigate("/checkout");
+        }
       });
     }
   };
