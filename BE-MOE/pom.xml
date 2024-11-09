@@ -153,6 +153,12 @@
     </build>
     <profiles>
         <profile>
+            <id>prd</id>
+            <properties>
+                <spring.profiles.active>prd</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
             <id>nhv</id>
             <properties>
                 <spring.profiles.active>nhv</spring.profiles.active>

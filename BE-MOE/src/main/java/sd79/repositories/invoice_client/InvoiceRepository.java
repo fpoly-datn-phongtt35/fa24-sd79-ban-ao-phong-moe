@@ -96,6 +96,8 @@ public class InvoiceRepository {
                                         .imageUrl(prd.getProductDetail().getProduct().getProductImages().getFirst().getImageUrl())
                                         .status(prd.getQuantity() > 0 || prd.getProductDetail().getStatus() == ProductStatus.ACTIVE || prd.getProductDetail().getProduct().getStatus() == ProductStatus.ACTIVE)
                                         .quantity(prd.getQuantity())
+                                        .productId(prd.getProductDetail().getProduct().getId())
+                                        .category(prd.getProductDetail().getProduct().getCategory().getName())
                                         .retailPrice(prd.getRetailPrice())
                                         .discountPrice(prd.getDiscountAmount())
                                         .totalAmount(prd.getTotalAmountProduct())

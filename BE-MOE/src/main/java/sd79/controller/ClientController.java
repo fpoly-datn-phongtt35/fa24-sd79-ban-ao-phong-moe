@@ -15,8 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.bills.BillClientRequest;
-import sd79.dto.requests.clients.cart.CartReq;
-import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.requests.clients.cart.CartRequest;
 import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
@@ -90,13 +89,13 @@ public class ClientController {
             description = "Add an item to the shopping cart with specified filters"
     )
     @PostMapping("/add-to-cart")
-    public ResponseData<?> addToCart(@RequestBody FilterForCartReq cartReq) {
+    public ResponseData<?> addToCart(@RequestBody CartRequest.FilterParams cartReq) {
         this.clientService.addToCart(cartReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công");
     }
 
     @PostMapping("/buy")
-    public ResponseData<?> buyNow(@RequestBody FilterForCartReq cartReq) {
+    public ResponseData<?> buyNow(@RequestBody CartRequest.FilterParams cartReq) {
         return new ResponseData<>(HttpStatus.OK.value(), "Chờ thanh toán", this.clientService.buyNow(cartReq));
     }
 
@@ -105,7 +104,7 @@ public class ClientController {
             description = "Update an item in the shopping cart based on the provided request data"
     )
     @PutMapping("/update-cart")
-    public ResponseData<?> updateCart(@RequestBody CartReq cartReq) {
+    public ResponseData<?> updateCart(@RequestBody CartRequest.Param cartReq) {
         this.clientService.updateCart(cartReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
     }

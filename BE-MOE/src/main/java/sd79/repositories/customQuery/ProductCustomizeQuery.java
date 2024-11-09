@@ -20,9 +20,8 @@ import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.requests.common.ProductParamFilter2;
 import sd79.dto.response.PageableResponse;
-import sd79.dto.response.clients.product.ProductClientResponse;
+import sd79.dto.response.clients.product.ProductResponse;
 import sd79.dto.response.productResponse.ProductDetailResponse2;
-import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 import sd79.model.Product;
 import sd79.model.ProductDetail;
@@ -105,7 +104,7 @@ public class ProductCustomizeQuery {
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
+        List<sd79.dto.response.productResponse.ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
 
         // TODO count product
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = false");
@@ -225,7 +224,7 @@ public class ProductCustomizeQuery {
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        List<ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
+        List<sd79.dto.response.productResponse.ProductResponse> data = query.getResultList().stream().map(this::convertToProductResponse).toList();
 
         // TODO count product
         StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.isDeleted = true");
@@ -451,7 +450,7 @@ public class ProductCustomizeQuery {
                 .build();
     }
 
-    public List<ProductClientResponse> getExploreOurProducts(Integer page) {
+    public List<ProductResponse.Product> getExploreOurProducts(Integer page) {
         StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
         query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
         query.append(" ORDER BY prd.updateAt DESC");
@@ -469,7 +468,7 @@ public class ProductCustomizeQuery {
 
                             BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
 
-                            return ProductClientResponse.builder()
+                            return ProductResponse.Product.builder()
                                     .productId(s.getId())
                                     .imageUrl(s.getProductImages().getFirst().getImageUrl())
                                     .name(s.getName())
@@ -484,7 +483,7 @@ public class ProductCustomizeQuery {
                 ).toList();
     }
 
-    public Set<ProductClientResponse> getBestSellingProducts() {
+    public Set<ProductResponse.Product> getBestSellingProducts() {
         StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
         query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
         query.append(" ORDER BY prd.updateAt DESC");
@@ -500,7 +499,7 @@ public class ProductCustomizeQuery {
                                     : BigDecimal.ZERO;
 
                             BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
-                            return ProductClientResponse.builder()
+                            return ProductResponse.Product.builder()
                                     .productId(s.getId())
                                     .imageUrl(s.getProductImages().getFirst().getImageUrl())
                                     .name(s.getName())
@@ -515,8 +514,8 @@ public class ProductCustomizeQuery {
                 ).collect(Collectors.toSet());
     }
 
-    private ProductResponse convertToProductResponse(Product product) {
-        return ProductResponse.builder()
+    private sd79.dto.response.productResponse.ProductResponse convertToProductResponse(Product product) {
+        return sd79.dto.response.productResponse.ProductResponse.builder()
                 .id(product.getId())
                 .imageUrl(convertToUrl(product.getProductImages()))
                 .name(product.getName())
