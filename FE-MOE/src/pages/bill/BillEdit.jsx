@@ -1,86 +1,199 @@
-import React from 'react';
-import { Box, Typography, IconButton, Button, Input } from '@mui/joy';
-import ArticleIcon from '@mui/icons-material/Article';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Step, Stepper, StepLabel, StepConnector } from '@mui/material';
-
-const steps = [
-  { label: 'Tạo đơn hàng', icon: <ArticleIcon />, time: '17:52:50 21/12/2023' },
-  { label: 'Chờ giao', icon: <LocalShippingIcon />, time: '18:14:48 21/12/2023' },
-  { label: 'Đang giao hàng', icon: <LocalShippingIcon />, time: '' },
-  { label: 'Đã giao hàng', icon: <CheckCircleIcon />, time: '' },
-];
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Box, Typography, Container, Stepper } from '@mui/joy';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import ContactsRoundedIcon from '@mui/icons-material/ContactsRounded';
+import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
+import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import StepIndicator, { stepIndicatorClasses } from '@mui/joy/StepIndicator';
+import Step, { stepClasses } from '@mui/joy/Step';
+import { getBillEdit } from '~/apis/billListApi';
+import PrintIcon from '@mui/icons-material/Print';
+import { Button } from '@mui/material';
 
 export default function BillEdit() {
+  const { id } = useParams();
+  const [billData, setBillData] = useState(null);
+
+  useEffect(() => {
+    const fetchBillEdit = async () => {
+      const bill = await getBillEdit(id);
+      console.log(bill.data)
+      setBillData(bill.data);
+    };
+    fetchBillEdit();
+  }, [id]);
+
+  const statusMap = {
+    '2': 'Chờ xác nhận',
+    '4': 'Chờ giao',
+    '3': 'Hoàn thành',
+    '7': 'Đã hủy',
+  };
+
   return (
-    <Box className="bill-edit" sx={{ padding: 3, maxWidth: 900, margin: 'auto' }}>
-      
-      {/* Stepper Section */}
-      <Box sx={{ marginBottom: 4 }}>
-        <Typography variant="h5" textAlign="center" gutterBottom>
-          Chi tiết hóa đơn
-        </Typography>
-        <Stepper activeStep={1} alternativeLabel connector={<StepConnector />}>
-          {steps.map((step, index) => (
-            <Step key={index}>
-              <IconButton size="large" color="primary" style={{ color: index <= 1 ? '#4CAF50' : '#c4c4c4' }}>
-                {step.icon}
-              </IconButton>
-              <StepLabel>
-                <Typography variant="body2">{step.label}</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {step.time}
-                </Typography>
-              </StepLabel>
-            </Step>
-          ))}
+    <Container maxWidth="max-Width" style={{ backgroundColor: 'white', height: '100%', marginTop: '15px' }}>
+      {/* Order Status */}
+      <Box display="flex" flexDirection="column" alignItems="start">
+        {billData?.map((bd) => (
+          <Typography key={bd.id || bd.code} variant="h6" style={{ marginBottom: '20px' }}>
+            <span style={{ color: '#ae4f0c' }}>Danh sách hóa đơn</span> / Hóa đơn: {bd.code}
+          </Typography>
+        ))}
+        <Stepper
+          size="lg"
+          sx={{
+            width: '100%',
+            '--StepIndicator-size': '3rem',
+            '--Step-connectorInset': '0px',
+            [`& .${stepIndicatorClasses.root}`]: {
+              borderWidth: 4,
+            },
+            [`& .${stepClasses.root}::after`]: {
+              height: 4,
+            },
+            [`& .${stepClasses.completed}`]: {
+              [`& .${stepIndicatorClasses.root}`]: {
+                borderColor: 'primary.300',
+                color: 'primary.300',
+              },
+              '&::after': {
+                bgcolor: 'primary.300',
+              },
+            },
+            [`& .${stepClasses.active}`]: {
+              [`& .${stepIndicatorClasses.root}`]: {
+                borderColor: 'currentColor',
+              },
+            },
+            [`& .${stepClasses.disabled} *`]: {
+              color: 'neutral.outlinedDisabledColor',
+            },
+          }}
+        >
+          <Step
+            completed
+            orientation="vertical"
+            indicator={
+              <StepIndicator variant="outlined" color="primary">
+                <ShoppingCartRoundedIcon />
+              </StepIndicator>
+            }
+          />
+          <Step
+            orientation="vertical"
+            completed
+            indicator={
+              <StepIndicator variant="outlined" color="primary">
+                <ContactsRoundedIcon />
+              </StepIndicator>
+            }
+          />
+          <Step
+            orientation="vertical"
+            completed
+            indicator={
+              <StepIndicator variant="outlined" color="primary">
+                <LocalShippingRoundedIcon />
+              </StepIndicator>
+            }
+          />
+          <Step
+            orientation="vertical"
+            active
+            indicator={
+              <StepIndicator variant="solid" color="primary">
+                <CreditCardRoundedIcon />
+              </StepIndicator>
+            }
+          >
+            <Typography
+              sx={{
+                textTransform: 'uppercase',
+                fontWeight: 'lg',
+                fontSize: '0.75rem',
+                letterSpacing: '0.5px',
+              }}
+            >
+              Payment and Billing
+            </Typography>
+          </Step>
+          <Step
+            orientation="vertical"
+            disabled
+            indicator={
+              <StepIndicator variant="outlined" color="neutral">
+                <CheckCircleRoundedIcon />
+              </StepIndicator>
+            }
+          />
         </Stepper>
       </Box>
-
-      {/* Order Information */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <Box>
-          <Typography variant="h6">THÔNG TIN ĐƠN HÀNG</Typography>
-          <Typography>Trạng thái: <strong>Chờ giao</strong></Typography>
-          <Typography>Mã đơn hàng: HD15030032</Typography>
-          <Typography>Loại đơn hàng: Giao hàng</Typography>
-          <Typography>Phí vận chuyển: 38,501 ₫</Typography>
-          <Typography>Tổng tiền: 200,000 ₫</Typography>
-          <Typography>Phải thanh toán: 238,501 ₫</Typography>
-        </Box>
-        <Box>
-          <Typography variant="h6">THÔNG TIN KHÁCH HÀNG</Typography>
-          <Typography>Tên khách hàng: Phong</Typography>
-          <Typography>Số điện thoại: 0387880000</Typography>
-          <Typography>Email: DungNA29@gmail.com</Typography>
-          <Typography>Địa chỉ: Số 8, Xã Tân Quang, Huyện Văn Lâm, Hưng Yên</Typography>
-          <Button variant="contained" color="primary" sx={{ marginTop: 2 }}>
-            Thay đổi thông tin
+      <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
+        <div>
+          <Button variant="contained" color="error">Hủy</Button>
+          <Button variant="contained" style={{ backgroundColor: '#0D47A1', color: 'white' }}>Giao hàng</Button>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<PrintIcon />}
+          >
+            In Hóa Đơn
           </Button>
-        </Box>
+
+          <Button variant="contained" style={{ backgroundColor: '#0D47A1', color: 'white' }}>Chi tiết</Button>
+        </div>
+      </Box>
+      {/* Thông tin đơn hàng */}
+      <hr />
+
+      <Box mb={4}>
+        <Typography variant="h5" style={{ color: 'red', fontWeight: 'bold' }}>THÔNG TIN ĐƠN HÀNG</Typography>
+        {billData?.map((bd) => (
+          <Box key={bd.id || bd.code} display="flex" justifyContent="space-between" mt={2}>
+            <Box>
+              <Typography>Trạng thái: <span style={{ color: 'red' }}>{statusMap[bd?.status] || '#'}</span></Typography>
+              <Typography>Mã đơn hàng: {bd?.orderCode || 'HD15030032'}</Typography>
+              <Typography>Loại thanh toán: <span style={{ color: 'red' }}>{bd?.paymentMethod || '#'}</span></Typography>
+            </Box>
+            <Box textAlign="right">
+              <Typography>Phí vận chuyển: {bd?.shipping || 'free'}</Typography>
+              <Typography>Tổng tiền: {bd?.subtotal || ''}</Typography>
+              <Typography>Phải thanh toán: {bd?.total || ''}</Typography>
+            </Box>
+          </Box>
+        ))}
       </Box>
 
-      {/* Product List */}
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          DANH SÁCH SẢN PHẨM
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-          <img src="/path/to/image.png" alt="Sản phẩm" style={{ width: 80, height: 80, marginRight: 16 }} />
-          <Box>
-            <Typography>Giày MLB Chunky Wide New York [Đen - 40]</Typography>
-            <Typography variant="caption">Mã sản phẩm: WYORKDEN40CASU</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 1 }}>
-              <Input type="number" value="2" readOnly sx={{ width: 60, marginRight: 2 }} />
-              <Typography variant="body2">Tổng: 200,000 ₫</Typography>
+
+      {/* Thông tin khách hàng */}
+      <hr />
+      {billData?.map((bd) => (
+        <Box mb={4}>
+          <Typography variant="h5" style={{ color: 'red', fontWeight: 'bold' }}>THÔNG TIN KHÁCH HÀNG</Typography>
+          <Box display="flex" justifyContent="flex-end" mt={2}>
+            <Button variant="contained" style={{ backgroundColor: '#FFD700', color: 'black' }}>Thay đổi thông tin</Button>
+          </Box>
+          <Box display="flex" justifyContent="space-between" mt={2}>
+            <Box>
+              <Typography>Tên khách hàng: {bd?.customer?.lastName}  {bd?.customer?.firstName}</Typography>
+              <Typography>Số điện thoại: {bd?.phone || '0387880000'}</Typography>
+            </Box>
+            <Box textAlign="right">
+              <Typography>Email: {bd?.customer?.user?.email}</Typography>
+              <Typography>
+                Địa chỉ: {bd?.customer?.customerAddress?.streetName}-{bd?.customer?.customerAddress?.ward}-{bd?.customer?.customerAddress?.district}-{bd?.customer?.customerAddress?.city}
+              </Typography>
             </Box>
           </Box>
         </Box>
-        <Button variant="outlined" color="primary">
-          Thêm sản phẩm
-        </Button>
-      </Box>
-    </Box>
+      ))}
+
+      {/* Lịch sử thanh toán */}
+      {/* Danh sách sản phẩm */}
+    </Container>
   );
 }

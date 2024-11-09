@@ -3,53 +3,109 @@
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React from "react";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { Box, Button, IconButton, Sheet, Table, Typography } from "@mui/joy";
+import {
+  Box,
+  Button,
+  Chip,
+  FormControl,
+  FormLabel,
+  IconButton,
+  Input,
+  Modal,
+  ModalClose,
+  Radio,
+  RadioGroup,
+  Sheet,
+  Table,
+  Tooltip,
+  Typography,
+} from "@mui/joy";
 import { formatCurrencyVND, formatDateTimeWithPending } from "~/utils/format";
 import CardOrderItem from "../cards/CardOrderItem";
+import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
+import ArrowDropUpOutlinedIcon from "@mui/icons-material/ArrowDropUpOutlined";
 
 function TableRow(props) {
-  const { item, isOpen, onToggle } = props;
+  const { item, isOpen, onToggle, handleCancelOrder } = props;
 
+  const [open, setOpen] = React.useState(false);
+
+  const [message, setMessage] = React.useState("");
+  const [value, setValue] = React.useState("");
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+    setMessage(event.target.value);
+  };
   return (
     <React.Fragment>
       <tr>
+        <td style={{ textAlign: "center", width: "5%" }}>
+          <Tooltip variant="plain" title="Xem chi tiết">
+            <IconButton
+              variant="plain"
+              color="neutral"
+              size="sm"
+              onClick={() => onToggle(item.code)}
+            >
+              {isOpen ? (
+                <ArrowDropUpOutlinedIcon />
+              ) : (
+                <ArrowDropDownOutlinedIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        </td>
+        <td style={{ textAlign: "center", width: "20%" }} scope="row">
+          <Chip color="primary">{props.item.code}</Chip>
+        </td>
         <td style={{ textAlign: "center", width: "20%" }}>
-          <IconButton
-            aria-label="expand row"
-            variant="plain"
-            color="neutral"
-            size="sm"
-            onClick={() => onToggle(item.code)}
+          <Typography level="title-sm">{props.item.quantity}</Typography>
+        </td>
+        <td style={{ textAlign: "center", width: "20%" }}>
+          <Typography level="title-sm">
+            {formatCurrencyVND(props.item.subtotal)}
+          </Typography>
+        </td>
+        <td style={{ textAlign: "center", width: "20%" }}>
+          {props.item.sellDiscount > 0 ? (
+            <Typography level="title-sm" color="danger">
+              -{formatCurrencyVND(props.item.sellDiscount)}
+            </Typography>
+          ) : (
+            <Typography level="title-sm" color="primary">
+              Không áp dụng
+            </Typography>
+          )}
+        </td>
+        <td style={{ textAlign: "center", width: "20%" }}>
+          <Typography
+            level="title-sm"
+            color={props.item.shippingFee > 0 ? "danger" : "primary"}
           >
-            {isOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </td>
-        <td scope="row">{props.item.code}</td>
-        <td style={{ textAlign: "center", width: "20%" }}>
-          {props.item.quantity}
+            {props.item.shippingFee > 0
+              ? formatCurrencyVND(props.item.shippingFee)
+              : "Miễn phí"}
+          </Typography>
         </td>
         <td style={{ textAlign: "center", width: "20%" }}>
-          {formatCurrencyVND(props.item.subtotal)}
+          <Typography level="title-sm">
+            {formatCurrencyVND(props.item.totalAmount)}
+          </Typography>
         </td>
         <td style={{ textAlign: "center", width: "20%" }}>
-          {formatCurrencyVND(props.item.sellDiscount)}
+          {props.item.paymentTime !== null ? (
+            <Chip color="success">Đã thanh toán</Chip>
+          ) : props.item.status.status === "CANCELED" ? (
+            <Chip color="danger">Đã hủy đơn hàng</Chip>
+          ) : (
+            <Chip color="warning">Chờ thanh toán</Chip>
+          )}
         </td>
         <td style={{ textAlign: "center", width: "20%" }}>
-          {props.item.shippingFee > 0
-            ? formatCurrencyVND(props.item.shippingFee)
-            : "FREE"}
-        </td>
-        <td style={{ textAlign: "center", width: "20%" }}>
-          {formatCurrencyVND(props.item.totalAmount)}
-        </td>
-        <td style={{ width: "30%" }}>{props.item.status}</td>
-        <td style={{ textAlign: "center", width: "20%" }}>
-          {formatDateTimeWithPending(props.item.paymentTime, "Đang chờ")}
-        </td>
-        <td style={{ textAlign: "center", width: "20%" }}>
-          {formatDateTimeWithPending(props.item.orderDate, "Chưa xác định")}
+          <Typography level="title-sm">
+            {formatDateTimeWithPending(props.item.orderDate, "Chưa xác định")}
+          </Typography>
         </td>
       </tr>
       <tr>
@@ -103,6 +159,8 @@ function TableRow(props) {
                         <Typography level="body-md">
                           {props.item.paymentMethod === "BANK"
                             ? "Chuyển khoản"
+                            : props.item.paymentMethod === "CASH"
+                            ? "Thanh toán tại cửa hàng"
                             : "Thanh toán khi nhận hàng"}
                         </Typography>
                       </Box>
@@ -114,7 +172,14 @@ function TableRow(props) {
                         >
                           Trạng thái thanh toán:
                         </Typography>
-                        <Typography level="body-md">
+                        <Typography
+                          level="title-md"
+                          color={
+                            props.item.paymentTime !== null
+                              ? "success"
+                              : "danger"
+                          }
+                        >
                           {props.item.paymentTime !== null
                             ? "Đã thanh toán"
                             : "Chưa thanh toán"}
@@ -126,7 +191,7 @@ function TableRow(props) {
                           color="text.secondary"
                           fontWeight="bold"
                         >
-                          Ngày đặt:
+                          Thời gian đặt hàng:
                         </Typography>
                         <Typography level="body-md">
                           {formatDateTimeWithPending(
@@ -135,22 +200,22 @@ function TableRow(props) {
                           )}
                         </Typography>
                       </Box>
-                    </Box>
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                    >
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <Typography
                           level="body-md"
                           color="text.secondary"
                           fontWeight="bold"
                         >
-                          Trạng thái:
+                          Trạng thái đơn hàng:
                         </Typography>
-                        <Typography level="body-md">
-                          {props.item.status}
+                        <Typography level="title-md" color="primary">
+                          {props.item.status.name}
                         </Typography>
                       </Box>
+                    </Box>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                    >
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <Typography
                           level="body-md"
@@ -169,12 +234,24 @@ function TableRow(props) {
                           color="text.secondary"
                           fontWeight="bold"
                         >
+                          Giảm giá:
+                        </Typography>
+                        <Typography level="body-md">
+                          {formatCurrencyVND(props.item.sellDiscount)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Typography
+                          level="body-md"
+                          color="text.secondary"
+                          fontWeight="bold"
+                        >
                           Phí vận chuyển:
                         </Typography>
                         <Typography level="body-md">
                           {props.item.shippingFee > 0
                             ? formatCurrencyVND(props.item.shippingFee)
-                            : "FREE"}
+                            : "Miễn phí"}
                         </Typography>
                       </Box>
                       <Box sx={{ display: "flex", gap: 1 }}>
@@ -187,7 +264,7 @@ function TableRow(props) {
                         </Typography>
                         <Typography
                           level="body-md"
-                          color="primary.main"
+                          color="danger"
                           fontWeight="bold"
                         >
                           {formatCurrencyVND(props.item.totalAmount)}
@@ -195,14 +272,103 @@ function TableRow(props) {
                       </Box>
                     </Box>
                   </Box>
-                  <Box>
+                  <Box marginTop={2}>
                     {props.item.status === "Chưa xác nhận" &&
                       props.item.paymentMethod !== "BANK" && (
-                        <Button color="danger">Hủy đơn</Button>
+                        <Button color="danger" onClick={() => setOpen(true)}>
+                          Hủy đơn
+                        </Button>
                       )}
+                    <Modal
+                      open={open}
+                      onClose={() => setOpen(false)}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Sheet
+                        variant="outlined"
+                        sx={{
+                          minWidth: 500,
+                          borderRadius: "md",
+                          p: 3,
+                          boxShadow: "lg",
+                        }}
+                      >
+                        <ModalClose variant="plain" sx={{ m: 1 }} />
+                        <Typography
+                          component="h2"
+                          id="modal-title"
+                          level="h4"
+                          textColor="inherit"
+                          sx={{ fontWeight: "lg", mb: 1 }}
+                        >
+                          Tại sao bạn muốn hủy đơn hàng này?
+                        </Typography>
+                        <FormControl>
+                          <FormLabel>Lý do</FormLabel>
+                          <RadioGroup
+                            defaultValue="female"
+                            name="controlled-radio-buttons-group"
+                            value={value}
+                            onChange={handleChange}
+                            sx={{ my: 1 }}
+                          >
+                            <Radio
+                              value="Tôi muốn cập nhật địa chỉ/sđt nhận hàng."
+                              label="Tôi muốn cập nhật địa chỉ/sđt nhận hàng."
+                            />
+                            <Radio
+                              value="Tôi muốn thêm/thay đổi Mã giảm giá"
+                              label="Tôi muốn thêm/thay đổi Mã giảm giá"
+                            />
+                            <Radio
+                              value="Tôi muốn thay đổi sản phẩm (kích thước, màu sắc, số lượng…)"
+                              label="Tôi muốn thay đổi sản phẩm (kích thước, màu sắc, số lượng…)"
+                            />
+                            <Radio
+                              value="Thủ tục thanh toán rắc rối"
+                              label="Thủ tục thanh toán rắc rối"
+                            />
+                            <Radio
+                              value="Tôi tìm thấy chỗ mua khác tốt hơn (Rẻ hơn, uy tín hơn, giao nhanh hơn…)"
+                              label="Tôi tìm thấy chỗ mua khác tốt hơn (Rẻ hơn, uy tín hơn, giao nhanh hơn…)"
+                            />
+                            <Radio
+                              value="Tôi không có nhu cầu mua nữa"
+                              label="Tôi không có nhu cầu mua nữa"
+                            />
+                            <Radio
+                              value="Tôi không tìm thấy lý do hủy phù hợp"
+                              label="Tôi không tìm thấy lý do hủy phù hợp"
+                            />
+                            <Radio value="Lý do khác" label="Khác" />
+                            {value === "Lý do khác" && (
+                              <Box marginTop={2}>
+                                <Input
+                                  placeholder="Nhập lý do..."
+                                  value={message}
+                                  onChange={(e) => setMessage(e.target.value)}
+                                />
+                              </Box>
+                            )}
+                          </RadioGroup>
+                          <Box marginTop={2}>
+                            <Button
+                              onClick={() =>
+                                handleCancelOrder(props.item.id, message)
+                              }
+                            >
+                              Xác nhận
+                            </Button>
+                          </Box>
+                        </FormControl>
+                      </Sheet>
+                    </Modal>
                   </Box>
                 </Box>
-
                 <Typography
                   marginBottom={1}
                   color="neutral"

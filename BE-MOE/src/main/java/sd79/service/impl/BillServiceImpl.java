@@ -62,9 +62,12 @@ public class BillServiceImpl implements BillService {
     public long storeBill(BillRequest billRequest) {
         long currentBillCount = billRepository.count() + 1;
 
+        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
+                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
+
         Bill bill = Bill.builder()
                 .code(generateRandomCode(currentBillCount))
-                .billStatus(null)
+                .billStatus(billStatus)
                 .build();
 
         bill.setCreatedBy(getUserById(billRequest.getUserId()));

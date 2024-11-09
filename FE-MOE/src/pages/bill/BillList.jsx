@@ -1,148 +1,172 @@
-import { Container, Tab, Tabs, Typography, CircularProgress, TableContainer, Table, TableCell, TableBody, TableRow, TableHead, Paper, Badge, Chip } from '@mui/material';
-import React, { useState } from 'react';
+import { Container, Tab, Tabs, Typography, CircularProgress, TableContainer, Table, TableCell, TableBody, TableRow, TableHead, Paper, Pagination } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getBillList } from '~/apis/billListApi';
+import { formatCurrencyVND } from '~/utils/format';
+import { Edit } from '@mui/icons-material';
+import { IconButton } from '@mui/joy';
 
 export default function BillList() {
-    const [tabIndex, setTabIndex] = useState(1);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [activeTabIndex, setActiveTabIndex] = useState(1);
+    const [tabIndexList, setTabIndexList] = useState(0);
+    const [loading, setLoading] = useState(false);
 
-    const bills = [
-        { id: 1, code: 'HD15030032', customer: 'Nguyễn Anh Dũng', phone: '0387880000', total: '238,501 đ', type: 'Giao hàng', date: '17:52:50 21/12/2023' },
-        { id: 2, code: 'HD15030034', customer: 'Khách hàng lẻ', phone: '-', total: '423,000 đ', type: 'Tại quầy', date: '18:11:21 21/12/2023' },
-        { id: 3, code: 'HD15030033', customer: 'Khách hàng lẻ', phone: '-', total: '400,000 đ', type: 'Tại quầy', date: '17:52:51 21/12/2023' },
-        { id: 4, code: 'HD15030029', customer: 'Nguyễn Anh Dũng', phone: '0387880000', total: '691,301 đ', type: 'Giao hàng', date: '18:41:40 18/12/2023' },
-    ];
+    const [billList, setBillList] = useState(null);
+    const [pageNo, setPageNo] = useState(1);
+    const [pageSize] = useState(5);
+    const [keyword] = useState('');
+    const [status, setStatus] = useState('');
+    const [totalPages, setTotalPages] = useState(0);
 
+
+    // Status mapping
+    const statusMap = {
+        '2': 'Chờ xác nhận',
+        '4': 'Chờ giao',
+        '3': 'Hoàn thành',
+        '7': 'Đã hủy',
+    };
+
+    // Tab definitions with labels and associated status filters
     const tabs = [
-        { label: 'Tất cả', count: 3 },
-        { label: 'Chờ xác nhận', count: 3 },
-        { label: 'Chờ giao', count: 4 },
-        { label: 'Hoàn thành', count: 5 },
-        { label: 'Đã hủy', count: 6 },
+        { label: 'Tất cả', status: '' },
+        { label: 'Chờ xác nhận', status: '2' },
+        { label: 'Chờ giao', status: '4' },
+        { label: 'Hoàn thành', status: '3' },
+        { label: 'Đã hủy', status: '7' },
     ];
 
+    // Handle main tab change
     const handleTabChange = (event, newValue) => {
-        setTabIndex(newValue);
+        setActiveTabIndex(newValue);
         setLoading(true);
         setTimeout(() => {
-            if (newValue === 2) {
-                navigate('/bill/list');
-            } else {
+            if (newValue === 0) {
                 navigate('/bill');
+            } else {
+                navigate('/bill/list');
             }
             setLoading(false);
         }, 500);
     };
 
+    // Fetch bill list based on the status and pagination
+    const fetchBillList = async () => {
+        setLoading(true);
+        try {
+            const res = await getBillList(pageNo, pageSize, keyword, status);
+            setBillList(res.data);
+            setTotalPages(res.totalPages);
+        } catch (error) {
+            console.error("Failed to fetch bills", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle sub-tab change for filtering bills by status
+    const handleTabChangeList = (event, newValue) => {
+        setTabIndexList(newValue);
+        const newStatus = tabs[newValue].status;
+        setStatus(newStatus);
+        setPageNo(1);
+    };
+
+    // Handle page change for pagination
+    const handlePageChange = (event, newPage) => {
+        setPageNo(newPage);
+    };
+
+    // Fetch data on mount and when status or pageNo changes
+    useEffect(() => {
+        fetchBillList();
+    }, [status, pageNo]);
+
     return (
-        <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-                <Typography
-                    variant="h5"
-                    gutterBottom
-                    sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'left' }}
-                >
-                    QUẢN LÝ DANH SÁCH HÓA ĐƠN
-                </Typography>
-            </div>
-
-
+        <Container maxWidth="lg" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'left', mb: 3 }}>
+                QUẢN LÝ DANH SÁCH HÓA ĐƠN
+            </Typography>
 
             {loading && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1
-                    }}
-                >
+                <div style={{
+                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)', display: 'flex', justifyContent: 'center',
+                    alignItems: 'center', zIndex: 1
+                }}>
                     <CircularProgress size={80} />
                 </div>
             )}
 
-            {!loading && (
-                <>
-                    <Tabs
-                        value={tabIndex}
-                        onChange={handleTabChange}
-                        sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
-                    >
-                        <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
-                        <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
-                    </Tabs>
-                </>
-            )}
-
             <Tabs
-                value={tabIndex}
-                onChange={(event, newValue) => setTabIndex(newValue)}
+                value={activeTabIndex}
+                onChange={handleTabChange}
                 sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
-                variant="scrollable"
-                scrollButtons="auto"
             >
+                <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
+                <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
+            </Tabs>
+
+            <Tabs value={tabIndexList} onChange={handleTabChangeList} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }} variant="scrollable" scrollButtons="auto">
                 {tabs.map((tab, index) => (
-                    <Tab
-                        key={index}
-                        label={`${tab.label} (${tab.count})`}
-                        sx={{ fontWeight: 'bold' }}
-                        disableRipple
-                    />
+                    <Tab key={index} label={tab.label} sx={{ fontWeight: 'bold' }} />
                 ))}
             </Tabs>
 
-            <TableContainer component={Paper}>
-                <Table>
+            <TableContainer component={Paper} sx={{ borderRadius: '8px' }}>
+                <Table sx={{ minWidth: 800, borderCollapse: 'collapse' }}>
                     <TableHead>
-                        <TableRow>
-                            <TableCell>#</TableCell>
-                            <TableCell>Mã</TableCell>
-                            <TableCell>Khách hàng</TableCell>
-                            <TableCell>SĐT</TableCell>
-                            <TableCell>Tổng tiền</TableCell>
-                            <TableCell>Loại đơn hàng</TableCell>
-                            <TableCell>Ngày tạo</TableCell>
-                            <TableCell>Hành động</TableCell>
+                        <TableRow sx={{ backgroundColor: '#0071bd' }}>
+                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', padding: '12px 16px' }}>#</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Mã</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Khách hàng</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>SĐT</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Tổng tiền</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Loại đơn hàng</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Ngày tạo</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {bills.map((bill, index) => (
-                            <TableRow key={bill.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>{bill.code}</TableCell>
-                                <TableCell>{bill.customer}</TableCell>
-                                <TableCell>{bill.phone}</TableCell>
-                                <TableCell style={{ color: 'red' }}>{bill.total}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={bill.type}
-                                        color={bill.type === 'Giao hàng' ? 'primary' : 'success'}
-                                        variant="outlined"
-                                        sx={{
-                                            borderRadius: '8px',
-                                            fontWeight: 'bold',
-                                            padding: '0 10px',
-                                            color: bill.type === 'Giao hàng' ? '#007bff' : '#28a745',
-                                            borderColor: bill.type === 'Giao hàng' ? '#007bff' : '#28a745',
-                                            backgroundColor: bill.type === 'Giao hàng' ? '#e3f2fd' : '#e8f5e9',
-                                        }}
-                                    />
+                        {billList?.content?.map((bill, index) => (
+                            <TableRow key={bill.id} sx={{ '&:hover': { backgroundColor: '#f1f1f1' } }}>
+                                <TableCell sx={{ textAlign: 'center', padding: '12px 16px' }}>
+                                    {index + 1 + (pageNo - 1) * pageSize}
                                 </TableCell>
-                                <TableCell>{bill.date}</TableCell>
-                                <TableCell>...</TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>{bill.code}</TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>
+                                    {bill.customer ? `${bill.customer.lastName} ${bill.customer.firstName}` : 'Khách hàng lẻ'}
+                                </TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>{bill.customer ? `${bill.customer.phoneNumber}` : 'XXXXXXXXX'}</TableCell>
+                                <TableCell sx={{ color: 'red', padding: '12px 16px' }}>
+                                    {formatCurrencyVND(bill.total)}
+                                </TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>
+                                    {statusMap[bill.billStatus] || 'N/A'}
+                                </TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>{bill.createAt}</TableCell>
+                                <TableCell sx={{ padding: '12px 16px' }}>
+                                    <IconButton onClick={() => navigate(`/bill/edit/${bill.id}`)} color="primary">
+                                        <Edit />
+                                    </IconButton>
+                                    <IconButton onClick={() => navigate(`/bill/list`)} color='primary'>
+                                        ...
+                                    </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
 
+            <Pagination
+                count={totalPages}
+                page={pageNo}
+                onChange={handlePageChange}
+                color="primary"
+                sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}
+            />
         </Container>
     );
 }

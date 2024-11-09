@@ -9,10 +9,10 @@ package sd79.dto.response.clients.invoices;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import sd79.enums.InvoiceStatus;
 import sd79.enums.PaymentMethod;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public abstract class InvoiceResponse {
     public static class Param {
         private Integer pageNo = 1;
 
-        private Integer pageSize = 3;
+        private Integer pageSize = 5;
 
         private String keyword;
 
@@ -36,6 +36,8 @@ public abstract class InvoiceResponse {
     @Builder
     @Getter
     public static class Invoice {
+        private Long id;
+
         private String code;
 
         private int quantity;
@@ -48,7 +50,7 @@ public abstract class InvoiceResponse {
 
         private BigDecimal totalAmount;
 
-        private String status;
+        private InvoiceStatus status;
 
         private Date paymentTime;
 
@@ -56,7 +58,7 @@ public abstract class InvoiceResponse {
 
         private PaymentMethod paymentMethod;
 
-        private List<Product> products = new ArrayList<>();
+        private List<Product> products;
     }
 
     @Builder
@@ -77,5 +79,15 @@ public abstract class InvoiceResponse {
         private BigDecimal discountPrice;
 
         private BigDecimal totalAmount;
+    }
+
+    @Builder
+    @Getter
+    public static class InvoiceStatus {
+        private Integer id;
+
+        private String name;
+
+        private sd79.enums.InvoiceStatus status;
     }
 }

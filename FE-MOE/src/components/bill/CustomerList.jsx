@@ -169,22 +169,22 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                     Thông tin khách hàng
                 </Typography>
+                <Box display="flex" gap={1} alignItems="center" justifyContent="space-between">
+                    {customer ? (
+                        <>
+                            <span>{customer.lastName} {customer.firstName} </span>
+                            <Button
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                                size="small"
+                                sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
+                            >
+                                <ClearIcon fontSize="small" />
+                            </Button>
+                        </>
+                    ) : null}
+                </Box>
                 <Box display="flex" flexDirection="column" gap={1} position="relative" width="40%">
                     <Box display="flex" gap={1} alignItems="center" width="100%">
-                        <Box sx={{ flex: customer ? '1' : '0' }}>
-                            {customer ? (
-                                <>
-                                    <span>{customer.firstName} {customer.lastName}</span>
-                                    <Button
-                                        onClick={() => handleDeleteCustomer(customer.id)}
-                                        size="small"
-                                        sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </Button>
-                                </>
-                            ) : null}
-                        </Box>
                         <TextField
                             placeholder="Tìm kiếm khách hàng..."
                             variant="outlined"
@@ -261,7 +261,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                 </Box>
             ) : (
                 <Typography variant="body1" align="center" sx={{ mt: 2 }}>
-                    Không có thông tin khách hàng.
+                    Khách hàng lẻ.
                 </Typography>
             )}
 

@@ -73,6 +73,8 @@ public class ClientServiceImpl implements ClientService {
 
     private final InvoiceRepository invoiceRepository;
 
+    private final BillStatusRepo billStatusRepo;
+
     private final JwtService jwtService;
 
     @Override
@@ -309,7 +311,7 @@ public class ClientServiceImpl implements ClientService {
                 .paymentMethod(req.getPaymentMethod())
                 .message(req.getMessage())
                 .customer(customer)
-                .billStatus(this.billStatusRepository.findById(1).orElse(null))
+                .billStatus(this.billStatusRepository.findById(2).orElse(null))
                 .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
                 .build();
         assert customer != null;
@@ -327,7 +329,7 @@ public class ClientServiceImpl implements ClientService {
         req.getItems().forEach(item -> {
             ProductDetail prd = this.productDetailRepository.findById(item.getId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
             if (prd.getQuantity() - item.getQuantity() < 0) {
-                billSave.setBillStatus(this.billStatusRepository.findById(6).orElse(null));
+                billSave.setBillStatus(this.billStatusRepository.findById(7).orElse(null));
                 this.billRepository.delete(billSave);
                 throw new InvalidDataException("Giao dịch thất bại vui lòng thử lại!");
             }
@@ -354,6 +356,30 @@ public class ClientServiceImpl implements ClientService {
             param.setPageNo(1);
         }
         return this.invoiceRepository.getAllInvoices(param);
+    }
+
+    @Override
+    public void cancelInvoice(long id, String message) {
+        Bill bill = this.billRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Bill not found"));
+        bill.setBillStatus(this.billStatusRepository.findById(7).orElse(null));
+        bill.setMessage(message);
+        bill.getBillDetails().forEach(detail -> {
+            ProductDetail productDetail = this.productDetailRepository.findById(detail.getProductDetail().getId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            assert productDetail != null;
+            productDetail.setQuantity(productDetail.getQuantity() + detail.getQuantity());
+            this.productDetailRepository.save(productDetail);
+        });
+        this.billRepository.save(bill);
+    }
+
+    @Override
+    public List<InvoiceResponse.InvoiceStatus> getInvoiceStatuses() {
+        return this.billStatusRepo.findAll().stream().filter(i -> i.getId() != 1).map(i ->
+                InvoiceResponse.InvoiceStatus.builder()
+                        .id(i.getId())
+                        .name(i.getName())
+                        .build()
+        ).toList();
     }
 
 }

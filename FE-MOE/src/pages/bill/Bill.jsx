@@ -41,7 +41,7 @@ import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
 
 function Bill() {
     const navigate = useNavigate();
-    const [tabIndex, setTabIndex] = useState(0);
+    const [activeTabIndex, setActiveTabIndex] = useState(0); 
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isProductListModalOpen, setProductListModalOpen] = useState(false);
@@ -82,13 +82,14 @@ function Bill() {
     });
 
     const handleTabChange = (event, newValue) => {
-        setTabIndex(newValue);
+        setActiveTabIndex(newValue); 
         setLoading(true);
+
         setTimeout(() => {
-            if (newValue === 1) {
-                navigate('/bill/list');
+            if (newValue === 0) {
+                navigate('/bill'); 
             } else {
-                navigate('/bill');
+                navigate('/bill/list'); 
             }
             setLoading(false);
         }, 500);
@@ -133,7 +134,7 @@ function Bill() {
     //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async () => {
         const billData = {
-            billStatus: null,
+            billStatus: 1,
             userId: localStorage.getItem("userId"),
         };
 
@@ -457,7 +458,7 @@ function Bill() {
                 bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: 2,
+                billStatus: 3,
                 shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
@@ -651,7 +652,7 @@ function Bill() {
                 {!loading && (
                     <>                  
                         <Tabs
-                            value={tabIndex}
+                            value={activeTabIndex}
                             onChange={handleTabChange}
                             sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
                         >

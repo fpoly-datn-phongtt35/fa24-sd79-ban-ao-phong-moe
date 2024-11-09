@@ -213,7 +213,7 @@ function RouterProvider() {
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
-        <Route path="/bill/edit" element={<BillEdit />} />
+        <Route path="/bill/edit/:id" element={<BillEdit />} />
       </Route>
     </Routes>
   );

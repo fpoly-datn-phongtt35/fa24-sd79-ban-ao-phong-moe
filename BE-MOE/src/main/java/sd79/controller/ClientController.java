@@ -139,4 +139,15 @@ public class ClientController {
     public ResponseData<?> getOrder(InvoiceResponse.Param param) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.clientService.getInvoices(param));
     }
+
+    @PatchMapping("/cancel-order/{id}/{message}")
+    public ResponseData<?> cancelOrder(@PathVariable Long id, @PathVariable String message) {
+        this.clientService.cancelInvoice(id, message);
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đã được hủy");
+    }
+
+    @GetMapping("/status.php")
+    public ResponseData<?> getStatus() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get bill status Successfully", this.clientService.getInvoiceStatuses());
+    }
 }

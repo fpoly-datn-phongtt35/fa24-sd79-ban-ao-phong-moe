@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.billRequest.BillCustomerRequest;
 import sd79.dto.requests.billRequest.BillDetailRequest;
 import sd79.dto.requests.billRequest.BillRequest;
+import sd79.dto.requests.common.BillListParamFilter;
 import sd79.dto.requests.productRequests.BillStoreRequest;
 import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
+import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.model.Customer;
+import sd79.service.BillListService;
 import sd79.service.BillService;
 
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.List;
 public class BillController {
 
     private final BillService billService;
+    private final BillListService billListService;
     private static final Logger logger = LoggerFactory.getLogger(BillController.class);
 
     //them lan 1
@@ -166,4 +170,17 @@ public class BillController {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
         }
     }
+
+    //---------------------------------------------------------------------BILL LIST-------------------------------------------------------------------------//
+
+    @GetMapping("/billList")
+    public ResponseData<?> getAllBillList(BillListParamFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param));
+    }
+
+    @GetMapping("/billEdit/{billId}")
+    public ResponseData<?> getAllBillEdit(@PathVariable Long billId) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillEdit(billId));
+    }
+
 }
