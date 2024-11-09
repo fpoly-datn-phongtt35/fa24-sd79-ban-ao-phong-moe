@@ -45,5 +45,5 @@ public interface ClientService {
 
     void cancelInvoice(long id, String message);
 
-    List<InvoiceResponse.BillStatus> getInvoiceStatuses();
+    List<InvoiceResponse.InvoiceStatus> getInvoiceStatuses();
 }

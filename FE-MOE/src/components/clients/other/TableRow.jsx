@@ -96,7 +96,7 @@ function TableRow(props) {
         <td style={{ textAlign: "center", width: "20%" }}>
           {props.item.paymentTime !== null ? (
             <Chip color="success">Đã thanh toán</Chip>
-          ) : props.item.status === "Đã hủy đơn hàng" ? (
+          ) : props.item.status.status === "CANCELED" ? (
             <Chip color="danger">Đã hủy đơn hàng</Chip>
           ) : (
             <Chip color="warning">Chờ thanh toán</Chip>
@@ -209,7 +209,7 @@ function TableRow(props) {
                           Trạng thái đơn hàng:
                         </Typography>
                         <Typography level="title-md" color="primary">
-                          {props.item.status}
+                          {props.item.status.name}
                         </Typography>
                       </Box>
                     </Box>
