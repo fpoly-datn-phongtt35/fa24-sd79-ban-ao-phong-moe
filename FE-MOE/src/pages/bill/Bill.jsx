@@ -86,7 +86,7 @@ function Bill() {
         setLoading(true);
         setTimeout(() => {
             if (newValue === 1) {
-                navigate('/bill-list');
+                navigate('/bill/list');
             } else {
                 navigate('/bill');
             }

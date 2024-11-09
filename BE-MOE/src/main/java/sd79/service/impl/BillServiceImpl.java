@@ -62,9 +62,6 @@ public class BillServiceImpl implements BillService {
     public long storeBill(BillRequest billRequest) {
         long currentBillCount = billRepository.count() + 1;
 
-//        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
-//                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
-
         Bill bill = Bill.builder()
                 .code(generateRandomCode(currentBillCount))
                 .billStatus(null)
@@ -156,7 +153,7 @@ public class BillServiceImpl implements BillService {
                 .orElseThrow(() -> new IllegalArgumentException("BillDetail not found with ID: " + billDetailId));
         ProductDetail productDetail = billDetail.getProductDetail();
         productDetail.setQuantity(productDetail.getQuantity() + billDetail.getQuantity());
-        productDetailRepository.save(productDetail); // Save the updated ProductDetail
+        productDetailRepository.save(productDetail);
         billDetailRepository.delete(billDetail);
     }
 
@@ -241,27 +238,6 @@ public class BillServiceImpl implements BillService {
         }
         return Collections.emptyList();
     }
-
-//    @Override
-//    public long storeCoupon(Long billId, Long couponId) {
-//        Bill bill = billRepository.findById(billId)
-//                .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-//        Coupon coupon = couponRepository.findById(couponId)
-//                .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
-//        if (coupon.getQuantity() != null && coupon.getQuantity() <= 0) {
-//            throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
-//        }
-//        bill.setCoupon(coupon);
-//        if (coupon.getQuantity() != null) {
-//            coupon.setQuantity(coupon.getQuantity() - 1);
-//        }
-//        coupon.setUsageCount((coupon.getUsageCount() != null ? coupon.getUsageCount() : 0) + 1);
-//        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
-//        couponRepository.save(coupon);
-//        billRepository.save(bill);
-//
-//        return bill.getId();
-//    }
 
     @Override
     public long storeCoupon(Long billId, Long couponId) {

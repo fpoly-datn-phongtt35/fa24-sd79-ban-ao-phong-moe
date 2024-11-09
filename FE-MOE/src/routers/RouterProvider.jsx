@@ -42,6 +42,7 @@ import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
 import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
+import BillEdit from "~/pages/bill/BillEdit";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -211,7 +212,8 @@ function RouterProvider() {
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
-        <Route path="/bill-list" element={<BillList />} />
+        <Route path="/bill/list" element={<BillList />} />
+        <Route path="/bill/edit" element={<BillEdit />} />
       </Route>
     </Routes>
   );

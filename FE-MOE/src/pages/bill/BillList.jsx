@@ -15,11 +15,11 @@ export default function BillList() {
     ];
 
     const tabs = [
+        { label: 'Tất cả', count: 3 },
         { label: 'Chờ xác nhận', count: 3 },
         { label: 'Chờ giao', count: 4 },
         { label: 'Hoàn thành', count: 5 },
         { label: 'Đã hủy', count: 6 },
-        { label: 'Hoàn 1 phần', count: 7 },
     ];
 
     const handleTabChange = (event, newValue) => {
@@ -27,7 +27,7 @@ export default function BillList() {
         setLoading(true);
         setTimeout(() => {
             if (newValue === 2) {
-                navigate('/bill-list');
+                navigate('/bill/list');
             } else {
                 navigate('/bill');
             }
