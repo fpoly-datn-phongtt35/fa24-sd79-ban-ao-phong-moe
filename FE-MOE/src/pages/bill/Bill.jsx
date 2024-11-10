@@ -90,6 +90,8 @@ function Bill() {
                 navigate('/bill'); 
             } else {
                 navigate('/bill/list'); 
+                localStorage.removeItem('selectedOrder');
+                localStorage.removeItem('bankCode');
             }
             setLoading(false);
         }, 500);
@@ -445,13 +447,6 @@ function Bill() {
             [PaymentMethod.BANK]: "BANK",
         }[selectedPaymentMethod] || "UNKNOWN";
 
-        const message = paymentMethodName === "CASH"
-            ? "Hóa đơn thanh toán bằng tiền mặt"
-            : "Hóa đơn thanh toán qua ngân hàng";
-        const note = paymentMethodName === "CASH"
-            ? "Thanh toán bằng tiền mặt"
-            : "Thanh toán qua ngân hàng";
-
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
@@ -464,8 +459,8 @@ function Bill() {
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
                 paymentMethod: paymentMethodName,
-                message,
-                note,
+                message : null,
+                note : null,
                 paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
