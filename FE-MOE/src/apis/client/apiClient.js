@@ -120,3 +120,50 @@ export const billStatus = async () => {
     .get(`${API_ROOT}/client/status.php`)
     .then((res) => res.data);
 };
+
+export const getProductsFilter = async (data) => {
+  let uri = "/client/filters?";
+  let queryParams = [];
+
+  if (data.pageNo !== null && data.pageNo !== undefined) {
+    queryParams.push(`pageNo=${data.pageNo}`);
+  }
+
+  if (data.pageSize !== null && data.pageSize !== undefined) {
+    queryParams.push(`pageSize=${data.pageSize}`);
+  }
+
+  if (data.keyword) {
+    queryParams.push(`keyword=${encodeURIComponent(data.keyword)}`);
+  }
+
+  if (data.categoryIds && data.categoryIds.length > 0) {
+    queryParams.push(`categoryIds=${data.categoryIds.join(",")}`);
+  }
+
+  if (data.brandIds && data.brandIds.length > 0) {
+    queryParams.push(`brandIds=${data.brandIds.join(",")}`);
+  }
+
+  if (data.materialIds && data.materialIds.length > 0) {
+    queryParams.push(`materialIds=${data.materialIds.join(",")}`);
+  }
+
+  if (data.minPrice !== null && data.minPrice !== undefined) {
+    queryParams.push(`minPrice=${data.minPrice}`);
+  }
+
+  if (data.maxPrice !== null && data.maxPrice !== undefined) {
+    queryParams.push(`maxPrice=${data.maxPrice}`);
+  }
+
+  if (data.sortBy) {
+    queryParams.push(`sortBy=${data.sortBy}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};

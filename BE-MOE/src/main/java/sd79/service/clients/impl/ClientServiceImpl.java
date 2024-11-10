@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartRequest;
+import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
@@ -380,6 +381,14 @@ public class ClientServiceImpl implements ClientService {
                         .status(i.getStatus())
                         .build()
         ).toList();
+    }
+
+    @Override
+    public PageableResponse productFilters(ProductRequests.ParamFilters param) {
+        if (param.getPageNo() < 1) {
+            param.setPageNo(1);
+        }
+        return this.productCustomizeQuery.getProductsFilters(param);
     }
 
 }

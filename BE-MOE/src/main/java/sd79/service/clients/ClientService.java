@@ -9,6 +9,7 @@ package sd79.service.clients;
 import jakarta.servlet.http.HttpServletRequest;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartRequest;
+import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
 import sd79.dto.response.clients.customer.UserInfoRes;
@@ -44,4 +45,6 @@ public interface ClientService {
     void cancelInvoice(long id, String message);
 
     List<InvoiceResponse.InvoiceStatus> getInvoiceStatuses();
+
+     PageableResponse productFilters(ProductRequests.ParamFilters param);
 }

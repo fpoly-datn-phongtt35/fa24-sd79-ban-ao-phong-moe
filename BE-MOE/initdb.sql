@@ -730,6 +730,3 @@ INSERT INTO bill_status (name, status) VALUES
 ('Giao hàng thất bại', 'DELIVERY_FAILED'),
 ('Đã hủy đơn hàng', 'CANCELED'),
 ('Đơn hàng hoàn tất', 'COMPLETED');
-
-
-

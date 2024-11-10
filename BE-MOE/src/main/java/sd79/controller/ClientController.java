@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartRequest;
 import sd79.dto.requests.common.BillCouponFilter;
+import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.service.CategoryService;
@@ -148,5 +149,10 @@ public class ClientController {
     @GetMapping("/status.php")
     public ResponseData<?> getStatus() {
         return new ResponseData<>(HttpStatus.OK.value(), "Get bill status Successfully", this.clientService.getInvoiceStatuses());
+    }
+
+    @GetMapping("/filters")
+    public ResponseData<?> filters(ProductRequests.ParamFilters paramFilters) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get products Successfully", this.clientService.productFilters(paramFilters));
     }
 }
