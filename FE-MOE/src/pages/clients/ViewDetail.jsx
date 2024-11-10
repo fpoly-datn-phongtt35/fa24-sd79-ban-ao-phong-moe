@@ -16,6 +16,7 @@ import {
   Textarea,
   Table,
   Divider,
+  CircularProgress,
 } from "@mui/joy";
 import { toast } from "react-toastify";
 import Radio, { radioClasses } from "@mui/joy/Radio";
@@ -37,6 +38,10 @@ import { CommonContext } from "~/context/CommonContext";
 export const ViewDetail = () => {
   ScrollToTop();
   const context = useContext(CommonContext);
+
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingBuy, setLoadingBuy] = useState(false);
+
   const [product, setProduct] = useState(null);
   const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -81,16 +86,19 @@ export const ViewDetail = () => {
       toast.error("Số lượng phải lớn hơn 0");
       return;
     } else {
+      setLoadingAdd(true);
       await storeCart({
         productId: id,
         sizeId: size,
         colorId: color,
         quantity: quantity,
         username: localStorage.getItem("username"),
-      }).then(() => {
-        toast.success("Sản phẩm đã được thêm vào giỏ hàng");
-        context.handleFetchCarts();
-      });
+      })
+        .then(() => {
+          toast.success("Sản phẩm đã được thêm vào giỏ hàng");
+          context.handleFetchCarts();
+        })
+        .catch(() => setLoadingAdd(false));
     }
   };
 
@@ -112,17 +120,34 @@ export const ViewDetail = () => {
         quantity: quantity,
         username: localStorage.getItem("username"),
       };
-      console.log(data);
-      await buyNow(data).then((res) => {
-        if (res.data.productCart.quantity <= 0) {
-          toast.error("Sản phẩm đã hết hàng");
-        } else {
-          localStorage.setItem("orderItems", JSON.stringify([res.data]));
-          navigate("/checkout");
-        }
-      });
+      setLoadingBuy(true);
+      await buyNow(data)
+        .then((res) => {
+          if (res.data.productCart.quantity <= 0) {
+            toast.error("Sản phẩm đã hết hàng");
+          } else {
+            localStorage.setItem("orderItems", JSON.stringify([res.data]));
+            navigate("/checkout");
+          }
+        })
+        .catch(() => setLoadingBuy(false));
     }
   };
+
+  if (!product) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="100vh"
+        width="95vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Grid
@@ -465,6 +490,7 @@ export const ViewDetail = () => {
                 sx={{ flex: 2 }}
                 startDecorator={<AddShoppingCartIcon />}
                 onClick={handleAddToCart}
+                loading={loadingAdd}
               >
                 Thêm vào giỏ hàng
               </Button>
@@ -473,6 +499,7 @@ export const ViewDetail = () => {
                 color="primary"
                 sx={{ flex: 1 }}
                 onClick={handleBuyNow}
+                loading={loadingBuy}
               >
                 Mua ngay
               </Button>

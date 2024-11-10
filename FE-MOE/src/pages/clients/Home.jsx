@@ -29,6 +29,7 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [goToTop, setGoToTop] = useState(false);
+  const [loadingViewMore, setLoadingViewMore] = useState(false);
 
   useEffect(() => {
     handleSetProducts();
@@ -62,12 +63,28 @@ const Home = () => {
   const handleSetProducts = async () => {
     const res = await fetchAllProducts(currentPage);
     setProducts((prev) => [...prev, ...res?.data]);
+    setLoadingViewMore(false);
   };
 
   const viewMore = async () => {
+    setLoadingViewMore(true);
     setCurrentPage(currentPage + 1);
     handleSetProducts();
   };
+
+  if (bestSellingProducts?.length === 0 || products?.length === 0) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="100vh"
+        width="95vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -83,18 +100,6 @@ const Home = () => {
               </Grid>
             ))}
         </Grid>
-        {bestSellingProducts?.length == 0 && (
-          <Grid
-            marginTop={2}
-            container
-            spacing={2}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <CircularProgress />
-          </Grid>
-        )}
       </Box>
       <Box>
         <Grid padding={3} container spacing={2}>
@@ -126,23 +131,18 @@ const Home = () => {
               </Grid>
             ))}
         </Grid>
-        {products?.length == 0 && (
-          <Grid
-            marginTop={2}
-            container
-            spacing={2}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <CircularProgress />
-          </Grid>
+        {products?.length > 0 && (
+          <Box sx={{ margin: 3, display: "flex", justifyContent: "center" }}>
+            <Button
+              color="neutral"
+              variant="soft"
+              onClick={() => viewMore()}
+              loading={loadingViewMore}
+            >
+              Xem thêm
+            </Button>
+          </Box>
         )}
-        <Box sx={{ margin: 3, display: "flex", justifyContent: "center" }}>
-          <Button color="neutral" variant="soft" onClick={() => viewMore()}>
-            Xem thêm
-          </Button>
-        </Box>
       </Box>
       {goToTop && (
         <Box sx={{ position: "fixed", bottom: 30, right: 30 }}>

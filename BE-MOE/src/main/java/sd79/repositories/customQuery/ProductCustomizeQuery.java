@@ -456,7 +456,7 @@ public class ProductCustomizeQuery {
         query.append(" ORDER BY prd.updateAt DESC");
         TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
         execute.setFirstResult((page - 1) * 10);
-        execute.setMaxResults(10);
+        execute.setMaxResults(12);
 
         return execute.getResultList().stream()
                 .map(s -> {
