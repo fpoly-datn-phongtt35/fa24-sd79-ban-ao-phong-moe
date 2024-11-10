@@ -4,7 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sd79.dto.requests.PromotionDetailRequest;
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.model.PromotionDetail;

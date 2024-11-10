@@ -12,11 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.CustomerResponse;
-import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
-import sd79.enums.Gender;
 import sd79.service.PromotionService;
 
 import java.util.Date;

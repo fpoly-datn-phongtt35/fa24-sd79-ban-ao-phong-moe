@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;
@@ -208,8 +207,6 @@ public class PromotionsServiceImpl implements PromotionService {
             // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
             promotions = promotionRepository.findByKeywordAndDate(keyword, startDate, endDate, status, pageable);
         }
-
-        // Chuyển đổi từ entity Coupon sang DTO CouponResponse
         return promotions.map(this::convertPromotionResponsse);
     }
 

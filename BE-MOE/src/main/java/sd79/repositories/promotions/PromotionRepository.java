@@ -25,17 +25,17 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
                                      Pageable pageable);
 
 
-    @Query("FROM Promotion p " +
-            "WHERE (p.name LIKE %:keyword% ) " +
-            "OR (Date(p.startDate) BETWEEN :startDate AND :endDate) " +
-            "AND (Date(p.endDate) BETWEEN :startDate AND :endDate) " +
-            "OR ((:status = 'C.Bắt đầu' AND p.startDate > CURRENT_DATE) " +
-            "OR (:status = 'Bắt đầu' AND p.startDate <= CURRENT_DATE AND p.endDate >= CURRENT_DATE) " +
-            "OR (:status = 'Kết thúc' AND p.endDate < CURRENT_DATE))")
+    @Query("SELECT p FROM Promotion p " +
+            "WHERE (:keyword IS NULL OR p.name LIKE %:keyword%) " +
+            "AND (:startDate IS NULL OR p.startDate >= :startDate) " +
+            "AND (:endDate IS NULL OR p.endDate <= :endDate) " +
+            "AND ((:status IS NULL) " +
+            "     OR (:status = 'C.Bắt đầu' AND p.startDate > CURRENT_DATE) " +
+            "     OR (:status = 'Bắt đầu' AND p.startDate <= CURRENT_DATE AND p.endDate >= CURRENT_DATE) " +
+            "     OR (:status = 'Kết thúc' AND p.endDate < CURRENT_DATE))")
     Page<Promotion> findByKeywordAndDate(@Param("keyword") String keyword,
-                                      @Param("startDate") Date startDate,
-                                      @Param("endDate") Date endDate,
-                                      @Param("status") String status,
-                                      Pageable pageable);
-
+                                         @Param("startDate") Date startDate,
+                                         @Param("endDate") Date endDate,
+                                         @Param("status") String status,
+                                         Pageable pageable);
 }
