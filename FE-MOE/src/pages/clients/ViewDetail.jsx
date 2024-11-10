@@ -33,7 +33,9 @@ import { buyNow, fetchProduct, storeCart } from "~/apis/client/apiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";
+import FireWorkIcon from "~/assert/icon/firecracker-firework-svgrepo-com.svg";
 import { CommonContext } from "~/context/CommonContext";
+import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 
 export const ViewDetail = () => {
   ScrollToTop();
@@ -191,8 +193,12 @@ export const ViewDetail = () => {
                   src={url}
                   alt="Product thumbnail"
                   width="100%"
-                  style={{ objectFit: "cover", height: "100px" }}
-                  onClick={() => setImage(url)}
+                  style={{
+                    objectFit: "cover",
+                    height: image === url ? "120px" : "100px",
+                    border: image === url ? "3px solid #f47439" : "",
+                  }}
+                  onMouseOver={() => setImage(url)}
                 />
               ))}
             </Box>
@@ -227,7 +233,7 @@ export const ViewDetail = () => {
             </Box>
             <Box
               sx={{
-                backgroundColor: product?.percent !== null && "#c41c1c21",
+                backgroundColor: product?.percent !== null && "#c45f1c21",
               }}
             >
               {product?.percent !== null && (
@@ -236,13 +242,13 @@ export const ViewDetail = () => {
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    backgroundColor: "#c41c1c",
+                    backgroundColor: "#f47439",
                     borderRadius: 4,
                     padding: 2,
                   }}
                 >
                   <Typography sx={{ color: "#fff" }} level="title-lg">
-                    Kết thúc vào ngày
+                    <SvgIconDisplay icon={FireWorkIcon} /> Kết thúc vào ngày
                   </Typography>
                   <Typography sx={{ color: "#fff" }} level="title-lg">
                     {product?.expiredDate &&

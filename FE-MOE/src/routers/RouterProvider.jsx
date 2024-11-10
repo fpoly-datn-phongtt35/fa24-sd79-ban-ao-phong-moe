@@ -43,6 +43,7 @@ import Bill from "~/pages/bill/Bill";
 import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
 import BillEdit from "~/pages/bill/BillEdit";
+import Products from "~/pages/clients/Products";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -179,6 +180,7 @@ function RouterProvider() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/search" element={<Products />} />
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 

@@ -9,7 +9,6 @@ package sd79.dto.response.clients.invoices;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import sd79.enums.InvoiceStatus;
 import sd79.enums.PaymentMethod;
 
 import java.math.BigDecimal;

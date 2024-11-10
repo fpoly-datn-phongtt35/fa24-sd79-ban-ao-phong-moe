@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.requests.common.ProductParamFilter2;
+import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.product.ProductResponse;
 import sd79.dto.response.productResponse.ProductDetailResponse2;
@@ -34,6 +35,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static sd79.dto.requests.productRequests.ProductRequests.SortBy.*;
 
 @Slf4j
 @Component
@@ -512,6 +515,175 @@ public class ProductCustomizeQuery {
                                     .build();
                         }
                 ).collect(Collectors.toSet());
+    }
+
+    public PageableResponse getProductsFilters(ProductRequests.ParamFilters param) {
+        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
+        // Default query
+        query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
+
+        if (StringUtils.hasLength(param.getKeyword())) {
+            query.append(" AND lower(prd.name) like lower(:keyword)");
+        }
+
+        if (!param.getCategoryIds().isEmpty()) {
+            String categoryIds = param.getCategoryIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            query.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
+        }
+
+        if (!param.getBrandIds().isEmpty()) {
+            String brandIds = param.getBrandIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            query.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
+        }
+
+        if (!param.getMaterialIds().isEmpty()) {
+            String materialIds = param.getCategoryIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            query.append(String.format(" AND prd.material.id IN (%s)", materialIds));
+        }
+
+        if (param.getMinPrice() != null || param.getMaxPrice() != null) {
+            query.append(" AND EXISTS (SELECT 1 FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE'");
+
+            if (param.getMinPrice() != null) {
+                query.append(" AND d.retailPrice >= :minPrice");
+            }
+            if (param.getMaxPrice() != null) {
+                query.append(" AND d.retailPrice <= :maxPrice");
+            }
+
+            query.append(")");
+        }
+
+        if (param.getSortBy() == PRICE_ASC) {
+            query.append(" ORDER BY (SELECT MIN(d.retailPrice) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') ASC");
+        } else if (param.getSortBy() == PRICE_DESC) {
+            query.append(" ORDER BY (SELECT MAX(d.retailPrice) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') DESC");
+        } else if (param.getSortBy() == CREATED_AT) {
+            query.append(" ORDER BY prd.createAt DESC");
+        } else {
+            query.append(" ORDER BY prd.updateAt DESC");
+        }
+
+        TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
+        if (StringUtils.hasLength(param.getKeyword())) {
+            execute.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
+        }
+
+        if (param.getMinPrice() != null || param.getMaxPrice() != null) {
+            if (param.getMinPrice() != null) {
+                execute.setParameter("minPrice", param.getMinPrice());
+            }
+            if (param.getMaxPrice() != null) {
+                execute.setParameter("maxPrice", param.getMinPrice());
+            }
+        }
+
+        execute.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
+        execute.setMaxResults(param.getPageSize());
+
+        List<ProductResponse.Product> data = execute.getResultList().stream()
+                .map(s -> {
+                            PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(s.getId());
+                            BigDecimal retailPrice = s.getProductDetails().getFirst().getRetailPrice();
+                            BigDecimal discountPercent = promotionDetail != null
+                                    ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
+                                    : BigDecimal.ZERO;
+
+                            BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
+                            return ProductResponse.Product.builder()
+                                    .productId(s.getId())
+                                    .imageUrl(s.getProductImages().getFirst().getImageUrl())
+                                    .name(s.getName())
+                                    .retailPrice(s.getProductDetails().getFirst().getRetailPrice())
+                                    .discountPrice(discountPrice)
+                                    .rate(4)
+                                    .rateCount(104)
+                                    .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
+                                    .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                                    .build();
+                        }
+                ).toList();
+
+        StringBuilder countPage = new StringBuilder("SELECT count(prd) FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
+        countPage.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
+
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countPage.append(" AND lower(prd.name) like lower(:keyword)");
+        }
+
+        if (!param.getCategoryIds().isEmpty()) {
+            String categoryIds = param.getCategoryIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            countPage.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
+        }
+
+        if (!param.getBrandIds().isEmpty()) {
+            String brandIds = param.getBrandIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            countPage.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
+        }
+
+        if (!param.getMaterialIds().isEmpty()) {
+            String materialIds = param.getCategoryIds().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            countPage.append(String.format(" AND prd.material.id IN (%s)", materialIds));
+        }
+
+        if (param.getMinPrice() != null || param.getMaxPrice() != null) {
+            countPage.append(" AND EXISTS (SELECT 1 FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE'");
+
+            if (param.getMinPrice() != null) {
+                countPage.append(" AND d.retailPrice >= :minPrice");
+            }
+            if (param.getMaxPrice() != null) {
+                countPage.append(" AND d.retailPrice <= :maxPrice");
+            }
+
+            countPage.append(")");
+        }
+
+        if (param.getSortBy() == PRICE_ASC) {
+            countPage.append(" ORDER BY (SELECT MIN(d.retailPrice) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') ASC");
+        } else if (param.getSortBy() == PRICE_DESC) {
+            countPage.append(" ORDER BY (SELECT MAX(d.retailPrice) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') DESC");
+        } else if (param.getSortBy() == CREATED_AT) {
+            countPage.append(" ORDER BY prd.createAt DESC");
+        } else {
+            countPage.append(" ORDER BY prd.updateAt DESC");
+        }
+        TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
+        if (StringUtils.hasLength(param.getKeyword())) {
+            countQuery.setParameter("keyword", String.format(LIKE_FORMAT, param.getKeyword().trim()));
+        }
+
+        if (param.getMinPrice() != null || param.getMaxPrice() != null) {
+            if (param.getMinPrice() != null) {
+                countQuery.setParameter("minPrice", param.getMinPrice());
+            }
+            if (param.getMaxPrice() != null) {
+                countQuery.setParameter("maxPrice", param.getMinPrice());
+            }
+        }
+        Long totalElements = countQuery.getSingleResult();
+        Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
+        Page<?> page = new PageImpl<>(data, pageable, totalElements);
+        return PageableResponse.builder()
+                .pageNumber(param.getPageNo())
+                .pageNo(param.getPageNo())
+                .pageSize(param.getPageSize())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements()) // Not required
+                .content(data)
+                .build();
     }
 
     private sd79.dto.response.productResponse.ProductResponse convertToProductResponse(Product product) {
