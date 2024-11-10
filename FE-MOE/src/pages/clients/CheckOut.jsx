@@ -63,6 +63,8 @@ function CheckOut() {
 
   const [orderSuccessfully, setOrderSuccessfully] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const handleClodeVoucher = () => {
     setVoucher(null);
     setDiscount(0);
@@ -163,9 +165,11 @@ function CheckOut() {
       localStorage.setItem("temp_data", JSON.stringify(transformedData));
       await reqPay(transformedData, "&uri=checkout");
     } else {
+      setLoading(true);
       await createOrder(transformedData).then(() => {
         localStorage.removeItem("orderItems");
         setOrderSuccessfully(true);
+        setLoading(false);
       });
     }
   };
@@ -567,7 +571,7 @@ function CheckOut() {
                 message="Bạn có muốn tiếp tục không?"
                 event={() => onPay()}
                 button={
-                  <Button variant="solid" size="lg" color="primary">
+                  <Button variant="solid" size="lg" color="primary" loading={loading}>
                     Đặt Hàng
                   </Button>
                 }

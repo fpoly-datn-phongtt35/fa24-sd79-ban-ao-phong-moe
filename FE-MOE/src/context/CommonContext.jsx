@@ -11,6 +11,18 @@ function CommonProvider({ children }) {
   const [amoutCart, setAmoutCart] = useState(null);
   const [carts, setCarts] = useState(null);
 
+  const [filters, setFilters] = useState({
+    pageNo: 0,
+    pageSize: 10,
+    keyword: "",
+    categoryIds: null,
+    brandIds: null,
+    materialIds: null,
+    minPrice: null,
+    maxPrice: null,
+    sortBy: "NONG HOANG VU - DEFAULT",
+  });
+
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
       handleFetchCarts();
@@ -33,6 +45,8 @@ function CommonProvider({ children }) {
     setAmoutCart,
     carts,
     handleFetchCarts,
+    filters,
+    setFilters,
   };
 
   return (
