@@ -462,12 +462,12 @@ export const EmployeeStore = () => {
                                                     onChange={handleChange}
                                                     placeholder='Số Điện Thoại'
                                                     sx={{
-                                                        border: `1px solid ${errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                                                        border: `1px solid ${errors.phone_number ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
                                                         '&:hover:not(.Mui-disabled):before': {
-                                                          borderColor: errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                          borderColor: errors.phone_number ? 'red' : 'rgba(0, 0, 0, 0.23)',
                                                         },
                                                         '&.Mui-focused': {
-                                                          borderColor: errors.phoneNumber ? 'red' : 'primary.main',
+                                                          borderColor: errors.phone_number ? 'red' : 'primary.main',
                                                         },
                                                       }}
                                                 />
