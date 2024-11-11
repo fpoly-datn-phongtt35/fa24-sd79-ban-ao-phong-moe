@@ -321,11 +321,11 @@ public class BillServiceImpl implements BillService {
         Bill bill = getOrCreateBill(billRequest, customer, coupon, billStatus);
         updateBillAttributes(bill, billRequest, billStatus);
 
+        // Accumulate total bill amount across all products
         BigDecimal totalBillAmount = processBillDetails(bill, billDetailRequests);
 
-        if (billRequest.getTotal() == null) {
-            bill.setTotal(totalBillAmount);
-        }
+        // Set the total on bill if it's null, or update with the accumulated total
+        bill.setTotal(billRequest.getTotal() != null ? billRequest.getTotal() : totalBillAmount);
 
         bill = saveBill(bill);
 
@@ -403,10 +403,13 @@ public class BillServiceImpl implements BillService {
 
             BillDetail billDetail = getOrCreateBillDetail(bill, productDetail);
 
-            updateBillDetail(billDetail, detailRequest, productDetail);
-
             BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
+
+            // Update the accumulated total
             totalBillAmount = totalBillAmount.add(totalAmountProduct);
+
+            // Update and save the bill detail
+            updateBillDetail(billDetail, detailRequest, totalAmountProduct);
         }
 
         return totalBillAmount;
@@ -426,27 +429,64 @@ public class BillServiceImpl implements BillService {
                         .build());
     }
 
-    private void updateBillDetail(BillDetail billDetail, BillDetailRequest detailRequest, ProductDetail productDetail) {
+    private void updateBillDetail(BillDetail billDetail, BillDetailRequest detailRequest, BigDecimal totalAmountProduct) {
         int quantity = detailRequest.getQuantity();
+        ProductDetail productDetail = billDetail.getProductDetail();
+
         if (quantity > productDetail.getQuantity()) {
             throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
         }
 
-        BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
-
         billDetail.setQuantity(quantity);
         billDetail.setRetailPrice(detailRequest.getPrice());
         billDetail.setDiscountAmount(detailRequest.getDiscountAmount());
-        billDetail.setTotalAmountProduct(totalAmountProduct);
+
+        // Ensure totalAmountProduct is correctly set
+        if (totalAmountProduct != null) {
+            billDetail.setTotalAmountProduct(totalAmountProduct);
+        } else {
+            throw new IllegalArgumentException("Total amount for the product cannot be null.");
+        }
+
         billDetail.setUpdateAt(new Date());
 
         billDetailRepository.save(billDetail);
     }
 
+    public void calculateTotalAmounts(List<BillDetailRequest> detailRequests) {
+        if (detailRequests == null || detailRequests.isEmpty()) {
+            throw new IllegalArgumentException("The list of BillDetailRequests cannot be null or empty.");
+        }
+
+        // Iterate through the list of BillDetailRequest objects
+        for (BillDetailRequest detailRequest : detailRequests) {
+            BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
+
+            // Set the calculated total amount to the corresponding BillDetailRequest
+            detailRequest.setTotalAmountProduct(totalAmountProduct);
+
+            // Log the calculated total amount for tracking purposes
+            System.out.println("Calculated totalAmountProduct for product_detail_id " + detailRequest.getProductDetail() + ": " + totalAmountProduct);
+        }
+    }
     private BigDecimal calculateTotalAmountProduct(BillDetailRequest detailRequest) {
-        return detailRequest.getPrice()
-                .subtract(detailRequest.getDiscountAmount())
-                .multiply(new BigDecimal(detailRequest.getQuantity()));
+        if (detailRequest == null) {
+            throw new IllegalArgumentException("BillDetailRequest cannot be null.");
+        }
+
+        BigDecimal price = detailRequest.getPrice();
+        BigDecimal discount = detailRequest.getDiscountAmount();
+        int quantity = detailRequest.getQuantity();
+
+        // Validation to ensure price and discount are not null
+        if (price == null || discount == null) {
+            throw new IllegalArgumentException("Price and discount cannot be null.");
+        }
+
+
+
+        // Return the total amount for the product, factoring in price, discount, and quantity
+        return price.subtract(discount).multiply(new BigDecimal(quantity));
     }
 
     private Bill saveBill(Bill bill) {

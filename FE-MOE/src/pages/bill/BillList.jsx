@@ -151,13 +151,13 @@ export default function BillList() {
                                     <IconButton
                                         onClick={() => {
                                             localStorage.setItem('billId', bill.id); 
-                                            navigate(`/bill/edit/${bill.id}`);    
+                                            navigate(`/bill/detail/${bill.id}`);    
                                         }}
                                         color="primary"
                                     >
                                         <Edit />
                                     </IconButton>
-                                    <IconButton onClick={() => navigate(`/bill/list`)} color='primary'>
+                                    <IconButton onClick={() => navigate(`/bill/detail`)} color='primary'>
                                         ...
                                     </IconButton>
                                 </TableCell>

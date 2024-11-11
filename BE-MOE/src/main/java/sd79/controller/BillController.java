@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.BillStatusDetailRequest;
 import sd79.dto.requests.billRequest.BillCustomerRequest;
 import sd79.dto.requests.billRequest.BillDetailRequest;
 import sd79.dto.requests.billRequest.BillRequest;
@@ -18,10 +19,11 @@ import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
+import sd79.dto.response.bills.BillStatusDetailResponse;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
+import sd79.model.BillStatusDetail;
 import sd79.model.Customer;
-import sd79.service.BillListService;
-import sd79.service.BillService;
+import sd79.service.*;
 
 import java.util.List;
 
@@ -33,6 +35,8 @@ public class BillController {
 
     private final BillService billService;
     private final BillListService billListService;
+    private final BillStatusService billStatusService;
+    private final BillStatusDetailService billStatusDetailService;
     private static final Logger logger = LoggerFactory.getLogger(BillController.class);
 
     //them lan 1
@@ -159,28 +163,49 @@ public class BillController {
             return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "BillDetails cannot be empty", null);
         }
         logger.info("Received request to add pay: {}", billStoreRequest);
-        try {
+//        try {
             long billId = billService.storePay(billRequest, billDetails);
             return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
-        } catch (IllegalArgumentException e) {
-            logger.error("Error adding pay: {}", e.getMessage());
-            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
-        } catch (Exception e) {
-            logger.error("Unexpected error occurred while adding pay: ", e);
-            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
-        }
+//        } catch (IllegalArgumentException e) {
+////            logger.error("Error adding pay: {}", e.getMessage());
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+//        } catch (Exception e) {
+//            logger.error("Unexpected error occurred while adding pay: ", e);
+//            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm hóa đơn", null);
+//        }
     }
 
     //---------------------------------------------------------------------BILL LIST-------------------------------------------------------------------------//
-
+    @Operation(summary = "Dách sách bảng bill chi tiết", description = "Dách sách bảng bill chi tiết")
     @GetMapping("/billList")
     public ResponseData<?> getAllBillList(BillListParamFilter param) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param));
     }
 
+    @Operation(summary = "Dách sách bill chi tiết theo id hóa đơn", description = "Dách sách bill chi tiết theo id hóa đơn")
     @GetMapping("/billEdit/{billId}")
     public ResponseData<?> getAllBillEdit(@PathVariable Long billId) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillEdit(billId));
+    }
+
+    @Operation(summary = "Dách sách status", description = "Dách sách status")
+    @GetMapping("/status")
+    public ResponseData<?> getAllStatus() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get status Successfully", this.billStatusService.getAllBillStatus());
+    }
+
+    @Operation(summary = "Thêm mới chi tiết trạng thái hóa đơn", description = "Thêm mới chi tiết trạng thái hóa đơn")
+    @PostMapping("/addBillStatusDetail")
+    public ResponseData<?> addBillStatusDetail(@RequestBody BillStatusDetailRequest request) {
+        long id = billStatusDetailService.addBillStatusDetail(request);
+        return new ResponseData<>(HttpStatus.OK.value(), "Bill status detail added successfully", id);
+    }
+
+    @Operation(summary = "Danh sách chi tiết trạng thái hóa đơn theo id hóa đơn", description = "Lấy danh sách chi tiết trạng thái hóa đơn theo id hóa đơn")
+    @GetMapping("/billStatusDetails/{billId}")
+    public ResponseData<?> getBillStatusDetailsByBillId(@PathVariable Long billId) {
+        List<BillStatusDetailResponse> billStatusDetails = billStatusDetailService.getBillStatusDetailsByBillId(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách chi tiết trạng thái hóa đơn thành công", billStatusDetails);
     }
 
 }

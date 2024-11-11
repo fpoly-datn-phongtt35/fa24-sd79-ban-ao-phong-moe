@@ -15,4 +15,5 @@ public enum InvoiceStatus {
     DELIVERY_FAILED,
     CANCELED,
     COMPLETED,
+    OTHER,
 }
