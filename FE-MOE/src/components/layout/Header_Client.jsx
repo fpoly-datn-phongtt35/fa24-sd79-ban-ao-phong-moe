@@ -157,7 +157,9 @@ const Header_Client = () => {
             <Typography
               level="tile-md"
               startDecorator={<AccountCircleOutlinedIcon />}
+              onClick={() => navigate("/my-account")}
             >
+
               Quản lý tài khoản
             </Typography>
           </MenuItem>
