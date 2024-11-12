@@ -90,3 +90,10 @@ export const setLocked = async (id, isLocked) => {
     `${API_ROOT}/employee/change-isLocked/${id}/${isLocked}`
   );
 };
+export const putPassword = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/employee/${id}/update-password`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    });
+};

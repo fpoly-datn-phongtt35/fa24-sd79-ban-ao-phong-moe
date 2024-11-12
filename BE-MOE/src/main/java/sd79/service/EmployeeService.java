@@ -29,4 +29,6 @@ public interface EmployeeService {
     List<EmployeeResponse> findByNameAndPhone(String keyword, String phone_number);
 
     void updateImage(EmployeeImageReq req);
+
+    void updatePassword(String oldPassword, String newPassword, String confirmPassword, long id);
 }

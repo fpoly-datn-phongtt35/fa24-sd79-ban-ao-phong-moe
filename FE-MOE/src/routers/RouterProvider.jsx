@@ -23,6 +23,8 @@ import CreateCoupon from "~/pages/coupon/CreateCoupon";
 import UpdateCoupon from "~/pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesUpdate from "~/pages/employee/EmployeeUpdate";
+import { EmployeeStore } from "~/pages/employee/EmployeeStore";
+// import  ChangePasswordForm  from "~/pages/employee/ChangePasswordForm";
 import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { UpdatePromotion } from "~/pages/promotions/UpdatePromotion";
 import { ProductDetail } from "~/pages/products/main/ProductDetail";
@@ -36,7 +38,6 @@ import { Contact } from "~/pages/clients/Contact";
 import { ViewDetail } from "~/pages/clients/ViewDetail";
 import LoginPage from "~/pages/auth/LoginPage";
 import LocationSelector from "~/pages/other/LocationSelector";
-import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
@@ -205,6 +206,7 @@ function RouterProvider() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeeStore />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
+        {/* <Route path="/dashboard" element={<ChangePasswordForm />} /> */}
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />

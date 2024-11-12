@@ -288,16 +288,16 @@ export const AddCustomer = () => {
           formData.append("images", imageObject)
           formData.append("productId", res)
           await postcustomerImage(formData).then(() => {
-            toast.success('Thêm thành công');
+            // toast.success('Thêm thành công');
             setIsLoading(false);
             navigate('/customer');
           })
         });
     } catch (error) {
       setIsLoading(false);
-      toast.error('Thêm thất bại!');
+      // toast.error('Thêm thất bại!');
     }
-    toast.success('Thêm thành công');
+    // toast.success('Thêm thành công');
   };
 
   const handleImageChange = (event) => {

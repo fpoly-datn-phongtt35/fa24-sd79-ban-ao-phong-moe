@@ -14,6 +14,7 @@ import sd79.dto.requests.EmployeeReq;
 import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.ResponseData;
+import sd79.exception.EntityNotFoundException;
 import sd79.model.Employee;
 import sd79.repositories.PositionsRepository;
 import sd79.service.EmployeeService;
@@ -113,4 +114,24 @@ public class EmployeeController {
         this.employeeService.setUserLocked(id, isLocked);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Thay đổi trạng thái thành công");
     }
+    @PutMapping("/{id}/update-password")
+    public ResponseData<String> updatePassword(@PathVariable long id,
+                                                 @RequestParam String oldPassword,
+                                                 @RequestParam String newPassword,
+                                                 @RequestParam String confirmPassword) {
+        try {
+            employeeService.updatePassword(oldPassword, newPassword, confirmPassword, id);
+            return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật mật khẩu thành công");
+        } catch (EntityNotFoundException e) {
+            // Xử lý ngoại lệ không tìm thấy nhân viên hoặc người dùng
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy nhân viên");
+        } catch (IllegalArgumentException e) {
+            // Xử lý ngoại lệ mật khẩu cũ không đúng hoặc mật khẩu mới không trùng khớp
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Mật khẩu không trùng khớp");
+        } catch (Exception e) {
+            // Xử lý các lỗi tổng quát khác
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Có lỗi xảy ra");
+        }
+    }
+
 }

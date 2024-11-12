@@ -193,6 +193,35 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
     }
 
+    @Override
+    public void updatePassword(String oldPassword, String newPassword, String confirmPassword, long id) {
+        // Tìm nhân viên theo ID
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên"));
+
+        // Tìm người dùng liên quan từ nhân viên
+        User user = userRepository.findById(employee.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
+
+        // Kiểm tra mật khẩu cũ có đúng hay không
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu cũ không đúng");
+        }
+
+        // Kiểm tra mật khẩu mới và mật khẩu nhắc lại có giống nhau không
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Mật khẩu mới và mật khẩu nhắc lại không giống nhau");
+        }
+
+        // Mã hóa và cập nhật mật khẩu mới
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(new Date());
+
+        // Lưu thông tin người dùng đã cập nhật
+        userRepository.save(user);
+    }
+
+
     Positions getPositionById(int id) {
         return this.positionsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Position not found!"));
     }
