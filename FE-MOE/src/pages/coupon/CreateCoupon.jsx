@@ -12,7 +12,6 @@ import HomeIcon from "@mui/icons-material/Home";
 import { CircularProgress } from '@mui/material';
 import CustomerTableCreate from '~/components/coupon/CustomerTableCreate';
 
-
 const CreateCoupon = () => {
     const { register, handleSubmit, watch, getValues, clearErrors, formState: { errors }, control, setValue } = useForm();
     const [discountType, setDiscountType] = useState('');

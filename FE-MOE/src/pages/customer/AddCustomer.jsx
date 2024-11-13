@@ -41,12 +41,12 @@ export const AddCustomer = () => {
       phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
       gender: customerData.gender ? '' : 'Phải chọn giới tính',
       dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: customerData.email ? '': 'Email không được để trống',
+      email: customerData.email ? '' : 'Email không được để trống',
       password: customerData.password ? '' : 'Mật khẩu không được để trống',
       username: customerData.username ? '' : 'Tên tài khoản không được để trống',
     };
 
-    
+
 
     setErrors(newErrors);
 
@@ -77,7 +77,7 @@ export const AddCustomer = () => {
   const handleDistrictChange = async (e) => {
     const districtId = e;
     setSelectedDistrict(districtId);
-    setSelectedWard(""); 
+    setSelectedWard("");
     if (districtId) {
       const response = await axios.get(`${host}d/${districtId}?depth=2`);
       setWards(response.data.wards);
@@ -127,7 +127,7 @@ export const AddCustomer = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g; 
+    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
     const phoneRegex = /^0\d{9,11}$/;
     const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
@@ -153,12 +153,12 @@ export const AddCustomer = () => {
         newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
         setIsLoading(true);
       } else {
-        delete newErrors.lastName; 
+        delete newErrors.lastName;
         setIsLoading(false);
       }
     }
 
-    
+
     if (name === 'firstName') {
       if (value.length > 50) {
         newErrors.firstName = "Tên không được vượt quá 50 ký tự";
@@ -167,7 +167,7 @@ export const AddCustomer = () => {
         newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
         setIsLoading(true);
       } else {
-        delete newErrors.firstName; 
+        delete newErrors.firstName;
         setIsLoading(false);
       }
     }
@@ -181,7 +181,7 @@ export const AddCustomer = () => {
         setIsLoading(false);
       }
     }
-    
+
 
 
     if (name === 'gender') {
@@ -213,34 +213,34 @@ export const AddCustomer = () => {
 
     if (name === 'username') {
       if (!usernameRegex.test(value)) {
-          newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
-          setIsLoading(true);
+        newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+        setIsLoading(true);
       } else {
-          delete newErrors.username;
-          setIsLoading(false);
+        delete newErrors.username;
+        setIsLoading(false);
       }
-  }
-
-  if (name === 'password') {
-      if (!passwordRegex.test(value)) {
-          newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
-          setIsLoading(true);
-      } else {
-          delete newErrors.password;
-          setIsLoading(false);
-      }
-  }
-  if (name === 'email') {
-    if (!emailRegex.test(value)) {
-      newErrors.email = "Email không đúng định dạng";
-      setIsLoading(true);
-    } else {
-      delete newErrors.email;
-      setIsLoading(false);
     }
-  }
 
-  setCustomerData((prevData) => ({ ...prevData, [name]: value }));
+    if (name === 'password') {
+      if (!passwordRegex.test(value)) {
+        newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
+        setIsLoading(true);
+      } else {
+        delete newErrors.password;
+        setIsLoading(false);
+      }
+    }
+    if (name === 'email') {
+      if (!emailRegex.test(value)) {
+        newErrors.email = "Email không đúng định dạng";
+        setIsLoading(true);
+      } else {
+        delete newErrors.email;
+        setIsLoading(false);
+      }
+    }
+
+    setCustomerData((prevData) => ({ ...prevData, [name]: value }));
 
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -552,7 +552,7 @@ export const AddCustomer = () => {
                                 '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
                               }}
                             />
-                        
+
                           </Box>
                           {errors.gender && (
                             <Typography color="error" variant="body2">{errors.gender}</Typography>
@@ -651,7 +651,7 @@ export const AddCustomer = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                       Thêm Người Dùng
                     </Button>
-                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

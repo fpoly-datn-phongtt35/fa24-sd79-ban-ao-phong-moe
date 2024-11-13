@@ -197,58 +197,44 @@ public class CouponCustomizeQuery {
         return (image != null) ? image.getImageUrl() : null;
     }
 
-    public PageableResponse getAllCouponCustomer( Long customerId,BillCouponFilter param) {
+    public PageableResponse getAllCouponCustomer(Long customerId, BillCouponFilter param) {
         log.info("Executing coupon query for customerId={} with search by name or code only", customerId);
 
         String sql = getString(param, customerId);
-
-        // Create the main query
         TypedQuery<Coupon> query = entityManager.createQuery(sql, Coupon.class);
-
-        // Set parameters for keyword and customerId if applicable
         if (StringUtils.hasLength(param.getKeyword())) {
             query.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
         if (customerId != null) {
             query.setParameter("customerId", customerId);
         }
-
-        // Apply pagination settings
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
-
-        // Fetch results and map to CouponResponse
         List<CouponResponse> data = query.getResultList().stream()
                 .map(this::convertCouponResponse)
                 .collect(Collectors.toList());
-
-        // Count query for total elements
         String countSql = "SELECT COUNT(c) FROM Coupon c WHERE c.isDeleted = false ";
         if (customerId == null) {
-            countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+            countSql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) AND c.quantity > 0";
         } else {
-            countSql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
-                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
+            countSql += "AND ((" +
+                    "c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) AND c.quantity > 0 " +
+                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.customer.id = :customerId AND b.coupon.id = c.id) " + // Ensure public coupon hasn't been used by this customer
+                    ") " +
+                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id) " +
+                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.customer.id = :customerId AND b.coupon.id = c.id))) "; // Ensure personal coupon hasn't been used by this customer
         }
-        if (StringUtils.hasLength(param.getKeyword())) {
+            if (StringUtils.hasLength(param.getKeyword())) {
             countSql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
-
-        // Create count query
         TypedQuery<Long> countQuery = entityManager.createQuery(countSql, Long.class);
-
-        // Set parameters for count query
         if (StringUtils.hasLength(param.getKeyword())) {
             countQuery.setParameter("keyword", "%" + param.getKeyword() + "%");
         }
         if (customerId != null) {
             countQuery.setParameter("customerId", customerId);
         }
-
-        // Fetch total elements count
         Long totalElements = countQuery.getSingleResult();
-
-        // Build pageable response
         Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<CouponResponse> page = new PageImpl<>(data, pageable, totalElements);
 
@@ -262,19 +248,54 @@ public class CouponCustomizeQuery {
     }
 
     private String getString(BillCouponFilter param, Long customerId) {
-        String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false ";
+        String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)";
 
         if (customerId == null) {
-            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) ";
+            sql += "AND c.type = 'PUBLIC' AND c.quantity > 0 " +
+                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.coupon.id = c.id)";
         } else {
-            sql += "AND ((c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
-                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id))) ";
+            sql += "AND ((" +
+                    "c.type = 'PUBLIC' AND c.quantity > 0 " +
+                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.customer.id = :customerId AND b.coupon.id = c.id) " +
+                    ") " +
+                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id) " +
+                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.customer.id = :customerId AND b.coupon.id = c.id))) ";
         }
+
+        sql += "AND (c.type != 'PERSONAL' OR c.quantity > 0) ";
+
         if (StringUtils.hasLength(param.getKeyword())) {
             sql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
         }
+
         return sql;
     }
 
 
+
+
+//    private String getString(BillCouponFilter param, Long customerId) {
+//        String sql = "SELECT c FROM Coupon c WHERE c.isDeleted = false ";
+//
+//        if (customerId == null) {
+//            sql += "AND c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) " +
+//                    "AND c.quantity > 0 ";
+//        } else {
+//            sql += "AND ((" +
+//                    "c.type = 'PUBLIC' AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE) " +
+//                    "AND c.quantity > 0 " +
+//                    ") " +
+//                    "OR (c.type = 'PERSONAL' AND EXISTS (SELECT cs FROM CouponShare cs WHERE cs.customer.id = :customerId AND cs.coupon.id = c.id) " +
+//                    "AND NOT EXISTS (SELECT b FROM Bill b WHERE b.customer.id = :customerId AND b.coupon.id = c.id))) ";
+//        }
+//
+//        // Ensure all coupon types have quantity > 0 except for personal ones (handled above)
+//        sql += "AND (c.type != 'PERSONAL' OR c.quantity > 0) ";
+//
+//        if (StringUtils.hasLength(param.getKeyword())) {
+//            sql += "AND (LOWER(c.name) LIKE LOWER(:keyword) OR LOWER(c.code) LIKE LOWER(:keyword)) ";
+//        }
+//
+//        return sql;
+//    }
 }

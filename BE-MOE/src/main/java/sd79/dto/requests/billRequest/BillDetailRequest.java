@@ -1,12 +1,14 @@
-package sd79.dto.requests;
+package sd79.dto.requests.billRequest;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BillDetailRequest {
     private Long productDetail;
     private Long bill;

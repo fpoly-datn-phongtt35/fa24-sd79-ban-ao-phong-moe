@@ -49,10 +49,11 @@ const managementOptions = [
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
-export const Header_Admin = ({ userId, ...props }) => {
+export const Header_Admin = ({...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false); // Thêm dòng này
+  // const [showChangePassword, setShowChangePassword] = useState(false); // Thêm dòng này
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -65,7 +66,6 @@ export const Header_Admin = ({ userId, ...props }) => {
     });
   };
 
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -193,14 +193,14 @@ export const Header_Admin = ({ userId, ...props }) => {
                     </ListItemButton>
                   </ListItem>
                   <ListItem>
-                    <ListItemButton onClick={() => setShowChangePassword(true)}>
+                    <ListItemButton onClick={() => navigate('/updatePassword')}>
                       <ListItemDecorator>
                         <HttpsOutlinedIcon />
                       </ListItemDecorator>
                       Đổi mật khẩu
                     </ListItemButton>
                   </ListItem>
-                  {showChangePassword && <ChangePasswordForm userId={userId} />}
+                  {/* {showChangePassword && <ChangePasswordForm userId={userId} />} */}
                   <ListDivider />
                   <ListItem>
                     <ListItemButton onClick={() => alert("Comming soon!")}>

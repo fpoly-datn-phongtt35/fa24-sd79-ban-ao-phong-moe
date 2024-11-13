@@ -47,5 +47,7 @@ public abstract class BillClientRequest {
         private BigDecimal retailPrice;
 
         private BigDecimal sellPrice;
+
+        private int quantity;
     }
 }

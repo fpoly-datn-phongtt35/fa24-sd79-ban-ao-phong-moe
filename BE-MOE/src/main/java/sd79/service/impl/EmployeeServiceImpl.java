@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.EmployeeReq;
 import sd79.dto.requests.employees.EmployeeImageReq;
+import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.employees.PositionResponse;
 import sd79.enums.Gender;
@@ -194,34 +195,28 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void updatePassword(String oldPassword, String newPassword, String confirmPassword, long id) {
-        // Tìm nhân viên theo ID
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên"));
-
-        // Tìm người dùng liên quan từ nhân viên
-        User user = userRepository.findById(employee.getUser().getId())
+    public void updatePassword(PasswordUpdateRequest request, long userId) {
+        // Tìm người dùng dựa vào userId
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
 
-        // Kiểm tra mật khẩu cũ có đúng hay không
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        // Kiểm tra mật khẩu cũ có đúng không
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Mật khẩu cũ không đúng");
         }
 
         // Kiểm tra mật khẩu mới và mật khẩu nhắc lại có giống nhau không
-        if (!newPassword.equals(confirmPassword)) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new IllegalArgumentException("Mật khẩu mới và mật khẩu nhắc lại không giống nhau");
         }
 
         // Mã hóa và cập nhật mật khẩu mới
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(new Date());
 
         // Lưu thông tin người dùng đã cập nhật
         userRepository.save(user);
     }
-
-
     Positions getPositionById(int id) {
         return this.positionsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Position not found!"));
     }

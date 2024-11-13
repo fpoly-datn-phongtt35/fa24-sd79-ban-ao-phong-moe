@@ -60,6 +60,7 @@ export const CustomerDetailPage = () => {
 
     };
     
+
     setErrors(newErrors);
 
     return Object.values(newErrors).every((error) => error === '');

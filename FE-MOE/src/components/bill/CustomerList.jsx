@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     Paper,
     Typography,
@@ -14,14 +14,12 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
-import { fetchAllCustomer, searchKeywordAndDate } from '~/apis/customerApi';
-import AddCustomerModal from './AddCustomerModal';
-import { deleteCustomer, fetchBill } from '~/apis/billsApi';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Input } from '@mui/joy';
+import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/apis/customerApi';
+import { deleteCustomer, fetchBill, fetchCustomer } from '~/apis/billsApi';
+import AddCustomerModal from './AddCustomerModal';
 
-export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCouponCustomer }) {
-
+export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
     const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,32 +27,35 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
-    const [bills, setBills] = useState([]);
+    const searchRef = useRef(null);
+    const [customerData, setCustomerData] = useState({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        city: '',
+        district: '',
+        ward: '',
+        streetName: ''
+    });
 
     useEffect(() => {
-        handleSetCustomer();
-        handleSetBill();
+        loadCustomers();
     }, []);
 
     useEffect(() => {
+        if (customerId === null) {
+            setCustomer(null);
+            setSearchTerm('');
+        }
+    }, [customerId]);
+
+    useEffect(() => {
         if (selectedOrder) {
-            const customerFromBill = findCustomerInBills(selectedOrder);
-            setCustomer(customerFromBill);
+            handleSetCustomer(selectedOrder);
         }
-    }, [selectedOrder, bills]);
+    }, [selectedOrder]);
 
-    const handleSetBill = async () => {
-        try {
-            const response = await fetchBill();
-            if (response?.data) {
-                setBills(response.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch bills:', error);
-        }
-    };
-
-    const handleSetCustomer = async () => {
+    const loadCustomers = async () => {
         setLoading(true);
         try {
             const response = await fetchAllCustomer();
@@ -69,7 +70,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
         }
     };
 
-    const handleSearchKeywordAndDate = async (keyword) => {
+    const handleSearch = async (keyword) => {
         setLoading(true);
         try {
             const res = await searchKeywordAndDate(keyword || '', '', '');
@@ -87,7 +88,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
         const term = event.target.value;
         setSearchTerm(term);
         if (term.trim()) {
-            handleSearchKeywordAndDate(term);
+            handleSearch(term);
         } else {
             setFilteredCustomers(customers);
         }
@@ -95,34 +96,68 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
     };
 
     const handleCustomerSelect = (selectedCustomer) => {
-        setCustomer({
-            ...selectedCustomer,
-            user: selectedCustomer.user || {}
-        });
+        setCustomer(selectedCustomer);
         setSearchTerm(selectedCustomer.fullName);
         setShowDropdown(false);
-        onAddCustomer(selectedCustomer);  
+        onAddCustomer(selectedCustomer);
+        setCustomerId(selectedCustomer.id);
     };
 
-    const handleAddCustomer = (customer) => {
-        onAddCustomer(customer);  
-    };
-
-    const handleDeleteCustomer = async (customerId) => {
+    const handleDeleteCustomer = async (id) => {
         try {
-            await deleteCustomer(customerId);
+            await deleteCustomer(id);
+            setCustomers((prevCustomers) => prevCustomers.filter(c => c.id !== id));
+            setFilteredCustomers((prevFiltered) => prevFiltered.filter(c => c.id !== id));
+
             setCustomer(null);
             setSearchTerm('');
-            setFilteredCustomers(customers);  
             onAddCustomer({ id: 0 });
+            loadCustomers();
         } catch (error) {
             console.error("Error deleting customer:", error);
         }
     };
-    
-    const findCustomerInBills = (orderId) => {
-        const billWithCustomer = bills.find(bill => bill.id === orderId);
-        return billWithCustomer ? billWithCustomer.customer : null;
+
+    useEffect(() => {
+        if (customerId) {
+            fetchCustomerDetail();
+        } else {
+            setCustomerData(null);
+        }
+    }, [customerId]);
+
+    const fetchCustomerDetail = async () => {
+        if (!customerId) {
+            console.error("Customer ID is missing");
+            return;
+        }
+
+        try {
+            const response = await fetchCustomerById(customerId);
+            const customerData = response.data;
+
+            setCustomerData({
+                firstName: customerData.firstName,
+                lastName: customerData.lastName,
+                phoneNumber: customerData.phoneNumber,
+                email: customerData.email,
+                city: customerData.city,
+                district: customerData.district,
+                ward: customerData.ward,
+                streetName: customerData.streetName
+            });
+        } catch (error) {
+            console.error("Failed to fetch customer detail:", error);
+        }
+    };
+
+    const handleSetCustomer = async (orderId) => {
+        const response = await fetchCustomer(orderId);
+        if (response?.data) {
+            setCustomers(response.data);
+            setCustomer(response.data[0]);
+            setCustomerId(response.data[0]?.id || null);
+        }
     };
 
     const handleOpenModal = () => setOpenModal(true);
@@ -134,22 +169,22 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                     Thông tin khách hàng
                 </Typography>
+                <Box display="flex" gap={1} alignItems="center" justifyContent="space-between">
+                    {customer ? (
+                        <>
+                            <span>{customer.lastName} {customer.firstName} </span>
+                            <Button
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                                size="small"
+                                sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
+                            >
+                                <ClearIcon fontSize="small" />
+                            </Button>
+                        </>
+                    ) : null}
+                </Box>
                 <Box display="flex" flexDirection="column" gap={1} position="relative" width="40%">
                     <Box display="flex" gap={1} alignItems="center" width="100%">
-                        <Box sx={{ flex: customer ? '1' : '0' }}>
-                            {customer ? (
-                                <>
-                                    <span>{customer.firstName} {customer.lastName}</span>
-                                    <Button
-                                        onClick={() => handleDeleteCustomer(selectedOrder)}
-                                        size="small"
-                                        sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </Button>
-                                </>
-                            ) : null}
-                        </Box>
                         <TextField
                             placeholder="Tìm kiếm khách hàng..."
                             variant="outlined"
@@ -159,6 +194,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
                             onFocus={() => setShowDropdown(true)}
                             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                             disabled={!selectedOrder}
+                            inputRef={searchRef}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -206,7 +242,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
                                         tabIndex={0}
                                     >
                                         <ListItemText
-                                            primary={`${c.fullName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
+                                            primary={`${c.lastName + " " + c.firstName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
                                             secondary={null}
                                         />
                                     </ListItem>
@@ -217,15 +253,15 @@ export default function CustomerList({ selectedOrder, onAddCustomer, onUpdateCou
                 </Box>
             </Box>
 
-            {customer ? (
+            {customerData ? (
                 <Box>
-                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customer.firstName} {customer.lastName}</Typography>
-                    <Typography variant="body1"><strong>Email:</strong> {customer.user ? customer.user.email : 'N/A'}</Typography>
-                    <Typography variant="body1"><strong>Số điện thoại:</strong> {customer.phoneNumber}</Typography>
+                    <Typography variant="body1"><strong>Tên khách hàng:</strong> {customerData.lastName} {customerData.firstName}</Typography>
+                    <Typography variant="body1"> <strong>Email:</strong> {customerData.email}</Typography>
+                    <Typography variant="body1"><strong>Số điện thoại:</strong> {customerData.phoneNumber}</Typography>
                 </Box>
             ) : (
                 <Typography variant="body1" align="center" sx={{ mt: 2 }}>
-                    Không có thông tin khách hàng.
+                    Khách hàng lẻ.
                 </Typography>
             )}
 

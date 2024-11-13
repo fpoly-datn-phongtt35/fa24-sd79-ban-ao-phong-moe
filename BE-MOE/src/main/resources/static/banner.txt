@@ -1,0 +1,28 @@
+${AnsiColor.BRIGHT_CYAN}  __  __  ___  _____   ____  _   _  ___  ____
+${AnsiColor.BRIGHT_YELLOW} |  \/  |/ _ \| ____| / ___|| | | |/ _ \|  _ \
+${AnsiColor.BRIGHT_GREEN} | |\/| | | | |  _|   \___ \| |_| | | | | |_) |
+${AnsiColor.BRIGHT_MAGENTA} | |  | | |_| | |___   ___) |  _  | |_| |  __/
+${AnsiColor.BRIGHT_RED} |_|  |_|\___/|_____| |____/|_| |_|\___/|_|
+
+${AnsiColor.BRIGHT_BLUE}            Welcome to the ${AnsiColor.BRIGHT_YELLOW}MOE!${AnsiColor.BRIGHT_BLUE}
+${AnsiColor.GREEN}---------------------------------------------------
+${AnsiColor.CYAN}     Project: ${AnsiColor.BRIGHT_YELLOW}MOE - T-Shirt E-Commerce
+${AnsiColor.CYAN}     Group: ${AnsiColor.BRIGHT_YELLOW}SD79
+${AnsiColor.CYAN}  🚀 Spring Boot Version: ${AnsiColor.WHITE}(0.0.1-SNAPSHOT)
+
+${AnsiColor.BRIGHT_GREEN}🌟 Explore our amazing T-Shirt collection! 🌟
+${AnsiColor.BRIGHT_BLUE}Your gateway to stylish and comfortable wear!
+${AnsiColor.YELLOW}💡 Let's make your shopping experience enjoyable! 💡
+${AnsiColor.RED}     Powered by ${AnsiColor.BRIGHT_WHITE}Team SD79
+
+${AnsiColor.BRIGHT_YELLOW}---------------------------------------------------
+${AnsiColor.CYAN}        Members:
+${AnsiColor.BRIGHT_YELLOW}      - Nông Hoàng Vũ - PH33506
+${AnsiColor.BRIGHT_YELLOW}      - Khương Văn Thành - PH34331
+${AnsiColor.BRIGHT_YELLOW}      - Đỗ Đại Dương - PH35171
+${AnsiColor.BRIGHT_YELLOW}      - Ngô Văn Thái - PH34711
+${AnsiColor.BRIGHT_YELLOW}      - Trần Văn Duy - PH36078
+${AnsiColor.BRIGHT_YELLOW}---------------------------------------------------
+${AnsiColor.BRIGHT_CYAN}🎉 Thank you for choosing us! 🎉
+${AnsiColor.MAGENTA}Let's make this journey memorable! 💖
+${AnsiColor.BRIGHT_WHITE}---------------------------------------------------

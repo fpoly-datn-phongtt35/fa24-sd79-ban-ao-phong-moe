@@ -318,26 +318,6 @@ public class CouponServiceImpl implements CouponService {
         return (image != null) ? image.getImageUrl() : null;
     }
 //-----------------------------------------------------------------------------------------------
-    public List<CouponCustomerResponse> getAllCouponCustomers(Long customerId) {
-    List<CouponCustomerResponse> coupons;
-
-    if (customerId == null || !customerRepository.existsById(customerId)) {
-        // Case 2: Only show public coupons in the "started" state if customer ID is not found
-        coupons = couponRepo.findAllPublicCouponsWithStartStatus()
-                .stream()
-                .map(this::convertToCouponCustomerResponse)
-                .collect(Collectors.toList());
-    } else {
-        // Case 1: Show both public and specific customer coupons in the "started" state
-        coupons = couponRepo.findAllCustomerAndPublicCouponsWithStartStatus(customerId)
-                .stream()
-                .map(this::convertToCouponCustomerResponse)
-                .collect(Collectors.toList());
-    }
-
-    return coupons;
-}
-
     private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
         return CouponCustomerResponse.builder()
                 .id(coupon.getId())

@@ -1,21 +1,25 @@
-package sd79.dto.requests;
+package sd79.dto.response.bills;
 
 import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.PaymentMethod;
+import sd79.model.Coupon;
+import sd79.model.Customer;
+import sd79.model.Employee;
+import sd79.model.User;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Builder
-public class BillRequest {
+public class BillEditResponse {
     private Long id;
     private String code;
-    private String bankCode;
-    private Long customer;
-    private Long coupon;
-    private Integer billStatus;
+    private Customer customer;
+    private BillCouponResponse coupon;
+    private Integer status;
     private BigDecimal shipping;
     private BigDecimal subtotal;
     private BigDecimal sellerDiscount;
@@ -24,5 +28,6 @@ public class BillRequest {
     private String message;
     private String note;
     private Date paymentTime;
-    private Long userId;
+    private Employee employee;
+    private List<BillDetailResponse> billDetails;
 }

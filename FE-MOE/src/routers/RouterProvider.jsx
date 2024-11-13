@@ -24,7 +24,7 @@ import UpdateCoupon from "~/pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesUpdate from "~/pages/employee/EmployeeUpdate";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
-// import  ChangePasswordForm  from "~/pages/employee/ChangePasswordForm";
+import  ChangePasswordForm  from "~/pages/employee/ChangePasswordForm";
 import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { UpdatePromotion } from "~/pages/promotions/UpdatePromotion";
 import { ProductDetail } from "~/pages/products/main/ProductDetail";
@@ -41,6 +41,10 @@ import LocationSelector from "~/pages/other/LocationSelector";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
+import MyOrder from "~/pages/clients/orders/MyOrder";
+import BillList from "~/pages/bill/BillList";
+import BillEdit from "~/pages/bill/BillEdit";
+import Products from "~/pages/clients/Products";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -177,12 +181,14 @@ function RouterProvider() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/search" element={<Products />} />
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
       <Route element={<ProtectedRoutes_USER />}>
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckOut />} />
+        <Route path="/my-order" element={<MyOrder />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -206,10 +212,12 @@ function RouterProvider() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeeStore />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
-        {/* <Route path="/dashboard" element={<ChangePasswordForm />} /> */}
+        <Route path="/updatePassword" element={<ChangePasswordForm />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
+        <Route path="/bill/list" element={<BillList />} />
+        <Route path="/bill/edit/:id" element={<BillEdit />} />
       </Route>
     </Routes>
   );

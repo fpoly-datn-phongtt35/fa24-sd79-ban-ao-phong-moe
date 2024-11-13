@@ -15,4 +15,6 @@ public interface PromotionDetailRepository extends JpaRepository<PromotionDetail
     @Query("DELETE FROM PromotionDetail pd WHERE pd.promotion.id = :promotionId")
     void deleteByPromotionId(@Param("promotionId") Integer promotionId);
 
+    @Query("FROM PromotionDetail  WHERE product.id = :productId AND CURRENT_TIMESTAMP BETWEEN promotion.startDate AND promotion.endDate")
+    PromotionDetail findByProductId(Long productId);
 }

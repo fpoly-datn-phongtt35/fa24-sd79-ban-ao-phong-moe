@@ -24,5 +24,4 @@ public interface CouponService {
     void sendCouponEmail(Coupon coupon, Customer customer);
     Coupon findCouponById(Long id);
     Customer findCustomerById(Long id);
-    List<CouponCustomerResponse> getAllCouponCustomers(Long customerId);
 }

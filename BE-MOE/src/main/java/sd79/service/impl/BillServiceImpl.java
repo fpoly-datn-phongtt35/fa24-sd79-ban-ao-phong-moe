@@ -1,9 +1,13 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.BillDetailRequest;
-import sd79.dto.requests.BillRequest;
+import org.springframework.transaction.annotation.Transactional;
+import sd79.dto.requests.billRequest.BillCustomerRequest;
+import sd79.dto.requests.billRequest.BillDetailRequest;
+import sd79.dto.requests.billRequest.BillRequest;
+import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
@@ -17,10 +21,8 @@ import sd79.repositories.products.ProductDetailRepository;
 import sd79.service.BillService;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.math.RoundingMode;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +37,8 @@ public class BillServiceImpl implements BillService {
     private final BillStatusRepo billStatusRepository;
     private final UserRepository userRepository;
     private final BillCustomizeQuery billCustomizeQuery;
+    private final BillRepo billRepo;
+    private final CustomerAddressRepository customerAddressRepository;
 
     //them lan 1
     @Override
@@ -45,6 +49,13 @@ public class BillServiceImpl implements BillService {
     @Override
     public List<BillResponse> getAllBill() { // get bill hien tai
         return this.billCustomizeQuery.getAllBills();
+    }
+
+    @Override
+    public BillResponse getBillId(Long id) {
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found with id " + id));
+        return convertToBillDetail(bill);
     }
 
     @Override
@@ -84,6 +95,8 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public long storeProduct(BillDetailRequest billDetailRequest) {
+        int requestedQuantity = billDetailRequest.getQuantity() != null ? billDetailRequest.getQuantity() : 1;
+
         ProductDetail productDetail = productDetailRepository.findById(billDetailRequest.getProductDetail())
                 .orElseThrow(() -> new IllegalArgumentException("ProductDetail not found with ID: " + billDetailRequest.getProductDetail()));
         Bill bill = billRepository.findById(billDetailRequest.getBill())
@@ -93,38 +106,44 @@ public class BillServiceImpl implements BillService {
         BillDetail billDetail;
         BigDecimal retailPrice = billDetailRequest.getPrice();
         BigDecimal discountAmount = billDetailRequest.getDiscountAmount();
-        int quantityToAdd = billDetailRequest.getQuantity();
         BigDecimal totalAmountProduct;
 
         if (existingBillDetailOptional.isPresent()) {
             billDetail = existingBillDetailOptional.get();
-            int newQuantity = billDetail.getQuantity() + quantityToAdd;
-            if (newQuantity > productDetail.getQuantity()) {
+
+            int currentQuantity = billDetail.getQuantity();
+            int quantityDifference = requestedQuantity - currentQuantity;
+
+            if (quantityDifference > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            billDetail.setQuantity(newQuantity);
-            totalAmountProduct = retailPrice.subtract(discountAmount).multiply(new BigDecimal(newQuantity));
+            billDetail.setQuantity(requestedQuantity);
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail.setTotalAmountProduct(totalAmountProduct);
             billDetail.setUpdateAt(new Date());
+
+            productDetail.setQuantity(productDetail.getQuantity() - quantityDifference);
         } else {
-            if (quantityToAdd > productDetail.getQuantity()) {
+            if (requestedQuantity > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            totalAmountProduct = retailPrice.subtract(discountAmount).multiply(new BigDecimal(quantityToAdd));
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail = BillDetail.builder()
                     .productDetail(productDetail)
                     .bill(bill)
-                    .quantity(quantityToAdd)
+                    .quantity(requestedQuantity)
                     .retailPrice(retailPrice)
                     .discountAmount(discountAmount)
                     .totalAmountProduct(totalAmountProduct)
                     .createAt(new Date())
                     .updateAt(new Date())
                     .build();
+
+            productDetail.setQuantity(productDetail.getQuantity() - requestedQuantity);
         }
-        productDetail.setQuantity(productDetail.getQuantity() - quantityToAdd);
+
         productDetailRepository.save(productDetail);
         billDetail = billDetailRepository.save(billDetail);
 
@@ -137,7 +156,7 @@ public class BillServiceImpl implements BillService {
                 .orElseThrow(() -> new IllegalArgumentException("BillDetail not found with ID: " + billDetailId));
         ProductDetail productDetail = billDetail.getProductDetail();
         productDetail.setQuantity(productDetail.getQuantity() + billDetail.getQuantity());
-        productDetailRepository.save(productDetail); // Save the updated ProductDetail
+        productDetailRepository.save(productDetail);
         billDetailRepository.delete(billDetail);
     }
 
@@ -154,12 +173,50 @@ public class BillServiceImpl implements BillService {
     public long storeCustomer(Long billId, Long customerId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + customerId));
-        bill.setCustomer(customer);
+        if (customerId == null || customerId == 0) {
+            bill.setCustomer(null);
+        } else {
+            Customer customer = customerRepository.findById(customerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + customerId));
+            bill.setCustomer(customer);
+        }
+
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
         return bill.getId();
+    }
+
+    @Transactional
+    @Override
+    public long updateCustomer(Long id, BillCustomerRequest billCustomerRequest) {
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        CustomerAddress customerAddress = customer.getCustomerAddress();
+        if (customerAddress == null) {
+            customerAddress = new CustomerAddress();
+        }
+        User user = customer.getUser();
+
+        if (this.customerRepository.existsByPhoneNumber(billCustomerRequest.getPhoneNumber()) &&
+                !customer.getPhoneNumber().equals(billCustomerRequest.getPhoneNumber())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
+        if (user == null) {
+            user = new User();
+        }
+        customerAddress.setCity(billCustomerRequest.getCity());
+        customerAddress.setCityId(billCustomerRequest.getCity_id());
+        customerAddress.setDistrict(billCustomerRequest.getDistrict());
+        customerAddress.setDistrictId(billCustomerRequest.getDistrict_id());
+        customerAddress.setWard(billCustomerRequest.getWard());
+        customerAddress.setStreetName(billCustomerRequest.getStreetName());
+        customerAddress = customerAddressRepository.save(customerAddress);
+        user = userRepository.save(user);
+        customer.setCustomerAddress(customerAddress);
+        customer.setUser(user);
+        populateCustomerData(customer, billCustomerRequest);
+        return customerRepository.save(customer).getId();
     }
 
     @Override
@@ -189,11 +246,44 @@ public class BillServiceImpl implements BillService {
     public long storeCoupon(Long billId, Long couponId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-        Coupon coupon = couponRepository.findById(couponId)
+
+        // Remove existing coupon if there is one, regardless of the new coupon's ID
+        Coupon currentCoupon = bill.getCoupon();
+        if (currentCoupon != null) {
+            currentCoupon.setQuantity(currentCoupon.getQuantity() + 1);
+            currentCoupon.setUsageCount((currentCoupon.getUsageCount() != null && currentCoupon.getUsageCount() > 0)
+                    ? currentCoupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(currentCoupon);
+        }
+
+        // If the new coupon ID is null or 0, set the coupon on the bill to null and save
+        if (couponId == null || couponId == 0) {
+            bill.setCoupon(null);
+            bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+            billRepository.save(bill);
+            return bill.getId();
+        }
+
+        // Retrieve and validate the new coupon
+        Coupon newCoupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
 
-        bill.setCoupon(coupon);
+        if (newCoupon.getQuantity() != null && newCoupon.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
+        }
+
+        // Update the new coupon's quantity and usage count
+        if (newCoupon.getQuantity() != null) {
+            newCoupon.setQuantity(newCoupon.getQuantity() - 1);
+        }
+        newCoupon.setUsageCount((newCoupon.getUsageCount() != null ? newCoupon.getUsageCount() : 0) + 1);
+
+        // Set the new coupon to the bill and save
+        bill.setCoupon(newCoupon);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+
+        couponRepository.save(newCoupon);
         billRepository.save(bill);
 
         return bill.getId();
@@ -203,9 +293,20 @@ public class BillServiceImpl implements BillService {
     public long deleteCoupon(long billId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
+
+        Coupon coupon = bill.getCoupon();
+        if (coupon != null) {
+            coupon.setQuantity(coupon.getQuantity() + 1);
+            coupon.setUsageCount((coupon.getUsageCount() != null && coupon.getUsageCount() > 0)
+                    ? coupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(coupon);
+        }
+
         bill.setCoupon(null);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
+
         return bill.getId();
     }
 
@@ -352,8 +453,6 @@ public class BillServiceImpl implements BillService {
         return billRepository.save(bill);
     }
 
-    //ket thuc
-
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));
     }
@@ -364,6 +463,7 @@ public class BillServiceImpl implements BillService {
                 .collect(Collectors.toList());
     }
 
+    //Modal bill coupon
     private BillCouponResponse convertToBillCouponResponse(Coupon coupon) {
         if (coupon == null) return null;
 
@@ -378,6 +478,7 @@ public class BillServiceImpl implements BillService {
                 .build();
     }
 
+    //Get bill
     private BillResponse convertToBillResponse(Bill bill) {
         return BillResponse.builder()
                 .id(bill.getId())
@@ -385,6 +486,24 @@ public class BillServiceImpl implements BillService {
                 .customer(bill.getCustomer())
                 .coupon(convertToBillCouponResponse(bill.getCoupon()))
                 .build();
+    }
+
+    //Detail bill
+    private BillResponse convertToBillDetail(Bill bill) {
+        BillResponse.BillResponseBuilder billResponseBuilder = BillResponse.builder();
+        billResponseBuilder
+                .id(bill.getId())
+                .code(bill.getCode())
+                .customer(bill.getCustomer())
+                .coupon(convertToBillCouponResponse(bill.getCoupon()))
+                .billDetails(bill.getBillDetails().stream()
+                        .map(this::convertToBillResponse)
+                        .collect(Collectors.toList())
+                );
+
+        billResponseBuilder.billStatus(bill.getBillStatus().getId());
+
+        return billResponseBuilder.build();
     }
 
     private BillCouponResponse convertToBillCoupon(Coupon coupon) {
@@ -399,7 +518,19 @@ public class BillServiceImpl implements BillService {
                 .build();
     }
 
+    //Modal product bill
     private BillDetailResponse convertToBillResponse(BillDetail billDetail) {
+        BigDecimal retailPrice = billDetail.getRetailPrice();
+        BigDecimal discountAmount = billDetail.getDiscountAmount();
+        BigDecimal sellPrice = retailPrice.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
+
+        Integer percent = null;
+        if (discountAmount != null && retailPrice.compareTo(BigDecimal.ZERO) > 0) {
+            percent = discountAmount.multiply(BigDecimal.valueOf(100))
+                    .divide(retailPrice, 2, RoundingMode.HALF_UP)
+                    .intValue();
+        }
+
         ProductDetailResponse2 productDetailResponse = ProductDetailResponse2.builder()
                 .id(billDetail.getProductDetail().getId())
                 .productName(String.format("%s [%s - %s]",
@@ -413,7 +544,9 @@ public class BillServiceImpl implements BillService {
                 .color(billDetail.getProductDetail().getColor().getName())
                 .size(billDetail.getProductDetail().getSize().getName())
                 .origin(billDetail.getProductDetail().getProduct().getOrigin())
-                .price(billDetail.getProductDetail().getRetailPrice())
+                .price(retailPrice)
+                .sellPrice(sellPrice)
+                .percent(percent)
                 .quantity(billDetail.getProductDetail().getQuantity())
                 .build();
 
@@ -421,19 +554,23 @@ public class BillServiceImpl implements BillService {
                 .id(billDetail.getId())
                 .productDetail(productDetailResponse)
                 .quantity(billDetail.getQuantity())
-                .retailPrice(billDetail.getRetailPrice())
-                .discountAmount(billDetail.getDiscountAmount())
+                .retailPrice(retailPrice)
+                .discountAmount(discountAmount)
                 .build();
     }
 
+    //customer
+    private void populateCustomerData(Customer customer, BillCustomerRequest billCustomerRequest) {
+        customer.setFirstName(billCustomerRequest.getFirstName());
+        customer.setLastName(billCustomerRequest.getLastName());
+        customer.setPhoneNumber(billCustomerRequest.getPhoneNumber());
+        customer.setUpdatedAt(new Date());
+    }
+
     private String generateRandomCode(long currentId) {
-        long totalCodes = 26 * 26 * 100000000;
-        long index = currentId - 1;
-        char letter1 = (char) ('A' + (index / (100000000)));
-        char letter2 = (char) ('A' + (index % (100000000) / 10000000));
-        long numberPart = index % 100000000 + 1;
-        String formattedNumber = String.format("%08d", numberPart);
-        return "" + letter1 + letter2 + formattedNumber;
+        Random random = new Random();
+        int number = random.nextInt(100000000);
+        return String.format("HD%08d", number);
     }
 
 }

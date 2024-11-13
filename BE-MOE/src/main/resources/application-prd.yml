@@ -1,0 +1,48 @@
+# Author: Nong Hoang Vu || JavaTech
+# Facebook:https://facebook.com/NongHoangVu04
+# Github: https://github.com/JavaTech04
+# Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+server:
+  port: 2004
+api:
+  version: v2
+spring:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:mysql://sql10.freesqldatabase.com/sql10743672}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DATASOURCE_USERNAME:sql10743672}
+    password: ${DATASOURCE_PASSWORD:U48L6gBTSh}
+  jpa:
+    show-sql: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  config:
+    activate:
+      on-profile: prd
+jwt:
+  key: PRODUCT_SD79NHV$2a$12$wvYek6dEmfHd3QOhnY2BVe8LbTGQa7bo2mda3FrHez80ToFEEh5u.
+  expiryMinute: 1000
+  expiryDay: 3
+  secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
+  refreshKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980
+  resetKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980s
+openapi:
+  service:
+    api-docs: api-moe-shop
+    title: MOE-SHOP-API
+    version: ${api.version}
+    description: description
+    server: http://localhost:2004
+    serverName: JavaTech
+    license: Apache 2.0
+    license-url: https://facebook.com/NongHoangVu04
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:null}
+  api-secret: ${CLOUDINARY_API_SECRET:null}
+  api-key: ${CLOUDINARY_API_KEY:null}

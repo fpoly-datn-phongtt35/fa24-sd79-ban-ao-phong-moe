@@ -16,4 +16,6 @@ public interface BillRepo extends JpaRepository<Bill, Long> {
     @Query("SELECT c.name, c.discountValue, c.discountType, c.conditions, c.maxValue " +
             "FROM Bill b JOIN b.coupon c WHERE b.id = :billId")
     List<Coupon> getCouponDetailsByCouponId(Long billId);
+
+
 }

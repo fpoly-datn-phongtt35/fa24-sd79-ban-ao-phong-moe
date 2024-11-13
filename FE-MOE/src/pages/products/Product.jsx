@@ -122,6 +122,7 @@ export const Product = () => {
     setCurrentPage(1);
     setPageSize(value);
   };
+  
   const clearFilter = () => {
     setCurrentPage(1);
     setKeyword("");

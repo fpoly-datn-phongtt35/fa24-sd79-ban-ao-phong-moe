@@ -125,15 +125,4 @@ public class CouponController {
         return new ResponseData<>(HttpStatus.OK.value(), "Gửi email phiếu giảm giá thành công");
     }
 
-    @Operation(
-            summary = "Retrieve a list of coupons associated with a customer",
-            description = "Fetch all coupons for a given customer ID or only public coupons if the customer ID is not found"
-    )
-    @GetMapping("/getAllCouponCustomerssss/{customerId}")
-    public ResponseData<?> getAllCouponCustomers(@PathVariable Long customerId) {
-        List<CouponCustomerResponse> coupons = couponService.getAllCouponCustomers(customerId);
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon list", coupons);
-    }
-
-
 }
