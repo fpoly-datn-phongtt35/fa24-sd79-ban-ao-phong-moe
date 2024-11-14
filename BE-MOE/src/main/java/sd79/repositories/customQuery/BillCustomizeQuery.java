@@ -18,10 +18,7 @@ import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.dto.response.productResponse.ProductDetailResponse2;
 import sd79.enums.ProductStatus;
 import sd79.exception.InvalidDataException;
-import sd79.model.Bill;
-import sd79.model.BillDetail;
-import sd79.model.Coupon;
-import sd79.model.ProductImage;
+import sd79.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -166,24 +163,29 @@ public class BillCustomizeQuery {
 
         // Convert bills to BillEditResponse
         return bills.stream()
-                .map(bill -> BillEditResponse.builder()
-                        .id(bill.getId())
-                        .code(bill.getCode())
-                        .customer(bill.getCustomer())
-                        .coupon(bill.getCoupon() != null ? mapCouponToBillCouponResponse(bill.getCoupon()) : null) // Map coupon properly
-                        .status(bill.getBillStatus().getId()) // If you still need status, keep it, otherwise remove
-                        .shipping(bill.getShipping())
-                        .subtotal(bill.getSubtotal())
-                        .sellerDiscount(bill.getSellerDiscount())
-                        .total(bill.getTotal())
-                        .paymentMethod(bill.getPaymentMethod())
-                        .message(bill.getMessage())
-                        .note(bill.getNote())
-                        .paymentTime(bill.getPaymentTime())
-                        .billDetails(bill.getBillDetails().stream()
-                                .map(this::convertToBillResponse)
-                                .collect(Collectors.toList()))
-                        .build())
+                .map(bill -> {
+                    Employee employee = getEmployeeByUserId(bill.getCreatedBy().getId());
+                    return BillEditResponse.builder()
+                            .id(bill.getId())
+                            .code(bill.getCode())
+                            .customer(bill.getCustomer())
+                            .coupon(bill.getCoupon() != null ? mapCouponToBillCouponResponse(bill.getCoupon()) : null)
+                            .status(bill.getBillStatus().getId())
+                            .shipping(bill.getShipping())
+                            .subtotal(bill.getSubtotal())
+                            .sellerDiscount(bill.getSellerDiscount())
+                            .total(bill.getTotal())
+                            .paymentMethod(bill.getPaymentMethod())
+                            .message(bill.getMessage())
+                            .note(bill.getNote())
+                            .paymentTime(bill.getPaymentTime())
+
+                            .employee(employee)
+                            .billDetails(bill.getBillDetails().stream()
+                                    .map(this::convertToBillResponse)
+                                    .collect(Collectors.toList()))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -237,6 +239,13 @@ public class BillCustomizeQuery {
                 .retailPrice(retailPrice)
                 .discountAmount(discountAmount)
                 .build();
+    }
+
+    public Employee getEmployeeByUserId(Long userId) {
+        String sql = "SELECT e FROM employees e WHERE e.user.id = :userId";
+        TypedQuery<Employee> query = entityManager.createQuery(sql, Employee.class);
+        query.setParameter("userId", userId);
+        return query.getSingleResult();
     }
 
     private List<String> convertToUrl(List<ProductImage> images) {

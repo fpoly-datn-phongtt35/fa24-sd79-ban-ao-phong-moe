@@ -200,6 +200,18 @@ export const addPay = async (billStoreRequest) => {
   }
 };
 
+export const addPayBillEdit = async (billStoreRequest) => {
+  try {
+    const res = await authorizedAxiosInstance.post(`${API_ROOT}/bill/storePay`, billStoreRequest);
+    return res.data.data;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Thêm mới hóa đơn không thành công";
+    toast.error(errorMessage);
+    console.error("Error adding new bill:", error);
+    throw error;
+  }
+};
+
 export const reqPay = async (data, uri) => {
   await authorizedAxiosInstance
     .get(`${API_ROOT}/payment/vn-pay?amount=${data.billRequest.total}&bankCode=NCB${uri}`)

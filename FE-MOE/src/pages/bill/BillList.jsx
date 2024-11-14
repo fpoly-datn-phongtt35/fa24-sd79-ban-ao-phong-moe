@@ -81,6 +81,7 @@ export default function BillList() {
     // Fetch data on mount and when status or pageNo changes
     useEffect(() => {
         fetchBillList();
+        localStorage.removeItem('billId');
     }, [status, pageNo]);
 
     return (
@@ -147,7 +148,13 @@ export default function BillList() {
                                 </TableCell>
                                 <TableCell sx={{ padding: '12px 16px' }}>{bill.createAt}</TableCell>
                                 <TableCell sx={{ padding: '12px 16px' }}>
-                                    <IconButton onClick={() => navigate(`/bill/edit/${bill.id}`)} color="primary">
+                                    <IconButton
+                                        onClick={() => {
+                                            localStorage.setItem('billId', bill.id); 
+                                            navigate(`/bill/edit/${bill.id}`);    
+                                        }}
+                                        color="primary"
+                                    >
                                         <Edit />
                                     </IconButton>
                                     <IconButton onClick={() => navigate(`/bill/list`)} color='primary'>
