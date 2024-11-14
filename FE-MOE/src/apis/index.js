@@ -44,14 +44,10 @@ export const accessUserAPI = async (role) => {
     });
 };
 
-export const reqPay = async (data) => {
+export const reqPay = async (data, uri) => {
   await authorizedAxiosInstance
-    .get(
-      `${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB&vnp_OrderInfo=${data.message}`
-    )
+    .get(`${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB${uri}`)
     .then((res) => {
-      console.log(res.status);
-
       if (res.status === 200) {
         window.location.href = res.data.data;
       }

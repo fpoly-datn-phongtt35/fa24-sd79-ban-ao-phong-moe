@@ -10,7 +10,11 @@ package sd79.service.payment;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sd79.configuration.VNPAYConfig;
+import sd79.model.Bill;
+import sd79.repositories.BillRepo;
+import sd79.service.BillService;
 import sd79.utils.VNPayUtil;
 
 import java.util.Map;
@@ -19,11 +23,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
     private final VNPAYConfig vnPayConfig;
+    private final BillRepo billRepository;
 
     public String createVnPayPayment(HttpServletRequest request) {
         long amount = Integer.parseInt(request.getParameter("amount")) * 100L;
         String bankCode = request.getParameter("bankCode");
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig();
+        String uri = request.getParameter("uri");
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(uri);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
@@ -36,4 +42,6 @@ public class PaymentService {
         queryUrl += "&vnp_SecureHash=" + vnpSecureHash;
         return vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
     }
+
+
 }

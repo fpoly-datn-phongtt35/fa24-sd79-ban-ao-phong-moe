@@ -31,5 +31,5 @@ public class CouponCustomerResponse {
     private String status;
     private String description;
     private String imageUrl;
-    private List<Customer> customers;
+    private List<Long> customers;
 }

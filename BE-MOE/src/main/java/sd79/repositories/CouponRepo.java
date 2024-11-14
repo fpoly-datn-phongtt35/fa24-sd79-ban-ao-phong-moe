@@ -20,7 +20,14 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
     boolean existsCouponByAttribute(String code);
 
 
-//    List<Coupon> findAllByStatusAndIsDeleted(String status, Boolean isDeleted);
-//    @Query("SELECT c FROM Coupon c JOIN c.couponShares cs WHERE cs.customer.id = :customerId AND c.isDeleted = false")
-//    List<Coupon> findAllByCustomerId(@Param("customerId") Long customerId);
+    @Query("SELECT c FROM Coupon c WHERE c.type = 'PUBLIC' AND c.isDeleted = false " +
+            "AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)")
+    List<Coupon> findAllPublicCouponsWithStartStatus();
+
+    @Query("SELECT c FROM Coupon c LEFT JOIN c.couponShares cs ON cs.customer.id = :customerId " +
+            "WHERE c.isDeleted = false AND ((c.type = 'PUBLIC' " +
+            "AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
+            "OR (cs.customer.id = :customerId AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)))")
+    List<Coupon> findAllCustomerAndPublicCouponsWithStartStatus(@Param("customerId") Long customerId);
+
 }

@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import { ScrollToTop } from "~/utils/defaultScroll";
-import { deleteItemCart, updateCart } from "~/apis/client/productApiClient";
+import { deleteItemCart, updateCart } from "~/apis/client/apiClient";
 import { formatCurrencyVND } from "~/utils/format";
 import { MoeAlert } from "~/components/other/MoeAlert";
 import { toast } from "react-toastify";
@@ -43,11 +43,18 @@ function ShoppingCart() {
 
   useEffect(() => {
     if (context.carts && context.carts.length > 0) {
-      setSelectAll(selectedCarts.length === context.carts.length);
+      const validCarts = context.carts.filter(
+        (cart) => cart.productCart.status && cart.productCart.quantity > 0
+      );
+
+      setSelectAll(
+        validCarts.length > 0 && selectedCarts.length === validCarts.length
+      );
     }
   }, [selectedCarts, context.carts]);
 
   const handleDeleteCart = async (id) => {
+    setSelectedCarts([]);
     await deleteItemCart(id).then((res) => {
       context.handleFetchCarts();
       toast.success(res.message);
@@ -67,11 +74,12 @@ function ShoppingCart() {
       quantity: quantity,
       username: localStorage.getItem("username"),
     };
+    setSelectedCarts([]);
     await updateCart(data).then(() => context.handleFetchCarts());
   };
 
   const onUpdateQuantity = (id, quantity) => {
-    debouncedQuantity(id, quantity);
+    quantity > 0 && debouncedQuantity(id, quantity);
   };
 
   const handleCheckboxChange = (cart) => {
@@ -85,17 +93,21 @@ function ShoppingCart() {
   };
 
   const handleSelectAll = () => {
+    const validCarts = context.carts.filter(
+      (cart) => cart.productCart.status && cart.productCart.quantity > 0
+    );
+
     if (selectAll) {
       setSelectedCarts([]);
     } else {
-      setSelectedCarts(context.carts);
+      setSelectedCarts(validCarts);
     }
     setSelectAll(!selectAll);
   };
 
   const calculateTotalPrice = () => {
     return selectedCarts.reduce(
-      (total, cart) => total + cart.retailPrice * cart.quantity,
+      (total, cart) => total + cart.productCart.sellPrice * cart.quantity,
       0
     );
   };
@@ -167,6 +179,10 @@ function ShoppingCart() {
                       <tr key={cart.id}>
                         <td className="text-center">
                           <Checkbox
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
+                            }
                             size="sm"
                             checked={selectedCarts.includes(cart)}
                             onChange={() => handleCheckboxChange(cart)}
@@ -176,23 +192,67 @@ function ShoppingCart() {
                           <CardShoppingCard data={cart} />
                         </td>
                         <td className="text-center">
-                          <Typography level="title-md">
-                            {formatCurrencyVND(cart.retailPrice)}
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.productCart.status ? "danger" : "neutral"
+                            }
+                          >
+                            {formatCurrencyVND(cart.productCart.sellPrice)}
                           </Typography>
+                          {cart.productCart.percent !== null && (
+                            <Typography
+                              sx={{
+                                textDecoration: "line-through",
+                                color: "grey",
+                              }}
+                            >
+                              {formatCurrencyVND(cart.retailPrice)}
+                            </Typography>
+                          )}
                         </td>
                         <td className="text-center">
+                          {cart.quantity > cart.productCart.quantity &&
+                            onUpdateQuantity(
+                              cart.id,
+                              cart.productCart.quantity
+                            )}
                           <Input
-                            defaultValue={cart.quantity}
-                            type="number"
-                            onChange={(e) =>
-                              onUpdateQuantity(cart.id, e.target.value)
+                            disabled={
+                              !cart.productCart.status ||
+                              cart.productCart.quantity < 1
                             }
+                            defaultValue={
+                              cart.quantity > cart.productCart.quantity
+                                ? cart.productCart.quantity
+                                : cart.quantity
+                            }
+                            type="number"
+                            slotProps={{
+                              input: {
+                                min: 1,
+                                max: cart.productCart.quantity,
+                              },
+                            }}
+                            onChange={(e) => {
+                              if (e.target.value > cart.productCart.quantity) {
+                                e.target.value = cart.productCart.quantity;
+                                onUpdateQuantity(cart.id, e.target.value);
+                              } else {
+                                onUpdateQuantity(cart.id, e.target.value);
+                              }
+                            }}
                           />
                         </td>
                         <td className="text-center">
-                          <Typography level="title-md">
+                          <Typography
+                            level="title-md"
+                            color={
+                              !cart.productCart.status ? "danger" : "neutral"
+                            }
+                          >
                             {formatCurrencyVND(
-                              cart.retailPrice * cart.quantity
+                              cart.productCart.sellPrice * cart.quantity
                             )}
                           </Typography>
                         </td>
@@ -235,7 +295,10 @@ function ShoppingCart() {
                 size="sm"
                 startDecorator={<PaymentsOutlinedIcon />}
                 onClick={() => {
-                  localStorage.setItem("orderItems", JSON.stringify(selectedCarts));
+                  localStorage.setItem(
+                    "orderItems",
+                    JSON.stringify(selectedCarts)
+                  );
                   navigate("/checkout");
                 }}
               >

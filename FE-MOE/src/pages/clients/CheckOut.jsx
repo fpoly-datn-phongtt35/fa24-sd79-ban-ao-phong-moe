@@ -24,87 +24,201 @@ import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 import VisaSvgIcon from "~/assert/icon/visa.svg";
 import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
-import { CommonContext } from "~/context/CommonContext";
-import { useContext, useEffect, useState } from "react";
+import SuccessfullyOrderIcon from "~/assert/icon/correct-success-tick-svgrepo-com.svg";
+import CloseIcon from "@mui/icons-material/Close";
+import { useEffect, useState } from "react";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import { formatCurrencyVND } from "~/utils/format";
 import { ScrollToTop } from "~/utils/defaultScroll";
 import { reqPay } from "~/apis";
 import { handleVerifyBanking } from "~/exceptions/PaymentException";
-import { getUserAddressCart } from "~/apis/client/productApiClient";
+import {
+  createOrder,
+  fetchAllVouchers,
+  getUserAddressCart,
+} from "~/apis/client/apiClient";
 import VoucherModal from "~/components/clients/modals/VoucherModal";
+import { toast } from "react-toastify";
+import { MoeAlert } from "~/components/other/MoeAlert";
 
 function CheckOut() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const context = useContext(CommonContext);
+
   const [items, setItems] = useState(null);
 
-  const [message, setMessage] = useState("");
-  const [subTotal, setSubTotal] = useState(0);
+  const [message, setMessage] = useState(null);
+  const [subtotal, setSubtotal] = useState(0);
   const [shipping, setShipping] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [discount, setDiscount] = useState(0);
-  const [couponId, setCouponId] = useState(1);
+  const [couponId, setCouponId] = useState(null);
 
   const [userInfo, setUserInfo] = useState(null);
+  const [vouchers, setVouchers] = useState(null);
+
+  const [voucher, setVoucher] = useState(null);
+
+  const [ketword, setKeword] = useState(null);
+
+  const [orderSuccessfully, setOrderSuccessfully] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+
+  const handleClodeVoucher = () => {
+    setVoucher(null);
+    setDiscount(0);
+    setCouponId(null);
+  };
+  useEffect(() => {
+    init();
+  }, []);
 
   useEffect(() => {
-    ScrollToTop();
-    fetchUsers();
-    setItems(JSON.parse(localStorage.getItem("orderItems")));
-    handleVerifyBanking(searchParams.get("vnp_TransactionStatus")) &&
-      navigate("/cart");
-  }, []);
+    const res = async () => {
+      await fetchAllVouchers(userInfo?.id, ketword).then(async (res) => {
+        setVouchers(res);
+      });
+    };
+    if (ketword !== null) {
+      res();
+    }
+  }, [ketword]);
 
   useEffect(() => {
     let total = calculateTotalPrice();
     setShipping(total < 100000 ? 24000 : 0);
-    setSubTotal(total);
+    setSubtotal(total);
   }, [items]);
 
+  const init = () => {
+    setOrderSuccessfully(false);
+    ScrollToTop();
+    fetchUsers();
+    setItems(JSON.parse(localStorage.getItem("orderItems")));
+
+    handleVerifyBanking(
+      searchParams.get("vnp_TransactionStatus"),
+      searchParams.get("vnp_BankTranNo")
+    ) && setOrderSuccessfully(true);
+    navigate("/checkout");
+  };
+
   const fetchUsers = async () => {
-    await getUserAddressCart().then((res) => {
+    await getUserAddressCart().then(async (res) => {
       setUserInfo(res.data);
+      await fetchAllVouchers(res.data.id, ketword).then(async (res) => {
+        setVouchers(res);
+      });
     });
   };
 
-  const handleDiscount = (type, value) => {
-    if (type === "PERCENT") {
-      setDiscount(subTotal * (value / 100));
+  const handleDiscount = (data) => {
+    if (data.discountType === "PERCENTAGE") {
+      let result = subtotal * (data.discountValue / 100);
+      result = result > data.maxValue ? data.maxValue : result;
+      setDiscount(result);
     } else {
-      setDiscount(subTotal - value);
+      setDiscount(data.discountValue);
     }
-    setSubTotal(calculateTotalPrice());
+    setCouponId(data.id);
+    setVoucher(data);
+    setSubtotal(calculateTotalPrice());
   };
 
   const calculateTotalPrice = () => {
     return items?.reduce(
-      (total, items) => total + items.retailPrice * items.quantity,
+      (total, items) => total + items.productCart.sellPrice * items.quantity,
       0
     );
   };
 
   const onPay = async () => {
     const data = {
-      items,
-      message,
-      subTotal,
-      shipping,
-      paymentMethod,
-      discount,
+      customerId: userInfo?.id,
       couponId,
-      total: subTotal + shipping - discount,
+      shipping,
+      subtotal,
+      sellerDiscount: discount,
+      total: subtotal + shipping - discount,
+      paymentMethod,
+      message,
+      items,
     };
-    if (paymentMethod === "BANK") {
-      console.log("Bank Payment");
-      localStorage.setItem("temp_data", JSON.stringify(data));
-      await reqPay(data);
-    }
-    console.log(data);
 
-    // localStorage.removeItem("orderItems")
+    const transformedData = {
+      ...data,
+      items: data.items.map((item) => ({
+        id: Number(item.id),
+        retailPrice: item.retailPrice,
+        sellPrice: item.productCart.sellPrice,
+        quantity: item.quantity,
+      })),
+    };
+
+    if (data.total > 50000000) {
+      toast.warning("Quá hạn mức thanh toán, vui lòng tách đơn!");
+      return;
+    }
+
+    if (paymentMethod === "BANK") {
+      localStorage.setItem("temp_data", JSON.stringify(transformedData));
+      await reqPay(transformedData, "&uri=checkout");
+    } else {
+      setLoading(true);
+      await createOrder(transformedData).then(() => {
+        localStorage.removeItem("orderItems");
+        setOrderSuccessfully(true);
+        setLoading(false);
+      });
+    }
   };
+
+  if (orderSuccessfully) {
+    ScrollToTop();
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="80vh"
+        width="95vw"
+      >
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          textAlign="center"
+          bgcolor="white"
+          padding="24px"
+          borderRadius="8px"
+          boxShadow="0px 4px 12px rgba(0, 0, 0, 0.1)"
+        >
+          <SvgIconDisplay
+            icon={SuccessfullyOrderIcon}
+            width="80px"
+            height="80px"
+            mb={2}
+          />
+          <Typography variant="h5" mb={1}>
+            Cảm ơn bạn đã đặt hàng!
+          </Typography>
+          <Typography level="title-md" mb={3} color="textSecondary">
+            Đơn hàng của bạn sẽ sớm được giao cho đơn vị vận chuyển!
+          </Typography>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("/")}
+            >
+              Tiếp tục mua sắm
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   if (!items) {
     return (
@@ -117,6 +231,9 @@ function CheckOut() {
         onClick={() => navigate("/cart")}
       >
         <CircularProgress />
+        <Typography marginLeft={2} level="body-md">
+          Không tìm thấy đơn hàng!
+        </Typography>
       </Box>
     );
   }
@@ -219,15 +336,27 @@ function CheckOut() {
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">
-                          {formatCurrencyVND(i.retailPrice)}
+                          {formatCurrencyVND(i.productCart.sellPrice)}
                         </Typography>
+                        {i.productCart.percent !== null && (
+                          <Typography
+                            sx={{
+                              textDecoration: "line-through",
+                              color: "grey",
+                            }}
+                          >
+                            {formatCurrencyVND(i.retailPrice)}
+                          </Typography>
+                        )}
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">{i.quantity}</Typography>
                       </td>
                       <td className="text-center">
                         <Typography level="title-md">
-                          {formatCurrencyVND(i.retailPrice * i.quantity)}
+                          {formatCurrencyVND(
+                            i.productCart.sellPrice * i.quantity
+                          )}
                         </Typography>
                       </td>
                     </tr>
@@ -253,7 +382,7 @@ function CheckOut() {
               </Box>
               <Typography level="title-md">
                 Tổng số tiền ({items.length} sản phẩm):{" "}
-                {formatCurrencyVND(subTotal)}
+                {formatCurrencyVND(subtotal)}
               </Typography>
             </Box>
           </Sheet>
@@ -275,7 +404,33 @@ function CheckOut() {
           >
             Giảm giá
           </Typography>
-          <VoucherModal handleDiscount={handleDiscount} />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {voucher && (
+              <Typography
+                level="title-sm"
+                variant="solid"
+                color="danger"
+                borderRadius={50}
+                endDecorator={
+                  <CloseIcon onClick={() => handleClodeVoucher()} />
+                }
+              >
+                Giảm &nbsp;
+                {voucher.discountType === "PERCENTAGE"
+                  ? `${voucher.discountValue}%`
+                  : formatCurrencyVND(voucher.discountValue)}
+                &nbsp; đơn tối đa {formatCurrencyVND(voucher.conditions)}
+              </Typography>
+            )}
+            {!voucher && (
+              <VoucherModal
+                handleDiscount={handleDiscount}
+                vouchers={vouchers}
+                totalAmout={subtotal}
+                setKeword={setKeword}
+              />
+            )}
+          </Box>
         </Box>
         {/* Payment method */}
         <Box
@@ -351,7 +506,7 @@ function CheckOut() {
                     Tổng tiền hàng
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="neutral">
-                    {formatCurrencyVND(subTotal)}
+                    {formatCurrencyVND(subtotal)}
                   </Typography>
                 </Box>
                 <Box
@@ -393,7 +548,7 @@ function CheckOut() {
                     Tổng thanh toán
                   </Typography>
                   <Typography marginBottom={2} level="title-md" color="danger">
-                    {formatCurrencyVND(subTotal + shipping - discount)}
+                    {formatCurrencyVND(subtotal + shipping - discount)}
                   </Typography>
                 </Box>
               </Box>
@@ -411,14 +566,16 @@ function CheckOut() {
                 Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo &nbsp;
                 <Link>Điều khoản của chúng tôi</Link>
               </Typography>
-              <Button
-                variant="outlined"
-                size="lg"
-                color="primary"
-                onClick={() => onPay()}
-              >
-                Mua Hàng
-              </Button>
+              <MoeAlert
+                title="Xác nhận đơn hàng"
+                message="Bạn có muốn tiếp tục không?"
+                event={() => onPay()}
+                button={
+                  <Button variant="solid" size="lg" color="primary" loading={loading}>
+                    Đặt Hàng
+                  </Button>
+                }
+              />
             </Box>
           </FormControl>
         </Box>

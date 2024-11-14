@@ -2,6 +2,7 @@ package sd79.service;
 
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
+import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.CouponResponse;
@@ -13,8 +14,7 @@ import java.util.List;
 
 public interface CouponService {
     PageableResponse getAllCoupon(CouponParamFilter param);
-    PageableResponse getAllCouponDate(CouponParamFilter param);
-    PageableResponse getAllCouponDatePersonal(CouponParamFilter param);
+    PageableResponse getAllCouponCustomer(Long customerId,BillCouponFilter param);
     CouponResponse getCouponById(Long id);
     long storeCoupon(CouponRequest couponRequest);
     void storeCouponImages(CouponImageReq req);
@@ -24,5 +24,4 @@ public interface CouponService {
     void sendCouponEmail(Coupon coupon, Customer customer);
     Coupon findCouponById(Long id);
     Customer findCustomerById(Long id);
-//    List<CouponCustomerResponse> getAllCouponCustomers(Long customerId);
 }

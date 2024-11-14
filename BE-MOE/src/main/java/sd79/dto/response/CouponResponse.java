@@ -1,6 +1,7 @@
 package sd79.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.TodoDiscountType;
@@ -32,6 +33,7 @@ public class CouponResponse {
     private String status; //trang thai
     private String description;
     private String imageUrl;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Customer> customers;
 
 }

@@ -240,6 +240,16 @@ CREATE TABLE promotion_details(
 CREATE TABLE bill_status (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(55),
+	status ENUM(
+    'PENDING',
+    'PENDING_CONFIRMATION',
+		'CONFIRMED', 
+    'SHIPPED', 
+    'DELIVERED', 
+    'DELIVERY_FAILED',
+    'CANCELED',
+		'COMPLETED'
+	),
   description TEXT
 );
 
@@ -252,7 +262,7 @@ CREATE TABLE bill (
   bill_status_id INT,
   shipping DECIMAL(15, 0),
   subtotal DECIMAL(15,0),
-  saller_discount DECIMAL(15,0),
+  seller_discount DECIMAL(15,0),
   total DECIMAL(15, 0),
   payment_method ENUM('CASH','BANK','CASH_ON_DELIVERY'),
   message VARCHAR(255),
@@ -711,16 +721,12 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (9, 'https://example.com/images/coupon09.jpg', 'yz567'),
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
     
--- bill
-INSERT INTO bill_status (name) VALUES
-('Chưa xác nhận'),
-('Đã xác nhận đơn hàng'),
-('Đã bàn giao cho đơn vị vận chuyển'),
-('Đã xác nhận thông tin thanh toán'),
-('Đơn hàng đã được giao thành công'),
-('Đã hủy đơn hàng'),
-('Giao hàng thất bại'),
-('Khác');
-
-
-
+INSERT INTO bill_status (name, status) VALUES
+('Đang chờ xử lý', 'PENDING'),
+('Đang chờ xác nhận', 'PENDING_CONFIRMATION'),
+('Đã xác nhận', 'CONFIRMED'),
+('Đã bàn giao cho đơn vị vận chuyển', 'SHIPPED'),
+('Đã giao thành công', 'DELIVERED'),
+('Giao hàng thất bại', 'DELIVERY_FAILED'),
+('Đã hủy đơn hàng', 'CANCELED'),
+('Đơn hàng hoàn tất', 'COMPLETED');

@@ -2,6 +2,8 @@
 # Facebook:https://facebook.com/NongHoangVu04
 # Github: https://github.com/JavaTech04
 # Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+# dnvsezlqx Q_CCV07_nZjRJbzwyK8_23WK3KQ 734814185473685
+# ROLE: LEADER
 server:
   port: 2004
 api:
@@ -43,6 +45,6 @@ openapi:
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
 cloudinary:
-  cloud-name: dnvsezlqx
-  api-secret: Q_CCV07_nZjRJbzwyK8_23WK3KQ
-  api-key: 734814185473685
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-secret: ${CLOUDINARY_API_SECRET}
+  api-key: ${CLOUDINARY_API_KEY}

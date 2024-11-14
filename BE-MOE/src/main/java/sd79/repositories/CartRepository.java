@@ -10,12 +10,12 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import sd79.model.redis_model.Cart;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface CartRepository extends CrudRepository<Cart, String> {
-    Set<Cart> findByUsername(String username);
+    List<Cart> findByUsername(String username);
 
     Optional<Cart> findByIdAndUsername(String id, String username);
 }

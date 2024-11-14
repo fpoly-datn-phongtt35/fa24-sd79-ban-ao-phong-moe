@@ -41,6 +41,10 @@ import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
 import AccountInfo from "~/pages/clients/customer/AccountManager";
+import MyOrder from "~/pages/clients/orders/MyOrder";
+import BillList from "~/pages/bill/BillList";
+import BillEdit from "~/pages/bill/BillEdit";
+import Products from "~/pages/clients/Products";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -177,6 +181,7 @@ function RouterProvider() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/search" element={<Products />} />
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
@@ -184,6 +189,7 @@ function RouterProvider() {
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckOut />} />
         <Route path="/my-account" element={<AccountInfo />} />
+        <Route path="/my-order" element={<MyOrder />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -210,6 +216,8 @@ function RouterProvider() {
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
+        <Route path="/bill/list" element={<BillList />} />
+        <Route path="/bill/edit/:id" element={<BillEdit />} />
       </Route>
     </Routes>
   );

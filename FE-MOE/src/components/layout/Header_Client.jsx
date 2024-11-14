@@ -21,7 +21,7 @@ import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
-import { Avatar, Input, Tooltip, Typography } from "@mui/joy";
+import { Autocomplete, Avatar, Input, Tooltip, Typography } from "@mui/joy";
 import { CommonContext } from "~/context/CommonContext";
 
 const Header_Client = () => {
@@ -30,6 +30,8 @@ const Header_Client = () => {
   const [avatar, setAvatar] = useState("");
   const [username, setUsername] = useState("");
   const accessToken = localStorage.getItem("accessToken");
+
+  const [producs, setProducs] = useState([]);
 
   const context = useContext(CommonContext);
 
@@ -49,6 +51,7 @@ const Header_Client = () => {
       setAvatar(res?.avatar);
       setUsername(res?.username);
     });
+  
   };
 
   const handleMenuClick = (event) => {
@@ -65,7 +68,7 @@ const Header_Client = () => {
 
   const handleLogout = async () => {
     await handleLogoutAPI();
-    localStorage.removeItem("orderItems")
+    localStorage.removeItem("orderItems");
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
     context.setAmoutCart(null);
@@ -103,7 +106,7 @@ const Header_Client = () => {
             Trang chủ
           </Button>
           <Button
-            onClick={() => navigate("/#product")}
+            onClick={() => navigate("/search")}
             style={{ color: "#000", textTransform: "none" }}
           >
             Sản phẩm
@@ -124,11 +127,21 @@ const Header_Client = () => {
 
         <Box display="flex" alignItems="center" gap={2}>
           <Box>
-            <Input
-              type="search"
-              sx={{ width: 350, border: "none" }}
-              startDecorator={<SearchIcon color="primary"/>}
+            <Autocomplete
+              freeSolo
+              startDecorator={<SearchIcon color="primary" />}
               placeholder="Tìm kiếm"
+              sx={{ width: 350, backgroundColor: "#f9fafc", border: "none" }}
+              options={producs}
+              // getOptionLabel={(option) => option.title}
+              // onChange={(event, newValue) => {
+              //   if (newValue) {
+              //     navigate(newValue.path);
+              //   }
+              // }}
+              components={{
+                Input: (props) => <Input {...props} type="search" />,
+              }}
             />
           </Box>
           <IconButton>
@@ -163,7 +176,7 @@ const Header_Client = () => {
               Quản lý tài khoản
             </Typography>
           </MenuItem>
-          <MenuItem onClick={handleMenuClose}>
+          <MenuItem onClick={() => navigate("/my-order")}>
             <Typography
               level="tile-md"
               startDecorator={<ShoppingCartOutlinedIcon />}
