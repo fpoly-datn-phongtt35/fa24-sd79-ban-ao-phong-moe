@@ -20,8 +20,10 @@ import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
+import sd79.service.BrandService;
 import sd79.service.CategoryService;
 import sd79.service.CouponService;
+import sd79.service.MaterialService;
 import sd79.service.clients.ClientService;
 
 
@@ -38,6 +40,10 @@ public class ClientController {
     private final CategoryService categoryService;
 
     private final CouponService couponService;
+
+    private final BrandService brandService;
+
+    private final MaterialService materialService;
 
     @Operation(
             summary = "Get all product listings",
@@ -65,6 +71,24 @@ public class ClientController {
     @GetMapping("/category")
     public ResponseData<?> getAllCategories() {
         return new ResponseData<>(HttpStatus.OK.value(), "Success", categoryService.getAllCategories(""));
+    }
+
+    @Operation(
+            summary = "Get Brands",
+            description = "Get all Brands from database"
+    )
+    @GetMapping("/brand")
+    public ResponseData<?> getAllBrands() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", brandService.getAllBrands(""));
+    }
+
+    @Operation(
+            summary = "Get Materials",
+            description = "Get all Materials from database"
+    )
+    @GetMapping("/material")
+    public ResponseData<?> getAllMaterials() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials(""));
     }
 
     @Operation(
