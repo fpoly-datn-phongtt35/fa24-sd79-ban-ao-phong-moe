@@ -32,7 +32,7 @@ export const fetchAllProducts = async (
     queryParams.push(`pageSize=${pageSize}`);
   }
   if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
+    queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
   }
   if (status !== null && status !== undefined) {
     queryParams.push(`status=${status}`);
@@ -77,7 +77,7 @@ export const fetchAllProductArchives = async (
     queryParams.push(`pageSize=${pageSize}`);
   }
   if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
+    queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
   }
   if (status !== null && status !== undefined) {
     queryParams.push(`status=${status}`);
