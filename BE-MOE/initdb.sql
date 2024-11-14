@@ -3,294 +3,296 @@ CREATE DATABASE sd79_db_moe;
 USE sd79_db_moe;
 
 CREATE TABLE roles(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name ENUM('ADMIN', 'USER', 'GUEST'),
-	created_at DATETIME,
-	updated_at DATETIME
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+                      name ENUM('ADMIN', 'USER', 'GUEST'),
+                      created_at DATETIME,
+                      updated_at DATETIME
 );
 
 CREATE TABLE users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50),
-    email VARCHAR(100),
-    password VARCHAR(255),
-    role_id INT,
-    is_locked BIT DEFAULT 0,
-    is_enabled BIT DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    is_deleted BIT DEFAULT 0
+                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                       username VARCHAR(50),
+                       email VARCHAR(100),
+                       password VARCHAR(255),
+                       role_id INT,
+                       is_locked BIT DEFAULT 0,
+                       is_enabled BIT DEFAULT 1,
+                       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                       is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE employee_address(
-    id bigint PRIMARY KEY AUTO_INCREMENT,
-    street_name varchar(255),
-    ward varchar(255),
-    district varchar(255),
-    district_id INT,
-    city varchar(255),
-    city_id INT
+                                 id bigint PRIMARY KEY AUTO_INCREMENT,
+                                 street_name varchar(255),
+                                 ward varchar(255),
+                                 district varchar(255),
+                                 district_id INT,
+                                 city varchar(255),
+                                 city_id INT
 );
 
 CREATE TABLE employees(
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		first_name VARCHAR(25),
-		last_name  VARCHAR(50),
-		address_id bigint,
-		phone_number VARCHAR (20),
-		gender enum('MALE','FEMALE','OTHER'),
-		date_of_birth DATE ,
-		image varchar(200),
-    publicId varchar(200),
-		position_id INT,
-		salary_id INT,
-		user_id BIGINT,
-		created_at DATETIME,
-		updated_at DATETIME
+                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                          first_name VARCHAR(25),
+                          last_name  VARCHAR(50),
+                          address_id bigint,
+                          phone_number VARCHAR (20),
+                          gender enum('MALE','FEMALE','OTHER'),
+                          date_of_birth DATE ,
+                          image varchar(200),
+                          publicId varchar(200),
+                          position_id INT,
+                          salary_id INT,
+                          user_id BIGINT,
+                          created_at DATETIME,
+                          updated_at DATETIME
 );
 CREATE TABLE positions(
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		name VARCHAR(100),
-		created_at DATETIME,
-		updated_at DATETIME
+                          id INT AUTO_INCREMENT PRIMARY KEY,
+                          name VARCHAR(100),
+                          created_at DATETIME,
+                          updated_at DATETIME
 );
 CREATE TABLE salary (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		amount DECIMAL(15,0),
-		created_at DATETIME,
-		updated_at DATETIME
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        amount DECIMAL(15,0),
+                        created_at DATETIME,
+                        updated_at DATETIME
 );
 
 -- Customer
 CREATE TABLE customers (
-    id bigint PRIMARY KEY AUTO_INCREMENT,
-    first_name varchar(25),
-    last_name varchar(50),
-    phone_number varchar(20),
-    gender enum('MALE', 'FEMALE', 'OTHER'),
-    date_of_birth date,
-    image varchar(200),
-    publicId varchar(200),
-    address_id bigint UNIQUE,
-    user_id BIGINT,
-    created_at datetime,
-    updated_at datetime
+                           id bigint PRIMARY KEY AUTO_INCREMENT,
+                           first_name varchar(25),
+                           last_name varchar(50),
+                           phone_number varchar(20),
+                           gender enum('MALE', 'FEMALE', 'OTHER'),
+                           date_of_birth date,
+                           image varchar(200),
+                           publicId varchar(200),
+                           address_id bigint UNIQUE,
+                           user_id BIGINT,
+                           created_at datetime,
+                           updated_at datetime
 );
 
 CREATE TABLE customer_address (
-    id bigint PRIMARY KEY AUTO_INCREMENT,
-    street_name varchar(255),
-    ward varchar(255),
-    district varchar(255),
-	  district_id INT,
-    city varchar(255),
-	  city_id INT
+                                  id bigint PRIMARY KEY AUTO_INCREMENT,
+                                  street_name varchar(255),
+                                  ward varchar(255),
+                                  district varchar(255),
+                                  district_id INT,
+                                  city varchar(255),
+                                  city_id INT
 );
 
 -- Product
 CREATE TABLE categories(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                           id INT AUTO_INCREMENT PRIMARY KEY,
+                           name VARCHAR(100),
+                           created_by BIGINT,
+                           updated_by BIGINT,
+                           create_at DATETIME,
+                           update_at DATETIME,
+                           is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE brands(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       name VARCHAR(100),
+                       created_by BIGINT,
+                       updated_by BIGINT,
+                       create_at DATETIME,
+                       update_at DATETIME,
+                       is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE materials(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                          id INT AUTO_INCREMENT PRIMARY KEY,
+                          name VARCHAR(50),
+                          created_by BIGINT,
+                          updated_by BIGINT,
+                          create_at DATETIME,
+                          update_at DATETIME,
+                          is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE products(
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(200),
-	description VARCHAR(255),
-	status ENUM('ACTIVE', 'INACTIVE'),
-	category_id INT,
-	brand_id INT,
-	material_id INT,
-	origin VARCHAR(100),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         name VARCHAR(200),
+                         description VARCHAR(255),
+                         status ENUM('ACTIVE', 'INACTIVE'),
+                         category_id INT,
+                         brand_id INT,
+                         material_id INT,
+                         origin VARCHAR(100),
+                         created_by BIGINT,
+                         updated_by BIGINT,
+                         create_at DATETIME,
+                         update_at DATETIME,
+                         is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE sizes(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100),
-	length FLOAT,
-	width FLOAT,
-	sleeve FLOAT,
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+                      name VARCHAR(100),
+                      length FLOAT,
+                      width FLOAT,
+                      sleeve FLOAT,
+                      created_by BIGINT,
+                      updated_by BIGINT,
+                      create_at DATETIME,
+                      update_at DATETIME,
+                      is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE colors(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100),
-	hex_color_code VARCHAR(100),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       name VARCHAR(100),
+                       hex_color_code VARCHAR(100),
+                       created_by BIGINT,
+                       updated_by BIGINT,
+                       create_at DATETIME,
+                       update_at DATETIME,
+                       is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE product_images(
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	product_id BIGINT,
-	image_url VARCHAR(255),
-	public_id VARCHAR(100)
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                               product_id BIGINT,
+                               image_url VARCHAR(255),
+                               public_id VARCHAR(100)
 );
 
 CREATE TABLE product_details(
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	product_id BIGINT,
-	retail_price DECIMAL(15, 0),
-	size_id INT,
-	color_id INT,
-	quantity INT,
-	status ENUM('ACTIVE', 'INACTIVE')
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                product_id BIGINT,
+                                retail_price DECIMAL(15, 0),
+                                size_id INT,
+                                color_id INT,
+                                quantity INT,
+                                status ENUM('ACTIVE', 'INACTIVE')
 );
 
 -- Coupons
 CREATE TABLE coupons (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  code VARCHAR(10) UNIQUE,
-  name VARCHAR(100) NOT NULL,
-  discount_type ENUM('FIXED_AMOUNT', 'PERCENTAGE'),
-  discount_value DECIMAL(15,0),
-  max_value DECIMAL(15,0),
-  conditions DECIMAL(15,0),
-  quantity INT,
-  usage_count INT,
-  type ENUM('PUBLIC', 'PERSONAL'),
-  start_date DATETIME,
-  end_date DATETIME,
-  description TEXT,
-  created_by BIGINT,
-  updated_by BIGINT,
-  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  is_deleted BIT DEFAULT 0
+                         id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                         code VARCHAR(10) UNIQUE,
+                         name VARCHAR(100) NOT NULL,
+                         discount_type ENUM('FIXED_AMOUNT', 'PERCENTAGE'),
+                         discount_value DECIMAL(15,0),
+                         max_value DECIMAL(15,0),
+                         conditions DECIMAL(15,0),
+                         quantity INT,
+                         usage_count INT,
+                         type ENUM('PUBLIC', 'PERSONAL'),
+                         start_date DATETIME,
+                         end_date DATETIME,
+                         description TEXT,
+                         created_by BIGINT,
+                         updated_by BIGINT,
+                         create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                         update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                         is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE coupon_images(
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  coupon_id BIGINT,
-  image_url VARCHAR(255),
-  public_id VARCHAR(100),
-  CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
+                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              coupon_id BIGINT,
+                              image_url VARCHAR(255),
+                              public_id VARCHAR(100),
+                              CONSTRAINT fk_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
 );
 
 CREATE TABLE coupon_share(
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  coupon_id BIGINT,
-  customer_id BIGINT,
-  is_deleted BIT DEFAULT 0,
-  CONSTRAINT fk_coupon_share FOREIGN KEY (coupon_id) REFERENCES coupons(id),
-  CONSTRAINT fk_customer_share FOREIGN KEY (customer_id) REFERENCES customers(id)
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             coupon_id BIGINT,
+                             customer_id BIGINT,
+                             is_deleted BIT DEFAULT 0,
+                             CONSTRAINT fk_coupon_share FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+                             CONSTRAINT fk_customer_share FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
 -- promotions
 CREATE TABLE promotions(
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255),
-	code VARCHAR(20) UNIQUE,
-  percent INT,
-  start_date DATE,
-  end_date DATE,
-  note VARCHAR(255),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+                           id INT AUTO_INCREMENT PRIMARY KEY,
+                           name VARCHAR(255),
+                           code VARCHAR(20) UNIQUE,
+                           percent INT,
+                           start_date DATE,
+                           end_date DATE,
+                           note VARCHAR(255),
+                           created_by BIGINT,
+                           updated_by BIGINT,
+                           create_at DATETIME,
+                           update_at DATETIME,
+                           is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE promotion_details(
-  id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id BIGINT,
-  promotion_id INT
+                                  id INT AUTO_INCREMENT PRIMARY KEY,
+                                  product_id BIGINT,
+                                  promotion_id INT
 );
 
 -- bill
 CREATE TABLE bill_status (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(55),
-	status ENUM(
+                             id INT AUTO_INCREMENT PRIMARY KEY,
+                             name VARCHAR(55),
+                             status ENUM(
     'PENDING',
     'PENDING_CONFIRMATION',
-		'CONFIRMED', 
-    'SHIPPED', 
-    'DELIVERED', 
+	'CONFIRMED',
+    'SHIPPED',
+    'DELIVERED',
     'DELIVERY_FAILED',
     'CANCELED',
 		'COMPLETED'
 	),
-  description TEXT
+                             description TEXT
 );
 
 CREATE TABLE bill (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  code VARCHAR(10),
-  bank_code VARCHAR(255),
-  customer_id BIGINT,
-  coupon_id BIGINT,
-  bill_status_id INT,
-  shipping DECIMAL(15, 0),
-  subtotal DECIMAL(15,0),
-  seller_discount DECIMAL(15,0),
-  total DECIMAL(15, 0),
-  payment_method ENUM('CASH','BANK','CASH_ON_DELIVERY'),
-  message VARCHAR(255),
-  note VARCHAR(255),
-  payment_time DATETIME,
-  created_by BIGINT,
-  updated_by BIGINT,
-  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  is_deleted BIT DEFAULT 0,
-  FOREIGN KEY (customer_id) REFERENCES customers(id),
-  FOREIGN KEY (coupon_id) REFERENCES coupons(id),
-  FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
+                      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                      code VARCHAR(10),
+                      bank_code VARCHAR(255),
+                      customer_id BIGINT,
+                      coupon_id BIGINT,
+                      bill_status_id INT,
+                      shipping DECIMAL(15, 0),
+                      subtotal DECIMAL(15,0),
+                      seller_discount DECIMAL(15,0),
+                      total DECIMAL(15, 0),
+                      payment_method ENUM('CASH','BANK','CASH_ON_DELIVERY'),
+                      message VARCHAR(255),
+                      note VARCHAR(255),
+                      payment_time DATETIME,
+                      created_by BIGINT,
+                      updated_by BIGINT,
+                      create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                      update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                      is_deleted BIT DEFAULT 0,
+                      FOREIGN KEY (customer_id) REFERENCES customers(id),
+                      FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+                      FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
 );
 
 CREATE TABLE bill_detail (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  product_detail_id BIGINT,
-  bill_id BIGINT,
-  quantity INT,
-  retail_price DECIMAL(15, 0),  
-  discount_amount DECIMAL(15, 0), 
-  total_amount_product DECIMAL(15, 0), 
-  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
-  FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
+                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             product_detail_id BIGINT,
+                             bill_id BIGINT,
+                             quantity INT,
+                             retail_price DECIMAL(15, 0),
+                             discount_amount DECIMAL(15, 0),
+                             total_amount_product DECIMAL(15, 0),
+                             create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                             update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                             FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
+                             FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
 );
+
+
 
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_employee_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
@@ -333,38 +335,38 @@ ALTER TABLE promotion_details ADD CONSTRAINT fk_promotion_id FOREIGN KEY (promot
 -- ROLE --
 INSERT INTO roles (name, created_at, updated_at)
 VALUES
-('ADMIN', NOW(), NOW()),
-('USER', NOW(), NOW()),
-('GUEST', NOW(), NOW());
+    ('ADMIN', NOW(), NOW()),
+    ('USER', NOW(), NOW()),
+    ('GUEST', NOW(), NOW());
 
 -- User System
 INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, created_at, updated_at, is_deleted)
 VALUES
-('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
-('javatech04', 'vunhph33506@fpt.edu.vn', '$2a$12$85bbJKHgQ.hbQnnaPXgc7uPV2e6BKQa.Zbop5HqlcdwvI09cpzI6G', 1, 0, 0, NOW(), NOW(), 0),
-('user', 'user@moe.vn', '$2a$12$L1voq9FiLnjeK9uk6t6fSu1JuTI.FnHOaKiTkjarX9Xxu4w0mWeRa', 2, 0, 0, NOW(), NOW(), 0);
+    ('sysadmin', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0),
+    ('javatech04', 'vunhph33506@fpt.edu.vn', '$2a$12$85bbJKHgQ.hbQnnaPXgc7uPV2e6BKQa.Zbop5HqlcdwvI09cpzI6G', 1, 0, 0, NOW(), NOW(), 0),
+    ('user', 'user@moe.vn', '$2a$12$L1voq9FiLnjeK9uk6t6fSu1JuTI.FnHOaKiTkjarX9Xxu4w0mWeRa', 2, 0, 0, NOW(), NOW(), 0);
 
 -- Insert data into employee
 INSERT INTO positions (name, created_at, updated_at)
 VALUES
-('Quản lý', NOW(), NOW()),
-('Nhân viên', NOW(), NOW()),
-('Hệ thống', NOW(), NOW());
+    ('Quản lý', NOW(), NOW()),
+    ('Nhân viên', NOW(), NOW()),
+    ('Hệ thống', NOW(), NOW());
 
 INSERT INTO employee_address (street_name, ward, district, district_id, city, city_id)
 VALUES
-('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1),
-('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
+    ('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1),
+    ('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
 
 INSERT INTO salary (amount, created_at, updated_at)
 VALUES
-(1000000, NOW(), NOW()),
-(1000000, NOW(), NOW());
+    (1000000, NOW(), NOW()),
+    (1000000, NOW(), NOW());
 
 INSERT INTO employees (first_name, last_name, address_id, phone_number, gender, date_of_birth, image, publicId, position_id, salary_id, user_id, created_at, updated_at)
 VALUES
-('system', 'admin', 1, '0123456789', 'OTHER', '2004-12-01', 'https://th.bing.com/th/id/OIP.O2j8k6g1NTAM0t_mIqOBtQHaE7?rs=1&pid=ImgDetMain', 'publicIdNotFound', 1, 1, 1, NOW(), NOW()),
-('Vu', 'Nong Hoang', 2, '0777049085', 'MALE', '2004-12-01', 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1730197694/s6dug2xt1kgfbnv6uzbd.jpg', 'publicIdNotFound', 1, 2, 2, NOW(), NOW());
+    ('system', 'admin', 1, '0123456789', 'OTHER', '2004-12-01', 'https://th.bing.com/th/id/OIP.O2j8k6g1NTAM0t_mIqOBtQHaE7?rs=1&pid=ImgDetMain', 'publicIdNotFound', 1, 1, 1, NOW(), NOW()),
+    ('Vu', 'Nong Hoang', 2, '0777049085', 'MALE', '2004-12-01', 'https://res.cloudinary.com/dnvsezlqx/image/upload/v1730197694/s6dug2xt1kgfbnv6uzbd.jpg', 'publicIdNotFound', 1, 2, 2, NOW(), NOW());
 
 -- Insert data into customer system
 INSERT INTO customer_address(street_name, ward, district, district_id, city, city_id)
@@ -376,19 +378,19 @@ VALUES('system', 'user', '0123456789', 'OTHER', '2004-12-01', 'https://th.bing.c
 -- Insert data into categories
 INSERT INTO categories (name, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
-('Áo thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
-('Áo khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
-('Áo phông', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
-('Áo ba lỗ', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
-('Áo sơ mi', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
+    ('Áo thun', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+    ('Áo khoác', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+    ('Áo phông', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+    ('Áo ba lỗ', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+    ('Áo sơ mi', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
 -- Insert data into brands
 INSERT INTO brands (name, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES
-('Nike', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
-('Adidas', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
-('Puma', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
-('Levi\'s', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
+    ('Nike', 1, 1, '2023-09-25 10:30:00', '2023-09-25 10:30:00', 0),
+    ('Adidas', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00', 0),
+    ('Puma', 1, 1, '2023-09-27 14:00:00', '2023-09-27 14:00:00', 0),
+    ('Levi\'s', 1, 1, '2023-09-28 15:00:00', '2023-09-28 15:00:00', 0),
 ('Zara', 1, 1, '2023-09-29 16:00:00', '2023-09-29 16:00:00', 0);
 
 -- Insert data into materials

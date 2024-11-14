@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { putPassword } from '~/apis/employeeApi';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const ChangePasswordForm = () => {
   const [oldPassword, setOldPassword] = useState('');
@@ -9,6 +10,7 @@ const ChangePasswordForm = () => {
 
   // Lấy userId từ localStorage
   const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
 
   const handleOldPasswordChange = (e) => {
     const value = e.target.value;
@@ -31,7 +33,7 @@ const ChangePasswordForm = () => {
       });
     }
   };
-  
+
 
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
@@ -65,7 +67,7 @@ const ChangePasswordForm = () => {
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,11 +77,11 @@ const ChangePasswordForm = () => {
       return;
     }
     const data = { oldPassword, newPassword, confirmPassword };
-    try {
-      await putPassword(data, userId);
-      navigate('/signin'); // Chuyển hướng sau khi đổi mật khẩu thành công
-    } catch (error) {
-    }
+
+    await putPassword(data, userId);
+
+    navigate('/'); // Chuyển hướng sau khi đổi mật khẩu thành công
+    console.log("thanhf cong");
 
   };
 
