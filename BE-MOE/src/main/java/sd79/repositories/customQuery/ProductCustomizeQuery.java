@@ -526,22 +526,22 @@ public class ProductCustomizeQuery {
             query.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (!param.getCategoryIds().isEmpty()) {
+        if (!(param.getCategoryIds() == null)) {
             String categoryIds = param.getCategoryIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
         }
 
-        if (!param.getBrandIds().isEmpty()) {
+        if (!(param.getBrandIds() == null)) {
             String brandIds = param.getBrandIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
         }
 
-        if (!param.getMaterialIds().isEmpty()) {
-            String materialIds = param.getCategoryIds().stream()
+        if (!(param.getMaterialIds() == null)) {
+            String materialIds = param.getMaterialIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.material.id IN (%s)", materialIds));
@@ -617,22 +617,22 @@ public class ProductCustomizeQuery {
             countPage.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (!param.getCategoryIds().isEmpty()) {
+        if (!(param.getCategoryIds() == null)) {
             String categoryIds = param.getCategoryIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
         }
 
-        if (!param.getBrandIds().isEmpty()) {
+        if (!(param.getBrandIds() == null)) {
             String brandIds = param.getBrandIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
         }
 
-        if (!param.getMaterialIds().isEmpty()) {
-            String materialIds = param.getCategoryIds().stream()
+        if (!(param.getMaterialIds() == null)) {
+            String materialIds = param.getMaterialIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.material.id IN (%s)", materialIds));

@@ -15,12 +15,12 @@ function CommonProvider({ children }) {
     pageNo: 0,
     pageSize: 10,
     keyword: "",
-    categoryIds: null,
-    brandIds: null,
-    materialIds: null,
+    categoryIds: [],
+    brandIds: [],
+    materialIds: [],
     minPrice: null,
     maxPrice: null,
-    sortBy: "NONG HOANG VU - DEFAULT",
+    sortBy: "DEFAULT",
   });
 
   useEffect(() => {
