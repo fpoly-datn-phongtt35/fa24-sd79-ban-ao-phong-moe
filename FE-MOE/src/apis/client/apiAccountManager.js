@@ -15,7 +15,7 @@ export const putAccountInfo = async (data, id) => {
 
 export const postcustomerImage = async (data) => {
   return await authorizedAxiosInstance
-    .post(`${API_ROOT}/customer/upload`, data)
+    .post(`${API_ROOT}/accountManager/upload`, data)
     .then((res) => {
       return res.data.data
     });
