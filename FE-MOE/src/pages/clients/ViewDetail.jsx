@@ -100,7 +100,7 @@ export const ViewDetail = () => {
           toast.success("Sản phẩm đã được thêm vào giỏ hàng");
           context.handleFetchCarts();
         })
-        .catch(() => setLoadingAdd(false));
+        .finally(() => setLoadingAdd(false));
     }
   };
 
@@ -132,7 +132,7 @@ export const ViewDetail = () => {
             navigate("/checkout");
           }
         })
-        .catch(() => setLoadingBuy(false));
+        .finally(() => setLoadingBuy(false));
     }
   };
 
