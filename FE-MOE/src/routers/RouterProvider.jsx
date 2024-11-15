@@ -65,7 +65,7 @@ function RouterProvider() {
     };
 
     if (!accessToken) {
-      return <Navigate to="/signin" replace={true} />;
+      return <Navigate to="/sign-in" replace={true} />;
     } else if (getAuthority() === "ADMIN") {
       return (
         <div className="layout">
