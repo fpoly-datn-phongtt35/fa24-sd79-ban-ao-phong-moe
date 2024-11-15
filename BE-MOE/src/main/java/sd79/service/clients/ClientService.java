@@ -47,4 +47,6 @@ public interface ClientService {
     List<InvoiceResponse.InvoiceStatus> getInvoiceStatuses();
 
      PageableResponse productFilters(ProductRequests.ParamFilters param);
+
+    List<ProductRequests.ProductBase> searchBase(String keyword);
 }

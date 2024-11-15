@@ -9,7 +9,9 @@ import { toast } from "react-toastify";
 export const fetchAllSizes = async (keyword) => {
   return await authorizedAxiosInstance
     .get(
-      `${API_ROOT}/size${keyword !== "" ? "?keyword=" + keyword.trim() : ""}`
+      `${API_ROOT}/size${
+        keyword !== "" ? "?keyword=" + encodeURIComponent(keyword.trim()) : ""
+      }`
     )
     .then((res) => res.data);
 };

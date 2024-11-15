@@ -526,22 +526,22 @@ public class ProductCustomizeQuery {
             query.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (!param.getCategoryIds().isEmpty()) {
+        if (!(param.getCategoryIds() == null)) {
             String categoryIds = param.getCategoryIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
         }
 
-        if (!param.getBrandIds().isEmpty()) {
+        if (!(param.getBrandIds() == null)) {
             String brandIds = param.getBrandIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
         }
 
-        if (!param.getMaterialIds().isEmpty()) {
-            String materialIds = param.getCategoryIds().stream()
+        if (!(param.getMaterialIds() == null)) {
+            String materialIds = param.getMaterialIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             query.append(String.format(" AND prd.material.id IN (%s)", materialIds));
@@ -617,22 +617,22 @@ public class ProductCustomizeQuery {
             countPage.append(" AND lower(prd.name) like lower(:keyword)");
         }
 
-        if (!param.getCategoryIds().isEmpty()) {
+        if (!(param.getCategoryIds() == null)) {
             String categoryIds = param.getCategoryIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.category.id IN (%s)", categoryIds));
         }
 
-        if (!param.getBrandIds().isEmpty()) {
+        if (!(param.getBrandIds() == null)) {
             String brandIds = param.getBrandIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.brand.id IN (%s)", brandIds));
         }
 
-        if (!param.getMaterialIds().isEmpty()) {
-            String materialIds = param.getCategoryIds().stream()
+        if (!(param.getMaterialIds() == null)) {
+            String materialIds = param.getMaterialIds().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
             countPage.append(String.format(" AND prd.material.id IN (%s)", materialIds));
@@ -684,6 +684,23 @@ public class ProductCustomizeQuery {
                 .totalElements(page.getTotalElements()) // Not required
                 .content(data)
                 .build();
+    }
+
+    public List<ProductRequests.ProductBase> searchBase(String keyword) {
+        if (StringUtils.hasLength(keyword.trim())) {
+            String sql = "SELECT prd FROM Product prd WHERE (prd.status = 'ACTIVE') AND (prd.isDeleted = false) AND ( lower(prd.name) like lower(:keyword)) AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)";
+            TypedQuery<Product> execute = entityManager.createQuery(sql, Product.class);
+            execute.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+            execute.setMaxResults(5);
+            return execute.getResultList().stream().map(p ->
+                    ProductRequests.ProductBase.builder()
+                            .id(p.getId())
+                            .name(p.getName())
+                            .imageUrl(p.getProductImages().getFirst().getImageUrl())
+                            .build()
+            ).toList();
+        }
+        return null;
     }
 
     private sd79.dto.response.productResponse.ProductResponse convertToProductResponse(Product product) {

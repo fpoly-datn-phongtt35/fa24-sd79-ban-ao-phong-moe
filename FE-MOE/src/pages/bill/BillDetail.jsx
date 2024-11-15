@@ -147,7 +147,10 @@ export default function BillDetail() {
 
   const handleStatusConfirm = (status, customNote) => {
     if (statuses === 8 || statuses === 5 && (!noteRef || noteRef.trim() === "")) {
-      toast.error("Chưa xác nhận thanh toán đơn hàng"); 
+      toast.error("Chưa xác nhận thanh toán đơn hàng");
+      return;
+    } else if (statuses === 7) {
+      toast.error("Đơn hàng đã bị hủy");
       return;
     }
 
@@ -189,6 +192,7 @@ export default function BillDetail() {
 
   //----------------------------------------------Bill-------------------------------------//
   const openNoteModal = () => {
+    fetchBillEdit(id);
     setIsModalOpenNote(true);
     setTempBillNote(billData[0]?.note || "");
     setTempPaymentAmount(billData[0]?.total);
@@ -196,6 +200,11 @@ export default function BillDetail() {
   };
 
   const handleNoteCloseModal = () => {
+    if (statuses === 7) {
+      toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");
+      return;
+    }
+
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
     setIsPaymentConfirmed(true);
@@ -207,6 +216,7 @@ export default function BillDetail() {
     fetchBillEdit();
     fetchBillStatusDetails();
   };
+
 
   const handleNoteChange = (event) => {
     setTempBillNote(event.target.value);
@@ -314,13 +324,13 @@ export default function BillDetail() {
 
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
-            {(statuses !== 5 && statuses !== 8) && (
+            {(statuses !== 5 && statuses !== 8 && statuses !== 7) && (
               <Button variant="contained" color="error" style={{ marginRight: '8px' }}>
                 Hủy
               </Button>
             )}
 
-            {statuses !== 8 && (
+            {(statuses !== 8 && statuses !== 7) && (
               <Button
                 variant="contained"
                 style={{ backgroundColor: '#0D47A1', color: 'white' }}
@@ -330,6 +340,7 @@ export default function BillDetail() {
                 {statuses === 5 ? "Hoàn thành" : "Giao hàng"}
               </Button>
             )}
+
           </div>
         </Box>
 
@@ -429,7 +440,7 @@ export default function BillDetail() {
                   onClick={handleOpenModal}
                   variant="solid"
                   sx={{ backgroundColor: '#FFD700', color: 'black' }}
-                  disabled={!isCustomerAvailable || statuses === 8}
+                  disabled={!isCustomerAvailable || statuses === 8 || statuses === 7}
                 >
                   Thay đổi thông tin
                 </Button>
@@ -515,7 +526,7 @@ export default function BillDetail() {
               variant="solid"
               sx={{ backgroundColor: '#FFD700' }}
               onClick={openNoteModal}
-              disabled={statuses === 8}
+              disabled={statuses === 8 || statuses === 7}
             >
               XÁC NHẬN THANH TOÁN
             </Button>
@@ -546,7 +557,7 @@ export default function BillDetail() {
                       <TableCell>{bill.code}</TableCell>
                       <TableCell>{bill.paymentMethod}</TableCell>
                       <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
-                      <TableCell>{bill.note}</TableCell>
+                      <TableCell>{bill.message}</TableCell>
                     </TableRow>
                   ))
               ) : (
@@ -632,7 +643,7 @@ export default function BillDetail() {
                 color="success"
                 startIcon={<UpdateIcon />}
                 onClick={() => navigate(`/bill/edit/${bd.id}`)}
-                disabled={statuses === 8}
+                disabled={statuses === 8 || statuses === 7}
               >
                 Sửa sản phẩm
               </Button>

@@ -101,7 +101,7 @@ export const CustomerDetailPage = () => {
   const handleWardChange = (e) => {
     setSelectedWard(e);
   };
-  /*---END---*/
+  
 
   const formatDate = (dateString, time = "00:00:00") => {
     const date = new Date(dateString);
@@ -112,13 +112,13 @@ export const CustomerDetailPage = () => {
   };
 
   const formatDate2 = (dateTimeString) => {
-    // Split date and time parts
     const [datePart] = dateTimeString.split(' ');
-    const [year, month, day] = datePart.split('-'); 
-    return `${year}-${month}-${day}`; 
+    const [year, month, day] = datePart.split('-');
+    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
+    
     const fetchCustomerDetail = async () => {
       try {
         const response = await fetchCustomerById(id);
@@ -302,6 +302,7 @@ export const CustomerDetailPage = () => {
     });
 
   };
+  
   const handleImageChange = (event) => {
     var file = event.target.files[0];
     var url = URL.createObjectURL(file)
@@ -540,7 +541,9 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Thành phố</FormLabel>
-                        <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                        <Select value={selectedCity}
+                          onChange={(e, v) => handleCityChange(v)} 
+                          placeholder="Chọn thành phố">
                           <Option value="" disabled>
                             Chọn tỉnh thành
                           </Option>
@@ -601,7 +604,7 @@ export const CustomerDetailPage = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                       Cập Nhật Người Dùng
                     </Button>
-                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>
