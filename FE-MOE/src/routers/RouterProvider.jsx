@@ -34,7 +34,6 @@ import FooterClient from "~/components/layout/FooterClient";
 import AboutUs from "~/pages/clients/AboutUs";
 import { Contact } from "~/pages/clients/Contact";
 import { ViewDetail } from "~/pages/clients/ViewDetail";
-import LoginPage from "~/pages/auth/LoginPage";
 import LocationSelector from "~/pages/other/LocationSelector";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
@@ -45,6 +44,8 @@ import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
 import BillEdit from "~/pages/bill/BillEdit";
 import Products from "~/pages/clients/Products";
+import SignIn from "~/pages/auth/SignIn";
+import SignUp from "~/pages/auth/SignUp";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -100,7 +101,7 @@ function RouterProvider() {
     };
 
     if (!accessToken) {
-      return <Navigate to="/signin" replace={true} />;
+      return <Navigate to="/sign-in" replace={true} />;
     } else if (getAuthority() === "USER") {
       return (
         <div className="layout_client">
@@ -161,7 +162,8 @@ function RouterProvider() {
           <div>
             <Header_Client />
           </div>
-          <div className="content-area_client" style={{backgroundColor: '#4545ff1a'}}>
+          {/* style={{backgroundColor: '#4545ff1a'}} */}
+          <div className="content-area_client">
             <Outlet />
           </div>
         </div>
@@ -173,7 +175,8 @@ function RouterProvider() {
       <Route path="*" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
-        <Route path="/signin" element={<LoginPage />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
       </Route>
 
       <Route element={<PublicRoutes />}>
