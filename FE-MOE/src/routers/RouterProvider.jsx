@@ -47,6 +47,7 @@ import BillDetail from "~/pages/bill/BillDetail";
 import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
+import { AuthProvider } from "~/context/AuthContext";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -158,17 +159,19 @@ function RouterProvider() {
       return <Navigate to="/dashboard" replace={true} />;
     }
     return (
-      <div className="layout_client">
-        <div className="main-area_client">
-          <div>
-            <Header_Client />
-          </div>
-          {/* style={{backgroundColor: '#4545ff1a'}} */}
-          <div className="content-area_client">
-            <Outlet />
+      <AuthProvider>
+        <div className="layout_client">
+          <div className="main-area_client">
+            <div>
+              <Header_Client />
+            </div>
+            {/* style={{backgroundColor: '#4545ff1a'}} */}
+            <div className="content-area_client">
+              <Outlet />
+            </div>
           </div>
         </div>
-      </div>
+      </AuthProvider>
     );
   };
   return (
@@ -222,7 +225,7 @@ function RouterProvider() {
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
         <Route path="/bill/detail/:id" element={<BillDetail />} />
-        <Route path="/bill/edit/:id" element={<BillEdit/>} />
+        <Route path="/bill/edit/:id" element={<BillEdit />} />
       </Route>
     </Routes>
   );

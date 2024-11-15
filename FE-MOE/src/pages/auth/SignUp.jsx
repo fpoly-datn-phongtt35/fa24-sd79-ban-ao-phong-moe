@@ -3,45 +3,18 @@
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useContext, useState } from "react";
-import {
-  Box,
-  Typography,
-  Input,
-  Button,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Alert,
-} from "@mui/joy";
+import { Box } from "@mui/joy";
 import SideImage from "~/assert/images/SideImage.svg";
-import { API_ROOT } from "~/utils/constants";
-import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import axios from "axios";
-import InfoIcon from "@mui/icons-material/Info";
-import { CommonContext } from "~/context/CommonContext";
+
+import SignUpBase from "~/components/auth/SignUpBase";
+import { AuthContext } from "~/context/AuthContext";
+import SignUpInfo from "~/components/auth/SignUpInfo";
+import SignUpAddress from "~/components/auth/SignUpAddress";
+import SignUpAvatar from "~/components/auth/SignUpAvatar";
 
 function SignUp() {
-  const navigate = useNavigate();
+  const context = useContext(AuthContext);
 
-  const [message, setMessage] = useState("");
-
-  const context = useContext(CommonContext);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
-  const onSubmit = async (data) => {
-    const result = {
-      username: data.username,
-      password: data.password,
-      platform: "web",
-    };
-    console.log(result);
-  };
   return (
     <Box
       sx={{
@@ -90,146 +63,15 @@ function SignUp() {
             borderRadius: "0 8px 8px 0",
           }}
         >
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            style={{ width: "100%", maxWidth: 400 }}
-          >
-            <Typography
-              level="h4"
-              marginBottom={3}
-              textAlign="center"
-              fontWeight="bold"
-            >
-              ĐĂNG KÝ TÀI KHOẢN
-            </Typography>
-            {message.length > 0 && (
-              <Alert
-                sx={{
-                  alignItems: "flex-start",
-                  mb: 2,
-                  maxWidth: "100%",
-                  backgroundColor: "#fff9e6",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                }}
-                startDecorator={<InfoIcon />}
-                variant="soft"
-                color="warning"
-              >
-                <Typography level="body-sm" color="warning">
-                  {message}
-                </Typography>
-              </Alert>
-            )}
-            <FormControl sx={{ mb: 2, width: "100%" }}>
-              <FormLabel required>Username</FormLabel>
-              <Input
-                placeholder="Nhập username"
-                type="text"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  borderColor: "#d1d1d1",
-                  "&:focus": { borderColor: "#3f51b5" },
-                }}
-              />
-              {errors.username && (
-                <FormHelperText>Username không hợp lệ!</FormHelperText>
-              )}
-            </FormControl>
-            <FormControl sx={{ mb: 2, width: "100%" }}>
-              <FormLabel required>Email</FormLabel>
-              <Input
-                placeholder="Nhập email"
-                type="email"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  borderColor: "#d1d1d1",
-                  "&:focus": { borderColor: "#3f51b5" },
-                }}
-              />
-              {errors.email && (
-                <FormHelperText>Email không hợp lệ!</FormHelperText>
-              )}
-            </FormControl>
-            <FormControl sx={{ mb: 2, width: "100%" }}>
-              <FormLabel required>Số điện thoại</FormLabel>
-              <Input
-                placeholder="Nhập số điện thoại"
-                type="tel"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  borderColor: "#d1d1d1",
-                  "&:focus": { borderColor: "#3f51b5" },
-                }}
-              />
-              {errors.phone && (
-                <FormHelperText>Số điện thoại không hợp lệ!</FormHelperText>
-              )}
-            </FormControl>
-            <FormControl sx={{ mb: 2, width: "100%" }}>
-              <FormLabel required>Mật khẩu</FormLabel>
-              <Input
-                placeholder="Nhập mật khẩu"
-                type="password"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  borderColor: "#d1d1d1",
-                  "&:focus": { borderColor: "#3f51b5" },
-                }}
-              />
-              {errors.password && (
-                <FormHelperText>Mật khẩu không hợp lệ!</FormHelperText>
-              )}
-            </FormControl>
-            <FormControl sx={{ mb: 2, width: "100%" }}>
-              <FormLabel required>Nhập lại mật khẩu</FormLabel>
-              <Input
-                placeholder="Nhập mật khẩu"
-                type="password"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  borderColor: "#d1d1d1",
-                  "&:focus": { borderColor: "#3f51b5" },
-                }}
-              />
-              {errors.confirmPassword && (
-                <FormHelperText>Mật khẩu không khớp!</FormHelperText>
-              )}
-            </FormControl>
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                mt: 2,
-              }}
-            >
-              <Button
-                type="submit"
-                variant="soft"
-                color="neutral"
-                sx={{
-                  width: "45%",
-                  backgroundColor: "#3f51b5",
-                  color: "#fff",
-                  "&:hover": {
-                    backgroundColor: "#303f9f",
-                  },
-                }}
-              >
-                Đăng ký
-              </Button>
-              <Link to="/sign-in" underline="hover" color="neutral">
-                Tôi đã có tài khoản
-              </Link>
-            </Box>
-          </form>
+          {context.step === 0 && <SignUpBase />}
+          {context.step === 1 && <SignUpInfo />}
+          {context.step === 2 && <SignUpAddress />}
+          {context.step === 3 && <SignUpAvatar />}
+          {context.step === 4 && (
+            <p onClick={() => context.setStep(1)}>
+              HI{console.log(context.dataRegister)}
+            </p>
+          )}
         </Box>
       </Box>
     </Box>

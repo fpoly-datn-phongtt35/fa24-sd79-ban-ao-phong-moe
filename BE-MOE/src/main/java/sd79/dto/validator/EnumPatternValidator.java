@@ -8,6 +8,7 @@ package sd79.dto.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import sd79.exception.InvalidDataException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,7 @@ public class EnumPatternValidator implements ConstraintValidator<EnumPattern, En
         try {
             pattern = Pattern.compile(enumPattern.regexp());
         } catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("Given regex is invalid", e);
+            throw new InvalidDataException("Given regex is invalid", e);
         }
     }
 
