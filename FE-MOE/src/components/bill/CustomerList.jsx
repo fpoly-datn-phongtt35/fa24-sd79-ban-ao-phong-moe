@@ -103,12 +103,12 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         setCustomerId(selectedCustomer.id);
     };
 
-    const handleDeleteCustomer = async (id) => {
+    const handleDeleteCustomer = async () => {
         try {
-            await deleteCustomer(id);
-            setCustomers((prevCustomers) => prevCustomers.filter(c => c.id !== id));
-            setFilteredCustomers((prevFiltered) => prevFiltered.filter(c => c.id !== id));
-
+            await deleteCustomer(selectedOrder); // Use selectedOrder as bill ID
+            setCustomers((prevCustomers) => prevCustomers.filter(c => c.id !== customer.id));
+            setFilteredCustomers((prevFiltered) => prevFiltered.filter(c => c.id !== customer.id));
+    
             setCustomer(null);
             setSearchTerm('');
             onAddCustomer({ id: 0 });
@@ -117,6 +117,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
             console.error("Error deleting customer:", error);
         }
     };
+    
 
     useEffect(() => {
         if (customerId) {

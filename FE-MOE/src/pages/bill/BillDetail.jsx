@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Stepper, Container } from '@mui/joy';
 import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
@@ -21,7 +21,8 @@ import CustomerEditModal from '~/components/bill/CustomerEditModal';
 import { fetchCustomerById } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
 import UpdateIcon from '@mui/icons-material/Update';
-import StatusModal from '~/components/common/StatusModal';
+import StatusModal from '~/components/bill/StatusModal';
+import { toast } from "react-toastify";
 
 export default function BillDetail() {
   const navigate = useNavigate();
@@ -64,29 +65,36 @@ export default function BillDetail() {
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
 
   const checkNote = billData && billData.some(bill => bill.note);
+  const checkNoteRef = useRef(null);
+  const noteRef = checkNoteRef.current;
 
-  //Hien thi du lieu edit
+  const statusDone = billData && billData.some(bill => bill.status);
+  const statusRef = useRef(null);
+  const statuses = statusRef.current;
+
   useEffect(() => {
     fetchBillEdit();
-  }, [id]);
-
-  useEffect(() => {
     fetchBillStatusDetails();
-  }, [id]);
+  }, []);
 
   const fetchBillEdit = async () => {
     const bill = await getBillEdit(id);
     setBillData(bill.data);
-    setTempPaymentMethod(bill.data[0]?.paymentMethod || ""); // Initialize payment method here
+    setTempPaymentMethod(bill.data[0]?.paymentMethod || "");
+    if (bill.data && bill.data[0]) {
+      statusRef.current = bill.data[0].status;
+    }
+    if (bill.data && bill.data[0]) {
+      checkNoteRef.current = bill.data[0].note;
+    }
   };
-
-  console.log(checkNote)
 
   //Hien thi du lieu trang thai
   const statusMap = {
+    '0': 'Đã tạo hóa đơn',
     '1': 'Đang chờ xử lý',
     '2': 'Chờ xác nhận',
-    '3': 'Hoàn thành',
+    '3': 'Đã xác nhận',
     '4': 'Chờ giao',
     '5': 'Đã giao thành công',
     '6': 'Giao hàng thất bại',
@@ -131,18 +139,24 @@ export default function BillDetail() {
     try {
       const statusData = await getBillStatusDetailsByBillId(id);
       setStatusDetails(statusData.data);
-      console.log(statusData.data)
     } catch (error) {
       console.error("Error fetching bill status details:", error);
       setErrorMessage("Failed to fetch bill status details");
     }
   };
 
-  const handleStatusConfirm = async (status, customNote) => {
-    await updateBillStatusDetail(status, customNote);
+  const handleStatusConfirm = (status, customNote) => {
+    if (statuses === 8 || statuses === 5 && (!noteRef || noteRef.trim() === "")) {
+      toast.error("Chưa xác nhận thanh toán đơn hàng"); 
+      return;
+    }
 
+    const userId = localStorage.getItem("userId");
+    onPay(tempBillNote, status, customNote, userId);
+    updateBillStatusDetail(status, customNote, userId);
     fetchBillStatusDetails();
   };
+
 
   const stepIcons = [
     <ShoppingCartRoundedIcon />,     // Đang chờ xử lý
@@ -156,20 +170,21 @@ export default function BillDetail() {
     <HelpOutlineIcon />,              // Khác
   ];
 
-  const updateBillStatusDetail = async (status, customNote) => {
+  const updateBillStatusDetail = async (status, customNote, userId) => {
     const statusDetail = {
       bill: billData[0].id,
       billStatus: status,
       note: customNote || '',
-      userId: localStorage.getItem("userId"),
+      userId: userId
     };
-
     try {
-      await addBillStatusDetail(statusDetail);  // Assuming addBillStatusDetail saves to database
+      await addBillStatusDetail(statusDetail);
       console.log("Status and note saved:", statusDetail);
     } catch (error) {
       console.error("Error updating status:", error);
     }
+    fetchBillEdit();
+    fetchBillStatusDetails();
   };
 
   //----------------------------------------------Bill-------------------------------------//
@@ -183,15 +198,21 @@ export default function BillDetail() {
   const handleNoteCloseModal = () => {
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
-    onPay(tempBillNote, "2", tempPaymentMethod);
     setIsPaymentConfirmed(true);
+
+    const userId = localStorage.getItem("userId");
+
+    updateBillStatusDetail("3", tempBillNote, userId);
+    onPay(tempBillNote, "3", tempBillNote, userId);
+    fetchBillEdit();
+    fetchBillStatusDetails();
   };
 
   const handleNoteChange = (event) => {
     setTempBillNote(event.target.value);
   };
 
-  const onPay = async (billNote, status, statusNote) => {
+  const onPay = async (billNote, status, statusNote, userId) => {
     if (!billData || billData[0]?.billDetails?.length === 0) {
       console.log("Cannot create invoice. Please select an order and add products.");
       return;
@@ -214,7 +235,7 @@ export default function BillDetail() {
         message: updatedBillData.message || "",
         note: billNote || updatedBillData.note || "",
         paymentTime: updatedBillData.paymentTime || "",
-        userId: localStorage.getItem("userId"),
+        userId: userId || updatedBillData.userId,
       },
       billDetails: updatedBillData.billDetails.map((billDetail) => ({
         productDetail: billDetail.productDetail.id,
@@ -225,7 +246,7 @@ export default function BillDetail() {
     };
 
     try {
-      await addPayBillEdit(billStoreRequest); // Assuming this saves to database
+      await addPayBillEdit(billStoreRequest);
       console.log("billStoreRequest:", billStoreRequest);
     } catch (error) {
       console.error("Error processing payment:", error);
@@ -234,6 +255,7 @@ export default function BillDetail() {
 
   return (
     <Container maxWidth="max-Width" style={{ backgroundColor: '#c9dcdf', minHeight: '100vh', marginTop: '15px' }}>
+
 
       {/* ------------------Chuyển trang------------------ */}
 
@@ -262,6 +284,14 @@ export default function BillDetail() {
       <div>
         <Box>
           <Stepper>
+            {/* Add the default 'Đã tạo hóa đơn' step first */}
+            <Step completed={false}>
+              <StepLabel icon={stepIcons[0]}>
+                {statusMap['0']}
+              </StepLabel>
+            </Step>
+
+            {/* Render the rest of the status steps */}
             {statusDetails.map((status, index) => {
               const statusCode = status.billStatus;
               const isCompleted = statusCode === '5' || statusCode === '3';
@@ -284,22 +314,20 @@ export default function BillDetail() {
 
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
-            {statusDetails[0]?.billStatus !== 'DELIVERED' &&
-              statusDetails[0]?.billStatus !== 'CANCELED' &&
-              statusDetails[0]?.billStatus !== 'COMPLETED' && (
-                <Button variant="contained" color="error" style={{ marginRight: '8px' }}>
-                  Hủy
-                </Button>
-              )}
+            {(statuses !== 5 && statuses !== 8) && (
+              <Button variant="contained" color="error" style={{ marginRight: '8px' }}>
+                Hủy
+              </Button>
+            )}
 
-            {statusDetails[0]?.billStatus !== 'COMPLETED' && (
+            {statuses !== 8 && (
               <Button
                 variant="contained"
                 style={{ backgroundColor: '#0D47A1', color: 'white' }}
                 disabled={isShippingDisabled}
                 onClick={() => setIsStatusModalOpen(true)}
               >
-                {statusDetails[0]?.billStatus === 'DELIVERED' ? "Hoàn thành" : "Giao hàng"}
+                {statuses === 5 ? "Hoàn thành" : "Giao hàng"}
               </Button>
             )}
           </div>
@@ -401,7 +429,7 @@ export default function BillDetail() {
                   onClick={handleOpenModal}
                   variant="solid"
                   sx={{ backgroundColor: '#FFD700', color: 'black' }}
-                  disabled={!isCustomerAvailable}
+                  disabled={!isCustomerAvailable || statuses === 8}
                 >
                   Thay đổi thông tin
                 </Button>
@@ -482,16 +510,17 @@ export default function BillDetail() {
           <Typography level="h5" sx={{ color: 'red', fontWeight: 'bold' }}>
             LỊCH SỬ THANH TOÁN
           </Typography>
-
-          <Button
-            variant="solid"
-            sx={{ backgroundColor: '#FFD700' }}
-            onClick={openNoteModal}
-          >
-            XÁC NHẬN THANH TOÁN
-          </Button>
+          {statuses !== undefined && (
+            <Button
+              variant="solid"
+              sx={{ backgroundColor: '#FFD700' }}
+              onClick={openNoteModal}
+              disabled={statuses === 8}
+            >
+              XÁC NHẬN THANH TOÁN
+            </Button>
+          )}
         </Box>
-
         <TableContainer component={Paper} style={{ marginTop: 16 }}>
           <Table>
             <TableHead>
@@ -506,9 +535,9 @@ export default function BillDetail() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {checkNote ? (
+              {checkNote || statusDone ? (
                 billData
-                  .filter(bill => bill.note)
+                  .filter(bill => bill.note || bill.status === 8)
                   .map((bill, index) => (
                     <TableRow key={bill.id}>
                       <TableCell>{index + 1}</TableCell>
@@ -516,7 +545,7 @@ export default function BillDetail() {
                       <TableCell>{bill.paymentTime}</TableCell>
                       <TableCell>{bill.code}</TableCell>
                       <TableCell>{bill.paymentMethod}</TableCell>
-                      <TableCell>{`${bill?.employee?.last_name} ${bill?.employee?.first_name}`}</TableCell>
+                      <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
                       <TableCell>{bill.note}</TableCell>
                     </TableRow>
                   ))
@@ -603,6 +632,7 @@ export default function BillDetail() {
                 color="success"
                 startIcon={<UpdateIcon />}
                 onClick={() => navigate(`/bill/edit/${bd.id}`)}
+                disabled={statuses === 8}
               >
                 Sửa sản phẩm
               </Button>

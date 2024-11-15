@@ -43,7 +43,7 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
   };
 
   const handleConfirm = () => {
-    onStatusConfirm(selectedStatus, customNote);
+    onStatusConfirm(selectedStatus, customNote); // Pass selected status and custom note to parent
     onClose();
   };
 

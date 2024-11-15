@@ -63,7 +63,7 @@ public class BillCustomizeQuery {
     }
 
     public PageableResponse getAllBillList(BillListParamFilter param) {
-        List<Integer> allowedStatusIds = List.of(2, 3, 4, 7);
+        List<Integer> allowedStatusIds = List.of(2, 4, 7, 8);
 
         // Constructing the SQL query for filtering bills based on status and keyword
         StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE 1=1");
@@ -165,7 +165,9 @@ public class BillCustomizeQuery {
         // Convert bills to BillEditResponse
         return bills.stream()
                 .map(bill -> {
-                    Employee employee = getEmployeeByUserId(bill.getCreatedBy().getId());
+                    // Check if 'createdBy' is not null and get employee if available
+                    Employee employee = (bill.getCreatedBy() != null) ? getEmployeeByUserId(bill.getCreatedBy().getId()) : null;
+
                     return BillEditResponse.builder()
                             .id(bill.getId())
                             .code(bill.getCode())
@@ -180,7 +182,6 @@ public class BillCustomizeQuery {
                             .message(bill.getMessage())
                             .note(bill.getNote())
                             .paymentTime(bill.getPaymentTime())
-
                             .employee(employee)
                             .billDetails(bill.getBillDetails().stream()
                                     .map(this::convertToBillResponse)
