@@ -314,9 +314,6 @@ public class ClientServiceImpl implements ClientService {
                 .billStatus(this.billStatusRepository.findById(2).orElse(null))
                 .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
                 .build();
-        assert customer != null;
-        bill.setCreatedBy(customer.getUser());
-        bill.setUpdatedBy(customer.getUser());
 
         Bill billSave = this.billRepository.save(bill);
         if (req.getCouponId() != null) {
