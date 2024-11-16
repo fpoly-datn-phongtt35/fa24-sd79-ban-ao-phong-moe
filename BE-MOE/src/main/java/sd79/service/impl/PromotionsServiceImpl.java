@@ -1,5 +1,6 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,13 @@ public class PromotionsServiceImpl implements PromotionService {
 
     private final UserRepository userRepository;
 
+    private boolean containsSpecialCharacters(String input) {
+        // Biểu thức chính quy kiểm tra ký tự đặc biệt
+        String regex = "^[a-zA-Z0-9\\s]+$"; // Cho phép chữ cái, số, và khoảng trắng
+        return !input.matches(regex);
+    }
+
+
     @Override
     public List<PromotionResponse> getAllPromotion() {
         return this.promotionRepository.findAll().stream().map(item ->
@@ -52,7 +60,7 @@ public class PromotionsServiceImpl implements PromotionService {
     @Override
     public PromotionResponse getPromotionId(Integer id) {
         Promotion promotion = this.promotionRepository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Promotion not found"));
+        .orElseThrow(() -> new EntityNotFoundException("Đợt giảm giá không tồn tại"));
         return convertPromotionResponsse(promotion);
     }
 
@@ -74,6 +82,16 @@ public class PromotionsServiceImpl implements PromotionService {
             if (promotionDetailRepository.findActivePromotionByProductId(productId).isPresent()) {
                 throw new InvalidDataException("Sản phẩm với ID " + productId + " đã được áp dụng khuyến mãi trước đó.");
             }
+        }
+
+        // Kiểm tra trùng tên đợt giảm giá
+        if (promotionRepository.existsByName(req.getName())) {
+            throw new InvalidDataException("Tên đợt giảm giá \"" + req.getName() + "\" đã tồn tại.");
+        }
+
+        // Kiểm tra trùng mã đợt giảm giá
+        if (promotionRepository.existsByCode(req.getCode())) {
+            throw new InvalidDataException("Mã đợt giảm giá \"" + req.getCode() + "\" đã tồn tại.");
         }
 
         // Nếu không có lỗi, tiến hành tạo đợt giảm giá mới
@@ -105,7 +123,17 @@ public class PromotionsServiceImpl implements PromotionService {
     @Override
     public Integer updatePromotion(PromotionRequest req, Integer id) {
         Promotion promotion = this.promotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promotion not found with id " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đợt giảm giá với id " + id));
+
+        // Kiểm tra trùng tên đợt giảm giá (trừ chính nó)
+        if (promotionRepository.existsByNameAndIdNot(req.getName(), id)) {
+            throw new InvalidDataException("Tên đợt giảm giá \"" + req.getName() + "\" đã tồn tại.");
+        }
+
+        // Kiểm tra trùng mã đợt giảm giá (trừ chính nó)
+        if (promotionRepository.existsByCodeAndIdNot(req.getCode(), id)) {
+            throw new InvalidDataException("Mã đợt giảm giá \"" + req.getCode() + "\" đã tồn tại.");
+        }
 
         // Cập nhật thông tin khuyến mãi
         promotion.setName(req.getName());
@@ -123,7 +151,7 @@ public class PromotionsServiceImpl implements PromotionService {
                 .map(detail -> detail.getProduct().getId())
                 .collect(Collectors.toList());
 
-        // Thêm mới các chi tiết khuyến mãi dựa trên danh sách productIds từ request
+        // Xóa các chi tiết khuyến mãi không còn trong danh sách productIds từ request
         for (PromotionDetail detail : new ArrayList<>(promotion.getPromotionDetails())) {
             if (!req.getProductIds().contains(detail.getProduct().getId())) {
                 this.promotionDetailRepository.delete(detail);
@@ -145,10 +173,11 @@ public class PromotionsServiceImpl implements PromotionService {
         return promotion.getId();
     }
 
+
     @Override
     public void deleteByPromotionId(Integer id) {
         Promotion promotion = this.promotionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Promotion not found with id " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đợt giảm giá với id id " + id));
 
         promotionDetailRepository.deleteByPromotionId(id);
 
@@ -156,7 +185,7 @@ public class PromotionsServiceImpl implements PromotionService {
 
     }
 
-    private void populatePromotionData(Promotion promotion, PromotionRequest promotionRequest) {//lay du lieu phieu giam gia request de them
+    private void populatePromotionData(Promotion promotion, PromotionRequest promotionRequest) {//lay du lieu dot giam gia request de them
         promotion.setName(promotionRequest.getName());
         promotion.setCode(promotionRequest.getCode());
         promotion.setPercent(promotionRequest.getPercent());
@@ -190,18 +219,32 @@ public class PromotionsServiceImpl implements PromotionService {
     @Transactional
     @Override
     public Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable) {
+        // Validate chuỗi tìm kiếm
+        if (name != null && !name.isEmpty() && containsSpecialCharacters(name)) {
+            throw new InvalidDataException("Tên tìm kiếm không được chứa ký tự đặc biệt.");
+        }
+
         Page<Promotion> promotions = promotionRepository.searchPromotions(startDate, endDate, name, pageable);
         return promotions.map(this::convertPromotionResponsse);  // Convert entity to response DTO
     }
 
+
     @Override
     public Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
-                                                     String status, Pageable pageable) {
+                                                        String status, Pageable pageable) {
+        // Validate các chuỗi tìm kiếm
+        if (keyword != null && !keyword.isEmpty() && containsSpecialCharacters(keyword)) {
+            throw new InvalidDataException("Từ khóa tìm kiếm không được chứa ký tự đặc biệt.");
+        }
+        if (status != null && !status.isEmpty() && containsSpecialCharacters(status)) {
+            throw new InvalidDataException("Trạng thái tìm kiếm không được chứa ký tự đặc biệt.");
+        }
+
         Page<Promotion> promotions;
 
         // Kiểm tra nếu không có điều kiện tìm kiếm, trả về toàn bộ danh sách
         if ((keyword == null || keyword.isEmpty()) && startDate == null && endDate == null &&
-                 (status == null || status.isEmpty())) {
+                (status == null || status.isEmpty())) {
             promotions = promotionRepository.findAll(pageable);  // Lấy toàn bộ danh sách với phân trang
         } else {
             // Nếu có điều kiện tìm kiếm, gọi hàm findByKeywordAndDate
@@ -210,16 +253,17 @@ public class PromotionsServiceImpl implements PromotionService {
         return promotions.map(this::convertPromotionResponsse);
     }
 
+
     @Override
     public Page<PromotionResponse> getPromotion(Pageable pageable) {
         return promotionRepository.findAll(pageable).map(this::convertPromotionResponsse);
     }
 
     private Product getProduct(Long id) {
-        return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found!"));
+        return this.productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Sản phẩm không tồn tại!"));
     }
 
     private User getUser(Long id){
-        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found!"));
+        return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User không tồn tại!"));
     }
 }

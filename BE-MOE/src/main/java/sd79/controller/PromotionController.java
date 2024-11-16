@@ -53,11 +53,11 @@ public class PromotionController {
     }
 
     @Operation(
-            summary = "New Promotion",
-            description = "New promotion into database"
+            summary = "Create New Promotion",
+            description = "Add a new promotion into database"
     )
     @PostMapping("/store")
-    public ResponseData<?> storePromotions(@RequestBody PromotionRequest request) {
+    public ResponseData<?> storePromotions(@Valid @RequestBody PromotionRequest request) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.promotionService.storePromotion(request));
     }
 

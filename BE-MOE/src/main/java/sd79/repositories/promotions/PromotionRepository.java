@@ -18,6 +18,8 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
 
     @Query("SELECT p FROM Promotion p " +
             "WHERE (p.startDate BETWEEN :startDate AND :endDate) " +
+            "OR p.name LIKE %:keyword% " + // Searching by username
+            "OR p.code LIKE %:keyword% " +
             "AND (:name IS NULL OR p.name LIKE %:name%) ")
     Page<Promotion> searchPromotions(@Param("startDate") Date startDate,
                                      @Param("endDate") Date endDate,
@@ -38,4 +40,11 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
                                          @Param("endDate") Date endDate,
                                          @Param("status") String status,
                                          Pageable pageable);
+
+    boolean existsByName(String name);
+    boolean existsByCode(String code);
+    boolean existsByNameAndIdNot(String name, Integer id);
+    boolean existsByCodeAndIdNot(String code, Integer id);
+
+
 }

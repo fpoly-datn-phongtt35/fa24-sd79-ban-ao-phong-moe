@@ -218,21 +218,21 @@ CREATE TABLE coupon_share(
 CREATE TABLE promotions(
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
-	code VARCHAR(20) UNIQUE,
+  code VARCHAR(20) UNIQUE,
   percent INT,
   start_date DATE,
   end_date DATE,
   note VARCHAR(255),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME,
+  update_at DATETIME,
+  is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE promotion_details(
   id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id BIGINT,
+  product_id BIGINT,
   promotion_id INT
 );
 
