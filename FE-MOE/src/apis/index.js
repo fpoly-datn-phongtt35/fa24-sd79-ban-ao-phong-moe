@@ -44,12 +44,20 @@ export const accessUserAPI = async (role) => {
     });
 };
 
-export const reqPay = async (data) => {
+export const reqPay = async (data, uri) => {
   await authorizedAxiosInstance
-    .get(`${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB`)
+    .get(`${API_ROOT}/payment/vn-pay?amount=${data.total}&bankCode=NCB${uri}`)
     .then((res) => {
       if (res.status === 200) {
         window.location.href = res.data.data;
       }
+    });
+};
+
+export const validInfo = async (email, username) => {
+  return await axios
+    .get(`${API_ROOT}/auth/valid-info/${email}/${username}`)
+    .then((res) => {
+      return res.data;
     });
 };

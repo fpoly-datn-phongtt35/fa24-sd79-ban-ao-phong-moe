@@ -43,12 +43,21 @@ public class CouponController {
     }
 
     @Operation(
-            summary = "Lấy danh sách phiếu giảm giá trạng thái đang diễn ra",
-            description = "Lấy tất cả phiếu giảm giá trạng thái đang diễn ra từ cơ sở dữ liệu"
+            summary = "Lấy danh sách phiếu giảm giá theo khách hàng",
+            description = "Lấy tất cả phiếu giảm giá theo khách hàng từ cơ sở dữ liệu"
     )
     @GetMapping("/getAllCouponCustomers/{customerId}")
     public ResponseData<?> getAllCouponCustomer (@PathVariable Long customerId, BillCouponFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm trạng thái đang diễn ra giá thành công", this.couponService.getAllCouponCustomer(customerId,param));
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm theo khách hàng thành công", this.couponService.getAllCouponCustomer(customerId,param));
+    }
+
+    @Operation(
+            summary = "Lấy danh sách phiếu giảm tốt nhất",
+            description = "Lấy tất cả phiếu giảm giá tốt nhất từ cơ sở dữ liệu"
+    )
+    @GetMapping("/getAllCouponCustomerGood/{customerId}")
+    public ResponseData<?> getAllCouponCustomerGood (@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm tốt nhất thành công", this.couponService.getAllCouponCustomerGood(customerId,param));
     }
 
     // Lấy thông tin phiếu giảm giá theo ID

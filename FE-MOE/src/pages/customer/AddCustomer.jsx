@@ -246,8 +246,6 @@ export const AddCustomer = () => {
       ...prevErrors,
       [name]: value ? '' : prevErrors[name],
     }));
-    console.log('Username:', customerData.username);
-    console.log('Password:', customerData.password);
 
     setErrors(newErrors);
   };
@@ -295,9 +293,9 @@ export const AddCustomer = () => {
         });
     } catch (error) {
       setIsLoading(false);
-      toast.error('Thêm thất bại!');
+      // toast.error('Thêm thất bại!');
     }
-    toast.success('Thêm thành công');
+    // toast.success('Thêm thành công');
   };
 
   const handleImageChange = (event) => {

@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 export const fetchAllColors = async (keyword) => {
   return await authorizedAxiosInstance
     .get(
-      `${API_ROOT}/color${keyword !== "" ? "?keyword=" + keyword.trim() : ""}`
+      `${API_ROOT}/color${keyword !== "" ? "?keyword=" + encodeURIComponent(keyword.trim()) : ""}`
     )
     .then((res) => res.data);
 };

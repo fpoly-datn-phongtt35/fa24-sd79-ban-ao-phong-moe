@@ -1,10 +1,13 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sd79.dto.requests.BillDetailRequest;
-import sd79.dto.requests.BillRequest;
-import sd79.dto.response.CouponResponse;
+import org.springframework.transaction.annotation.Transactional;
+import sd79.dto.requests.billRequest.BillCustomerRequest;
+import sd79.dto.requests.billRequest.BillDetailRequest;
+import sd79.dto.requests.billRequest.BillRequest;
+import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.bills.BillCouponResponse;
 import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
@@ -35,6 +38,7 @@ public class BillServiceImpl implements BillService {
     private final UserRepository userRepository;
     private final BillCustomizeQuery billCustomizeQuery;
     private final BillRepo billRepo;
+    private final CustomerAddressRepository customerAddressRepository;
 
     //them lan 1
     @Override
@@ -58,12 +62,12 @@ public class BillServiceImpl implements BillService {
     public long storeBill(BillRequest billRequest) {
         long currentBillCount = billRepository.count() + 1;
 
-//        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
-//                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
+        BillStatus billStatus = billStatusRepository.findById(billRequest.getBillStatus())
+                .orElseThrow(() -> new IllegalArgumentException("BillStatus not found with ID: " + billRequest.getBillStatus()));
 
         Bill bill = Bill.builder()
                 .code(generateRandomCode(currentBillCount))
-                .billStatus(null)
+                .billStatus(billStatus)
                 .build();
 
         bill.setCreatedBy(getUserById(billRequest.getUserId()));
@@ -91,6 +95,8 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public long storeProduct(BillDetailRequest billDetailRequest) {
+        int requestedQuantity = billDetailRequest.getQuantity() != null ? billDetailRequest.getQuantity() : 1;
+
         ProductDetail productDetail = productDetailRepository.findById(billDetailRequest.getProductDetail())
                 .orElseThrow(() -> new IllegalArgumentException("ProductDetail not found with ID: " + billDetailRequest.getProductDetail()));
         Bill bill = billRepository.findById(billDetailRequest.getBill())
@@ -100,38 +106,44 @@ public class BillServiceImpl implements BillService {
         BillDetail billDetail;
         BigDecimal retailPrice = billDetailRequest.getPrice();
         BigDecimal discountAmount = billDetailRequest.getDiscountAmount();
-        int quantityToAdd = billDetailRequest.getQuantity();
         BigDecimal totalAmountProduct;
 
         if (existingBillDetailOptional.isPresent()) {
             billDetail = existingBillDetailOptional.get();
-            int newQuantity = billDetail.getQuantity() + quantityToAdd;
-            if (newQuantity > productDetail.getQuantity()) {
+
+            int currentQuantity = billDetail.getQuantity();
+            int quantityDifference = requestedQuantity - currentQuantity;
+
+            if (quantityDifference > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            billDetail.setQuantity(newQuantity);
-            totalAmountProduct = discountAmount.multiply(new BigDecimal(newQuantity));
+            billDetail.setQuantity(requestedQuantity);
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail.setTotalAmountProduct(totalAmountProduct);
             billDetail.setUpdateAt(new Date());
+
+            productDetail.setQuantity(productDetail.getQuantity() - quantityDifference);
         } else {
-            if (quantityToAdd > productDetail.getQuantity()) {
+            if (requestedQuantity > productDetail.getQuantity()) {
                 throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
             }
 
-            totalAmountProduct = discountAmount.multiply(new BigDecimal(quantityToAdd));
+            totalAmountProduct = discountAmount.multiply(new BigDecimal(requestedQuantity));
             billDetail = BillDetail.builder()
                     .productDetail(productDetail)
                     .bill(bill)
-                    .quantity(quantityToAdd)
+                    .quantity(requestedQuantity)
                     .retailPrice(retailPrice)
                     .discountAmount(discountAmount)
                     .totalAmountProduct(totalAmountProduct)
                     .createAt(new Date())
                     .updateAt(new Date())
                     .build();
+
+            productDetail.setQuantity(productDetail.getQuantity() - requestedQuantity);
         }
-        productDetail.setQuantity(productDetail.getQuantity() - quantityToAdd);
+
         productDetailRepository.save(productDetail);
         billDetail = billDetailRepository.save(billDetail);
 
@@ -144,7 +156,7 @@ public class BillServiceImpl implements BillService {
                 .orElseThrow(() -> new IllegalArgumentException("BillDetail not found with ID: " + billDetailId));
         ProductDetail productDetail = billDetail.getProductDetail();
         productDetail.setQuantity(productDetail.getQuantity() + billDetail.getQuantity());
-        productDetailRepository.save(productDetail); // Save the updated ProductDetail
+        productDetailRepository.save(productDetail);
         billDetailRepository.delete(billDetail);
     }
 
@@ -174,6 +186,39 @@ public class BillServiceImpl implements BillService {
         return bill.getId();
     }
 
+    @Transactional
+    @Override
+    public long updateCustomer(Long id, BillCustomerRequest billCustomerRequest) {
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+        CustomerAddress customerAddress = customer.getCustomerAddress();
+        if (customerAddress == null) {
+            customerAddress = new CustomerAddress();
+        }
+        User user = customer.getUser();
+
+        if (this.customerRepository.existsByPhoneNumber(billCustomerRequest.getPhoneNumber()) &&
+                !customer.getPhoneNumber().equals(billCustomerRequest.getPhoneNumber())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
+        if (user == null) {
+            user = new User();
+        }
+        customerAddress.setCity(billCustomerRequest.getCity());
+        customerAddress.setCityId(billCustomerRequest.getCity_id());
+        customerAddress.setDistrict(billCustomerRequest.getDistrict());
+        customerAddress.setDistrictId(billCustomerRequest.getDistrict_id());
+        customerAddress.setWard(billCustomerRequest.getWard());
+        customerAddress.setStreetName(billCustomerRequest.getStreetName());
+        customerAddress = customerAddressRepository.save(customerAddress);
+        user = userRepository.save(user);
+        customer.setCustomerAddress(customerAddress);
+        customer.setUser(user);
+        populateCustomerData(customer, billCustomerRequest);
+        return customerRepository.save(customer).getId();
+    }
+
     @Override
     public long deleteCustomer(long billId) {
         Bill bill = billRepository.findById(billId)
@@ -201,18 +246,44 @@ public class BillServiceImpl implements BillService {
     public long storeCoupon(Long billId, Long couponId) {
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + billId));
-        Coupon coupon = couponRepository.findById(couponId)
+
+        // Remove existing coupon if there is one, regardless of the new coupon's ID
+        Coupon currentCoupon = bill.getCoupon();
+        if (currentCoupon != null) {
+            currentCoupon.setQuantity(currentCoupon.getQuantity() + 1);
+            currentCoupon.setUsageCount((currentCoupon.getUsageCount() != null && currentCoupon.getUsageCount() > 0)
+                    ? currentCoupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(currentCoupon);
+        }
+
+        // If the new coupon ID is null or 0, set the coupon on the bill to null and save
+        if (couponId == null || couponId == 0) {
+            bill.setCoupon(null);
+            bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+            billRepository.save(bill);
+            return bill.getId();
+        }
+
+        // Retrieve and validate the new coupon
+        Coupon newCoupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new IllegalArgumentException("Coupon not found with ID: " + couponId));
-        if (coupon.getQuantity() != null && coupon.getQuantity() <= 0) {
+
+        if (newCoupon.getQuantity() != null && newCoupon.getQuantity() <= 0) {
             throw new IllegalArgumentException("Coupon is no longer available (quantity depleted).");
         }
-        bill.setCoupon(coupon);
-        if (coupon.getQuantity() != null) {
-            coupon.setQuantity(coupon.getQuantity() - 1);
+
+        // Update the new coupon's quantity and usage count
+        if (newCoupon.getQuantity() != null) {
+            newCoupon.setQuantity(newCoupon.getQuantity() - 1);
         }
-        coupon.setUsageCount((coupon.getUsageCount() != null ? coupon.getUsageCount() : 0) + 1);
+        newCoupon.setUsageCount((newCoupon.getUsageCount() != null ? newCoupon.getUsageCount() : 0) + 1);
+
+        // Set the new coupon to the bill and save
+        bill.setCoupon(newCoupon);
         bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
-        couponRepository.save(coupon);
+
+        couponRepository.save(newCoupon);
         billRepository.save(bill);
 
         return bill.getId();
@@ -250,11 +321,11 @@ public class BillServiceImpl implements BillService {
         Bill bill = getOrCreateBill(billRequest, customer, coupon, billStatus);
         updateBillAttributes(bill, billRequest, billStatus);
 
+        // Accumulate total bill amount across all products
         BigDecimal totalBillAmount = processBillDetails(bill, billDetailRequests);
 
-        if (billRequest.getTotal() == null) {
-            bill.setTotal(totalBillAmount);
-        }
+        // Set the total on bill if it's null, or update with the accumulated total
+        bill.setTotal(billRequest.getTotal() != null ? billRequest.getTotal() : totalBillAmount);
 
         bill = saveBill(bill);
 
@@ -332,10 +403,13 @@ public class BillServiceImpl implements BillService {
 
             BillDetail billDetail = getOrCreateBillDetail(bill, productDetail);
 
-            updateBillDetail(billDetail, detailRequest, productDetail);
-
             BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
+
+            // Update the accumulated total
             totalBillAmount = totalBillAmount.add(totalAmountProduct);
+
+            // Update and save the bill detail
+            updateBillDetail(billDetail, detailRequest, totalAmountProduct);
         }
 
         return totalBillAmount;
@@ -355,27 +429,64 @@ public class BillServiceImpl implements BillService {
                         .build());
     }
 
-    private void updateBillDetail(BillDetail billDetail, BillDetailRequest detailRequest, ProductDetail productDetail) {
+    private void updateBillDetail(BillDetail billDetail, BillDetailRequest detailRequest, BigDecimal totalAmountProduct) {
         int quantity = detailRequest.getQuantity();
+        ProductDetail productDetail = billDetail.getProductDetail();
+
         if (quantity > productDetail.getQuantity()) {
             throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
         }
 
-        BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
-
         billDetail.setQuantity(quantity);
         billDetail.setRetailPrice(detailRequest.getPrice());
         billDetail.setDiscountAmount(detailRequest.getDiscountAmount());
-        billDetail.setTotalAmountProduct(totalAmountProduct);
+
+        // Ensure totalAmountProduct is correctly set
+        if (totalAmountProduct != null) {
+            billDetail.setTotalAmountProduct(totalAmountProduct);
+        } else {
+            throw new IllegalArgumentException("Total amount for the product cannot be null.");
+        }
+
         billDetail.setUpdateAt(new Date());
 
         billDetailRepository.save(billDetail);
     }
 
+    public void calculateTotalAmounts(List<BillDetailRequest> detailRequests) {
+        if (detailRequests == null || detailRequests.isEmpty()) {
+            throw new IllegalArgumentException("The list of BillDetailRequests cannot be null or empty.");
+        }
+
+        // Iterate through the list of BillDetailRequest objects
+        for (BillDetailRequest detailRequest : detailRequests) {
+            BigDecimal totalAmountProduct = calculateTotalAmountProduct(detailRequest);
+
+            // Set the calculated total amount to the corresponding BillDetailRequest
+            detailRequest.setTotalAmountProduct(totalAmountProduct);
+
+            // Log the calculated total amount for tracking purposes
+            System.out.println("Calculated totalAmountProduct for product_detail_id " + detailRequest.getProductDetail() + ": " + totalAmountProduct);
+        }
+    }
     private BigDecimal calculateTotalAmountProduct(BillDetailRequest detailRequest) {
-        return detailRequest.getPrice()
-                .subtract(detailRequest.getDiscountAmount())
-                .multiply(new BigDecimal(detailRequest.getQuantity()));
+        if (detailRequest == null) {
+            throw new IllegalArgumentException("BillDetailRequest cannot be null.");
+        }
+
+        BigDecimal price = detailRequest.getPrice();
+        BigDecimal discount = detailRequest.getDiscountAmount();
+        int quantity = detailRequest.getQuantity();
+
+        // Validation to ensure price and discount are not null
+        if (price == null || discount == null) {
+            throw new IllegalArgumentException("Price and discount cannot be null.");
+        }
+
+
+
+        // Return the total amount for the product, factoring in price, discount, and quantity
+        return price.subtract(discount).multiply(new BigDecimal(quantity));
     }
 
     private Bill saveBill(Bill bill) {
@@ -488,14 +599,18 @@ public class BillServiceImpl implements BillService {
                 .build();
     }
 
+    //customer
+    private void populateCustomerData(Customer customer, BillCustomerRequest billCustomerRequest) {
+        customer.setFirstName(billCustomerRequest.getFirstName());
+        customer.setLastName(billCustomerRequest.getLastName());
+        customer.setPhoneNumber(billCustomerRequest.getPhoneNumber());
+        customer.setUpdatedAt(new Date());
+    }
+
     private String generateRandomCode(long currentId) {
-        long totalCodes = 26 * 26 * 100000000;
-        long index = currentId - 1;
-        char letter1 = (char) ('A' + (index / (100000000)));
-        char letter2 = (char) ('A' + (index % (100000000) / 10000000));
-        long numberPart = index % 100000000 + 1;
-        String formattedNumber = String.format("%08d", numberPart);
-        return "" + letter1 + letter2 + formattedNumber;
+        Random random = new Random();
+        int number = random.nextInt(100000000);
+        return String.format("HD%08d", number);
     }
 
 }

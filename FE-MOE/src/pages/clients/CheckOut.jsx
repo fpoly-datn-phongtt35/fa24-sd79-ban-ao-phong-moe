@@ -63,6 +63,8 @@ function CheckOut() {
 
   const [orderSuccessfully, setOrderSuccessfully] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const handleClodeVoucher = () => {
     setVoucher(null);
     setDiscount(0);
@@ -141,7 +143,6 @@ function CheckOut() {
       total: subtotal + shipping - discount,
       paymentMethod,
       message,
-
       items,
     };
 
@@ -162,11 +163,13 @@ function CheckOut() {
 
     if (paymentMethod === "BANK") {
       localStorage.setItem("temp_data", JSON.stringify(transformedData));
-      await reqPay(transformedData);
-    } else {  
+      await reqPay(transformedData, "&uri=checkout");
+    } else {
+      setLoading(true);
       await createOrder(transformedData).then(() => {
         localStorage.removeItem("orderItems");
         setOrderSuccessfully(true);
+        setLoading(false);
       });
     }
   };
@@ -204,9 +207,6 @@ function CheckOut() {
             Đơn hàng của bạn sẽ sớm được giao cho đơn vị vận chuyển!
           </Typography>
           <Box display="flex" gap={2}>
-            <Button variant="outlined" onClick={() => navigate("/cart")}>
-              Xem đơn hàng
-            </Button>
             <Button
               variant="contained"
               color="primary"
@@ -571,7 +571,7 @@ function CheckOut() {
                 message="Bạn có muốn tiếp tục không?"
                 event={() => onPay()}
                 button={
-                  <Button variant="solid" size="lg" color="primary">
+                  <Button variant="solid" size="lg" color="primary" loading={loading}>
                     Đặt Hàng
                   </Button>
                 }

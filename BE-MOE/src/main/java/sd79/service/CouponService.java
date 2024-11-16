@@ -15,6 +15,7 @@ import java.util.List;
 public interface CouponService {
     PageableResponse getAllCoupon(CouponParamFilter param);
     PageableResponse getAllCouponCustomer(Long customerId,BillCouponFilter param);
+    PageableResponse getAllCouponCustomerGood(Long customerId,BillCouponFilter param);
     CouponResponse getCouponById(Long id);
     long storeCoupon(CouponRequest couponRequest);
     void storeCouponImages(CouponImageReq req);

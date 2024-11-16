@@ -16,6 +16,7 @@ import {
   Textarea,
   Table,
   Divider,
+  CircularProgress,
 } from "@mui/joy";
 import { toast } from "react-toastify";
 import Radio, { radioClasses } from "@mui/joy/Radio";
@@ -32,11 +33,17 @@ import { buyNow, fetchProduct, storeCart } from "~/apis/client/apiClient";
 import { Rating } from "@mui/material";
 import TopProductCard from "~/components/clients/cards/TopProductCard";
 import Features from "~/components/clients/other/Features";
+import FireWorkIcon from "~/assert/icon/firecracker-firework-svgrepo-com.svg";
 import { CommonContext } from "~/context/CommonContext";
+import SvgIconDisplay from "~/components/other/SvgIconDisplay";
 
 export const ViewDetail = () => {
   ScrollToTop();
   const context = useContext(CommonContext);
+
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingBuy, setLoadingBuy] = useState(false);
+
   const [product, setProduct] = useState(null);
   const [image, setImage] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -81,16 +88,19 @@ export const ViewDetail = () => {
       toast.error("Số lượng phải lớn hơn 0");
       return;
     } else {
+      setLoadingAdd(true);
       await storeCart({
         productId: id,
         sizeId: size,
         colorId: color,
         quantity: quantity,
         username: localStorage.getItem("username"),
-      }).then(() => {
-        toast.success("Sản phẩm đã được thêm vào giỏ hàng");
-        context.handleFetchCarts();
-      });
+      })
+        .then(() => {
+          toast.success("Sản phẩm đã được thêm vào giỏ hàng");
+          context.handleFetchCarts();
+        })
+        .finally(() => setLoadingAdd(false));
     }
   };
 
@@ -112,15 +122,34 @@ export const ViewDetail = () => {
         quantity: quantity,
         username: localStorage.getItem("username"),
       };
-      console.log(data);
-      await buyNow(data).then((res) => {
-        console.log(res);
-
-        localStorage.setItem("orderItems", JSON.stringify([res.data]));
-        navigate("/checkout");
-      });
+      setLoadingBuy(true);
+      await buyNow(data)
+        .then((res) => {
+          if (res.data.productCart.quantity <= 0) {
+            toast.error("Sản phẩm đã hết hàng");
+          } else {
+            localStorage.setItem("orderItems", JSON.stringify([res.data]));
+            navigate("/checkout");
+          }
+        })
+        .finally(() => setLoadingBuy(false));
     }
   };
+
+  if (!product) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="100vh"
+        width="95vw"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Grid
@@ -164,8 +193,12 @@ export const ViewDetail = () => {
                   src={url}
                   alt="Product thumbnail"
                   width="100%"
-                  style={{ objectFit: "cover", height: "100px" }}
-                  onClick={() => setImage(url)}
+                  style={{
+                    objectFit: "cover",
+                    height: image === url ? "120px" : "100px",
+                    border: image === url ? "3px solid #f47439" : "",
+                  }}
+                  onMouseOver={() => setImage(url)}
                 />
               ))}
             </Box>
@@ -200,7 +233,7 @@ export const ViewDetail = () => {
             </Box>
             <Box
               sx={{
-                backgroundColor: product?.percent !== null && "#c41c1c21",
+                backgroundColor: product?.percent !== null && "#c45f1c21",
               }}
             >
               {product?.percent !== null && (
@@ -209,13 +242,13 @@ export const ViewDetail = () => {
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    backgroundColor: "#c41c1c",
+                    backgroundColor: "#f47439",
                     borderRadius: 4,
                     padding: 2,
                   }}
                 >
                   <Typography sx={{ color: "#fff" }} level="title-lg">
-                    Kết thúc vào ngày
+                    <SvgIconDisplay icon={FireWorkIcon} /> Kết thúc vào ngày
                   </Typography>
                   <Typography sx={{ color: "#fff" }} level="title-lg">
                     {product?.expiredDate &&
@@ -463,6 +496,7 @@ export const ViewDetail = () => {
                 sx={{ flex: 2 }}
                 startDecorator={<AddShoppingCartIcon />}
                 onClick={handleAddToCart}
+                loading={loadingAdd}
               >
                 Thêm vào giỏ hàng
               </Button>
@@ -471,6 +505,7 @@ export const ViewDetail = () => {
                 color="primary"
                 sx={{ flex: 1 }}
                 onClick={handleBuyNow}
+                loading={loadingBuy}
               >
                 Mua ngay
               </Button>

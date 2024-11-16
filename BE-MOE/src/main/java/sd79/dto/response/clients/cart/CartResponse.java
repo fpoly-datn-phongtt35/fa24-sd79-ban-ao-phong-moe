@@ -6,29 +6,51 @@
  */
 package sd79.dto.response.clients.cart;
 
-import lombok.Builder;
-import lombok.Getter;
-import sd79.dto.response.clients.product.ProductCart;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Builder
-@Getter
-public class CartResponse {
+public abstract class CartResponse {
 
-    private String id;
+    @Builder
+    @Getter
+    public static class Cart {
 
-    private String imageUrl;
+        private String id;
 
-    private String name;
+        private String imageUrl;
 
-    private String origin;
+        private String name;
 
-    private BigDecimal retailPrice;
+        private String origin;
 
-    private int quantity;
+        private BigDecimal retailPrice;
 
-    private ProductCart productCart;
+        private int quantity;
 
-    private String username;
+        private ProductCart productCart;
+
+        private String username;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Setter
+    public static class ProductCart {
+        private long id;
+
+        private boolean status;
+
+        private int quantity;
+
+        private BigDecimal sellPrice;
+
+        private Integer percent;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String message;
+    }
 }

@@ -50,7 +50,7 @@ function ProductListModal({ onAddProduct, onClose }) {
     }, []);
 
     useEffect(() => {
-        console.log('Size:', size, 'Color:', color); // Debugging statement
+        console.log('Size:', size, 'Color:', color);
     }, [size, color]);
 
     useEffect(() => {
@@ -85,7 +85,11 @@ function ProductListModal({ onAddProduct, onClose }) {
         setColor('');
     };
 
-    const handleAddProduct = (product) => onAddProduct(product);
+    const handleAddProduct = (product) => {
+        const productWithQuantity = { ...product, availableQuantity: product.quantity };
+        onAddProduct(productWithQuantity);
+    };
+    
 
     const totalPages = Math.ceil(totalProducts / pageSize) || 1;
 

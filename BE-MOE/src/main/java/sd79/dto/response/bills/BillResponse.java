@@ -2,9 +2,6 @@ package sd79.dto.response.bills;
 
 import lombok.Builder;
 import lombok.Getter;
-import sd79.model.BillDetail;
-import sd79.model.BillStatus;
-import sd79.model.Coupon;
 import sd79.model.Customer;
 
 import java.util.List;

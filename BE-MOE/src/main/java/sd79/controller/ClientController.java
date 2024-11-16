@@ -15,13 +15,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.bills.BillClientRequest;
-import sd79.dto.requests.clients.cart.CartReq;
-import sd79.dto.requests.clients.other.FilterForCartReq;
+import sd79.dto.requests.clients.cart.CartRequest;
 import sd79.dto.requests.common.BillCouponFilter;
+import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.ResponseData;
+import sd79.dto.response.clients.invoices.InvoiceResponse;
+import sd79.service.BrandService;
 import sd79.service.CategoryService;
 import sd79.service.CouponService;
-import sd79.service.clients.ClientProduct;
+import sd79.service.MaterialService;
+import sd79.service.clients.ClientService;
 
 
 @Slf4j
@@ -32,11 +35,15 @@ import sd79.service.clients.ClientProduct;
 @Validated
 public class ClientController {
 
-    private final ClientProduct clientProduct;
+    private final ClientService clientService;
 
     private final CategoryService categoryService;
 
     private final CouponService couponService;
+
+    private final BrandService brandService;
+
+    private final MaterialService materialService;
 
     @Operation(
             summary = "Get all product listings",
@@ -44,7 +51,7 @@ public class ClientController {
     )
     @GetMapping
     public ResponseData<?> getAllProducts(@RequestParam(required = false, defaultValue = "0") Integer page) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.clientProduct.getExploreOurProducts(page));
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved product list", this.clientService.getExploreOurProducts(page));
     }
 
     @Operation(
@@ -53,7 +60,7 @@ public class ClientController {
     )
     @GetMapping("/best-selling-products")
     public ResponseData<?> getBestSellingProduct() {
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully 5 best selling product", this.clientProduct.getBestSellingProducts());
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully 5 best selling product", this.clientService.getBestSellingProducts());
     }
 
 
@@ -67,12 +74,30 @@ public class ClientController {
     }
 
     @Operation(
+            summary = "Get Brands",
+            description = "Get all Brands from database"
+    )
+    @GetMapping("/brand")
+    public ResponseData<?> getAllBrands() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", brandService.getAllBrands(""));
+    }
+
+    @Operation(
+            summary = "Get Materials",
+            description = "Get all Materials from database"
+    )
+    @GetMapping("/material")
+    public ResponseData<?> getAllMaterials() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", materialService.getAllMaterials(""));
+    }
+
+    @Operation(
             summary = "Get Product",
             description = "Get product detail by product ID"
     )
     @GetMapping("/{id}")
     public ResponseData<?> getProduct(@PathVariable Long id) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientProduct.getProductDetail(id));
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientService.getProductDetail(id));
     }
 
     @Operation(
@@ -81,7 +106,7 @@ public class ClientController {
     )
     @GetMapping("/cart")
     public ResponseData<?> getCarts(HttpServletRequest request) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientProduct.getCarts(request));
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.clientService.getCarts(request));
     }
 
     @Operation(
@@ -89,14 +114,14 @@ public class ClientController {
             description = "Add an item to the shopping cart with specified filters"
     )
     @PostMapping("/add-to-cart")
-    public ResponseData<?> addToCart(@RequestBody FilterForCartReq cartReq) {
-        this.clientProduct.addToCart(cartReq);
+    public ResponseData<?> addToCart(@RequestBody CartRequest.FilterParams cartReq) {
+        this.clientService.addToCart(cartReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Thêm thành công");
     }
 
     @PostMapping("/buy")
-    public ResponseData<?> buyNow(@RequestBody FilterForCartReq cartReq) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Chờ thanh toán", this.clientProduct.buyNow(cartReq));
+    public ResponseData<?> buyNow(@RequestBody CartRequest.FilterParams cartReq) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Chờ thanh toán", this.clientService.buyNow(cartReq));
     }
 
     @Operation(
@@ -104,8 +129,8 @@ public class ClientController {
             description = "Update an item in the shopping cart based on the provided request data"
     )
     @PutMapping("/update-cart")
-    public ResponseData<?> updateCart(@RequestBody CartReq cartReq) {
-        this.clientProduct.updateCart(cartReq);
+    public ResponseData<?> updateCart(@RequestBody CartRequest.Param cartReq) {
+        this.clientService.updateCart(cartReq);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật thành công");
     }
 
@@ -115,22 +140,48 @@ public class ClientController {
     )
     @DeleteMapping("/delete-cart/{id}/{username}")
     public ResponseData<?> deleteCart(@PathVariable String id, @PathVariable String username) {
-        this.clientProduct.deleteCart(id, username);
+        this.clientService.deleteCart(id, username);
         return new ResponseData<>(HttpStatus.OK.value(), "Xóa thành công");
     }
 
     @GetMapping("/user-address")
     public ResponseData<?> getUserAddress(@RequestParam Long id) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Get successfully user", this.clientProduct.getUserInfo(id));
+        return new ResponseData<>(HttpStatus.OK.value(), "Get successfully user", this.clientService.getUserInfo(id));
     }
 
     @PostMapping("/order")
     public ResponseData<?> orderRequest(@RequestBody BillClientRequest.BillCreate req) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientProduct.saveBill(req));
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đang chờ xác nhận", this.clientService.saveBill(req));
     }
 
     @GetMapping("/vouchers/{customerId}")
     public ResponseData<?> getVouchers(@PathVariable Long customerId, BillCouponFilter param) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get Voucher Successfully", this.couponService.getAllCouponCustomer(customerId, param));
+    }
+
+    @GetMapping("/order")
+    public ResponseData<?> getOrder(InvoiceResponse.Param param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.clientService.getInvoices(param));
+    }
+
+    @PatchMapping("/cancel-order/{id}/{message}")
+    public ResponseData<?> cancelOrder(@PathVariable Long id, @PathVariable String message) {
+        this.clientService.cancelInvoice(id, message);
+        return new ResponseData<>(HttpStatus.OK.value(), "Đơn hàng đã được hủy");
+    }
+
+    @GetMapping("/status.php")
+    public ResponseData<?> getStatus() {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get bill status Successfully", this.clientService.getInvoiceStatuses());
+    }
+
+    @GetMapping("/filters")
+    public ResponseData<?> filters(ProductRequests.ParamFilters paramFilters) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get products Successfully", this.clientService.productFilters(paramFilters));
+    }
+
+    @GetMapping("/search-base")
+    public ResponseData<?> searchBase(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get products Successfully", this.clientService.searchBase(keyword));
     }
 }

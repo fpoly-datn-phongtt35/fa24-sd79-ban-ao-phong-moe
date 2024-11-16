@@ -34,12 +34,21 @@ import FooterClient from "~/components/layout/FooterClient";
 import AboutUs from "~/pages/clients/AboutUs";
 import { Contact } from "~/pages/clients/Contact";
 import { ViewDetail } from "~/pages/clients/ViewDetail";
-import LoginPage from "~/pages/auth/LoginPage";
 import LocationSelector from "~/pages/other/LocationSelector";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
+import AccountInfo from "~/pages/clients/customer/AccountManager";
+import MyOrder from "~/pages/clients/orders/MyOrder";
+import BillList from "~/pages/bill/BillList";
+import Products from "~/pages/clients/Products";
+import { AddressInfo } from "~/pages/clients/customer/AddressManager";
+import BillDetail from "~/pages/bill/BillDetail";
+import BillEdit from "~/pages/bill/BillEdit";
+import SignIn from "~/pages/auth/SignIn";
+import SignUp from "~/pages/auth/SignUp";
+import { AuthProvider } from "~/context/AuthContext";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -59,7 +68,7 @@ function RouterProvider() {
     };
 
     if (!accessToken) {
-      return <Navigate to="/signin" replace={true} />;
+      return <Navigate to="/sign-in" replace={true} />;
     } else if (getAuthority() === "ADMIN") {
       return (
         <div className="layout">
@@ -95,7 +104,7 @@ function RouterProvider() {
     };
 
     if (!accessToken) {
-      return <Navigate to="/signin" replace={true} />;
+      return <Navigate to="/sign-in" replace={true} />;
     } else if (getAuthority() === "USER") {
       return (
         <div className="layout_client">
@@ -151,16 +160,19 @@ function RouterProvider() {
       return <Navigate to="/dashboard" replace={true} />;
     }
     return (
-      <div className="layout_client">
-        <div className="main-area_client">
-          <div>
-            <Header_Client />
-          </div>
-          <div className="content-area_client" style={{backgroundColor: '#4545ff1a'}}>
-            <Outlet />
+      <AuthProvider>
+        <div className="layout_client">
+          <div className="main-area_client">
+            <div>
+              <Header_Client />
+            </div>
+            {/* style={{backgroundColor: '#4545ff1a'}} */}
+            <div className="content-area_client">
+              <Outlet />
+            </div>
           </div>
         </div>
-      </div>
+      </AuthProvider>
     );
   };
   return (
@@ -168,7 +180,8 @@ function RouterProvider() {
       <Route path="*" element={<Navigate to="/" replace={true} />} />
 
       <Route element={<UnauthorizedRoutes />}>
-        <Route path="/signin" element={<LoginPage />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
       </Route>
 
       <Route element={<PublicRoutes />}>
@@ -176,12 +189,16 @@ function RouterProvider() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/view/:id" element={<ViewDetail />} />
+        <Route path="/search" element={<Products />} />
         <Route path="/api-tinh-thanh" element={<LocationSelector />} />
       </Route>
 
       <Route element={<ProtectedRoutes_USER />}>
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckOut />} />
+        <Route path="/my-account" element={<AccountInfo />} />
+        <Route path="/my-order" element={<MyOrder />} />
+        <Route path="/my-address" element={<AddressInfo />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -208,6 +225,9 @@ function RouterProvider() {
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
+        <Route path="/bill/list" element={<BillList />} />
+        <Route path="/bill/detail/:id" element={<BillDetail />} />
+        <Route path="/bill/edit/:id" element={<BillEdit />} />
       </Route>
     </Routes>
   );

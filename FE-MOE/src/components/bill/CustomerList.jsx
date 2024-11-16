@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/apis/customerApi';
-import { deleteCustomer, fetchBill } from '~/apis/billsApi';
+import { deleteCustomer, fetchBill, fetchCustomer } from '~/apis/billsApi';
 import AddCustomerModal from './AddCustomerModal';
 
 export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
@@ -27,7 +27,6 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
-    const [bills, setBills] = useState([]);
     const searchRef = useRef(null);
     const [customerData, setCustomerData] = useState({
         firstName: '',
@@ -41,21 +40,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
 
     useEffect(() => {
         loadCustomers();
-        loadBills();
     }, []);
-
-
-    useEffect(() => {
-        if (selectedOrder) {
-            const customerFromBill = findCustomerInBills(selectedOrder);
-            setCustomer(customerFromBill);
-            if (customerFromBill) {
-                setCustomerId(customerFromBill.id);
-            }
-        } else {
-            setCustomer(null);
-        }
-    }, [selectedOrder, bills, setCustomerId]);
 
     useEffect(() => {
         if (customerId === null) {
@@ -64,16 +49,11 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         }
     }, [customerId]);
 
-    const loadBills = async () => {
-        try {
-            const response = await fetchBill();
-            if (response?.data) {
-                setBills(response.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch bills:', error);
+    useEffect(() => {
+        if (selectedOrder) {
+            handleSetCustomer(selectedOrder);
         }
-    };
+    }, [selectedOrder]);
 
     const loadCustomers = async () => {
         setLoading(true);
@@ -123,22 +103,21 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         setCustomerId(selectedCustomer.id);
     };
 
-    const handleDeleteCustomer = async (id) => {
+    const handleDeleteCustomer = async () => {
         try {
-            await deleteCustomer(id);
+            await deleteCustomer(selectedOrder); // Use selectedOrder as bill ID
+            setCustomers((prevCustomers) => prevCustomers.filter(c => c.id !== customer.id));
+            setFilteredCustomers((prevFiltered) => prevFiltered.filter(c => c.id !== customer.id));
+    
             setCustomer(null);
             setSearchTerm('');
-            setFilteredCustomers(customers);
             onAddCustomer({ id: 0 });
+            loadCustomers();
         } catch (error) {
             console.error("Error deleting customer:", error);
         }
     };
-
-    const findCustomerInBills = (orderId) => {
-        const billWithCustomer = bills.find(bill => bill.id === orderId);
-        return billWithCustomer ? billWithCustomer.customer : null;
-    };
+    
 
     useEffect(() => {
         if (customerId) {
@@ -157,7 +136,6 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         try {
             const response = await fetchCustomerById(customerId);
             const customerData = response.data;
-            console.log(customerData)
 
             setCustomerData({
                 firstName: customerData.firstName,
@@ -174,6 +152,15 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         }
     };
 
+    const handleSetCustomer = async (orderId) => {
+        const response = await fetchCustomer(orderId);
+        if (response?.data) {
+            setCustomers(response.data);
+            setCustomer(response.data[0]);
+            setCustomerId(response.data[0]?.id || null);
+        }
+    };
+
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => setOpenModal(false);
 
@@ -183,22 +170,22 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                     Thông tin khách hàng
                 </Typography>
+                <Box display="flex" gap={1} alignItems="center" justifyContent="space-between">
+                    {customer ? (
+                        <>
+                            <span>{customer.lastName} {customer.firstName} </span>
+                            <Button
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                                size="small"
+                                sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
+                            >
+                                <ClearIcon fontSize="small" />
+                            </Button>
+                        </>
+                    ) : null}
+                </Box>
                 <Box display="flex" flexDirection="column" gap={1} position="relative" width="40%">
                     <Box display="flex" gap={1} alignItems="center" width="100%">
-                        <Box sx={{ flex: customer ? '1' : '0' }}>
-                            {customer ? (
-                                <>
-                                    <span>{customer.firstName} {customer.lastName}</span>
-                                    <Button
-                                        onClick={() => handleDeleteCustomer(customer.id)}
-                                        size="small"
-                                        sx={{ minWidth: 'auto', padding: '4px', color: 'red' }}
-                                    >
-                                        <ClearIcon fontSize="small" />
-                                    </Button>
-                                </>
-                            ) : null}
-                        </Box>
                         <TextField
                             placeholder="Tìm kiếm khách hàng..."
                             variant="outlined"
@@ -256,7 +243,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                                         tabIndex={0}
                                     >
                                         <ListItemText
-                                            primary={`${c.fullName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
+                                            primary={`${c.lastName + " " + c.firstName || 'N/A'} - ${c.phoneNumber || 'N/A'}`}
                                             secondary={null}
                                         />
                                     </ListItem>
@@ -275,7 +262,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
                 </Box>
             ) : (
                 <Typography variant="body1" align="center" sx={{ mt: 2 }}>
-                    Không có thông tin khách hàng.
+                    Khách hàng lẻ.
                 </Typography>
             )}
 

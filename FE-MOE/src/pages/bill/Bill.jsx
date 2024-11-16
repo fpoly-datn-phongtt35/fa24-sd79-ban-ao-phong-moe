@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -16,22 +16,23 @@ import {
     Chip,
     Divider,
     TextField,
+    CircularProgress,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeIcon from '@mui/icons-material/QrCode';
-import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, postBill, postCoupon, postCustomer, postProduct, reqPay } from '~/apis/billsApi';
+import { addPay, deleteBill, deleteCoupon, deleteProduct, fetchBill, fetchCoupon, fetchCustomer, fetchProduct, handleVerifyBanking, postBill, postCoupon, postCustomer, postProduct, putCustomer, reqPay } from '~/apis/billsApi';
 import ProductListModal from '~/components/bill/ProductListModal';
 import { formatCurrencyVND } from '~/utils/format';
 import { ImageRotator } from '~/components/common/ImageRotator ';
-import { FormControl, FormLabel, Input, MenuItem, Option, Select, Switch } from '@mui/joy';
+import { FormControl, FormHelperText, FormLabel, Input, MenuItem, Option, Select, Switch } from '@mui/joy';
 import CustomerList from '~/components/bill/CustomerList';
 import DiscountIcon from '@mui/icons-material/Discount';
 import CouponModal from '~/components/bill/CouponModal';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import axios from 'axios';
 import { fetchCustomerById } from '~/apis/customerApi';
@@ -40,7 +41,7 @@ import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
 
 function Bill() {
     const navigate = useNavigate();
-    const [tabIndex, setTabIndex] = useState(0);
+    const [activeTabIndex, setActiveTabIndex] = useState(0); 
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isProductListModalOpen, setProductListModalOpen] = useState(false);
@@ -50,13 +51,17 @@ function Bill() {
     const [products, setProducts] = useState([]);
     const [coupons, setCoupons] = useState([]);
     const [customers, setCustomers] = useState([]);
-    const handleTabChange = (event, newValue) => setTabIndex(newValue);
     const [currentOrder, setCurrentOrder] = useState(null);
     const [customerAmount, setCustomerAmount] = useState('');
     const [isDisabled, setIsDisabled] = useState(false);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
     const [customerId, setCustomerId] = useState(null);
-    const [isDeliveryEnabled, setDeliveryEnabled] = useState(true);
+    const [isDeliveryEnabled, setDeliveryEnabled] = useState(false);
+    const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [searchParams] = useSearchParams();
+    const [bankCode, setBankCode] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -76,6 +81,21 @@ function Bill() {
         streetName: ''
     });
 
+    const handleTabChange = (event, newValue) => {
+        setActiveTabIndex(newValue); 
+        setLoading(true);
+
+        setTimeout(() => {
+            if (newValue === 0) {
+                navigate('/bill'); 
+            } else {
+                navigate('/bill/list'); 
+                localStorage.removeItem('selectedOrder');
+                localStorage.removeItem('bankCode');
+            }
+            setLoading(false);
+        }, 500);
+    };
 
     //----------------------------------------------------------UseEffect--------------------------------------//
     useEffect(() => {
@@ -99,10 +119,24 @@ function Bill() {
         }
     }, [selectedOrder]);
 
+    useEffect(() => {
+        init();
+    }, []);
+
+    const init = () => {
+        setBankCode(searchParams.get("vnp_BankTranNo"))
+        localStorage.setItem("bankCode", searchParams.get("vnp_BankTranNo"))
+        handleVerifyBanking(
+            searchParams.get("vnp_TransactionStatus"),
+            searchParams.get("vnp_BankTranNo"),
+        )
+        navigate("/bill");
+    };
+
     //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async () => {
         const billData = {
-            billStatus: null,
+            billStatus: 1,
             userId: localStorage.getItem("userId"),
         };
 
@@ -143,7 +177,6 @@ function Bill() {
         }
     };
 
-
     const deleteOrder = async (orderToDelete) => {
         await deleteBill(orderToDelete);
         setBills(prevBills => prevBills.filter(order => order.id !== orderToDelete));
@@ -157,6 +190,8 @@ function Bill() {
     };
 
     //----------------------------------------------------------Product--------------------------------------//
+    let initialQuantity = {};
+
     const onProduct = async (pr) => {
         if (!selectedOrder) {
             console.error('No order selected. Order object:', selectedOrder);
@@ -167,13 +202,65 @@ function Bill() {
             bill: selectedOrder,
             quantity: 1,
             price: parseFloat(pr.price),
-            discountAmount: pr.sellPrice,
+            discountAmount: pr.sellPrice || 0,
         };
         try {
             await postProduct(product);
             handleSetProduct(selectedOrder);
+            initialQuantity[pr.id] = 1;
         } catch (error) {
             console.error('Failed to add product:', error);
+        }
+    };
+
+    const handleQuantityChange = (productId, newQuantity) => {
+        if (newQuantity === null || newQuantity === '') {
+            setErrorMessage("Số lượng chưa nhập");
+        } else {
+            setErrorMessage("");
+        }
+
+        const productToUpdate = products.find(p => p.id === productId);
+        if (!productToUpdate) return;
+
+        const maxQuantity = productToUpdate.productDetail.quantity + 1;
+        const updatedQuantity = newQuantity > maxQuantity ? maxQuantity : newQuantity;
+
+        if (quantityTimeoutId) {
+            clearTimeout(quantityTimeoutId);
+        }
+
+        if (initialQuantity[productId] === undefined) {
+            initialQuantity[productId] = maxQuantity;
+        }
+
+        setProducts(prevProducts =>
+            prevProducts.map(product =>
+                product.id === productId ? { ...product, quantity: updatedQuantity } : product
+            )
+        );
+
+        const timeoutId = setTimeout(() => updateProductQuantity(productId, updatedQuantity), 1000);
+        setQuantityTimeoutId(timeoutId);
+    };
+
+    const updateProductQuantity = async (productId, newQuantity) => {
+        try {
+            const productToUpdate = products.find(p => p.id === productId);
+            if (!productToUpdate) return;
+
+            const product = {
+                productDetail: productToUpdate.productDetail.id,
+                bill: selectedOrder,
+                quantity: newQuantity,
+                price: productToUpdate.productDetail.price,
+                discountAmount: productToUpdate.discountAmount || 0,
+            };
+
+            await postProduct(product);
+            initialQuantity[productId] = newQuantity;
+        } catch (error) {
+            console.error('Failed to update product quantity:', error);
         }
     };
 
@@ -246,18 +333,13 @@ function Bill() {
 
     //----------------------------------------------------------Coupon--------------------------------------//  
     const onCoupon = async (coupon) => {
-        if (!selectedOrder) {
-            console.error("No order selected, cannot apply coupon.");
-            return;
-        }
         const couponData = {
-            bill: selectedOrder,
+            bill: localStorage.getItem('selectedOrder'),
             coupon: coupon.id
         };
         await postCoupon(couponData);
         await handleSetBill();
         await handleSetCoupon(selectedOrder);
-
     };
 
     const handleSetCoupon = async (orderId) => {
@@ -295,14 +377,6 @@ function Bill() {
         setCustomerAmount(value);
     };
 
-    const handleQuantityChange = (productId, newQuantity) => {
-        setProducts(prevProducts =>
-            prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: newQuantity } : product
-            )
-        );
-    };
-
     const subtotal = products.reduce((total, product) => {
         return total + product.discountAmount * product.quantity;
     }, 0);
@@ -326,55 +400,13 @@ function Bill() {
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
 
+    const shippingCost = isDeliveryEnabled && subtotal < 100000 ? 24000 : 0;
+
     //----------------------------------------------------------Them lan cuoi----------------------------------//
     const PaymentMethod = {
         CASH: 0,
         BANK: 1,
-        CASH_ON_DELIVERY: 2,
     };
-
-    // const onPay = async () => {
-    //     if (!currentOrder || products.length === 0) {
-    //         toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
-    //         return;
-    //     }
-
-    //     const billStoreRequest = {
-    //         billRequest: {
-    //             code: currentOrder.code,
-    //             bankCode: "null",
-    //             customer: currentOrder.customerId || null,
-    //             coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-    //             billStatus: 2,
-    //             shipping: 0,
-    //             subtotal: subtotal,
-    //             sellerDiscount: discountAmount,
-    //             total: totalAfterDiscount,
-    //             paymentMethod: selectedPaymentMethod,
-    //             message: "null",
-    //             note: "null",
-    //             paymentTime: "null",
-    //             userId: localStorage.getItem("userId"),
-    //         },
-    //         billDetails: products.map(product => ({
-    //             productDetail: product.productDetail.id,
-    //             quantity: product.quantity,
-    //             price: product.productDetail.price,
-    //             discountAmount: product.discountAmount,
-    //         })),
-    //     };
-
-    //     try {
-    //         const billId = await addPay(billStoreRequest);
-    //         if (billId) {
-    //             toast.success("Hóa đơn đã được tạo thành công!");              
-    //         }
-    //     } catch (error) {
-    //         console.error("Failed to create invoice:", error);
-    //         toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
-    //     }
-    //     await handleSetBill();
-    // };
 
     //----------------------------------------------------------Giao diện--------------------------------------//  
 
@@ -399,7 +431,7 @@ function Bill() {
         setCustomerAmount('');
         setSelectedCoupon(null);
         setSelectedPaymentMethod(null);
-        setCustomerId(null); // Reset customer ID for CustomerList
+        setCustomerId(null);
         localStorage.removeItem('selectedOrder');
         window.scrollTo(0, 0);
     };
@@ -409,63 +441,55 @@ function Bill() {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
             return;
         }
-
-        if (selectedPaymentMethod === PaymentMethod.BANK) {
-            try {
-                await reqPay({
-                    total: totalAfterDiscount,
-                    message: `Thanh toán cho hóa đơn #${currentOrder.code}`
-                });
-            } catch (error) {
-                console.error("Failed to initiate VNPay payment:", error);
-                toast.error("Có lỗi xảy ra khi bắt đầu thanh toán qua VNPay.");
-            }
-            return;
-        }
-
+    
+        const paymentMethodName = {
+            [PaymentMethod.CASH]: "CASH",
+            [PaymentMethod.BANK]: "BANK",
+        }[selectedPaymentMethod] || "UNKNOWN";
+    
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
-                bankCode: "null",
+                bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: 2,
-                shipping: 0,
+                billStatus: isDeliveryEnabled ? 2 : 8, 
+                shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
-                paymentMethod: selectedPaymentMethod,
-                message: "Hóa đơn thanh toán bằng tiền mặt",
-                note: "Thanh toán bằng tiền mặt",
+                paymentMethod: paymentMethodName,
+                message: null,
+                note: null,
                 paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
-            billDetails: products.map(product => ({
+            billDetails: products.map((product) => ({
                 productDetail: product.productDetail.id,
                 quantity: product.quantity,
                 price: product.productDetail.price,
                 discountAmount: product.discountAmount,
             })),
         };
-
+    
         try {
-            const billId = await addPay(billStoreRequest);
-            navigate("/bill");
-            clearData();
-            if (billId) {
+            if (paymentMethodName === "BANK") {
+                localStorage.setItem("temp_data", JSON.stringify(billStoreRequest));
+                await reqPay(billStoreRequest, "&uri=bill");
+                clearData();
+                return;
+            } else {
+                await addPay(billStoreRequest);
                 toast.success("Hóa đơn đã được tạo thành công!");
-
+                clearData();
+                await handleSetBill();
             }
         } catch (error) {
-            console.error("Failed to create invoice:", error);
+            console.error("Error processing payment:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
-
-        if (selectedPaymentMethod === PaymentMethod.CASH) {
-            await handleSetBill();
-        }
     };
-
+    
     //dia chi
 
     const handleToggleDelivery = () => {
@@ -496,7 +520,7 @@ function Bill() {
     const handleDistrictChange = async (e) => {
         const districtId = e;
         setSelectedDistrict(districtId);
-        setSelectedWard(""); // Reset ward
+        setSelectedWard("");
         if (districtId) {
             const response = await axios.get(`${host}d/${districtId}?depth=2`);
             setWards(response.data.wards);
@@ -546,6 +570,39 @@ function Bill() {
         }
     };
 
+    const updateCustomer = async (e) => {
+        e.preventDefault();
+
+        try {
+            const cityName = cities.find((city) => city.code == selectedCity)?.name;
+            const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+            const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
+            const updatedCustomer = {
+                ...customerData,
+                city: cityName,
+                city_id: selectedCity,
+                district: districtName,
+                district_id: selectedDistrict,
+                ward: wardName,
+                dateOfBirth: formatDate(customerData.dateOfBirth),
+                updatedAt: new Date().toISOString(),
+            };
+
+            const response = await putCustomer(updatedCustomer, customerId);
+
+            if (response && response.status === 200) {
+                toast.success('Cập nhật thành công');
+                navigate('/bill');
+            } else {
+                toast.error('Cập nhật không thành công, vui lòng thử lại.');
+            }
+        } catch (error) {
+            console.error("Failed to update customer:", error);
+            toast.error('Có lỗi xảy ra khi cập nhật thông tin khách hàng.');
+        }
+    };
+
     return (
 
         <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
@@ -568,11 +625,37 @@ function Bill() {
                     </Typography>
                 </div>
 
+                {loading && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1
+                        }}
+                    >
+                        <CircularProgress size={80} />
+                    </div>
+                )}
 
-                <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
-                    <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
-                    <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
-                </Tabs>
+                {!loading && (
+                    <>                  
+                        <Tabs
+                            value={activeTabIndex}
+                            onChange={handleTabChange}
+                            sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+                        >
+                            <Tab label="Tạo mới" sx={{ fontWeight: 'bold' }} />
+                            <Tab label="Danh sách hóa đơn" sx={{ fontWeight: 'bold' }} />
+                        </Tabs>
+                    </>
+                )}
 
                 {bills.length >= 5 && (
                     <Typography color="error" sx={{ mb: 1 }}>
@@ -697,11 +780,11 @@ function Bill() {
                                         Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
                                     </Typography>
                                 </Grid>
-                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center">
+                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
                                     <Input
                                         type="number"
                                         value={product.quantity}
-                                        onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || 0)}
+                                        onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || '')}
                                         sx={{
                                             width: '80%',
                                             '& input': {
@@ -709,7 +792,13 @@ function Bill() {
                                             }
                                         }}
                                     />
+                                    {errorMessage && (
+                                        <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
+                                            {errorMessage}
+                                        </Typography>
+                                    )}
                                 </Grid>
+
                                 <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
                                     <Typography variant="body2" sx={{ mr: 1 }}>
                                         {product.discountAmount === product.productDetail.price ? (
@@ -774,30 +863,51 @@ function Bill() {
                             customerData ? (
                                 <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
                                     <Grid container spacing={2} ml={0}>
-                                        <Grid container spacing={2} mb={3}>
-                                            <Grid item xs={12} md={6}>
-                                                <FormControl required>
-                                                    <FormLabel>Họ và tên</FormLabel>
-                                                    <Input
-                                                        value={`${customerData.lastName || ""} ${customerData.firstName || ""}`}
-                                                        variant="outlined"
-                                                        size="md"
-                                                        inputProps={{ sx: { textAlign: 'center' } }}
-                                                    />
-                                                </FormControl>
-                                            </Grid>
-                                            <Grid item xs={12} md={6}>
-                                                <FormControl required>
-                                                    <FormLabel>Số điện thoại</FormLabel>
-                                                    <Input
-                                                        value={customerData.phoneNumber || ""}
-                                                        variant="outlined"
-                                                        size="md"
-                                                        inputProps={{ sx: { textAlign: 'center' } }}
-                                                    />
-                                                </FormControl>
+                                        <Grid container spacing={2} ml={0}>
+                                            <Grid container spacing={2} mb={3} mt={0}>
+                                                <Grid item xs={12} md={6} >
+                                                    <FormControl required error={!customerData.lastName || !customerData.firstName}>
+                                                        <FormLabel>Họ và tên</FormLabel>
+                                                        <Input
+                                                            value={`${customerData.lastName || ""} ${customerData.firstName || ""}`}
+                                                            onChange={(e) => {
+                                                                const [lastName, ...firstNameParts] = e.target.value.split(" ");
+                                                                setCustomerData({
+                                                                    ...customerData,
+                                                                    lastName,
+                                                                    firstName: firstNameParts.join(" "),
+                                                                });
+                                                            }}
+                                                            variant="outlined"
+                                                            size="md"
+                                                        />
+                                                        {!customerData.lastName || !customerData.firstName ? (
+                                                            <FormHelperText>Họ và tên không được bỏ trống</FormHelperText>
+                                                        ) : null}
+                                                    </FormControl>
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <FormControl required error={!customerData.phoneNumber}>
+                                                        <FormLabel>Số điện thoại</FormLabel>
+                                                        <Input
+                                                            value={customerData.phoneNumber || ""}
+                                                            onChange={(e) =>
+                                                                setCustomerData({
+                                                                    ...customerData,
+                                                                    phoneNumber: e.target.value,
+                                                                })
+                                                            }
+                                                            variant="outlined"
+                                                            size="md"
+                                                        />
+                                                        {!customerData.phoneNumber ? (
+                                                            <FormHelperText>Số điện thoại không được bỏ trống</FormHelperText>
+                                                        ) : null}
+                                                    </FormControl>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
+
 
                                         <Grid container spacing={2} mb={3}>
                                             <Grid item xs={12} md={4}>
@@ -852,7 +962,7 @@ function Bill() {
                                                             Chọn phường xã
                                                         </Option>
                                                         {wards.map((ward) => (
-                                                            <Option key={ward.code} value={ward.name}>
+                                                            <Option key={ward.name} value={ward.name}>
                                                                 {ward.name}
                                                             </Option>
                                                         ))}
@@ -863,13 +973,22 @@ function Bill() {
 
                                         <Grid container spacing={2} mb={2}>
                                             <Grid item xs={12} md={6}>
-                                                <FormControl required>
+                                                <FormControl required error={!customerData.streetName}>
                                                     <FormLabel>Địa chỉ cụ thể</FormLabel>
                                                     <Input
                                                         size="md"
                                                         value={customerData.streetName || ""}
+                                                        onChange={(e) =>
+                                                            setCustomerData({
+                                                                ...customerData,
+                                                                streetName: e.target.value,
+                                                            })
+                                                        }
                                                         variant="outlined"
                                                     />
+                                                    {!customerData.streetName ? (
+                                                        <FormHelperText>Địa chỉ cụ thể không được bỏ trống</FormHelperText>
+                                                    ) : null}
                                                 </FormControl>
                                             </Grid>
                                             <Grid item xs={12} md={6}>
@@ -881,12 +1000,22 @@ function Bill() {
                                             </Grid>
                                         </Grid>
                                     </Grid>
+                                    <Grid container justifyContent="center" mt={3}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={updateCustomer}
+                                            sx={{ px: 4, py: 1.5 }}
+                                        >
+                                            Cập nhật thông tin
+                                        </Button>
+                                    </Grid>
                                 </Grid>
                             ) : (
                                 <Grid item xs={12} md={6}>
                                     <Box
                                         component="img"
-                                        src="https://via.placeholder.com/300x300?text=Product+Image"
+                                        src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
                                         alt="No Delivery"
                                         sx={{
                                             width: '100%',
@@ -900,7 +1029,7 @@ function Bill() {
                             <Grid item xs={12} md={6}>
                                 <Box
                                     component="img"
-                                    src="https://via.placeholder.com/300x300?text=Product+Image"
+                                    src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
                                     alt="No Delivery"
                                     sx={{
                                         width: '100%',
@@ -912,7 +1041,7 @@ function Bill() {
                         )}
 
                         <Grid item xs={12} md={6}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt:1}}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt: 1 }}>
                                 <Button
                                     startIcon={<DiscountIcon />}
                                     variant="outlined"
@@ -923,7 +1052,7 @@ function Bill() {
                                     Phiếu giảm giá
                                 </Button>
                                 <Typography variant="body2" color="textSecondary">
-                                    Chọn hoặc nhập mã &gt;
+                                    Chọn mã giảm giá &gt;
                                 </Typography>
                             </Box>
 
@@ -963,9 +1092,28 @@ function Bill() {
                                 </Box>
                             ))}
 
-                            <Grid container spacing={1} sx={{ mb: 2 }}>
-                                <Grid item xs={6}><Typography variant="h6">Tổng tiền:</Typography></Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'right' }}><Typography variant="h6" color="error">{formatCurrencyVND(totalAfterDiscount)}</Typography></Grid>
+                            <Grid container spacing={0} sx={{ mb: 2, mt: 2 }}>
+                                {isDeliveryEnabled && (
+                                    <Grid container spacing={1} sx={{ mb: 2 }}>
+                                        <Grid item xs={6}>
+                                            <Typography variant="body2">Phí vận chuyển:</Typography>
+                                        </Grid>
+                                        <Grid item xs={6} sx={{ textAlign: 'right' }}>
+                                            <Typography variant="body2">
+                                                {formatCurrencyVND(shippingCost)}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                )}
+
+                                <Grid item xs={6}>
+                                    <Typography variant="h6">Tổng tiền:</Typography>
+                                </Grid>
+                                <Grid item xs={6} sx={{ textAlign: 'right' }}>
+                                    <Typography variant="h6" color="error">
+                                        {formatCurrencyVND(totalAfterDiscount + shippingCost)}
+                                    </Typography>
+                                </Grid>
                             </Grid>
 
                             {selectedPaymentMethod === PaymentMethod.CASH && (

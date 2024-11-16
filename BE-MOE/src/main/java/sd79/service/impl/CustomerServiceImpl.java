@@ -81,51 +81,7 @@ public class CustomerServiceImpl implements CustomerService {
         return convertCustomerResponse(customer);
     }
 
-//    public boolean isValidEmail(String email) {
-//        return EMAIL_PATTERN.matcher(email).matches();
-//    }
-//
-//    public boolean isValidUsername(String username) {
-//        return username != null && username.matches(USERNAME_REGEX);
-//    }
-//
-//    public boolean isValidPassword(String password) {
-//        return password != null && PASSWORD_PATTERN.matcher(password).matches();
-//    }
-//
-//    public boolean isValidPhoneNumber(String phoneNumber) {
-//        return phoneNumber != null && PHONE_PATTERN.matcher(phoneNumber).matches();
-//    }
-//
-//    public boolean isValidName(String name) {
-//        if (name == null || name.length() > 50) {
-//            return false;
-//        }
-//        return Character.isUpperCase(name.charAt(0));
-//    }
-//
-//    public boolean isOldEnough(Date dateOfBirth) {
-//        if (dateOfBirth == null) {
-//            throw new EntityExistsException("Ngày sinh không được để trống.");
-//        }
-//
-//
-//        Calendar birthDate = Calendar.getInstance();
-//        birthDate.setTime(dateOfBirth);
-//
-//        Calendar today = Calendar.getInstance();
-//
-//        int age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
-//
-//
-//        if (today.get(Calendar.MONTH) < birthDate.get(Calendar.MONTH) ||
-//                (today.get(Calendar.MONTH) == birthDate.get(Calendar.MONTH) &&
-//                        today.get(Calendar.DAY_OF_MONTH) < birthDate.get(Calendar.DAY_OF_MONTH))) {
-//            age--;
-//        }
-//
-//        return age >= 16;
-//    }
+
 
 
     @Transactional
@@ -214,6 +170,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setUser(user);
         populateCustomerData(customer, customerRequest);
         return customerRepository.save(customer).getId();
+        
     }
 
     @Transactional

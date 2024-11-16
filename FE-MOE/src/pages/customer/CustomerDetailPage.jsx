@@ -60,8 +60,6 @@ export const CustomerDetailPage = () => {
 
     };
 
-
-
     setErrors(newErrors);
 
     return Object.values(newErrors).every((error) => error === '');
@@ -74,6 +72,7 @@ export const CustomerDetailPage = () => {
     };
     fetchCities();
   }, []);
+
 
   const handleCityChange = async (e) => {
     const cityId = e;
@@ -91,7 +90,7 @@ export const CustomerDetailPage = () => {
   const handleDistrictChange = async (e) => {
     const districtId = e;
     setSelectedDistrict(districtId);
-    setSelectedWard(""); // Reset ward
+    setSelectedWard(""); 
     if (districtId) {
       const response = await axios.get(`${host}d/${districtId}?depth=2`);
       setWards(response.data.wards);
@@ -103,7 +102,7 @@ export const CustomerDetailPage = () => {
   const handleWardChange = (e) => {
     setSelectedWard(e);
   };
-  /*---END---*/
+
 
   const formatDate = (dateString, time = "00:00:00") => {
     const date = new Date(dateString);
@@ -114,22 +113,20 @@ export const CustomerDetailPage = () => {
   };
 
   const formatDate2 = (dateTimeString) => {
-    // Split date and time parts
     const [datePart] = dateTimeString.split(' ');
-    const [year, month, day] = datePart.split('-'); 
-    return `${year}-${month}-${day}`; 
+    const [year, month, day] = datePart.split('-');
+    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
+
     const fetchCustomerDetail = async () => {
       try {
         const response = await fetchCustomerById(id);
-        console.log("API Response:", response.data);
+
 
         const customerData = response.data;
-        console.log(customerData.dateOfBirth);
 
-        console.log(formatDate2(customerData.dateOfBirth))
 
         handleCityChange(customerData.city_id);
         handleDistrictChange(customerData.district_id)
@@ -149,7 +146,7 @@ export const CustomerDetailPage = () => {
         });
         setImagePreview(customerData.image);
       } catch (error) {
-        console.error("Error details:", error);
+
         toast.error('Error fetching customer details: ' + (error.response?.data?.message || error.message));
       }
     };
@@ -265,7 +262,7 @@ export const CustomerDetailPage = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      console.log("Form không hợp lệ, dừng xử lý.");
+
       return;
     }
 
@@ -304,6 +301,7 @@ export const CustomerDetailPage = () => {
     });
 
   };
+
   const handleImageChange = (event) => {
     var file = event.target.files[0];
     var url = URL.createObjectURL(file)
@@ -542,7 +540,9 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Thành phố</FormLabel>
-                        <Select value={selectedCity} onChange={(e, v) => handleCityChange(v)} placeholder="Chọn thành phố">
+                        <Select value={selectedCity}
+                          onChange={(e, v) => handleCityChange(v)}
+                          placeholder="Chọn thành phố">
                           <Option value="" disabled>
                             Chọn tỉnh thành
                           </Option>
@@ -603,7 +603,7 @@ export const CustomerDetailPage = () => {
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                       Cập Nhật Người Dùng
                     </Button>
-                    <Button  variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                    <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
                     </Button>
                   </Grid>

@@ -11,7 +11,6 @@ import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.productResponse.ProductModifyRes;
-import sd79.dto.response.productResponse.ProductResponse;
 import sd79.enums.ProductStatus;
 
 import java.util.List;

@@ -4,6 +4,7 @@
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
+import { toast } from "react-toastify";
 
 export const fetchAllProducts = async (pageNo) => {
   return await authorizedAxiosInstance
@@ -20,6 +21,16 @@ export const fetchBestSellingProducts = async () => {
 export const fetchCategories = async () => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/client/category`)
+    .then((res) => res.data);
+};
+export const fetchBrands = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/brand`)
+    .then((res) => res.data);
+};
+export const fetchMaterials = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/material`)
     .then((res) => res.data);
 };
 
@@ -78,8 +89,101 @@ export const fetchAllVouchers = async (id, keword) => {
   return await authorizedAxiosInstance
     .get(
       `${API_ROOT}/client/vouchers/${id}?pageNo=1&pageSize=100${
-        keword ? `&keyword=${keword}` : ""
+        keword ? `&keyword=${encodeURIComponent(keword)}` : ""
       }`
     )
     .then((res) => res.data?.data?.content);
+};
+
+export const getOrders = async (pageNo, pageSize, keyword, status) => {
+  let uri = "client/order?";
+  let queryParams = [];
+
+  if (pageNo !== null && pageNo !== undefined) {
+    queryParams.push(`pageNo=${pageNo}`);
+  }
+  if (pageSize !== null && pageSize !== undefined) {
+    queryParams.push(`pageSize=${pageSize}`);
+  }
+  if (keyword) {
+    queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
+  }
+  if (status !== null && status !== undefined) {
+    queryParams.push(`status=${status}`);
+  }
+  queryParams.push(`userId=${localStorage.getItem("userId")}`);
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/${uri}`)
+    .then((res) => res.data);
+};
+
+export const cancelInvoice = async (id, message) => {
+  return await authorizedAxiosInstance
+    .patch(`${API_ROOT}/client/cancel-order/${id}/${message}`)
+    .then((res) => toast.success(res.data.message));
+};
+
+export const billStatus = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/status.php`)
+    .then((res) => res.data);
+};
+
+export const getProductsFilter = async (data) => {
+  let uri = "/client/filters?";
+  let queryParams = [];
+
+  if (data.pageNo !== null && data.pageNo !== undefined) {
+    queryParams.push(`pageNo=${data.pageNo}`);
+  }
+
+  if (data.pageSize !== null && data.pageSize !== undefined) {
+    queryParams.push(`pageSize=${data.pageSize}`);
+  }
+
+  if (data.keyword) {
+    queryParams.push(
+      `keyword=${encodeURIComponent(data.keyword)}`
+    );
+  }
+
+  if (data.categoryIds && data.categoryIds.length > 0) {
+    queryParams.push(`categoryIds=${data.categoryIds.join(",")}`);
+  }
+
+  if (data.brandIds && data.brandIds.length > 0) {
+    queryParams.push(`brandIds=${data.brandIds.join(",")}`);
+  }
+
+  if (data.materialIds && data.materialIds.length > 0) {
+    queryParams.push(`materialIds=${data.materialIds.join(",")}`);
+  }
+
+  if (data.minPrice !== null && data.minPrice !== undefined) {
+    queryParams.push(`minPrice=${data.minPrice}`);
+  }
+
+  if (data.maxPrice !== null && data.maxPrice !== undefined) {
+    queryParams.push(`maxPrice=${data.maxPrice}`);
+  }
+
+  if (data.sortBy) {
+    queryParams.push(`sortBy=${data.sortBy}`);
+  }
+
+  uri += queryParams.join("&");
+
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
+export const SearchBase = async (keyword) => {
+  return await authorizedAxiosInstance
+    .get(
+      `${API_ROOT}/client/search-base?keyword=${encodeURIComponent(keyword)}`
+    )
+    .then((res) => res.data);
 };

@@ -240,6 +240,17 @@ CREATE TABLE promotion_details(
 CREATE TABLE bill_status (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(55),
+	status ENUM(
+    'PENDING',
+    'PENDING_CONFIRMATION',
+		'CONFIRMED', 
+    'SHIPPED', 
+    'DELIVERED', 
+    'DELIVERY_FAILED',
+    'CANCELED',
+		'COMPLETED',
+    'OTHER'
+	),
   description TEXT
 );
 
@@ -280,6 +291,20 @@ CREATE TABLE bill_detail (
   update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
   FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bill_status_detail (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  bill_id BIGINT,
+  bill_status_id INT,
+  note TEXT,
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted BIT DEFAULT 0,
+  FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE,
+  FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
 );
 
 -- Employee
@@ -711,16 +736,13 @@ INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
 (9, 'https://example.com/images/coupon09.jpg', 'yz567'),
 (10, 'https://example.com/images/coupon10.jpg', 'abc890');
     
--- bill
-INSERT INTO bill_status (name) VALUES
-('Chưa xác nhận'),
-('Đã xác nhận đơn hàng'),
-('Đã bàn giao cho đơn vị vận chuyển'),
-('Đã xác nhận thông tin thanh toán'),
-('Đơn hàng đã được giao thành công'),
-('Đã hủy đơn hàng'),
-('Giao hàng thất bại'),
-('Khác');
-
-
-
+INSERT INTO bill_status (name, status) VALUES
+('Đang chờ xử lý', 'PENDING'),
+('Đang chờ xác nhận', 'PENDING_CONFIRMATION'),
+('Đã xác nhận', 'CONFIRMED'),
+('Đã bàn giao cho đơn vị vận chuyển', 'SHIPPED'),
+('Đã giao thành công', 'DELIVERED'),
+('Giao hàng thất bại', 'DELIVERY_FAILED'),
+('Đã hủy đơn hàng', 'CANCELED'),
+('Đơn hàng hoàn tất', 'COMPLETED'),
+('Khác', 'OTHER');
