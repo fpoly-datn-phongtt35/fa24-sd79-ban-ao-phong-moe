@@ -14,13 +14,28 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.authRequests.SignInRequest;
+import sd79.dto.requests.authRequests.SignUpRequest;
 import sd79.dto.response.auth.TokenResponse;
+import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
+import sd79.model.Customer;
+import sd79.model.CustomerAddress;
 import sd79.model.User;
 import sd79.model.redis_model.Token;
+import sd79.repositories.CustomerAddressRepository;
+import sd79.repositories.CustomerRepository;
+import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
+import sd79.utils.CloudinaryUtils;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static sd79.enums.TokenType.ACCESS_TOKEN;
@@ -37,6 +52,16 @@ public class AuthenticationService {
     private final JwtService jwtService;
 
     private final TokenService tokenService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final RoleRepository roleRepository;
+
+    private final CustomerRepository customerRepository;
+
+    private final CustomerAddressRepository addressRepository;
+
+    private final CloudinaryUtils cloudinary;
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
@@ -92,6 +117,57 @@ public class AuthenticationService {
         } catch (Exception e) {
             log.error("The account was logged out with an error={}", e.getMessage());
         }
+    }
 
+    public void validInfo(String email, String username) {
+        Optional<User> byUsername = this.userRepository.findByUsername(username);
+        Optional<User> byEmail = this.userRepository.findByEmail(email);
+        if (byUsername.isPresent()) {
+            throw new InvalidDataException("Username đã tồn tại!");
+        }
+        if (byEmail.isPresent()) {
+            throw new InvalidDataException("Email đã tồn tại!");
+        }
+    }
+
+    @Transactional
+    public Long register(SignUpRequest request) {
+        validInfo(request.getEmail(), request.getUsername());
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(this.passwordEncoder.encode(request.getPassword()))
+                .role(this.roleRepository.findById(2).orElseThrow(() -> new EntityNotFoundException("Role not found")))
+                .isLocked(false)
+                .isEnabled(false)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .isDeleted(false)
+                .build();
+        var userSave = this.userRepository.save(user);
+        var address = this.addressRepository.save(CustomerAddress.builder()
+                .streetName(request.getStreetName())
+                .ward(request.getWard())
+                .district(request.getDistrict())
+                .city(request.getCity())
+                .districtId(request.getDistrictId())
+                .cityId(request.getCityId())
+                .build());
+        Map<String, String> uploadResult = request.getAvatar() != null ? this.cloudinary.upload(request.getAvatar()) : null;
+        Customer customer = Customer.builder()
+                .phoneNumber(request.getPhoneNumber())
+                .user(userSave)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .gender(request.getGender().name())
+                .dateOfBirth(request.getDateOfBirth())
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .customerAddress(address)
+                .image(request.getAvatar() != null ? Objects.requireNonNull(uploadResult).get("url") : null)
+                .publicId(request.getAvatar() != null ? Objects.requireNonNull(uploadResult).get("publicId") : null)
+                .build();
+        this.customerRepository.save(customer);
+        return userSave.getId();
     }
 }

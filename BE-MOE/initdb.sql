@@ -248,7 +248,11 @@ CREATE TABLE bill_status (
     'DELIVERED', 
     'DELIVERY_FAILED',
     'CANCELED',
+<<<<<<< HEAD
 	'COMPLETED',
+=======
+		'COMPLETED',
+>>>>>>> main
     'OTHER'
 	),
   description TEXT

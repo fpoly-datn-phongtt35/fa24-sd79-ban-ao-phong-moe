@@ -441,26 +441,26 @@ function Bill() {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
             return;
         }
-
+    
         const paymentMethodName = {
             [PaymentMethod.CASH]: "CASH",
             [PaymentMethod.BANK]: "BANK",
         }[selectedPaymentMethod] || "UNKNOWN";
-
+    
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
                 bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: 3,
+                billStatus: isDeliveryEnabled ? 2 : 8, 
                 shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
                 paymentMethod: paymentMethodName,
-                message : null,
-                note : null,
+                message: null,
+                note: null,
                 paymentTime: formatDate(new Date()),
                 userId: localStorage.getItem("userId"),
             },
@@ -471,7 +471,7 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-
+    
         try {
             if (paymentMethodName === "BANK") {
                 localStorage.setItem("temp_data", JSON.stringify(billStoreRequest));
@@ -489,7 +489,7 @@ function Bill() {
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-
+    
     //dia chi
 
     const handleToggleDelivery = () => {

@@ -233,6 +233,9 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public CartResponse.Cart buyNow(CartRequest.FilterParams req) {
         ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        if (req.getQuantity() > prd.getQuantity()) {
+            throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity()));
+        }
         PromotionDetail promotionDetail = this.promotionDetailRepository.findByProductId(prd.getProduct().getId());
         BigDecimal discountPercent = promotionDetail != null
                 ? BigDecimal.valueOf(promotionDetail.getPromotion().getPercent()).divide(BigDecimal.valueOf(100))
@@ -314,9 +317,6 @@ public class ClientServiceImpl implements ClientService {
                 .billStatus(this.billStatusRepository.findById(2).orElse(null))
                 .paymentTime(req.getPaymentMethod() == PaymentMethod.BANK ? new Date() : null)
                 .build();
-        assert customer != null;
-        bill.setCreatedBy(customer.getUser());
-        bill.setUpdatedBy(customer.getUser());
 
         Bill billSave = this.billRepository.save(bill);
         if (req.getCouponId() != null) {

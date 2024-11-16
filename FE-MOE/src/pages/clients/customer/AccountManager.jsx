@@ -218,9 +218,9 @@ export const AccountInfo = () => {
       }
       const formData = new FormData();
       formData.append("images", imageObject)
-      formData.append("UserId", id)
+      formData.append("userId", localStorage.getItem("userId"))
       await postcustomerImage(formData).then(() => {
-        toast.success('Cập nhật thành công');
+        toast.success('Sửa thành công');
         setIsLoading(false);
       })
 

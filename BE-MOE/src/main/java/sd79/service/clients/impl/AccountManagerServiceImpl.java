@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.accountInfo.AccountImageReq;
 import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.response.clients.customer.UserAccountInfoRes;
+import sd79.dto.response.clients.customer.UserAddressInfoRes;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Customer;
 import sd79.model.User;
@@ -47,6 +48,24 @@ public class AccountManagerServiceImpl implements AccountManagerService {
                 .dateOfBirth(customer.getDateOfBirth())
                 .gender(customer.getGender())
                 .image(customer.getImage())
+                .updatedAt(customer.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    public UserAddressInfoRes getAddressbyId(Long id) {
+        Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin"));
+        return UserAddressInfoRes.builder()
+                .firstName(customer.getFirstName())
+                .lastName(customer.getLastName())
+                .fullName(String.format("%s %s", customer.getLastName(), customer.getFirstName()))
+                .city(customer.getCustomerAddress().getCity())
+                .city_id(customer.getCustomerAddress().getCityId())
+                .district(customer.getCustomerAddress().getDistrict())
+                .district_id(customer.getCustomerAddress().getDistrictId())
+                .ward(customer.getCustomerAddress().getWard())
+                .streetName(customer.getCustomerAddress().getStreetName())
+                .updatedAt(customer.getUpdatedAt())
                 .build();
     }
 

@@ -41,7 +41,7 @@ export const Customer = () => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
- 
+
   const mapGender = (gender) => {
     switch (gender) {
       case 'MALE':
@@ -303,7 +303,11 @@ export const Customer = () => {
                 <strong>Số điện thoại:</strong> {selectedCustomer.phoneNumber}<br />
                 <strong>Giới tính:</strong> {mapGender(selectedCustomer.gender)}<br />
                 <strong>Ngày sinh:</strong> {formatDate(selectedCustomer.dateOfBirth)}<br />
-                <strong>Địa chỉ:</strong> {selectedCustomer.streetName} {', '+selectedCustomer.ward}{', '+selectedCustomer.district}{', '+selectedCustomer.city}<br />
+                <strong>Địa chỉ: </strong>
+                {[selectedCustomer.streetName, selectedCustomer.ward, selectedCustomer.district, selectedCustomer.city]
+                  .filter(Boolean)
+                  .join(', ') || ' Trống'}
+                <br />
                 <strong>Ngày tạo:</strong> {formatDate(selectedCustomer.createdAt)}<br />
                 <strong>Ngày cập nhật:</strong> {formatDate(selectedCustomer.updatedAt)}<br />
               </Typography>

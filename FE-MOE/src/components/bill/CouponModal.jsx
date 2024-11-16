@@ -57,8 +57,11 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
             if (eligibleCoupons.length === 0) return;
 
             const bestCoupon = eligibleCoupons.reduce((prev, current) => {
-                const prevDiscount = prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
-                const currentDiscount = current.discountType === 'FIXED_AMOUNT' ? current.discountValue : subtotal * (current.discountValue / 100);
+                const prevDiscount =
+                    prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
+                const currentDiscount =
+                    current.discountType === 'FIXED_AMOUNT' ? current.discountValue : subtotal * (current.discountValue / 100);
+
                 return prevDiscount > currentDiscount ? prev : current;
             });
 

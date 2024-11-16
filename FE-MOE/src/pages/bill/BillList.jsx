@@ -22,18 +22,23 @@ export default function BillList() {
 
     // Status mapping
     const statusMap = {
+        '1': 'Đang chờ xử lý',
         '2': 'Chờ xác nhận',
+        '3': 'Đã xác nhận',
         '4': 'Chờ giao',
-        '3': 'Hoàn thành',
+        '5': 'Đã giao thành công',
+        '6': 'Giao hàng thất bại',
         '7': 'Đã hủy',
-    };
+        '8': 'Đơn hàng hoàn tất',
+        '9': 'Khác',
+      };
 
     // Tab definitions with labels and associated status filters
     const tabs = [
         { label: 'Tất cả', status: '' },
         { label: 'Chờ xác nhận', status: '2' },
         { label: 'Chờ giao', status: '4' },
-        { label: 'Hoàn thành', status: '3' },
+        { label: 'Hoàn thành', status: '8' },
         { label: 'Đã hủy', status: '7' },
     ];
 
@@ -151,13 +156,13 @@ export default function BillList() {
                                     <IconButton
                                         onClick={() => {
                                             localStorage.setItem('billId', bill.id); 
-                                            navigate(`/bill/edit/${bill.id}`);    
+                                            navigate(`/bill/detail/${bill.id}`);    
                                         }}
                                         color="primary"
                                     >
                                         <Edit />
                                     </IconButton>
-                                    <IconButton onClick={() => navigate(`/bill/list`)} color='primary'>
+                                    <IconButton onClick={() => navigate(`/bill/detail`)} color='primary'>
                                         ...
                                     </IconButton>
                                 </TableCell>

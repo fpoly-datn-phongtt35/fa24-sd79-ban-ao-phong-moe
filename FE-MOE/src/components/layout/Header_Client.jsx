@@ -19,7 +19,7 @@ import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlin
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
 import debounce from "lodash.debounce";
 import { Autocomplete, Avatar, Input, Tooltip, Typography } from "@mui/joy";
@@ -27,6 +27,8 @@ import { CommonContext } from "~/context/CommonContext";
 import { SearchBase } from "~/apis/client/apiClient";
 
 const Header_Client = () => {
+  const location = useLocation();
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [hasAuthenticated, setHasAuthenticated] = useState(false);
   const [avatar, setAvatar] = useState("");
@@ -89,7 +91,7 @@ const Header_Client = () => {
   };
 
   const singIn = () => {
-    navigate("/signin");
+    navigate("/sign-in");
   };
 
   const handleLogout = async () => {
@@ -98,7 +100,7 @@ const Header_Client = () => {
     localStorage.removeItem("accessToken");
     document.cookie = "role=; path=/; max-age=0";
     context.setAmoutCart(null);
-    navigate("/signin");
+    navigate("/sign-in");
   };
 
   return (
@@ -149,6 +151,22 @@ const Header_Client = () => {
           >
             Giới thiệu
           </Button>
+          {!localStorage.getItem("accessToken") &&
+            (location.pathname.includes("sign-up") ? (
+              <Button
+                onClick={singIn}
+                style={{ color: "#000", textTransform: "none" }}
+              >
+                Đăng nhập
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate("/sign-up")}
+                style={{ color: "#000", textTransform: "none" }}
+              >
+                Đăng ký
+              </Button>
+            ))}
         </Box>
 
         <Box display="flex" alignItems="center" gap={2}>

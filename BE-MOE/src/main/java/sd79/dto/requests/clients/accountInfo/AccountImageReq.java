@@ -9,6 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public class AccountImageReq {
     @NotNull(message = "UserID must be not null")
-    private Long UserId;
+    private Long userId;
     private MultipartFile[] images;
 }
