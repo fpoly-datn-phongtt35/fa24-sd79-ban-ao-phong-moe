@@ -246,8 +246,6 @@ export const AddCustomer = () => {
       ...prevErrors,
       [name]: value ? '' : prevErrors[name],
     }));
-    console.log('Username:', customerData.username);
-    console.log('Password:', customerData.password);
 
     setErrors(newErrors);
   };

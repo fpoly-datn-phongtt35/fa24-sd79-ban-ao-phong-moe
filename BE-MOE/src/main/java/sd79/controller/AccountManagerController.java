@@ -20,8 +20,13 @@ public class AccountManagerController {
     private final UserAuthRepository userAuthRepository;
 
     @GetMapping("/detailAccount/{id}")
-    public ResponseData<?> getCustomerById(@PathVariable Long id) {
+    public ResponseData<?> getAccountInfoById(@PathVariable Long id) {
         return new ResponseData<>(HttpStatus.OK.value(), "Customer details", accountManagerService.getAccountbyId(id));
+    }
+
+    @GetMapping("/detailAddress/{id}")
+    public ResponseData<?> getUserAddressById(@PathVariable Long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Customer details", accountManagerService.getAddressbyId(id));
     }
 
     @PutMapping("/updateAccount/{id}")

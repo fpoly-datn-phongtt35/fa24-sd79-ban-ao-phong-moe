@@ -43,6 +43,7 @@ import AccountInfo from "~/pages/clients/customer/AccountManager";
 import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
 import Products from "~/pages/clients/Products";
+import { AddressInfo } from "~/pages/clients/customer/AddressManager";
 import BillDetail from "~/pages/bill/BillDetail";
 import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
@@ -197,6 +198,7 @@ function RouterProvider() {
         <Route path="/checkout" element={<CheckOut />} />
         <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
+        <Route path="/my-address" element={<AddressInfo />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
