@@ -28,8 +28,8 @@ CREATE TABLE employee_address(
     ward varchar(255),
     district varchar(255),
     district_id INT,
-    province varchar(255),
-    province_id INT
+    city varchar(255),
+    city_id INT
 );
 
 CREATE TABLE employees(
@@ -374,7 +374,7 @@ VALUES
 ('Nhân viên', NOW(), NOW()),
 ('Hệ thống', NOW(), NOW());
 
-INSERT INTO employee_address (street_name, ward, district, district_id, province, province_id)
+INSERT INTO employee_address (street_name, ward, district, district_id, city, city_id)
 VALUES
 ('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
 
