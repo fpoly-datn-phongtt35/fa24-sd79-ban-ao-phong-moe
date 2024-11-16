@@ -38,6 +38,10 @@ function SignUpAvatar() {
   };
 
   const handleSubmit = async () => {
+    if(file === null){
+      toast.warning("Vui lòng chọn ảnh đại diện!");
+      return;
+    }
     let formData = new FormData();
     formData.append("username", context.dataRegister.username);
     formData.append("email", context.dataRegister.email);
