@@ -1,68 +1,69 @@
-//package sd79.service.impl;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//import sd79.dto.response.CustomerResponse;
-//import sd79.model.Customer;
-//import sd79.model.CustomerAddress;
-//import sd79.model.Support;
-//import sd79.repositories.SupportRepository;
-//import sd79.service.CustomerService;
-//import sd79.service.NotificationService;
-//import sd79.service.SupportService;
-//
-//
-//import java.time.LocalDateTime;
-//
-//@Service
-//public class SupportServiceImpl implements SupportService {
-//
-//    private final SupportRepository supportRepository;
-//    private final CustomerService customerService;
-//    private final NotificationService notificationService;
-//
-//    @Autowired
-//    public SupportServiceImpl(SupportRepository supportRepository,
-//                              CustomerService customerService,
-//                              NotificationService notificationService) {
-//        this.supportRepository = supportRepository;
-//        this.customerService = customerService;
-//        this.notificationService = notificationService;
-//    }
-//
-//    @Override
-//    public Support createSupportTicket(Long customerId, String issueDescription) {
-//        // Lấy CustomerResponse từ CustomerService
-//        CustomerResponse customerResponse = customerService.getCustomerById(customerId);
-//
-//        // Chuyển đổi từ CustomerResponse thành Customer
-//        Customer customer = convertCustomerResponseToCustomer(customerResponse);
-//
-//        Support support = new Support();
-//        support.setCustomer(customer);
-//        support.setIssueDescription(issueDescription);
-//        support.setStatus("Pending");
-//
-//
-//        Support newSupport = supportRepository.save(support);
-//
-//        // Thông báo cho nhân viên
-//        notificationService.notifyEmployee(newSupport);
-//
-//        return newSupport;
-//    }
-//
-//    // Phương thức chuyển đổi từ CustomerResponse thành Customer
-//    private Customer convertCustomerResponseToCustomer(CustomerResponse customerResponse) {
-//        Customer customer = new Customer();
-//        customer.setId(customerResponse.getId());
-//        customer.setFirstName(customerResponse.getFirstName());
-//        customer.setLastName(customerResponse.getLastName());
-//        customer.setPhoneNumber(customerResponse.getPhoneNumber());
-//        customer.setCreatedAt(customerResponse.getCreatedAt());
-//        customer.setUpdatedAt(customerResponse.getUpdatedAt());
-//
-//        return customer;
-//    }
-//}
-//
+package sd79.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import sd79.controller.NotificationController;
+import sd79.exception.EntityNotFoundException;
+import sd79.model.Customer;
+import sd79.model.Support;
+import sd79.repositories.CustomerRepository;
+import sd79.repositories.SupportRepository;
+import sd79.service.SupportService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+
+@Service
+public class SupportServiceImpl implements SupportService {
+    private final SupportRepository supportRepository;
+
+    private final CustomerRepository customerRepository;
+    private final NotificationController notificationController;
+
+    @Autowired
+    public SupportServiceImpl(SupportRepository supportRepository, CustomerRepository customerRepository, NotificationController notificationController) {
+        this.supportRepository = supportRepository;
+        this.customerRepository = customerRepository;
+        this.notificationController = notificationController;
+    }
+
+    @Override
+    public Support createSupportRequest(Long customerId, String issueDescription) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
+
+        Support support = new Support();
+        support.setCustomer(customer);
+        support.setIssueDescription(issueDescription);
+        support.setStatus("Pending");
+        support.setCreatedDate(LocalDateTime.now());
+
+        Support savedSupport = supportRepository.save(support);
+
+        // Gửi thông báo tới tất cả client về yêu cầu hỗ trợ mới
+        notificationController.sendNotification("/topic/support", "New support request created");
+
+        return savedSupport;
+    }
+
+
+
+    @Override
+    public List<Support> getSupportRequestsByStatus(String status) {
+        // Lấy danh sách yêu cầu hỗ trợ theo trạng thái
+        return supportRepository.findByStatus(status);
+    }
+
+    @Override
+    public Support resolveSupportRequest(Long supportId) {
+        // Tìm yêu cầu hỗ trợ và đánh dấu là đã hoàn thành
+        Support support = supportRepository.findById(supportId)
+                .orElseThrow(() -> new EntityNotFoundException("Support request not found"));
+        support.setStatus("Resolved");
+        support.setResolvedDate(LocalDateTime.now());
+        return supportRepository.save(support);
+    }
+}
+

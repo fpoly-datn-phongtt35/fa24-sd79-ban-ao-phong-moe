@@ -23,6 +23,16 @@ export const fetchCategories = async () => {
     .get(`${API_ROOT}/client/category`)
     .then((res) => res.data);
 };
+export const fetchBrands = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/brand`)
+    .then((res) => res.data);
+};
+export const fetchMaterials = async () => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/client/material`)
+    .then((res) => res.data);
+};
 
 export const fetchProduct = async (id) => {
   return await authorizedAxiosInstance
@@ -79,7 +89,7 @@ export const fetchAllVouchers = async (id, keword) => {
   return await authorizedAxiosInstance
     .get(
       `${API_ROOT}/client/vouchers/${id}?pageNo=1&pageSize=100${
-        keword ? `&keyword=${keword}` : ""
+        keword ? `&keyword=${encodeURIComponent(keword)}` : ""
       }`
     )
     .then((res) => res.data?.data?.content);
@@ -96,7 +106,7 @@ export const getOrders = async (pageNo, pageSize, keyword, status) => {
     queryParams.push(`pageSize=${pageSize}`);
   }
   if (keyword) {
-    queryParams.push(`keyword=${keyword}`);
+    queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
   }
   if (status !== null && status !== undefined) {
     queryParams.push(`status=${status}`);
@@ -134,7 +144,9 @@ export const getProductsFilter = async (data) => {
   }
 
   if (data.keyword) {
-    queryParams.push(`keyword=${encodeURIComponent(data.keyword)}`);
+    queryParams.push(
+      `keyword=${encodeURIComponent(data.keyword)}`
+    );
   }
 
   if (data.categoryIds && data.categoryIds.length > 0) {
@@ -165,5 +177,13 @@ export const getProductsFilter = async (data) => {
 
   return await authorizedAxiosInstance
     .get(`${API_ROOT}${uri}`)
+    .then((res) => res.data);
+};
+
+export const SearchBase = async (keyword) => {
+  return await authorizedAxiosInstance
+    .get(
+      `${API_ROOT}/client/search-base?keyword=${encodeURIComponent(keyword)}`
+    )
     .then((res) => res.data);
 };

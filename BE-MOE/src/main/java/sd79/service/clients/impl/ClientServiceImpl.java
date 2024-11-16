@@ -391,4 +391,9 @@ public class ClientServiceImpl implements ClientService {
         return this.productCustomizeQuery.getProductsFilters(param);
     }
 
+    @Override
+    public List<ProductRequests.ProductBase> searchBase(String keyword) {
+        return this.productCustomizeQuery.searchBase(keyword);
+    }
+
 }

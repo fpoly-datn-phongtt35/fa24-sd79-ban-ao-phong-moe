@@ -292,7 +292,15 @@ CREATE TABLE bill_detail (
                              FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
 );
 
-
+CREATE TABLE support (
+                         id BIGINT PRIMARY KEY,
+                         customer_id BIGINT REFERENCES customers(id),
+                         employee_id BIGINT REFERENCES employees(id),
+                         issue_description TEXT,
+                         status VARCHAR(20),
+                         created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                         resolved_date TIMESTAMP
+);
 
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_employee_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);

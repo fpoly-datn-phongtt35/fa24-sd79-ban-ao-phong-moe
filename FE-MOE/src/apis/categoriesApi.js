@@ -10,7 +10,7 @@ export const fetchAllCategories = async (keyword) => {
   return await authorizedAxiosInstance
     .get(
       `${API_ROOT}/categories${
-        keyword !== "" ? "?keyword=" + keyword.trim() : ""
+        keyword !== "" ? "?keyword=" + encodeURIComponent(keyword.trim()) : ""
       }`
     )
     .then((res) => res.data);

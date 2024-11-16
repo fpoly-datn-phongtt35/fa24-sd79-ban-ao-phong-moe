@@ -41,6 +41,7 @@ import LocationSelector from "~/pages/other/LocationSelector";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
+import AccountInfo from "~/pages/clients/customer/AccountManager";
 import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
 import BillEdit from "~/pages/bill/BillEdit";
@@ -188,6 +189,7 @@ function RouterProvider() {
       <Route element={<ProtectedRoutes_USER />}>
         <Route path="/cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<CheckOut />} />
+        <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
       </Route>
 

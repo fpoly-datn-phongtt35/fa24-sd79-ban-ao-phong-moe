@@ -53,23 +53,23 @@ export const searchKeywordAndDate = async (keyword, gender, birth) => {
   try {
     const params = {};
 
-    // Only fetch all customers if no filters are applied
+   
     if (!keyword && !gender && !birth) {
       const res = await authorizedAxiosInstance.get(`${API_ROOT}/customer`);
       return res.data;
     }
 
-    // Add query parameters if they are provided
+    
     if (keyword) {
       params.keyword = keyword;
     }
 
     if (gender) {
-      params.genderStr = gender; // Use genderStr as expected by the backend
+      params.genderStr = gender; 
     }
 
     if (birth) {
-      params.dateOfBirth = birth; // Assuming birth is in YYYY-MM-DD format
+      params.dateOfBirth = birth; 
     }
 
     const res = await authorizedAxiosInstance.get(`${API_ROOT}/customer/search`, {

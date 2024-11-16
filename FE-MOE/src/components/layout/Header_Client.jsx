@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   AppBar,
   Toolbar,
@@ -21,8 +21,10 @@ import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useNavigate } from "react-router-dom";
 import { accessUserAPI, handleLogoutAPI } from "~/apis";
+import debounce from "lodash.debounce";
 import { Autocomplete, Avatar, Input, Tooltip, Typography } from "@mui/joy";
 import { CommonContext } from "~/context/CommonContext";
+import { SearchBase } from "~/apis/client/apiClient";
 
 const Header_Client = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -31,9 +33,12 @@ const Header_Client = () => {
   const [username, setUsername] = useState("");
   const accessToken = localStorage.getItem("accessToken");
 
-  const [producs, setProducs] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const context = useContext(CommonContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (accessToken) {
@@ -44,7 +49,29 @@ const Header_Client = () => {
     }
   }, [accessToken]);
 
-  const navigate = useNavigate();
+  const handleSearch = useCallback(
+    debounce(async (keyword) => {
+      setLoading(true);
+      await SearchBase(keyword)
+        .then((res) => setOptions(res.data))
+        .finally(() => setLoading(false));
+    }, 1000),
+    []
+  );
+
+  useEffect(() => {
+    if (inputValue) {
+      handleSearch(inputValue);
+    }
+  }, [inputValue, handleSearch]);
+
+  const handleSelectOption = (event, option) => {
+    if (option) {
+      setInputValue("");
+      setOptions([]);
+      navigate(`/view/${option.id}`);
+    }
+  };
 
   const handleAccessData = async () => {
     await accessUserAPI("USER").then((res) => {
@@ -128,21 +155,56 @@ const Header_Client = () => {
           <Box>
             <Autocomplete
               freeSolo
-              startDecorator={<SearchIcon color="primary" />}
+              startDecorator={
+                <SearchIcon
+                  color="primary"
+                  onClick={() => {
+                    setOptions([]);
+                    navigate("/search");
+                  }}
+                />
+              }
               placeholder="Tìm kiếm"
               sx={{ width: 350, backgroundColor: "#f9fafc", border: "none" }}
-              options={producs}
-              // getOptionLabel={(option) => option.title}
-              // onChange={(event, newValue) => {
-              //   if (newValue) {
-              //     navigate(newValue.path);
-              //   }
-              // }}
+              options={options}
+              getOptionLabel={(option) => option.name || ""}
+              onInputChange={(event, newInputValue) => {
+                context.setKeyword(newInputValue);
+                setInputValue(newInputValue);
+              }}
               components={{
-                Input: (props) => <Input {...props} type="search" />,
+                Input: (props) => (
+                  <Input {...props} type="search" value={inputValue} />
+                ),
+              }}
+              loading={loading}
+              renderOption={(props, option) => {
+                const { key, ownerState, ...restProps } = props;
+                return (
+                  <Box
+                    {...restProps}
+                    key={key}
+                    display="flex"
+                    marginBottom={3}
+                    alignItems="center"
+                    onClick={() => handleSelectOption(null, option)}
+                  >
+                    <img
+                      src={option.imageUrl}
+                      alt={option.name}
+                      width={40}
+                      height={40}
+                      style={{ marginRight: 8 }}
+                    />
+                    <Typography level="title-sm" noWrap variant="plain">
+                      {option.name}
+                    </Typography>
+                  </Box>
+                );
               }}
             />
           </Box>
+
           <IconButton>
             <Badge badgeContent={2} color="primary">
               <FavoriteBorderOutlinedIcon />
@@ -160,6 +222,7 @@ const Header_Client = () => {
           </IconButton>
         </Box>
 
+        {/* Menu for profile */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -169,6 +232,7 @@ const Header_Client = () => {
             <Typography
               level="tile-md"
               startDecorator={<AccountCircleOutlinedIcon />}
+              onClick={() => navigate("/my-account")}
             >
               Quản lý tài khoản
             </Typography>
