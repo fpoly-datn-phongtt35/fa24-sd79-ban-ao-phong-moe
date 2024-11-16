@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.EmployeeReq;
 import sd79.dto.requests.employees.EmployeeImageReq;
+import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.ResponseData;
+import sd79.exception.EntityNotFoundException;
 import sd79.model.Employee;
 import sd79.repositories.PositionsRepository;
 import sd79.service.EmployeeService;
@@ -113,4 +115,19 @@ public class EmployeeController {
         this.employeeService.setUserLocked(id, isLocked);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Thay đổi trạng thái thành công");
     }
+    @PutMapping("/{id}/update-password")
+    public ResponseData<String> updatePassword(@PathVariable long id, @RequestBody PasswordUpdateRequest request) {
+        try {
+            employeeService.updatePassword(request, id);
+            return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật mật khẩu thành công");
+        } catch (EntityNotFoundException e) {
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy người dùng với ID: " + id);
+        } catch (IllegalArgumentException e) {
+            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()); // Trả về thông điệp lỗi chi tiết
+        } catch (Exception e) {
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Có lỗi xảy ra, vui lòng thử lại sau");
+        }
+    }
+
+
 }

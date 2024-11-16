@@ -33,7 +33,7 @@ CREATE TABLE employee_address(
 );
 
 CREATE TABLE employees(
-		id INT AUTO_INCREMENT PRIMARY KEY,
+		id BIGINT AUTO_INCREMENT PRIMARY KEY,
 		first_name VARCHAR(25),
 		last_name  VARCHAR(50),
 		address_id bigint,
@@ -238,20 +238,19 @@ CREATE TABLE promotion_details(
 
 -- bill
 CREATE TABLE bill_status (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(55),
-	status ENUM(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(55),
+    status ENUM(
     'PENDING',
     'PENDING_CONFIRMATION',
 	'CONFIRMED',
-    'SHIPPED', 
-    'DELIVERED', 
+    'SHIPPED',
+    'DELIVERED',
     'DELIVERY_FAILED',
     'CANCELED',
-	'COMPLETED',
-    'OTHER'
+	'COMPLETED'
 	),
-  description TEXT
+    description TEXT
 );
 
 CREATE TABLE bill (
@@ -305,6 +304,16 @@ CREATE TABLE bill_status_detail (
   is_deleted BIT DEFAULT 0,
   FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE,
   FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
+);
+
+CREATE TABLE support (
+	id BIGINT PRIMARY KEY,
+	customer_id BIGINT REFERENCES customers(id),
+	employee_id BIGINT REFERENCES employees(id),
+	issue_description TEXT,
+	status VARCHAR(20),
+	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	resolved_date TIMESTAMP
 );
 
 -- Employee
