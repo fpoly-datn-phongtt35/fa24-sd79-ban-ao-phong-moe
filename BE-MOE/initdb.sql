@@ -28,8 +28,8 @@ CREATE TABLE employee_address(
     ward varchar(255),
     district varchar(255),
     district_id INT,
-    province varchar(255),
-    province_id INT
+    city varchar(255),
+    city_id INT
 );
 
 CREATE TABLE employees(
@@ -238,19 +238,20 @@ CREATE TABLE promotion_details(
 
 -- bill
 CREATE TABLE bill_status (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(55),
-    status ENUM(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(55),
+	status ENUM(
     'PENDING',
     'PENDING_CONFIRMATION',
-	'CONFIRMED',
-    'SHIPPED',
-    'DELIVERED',
+		'CONFIRMED', 
+    'SHIPPED', 
+    'DELIVERED', 
     'DELIVERY_FAILED',
     'CANCELED',
-	'COMPLETED'
+		'COMPLETED',
+    'OTHER'
 	),
-    description TEXT
+  description TEXT
 );
 
 CREATE TABLE bill (
@@ -374,7 +375,7 @@ VALUES
 ('Nhân viên', NOW(), NOW()),
 ('Hệ thống', NOW(), NOW());
 
-INSERT INTO employee_address (street_name, ward, district, district_id, province, province_id)
+INSERT INTO employee_address (street_name, ward, district, district_id, city, city_id)
 VALUES
 ('81 Trung Kính', 'Phường Trung Hoà', 'Quận Cầu Giấy', 5, 'Thành phố Hà Nội', 1);
 
@@ -437,52 +438,52 @@ VALUES
 ('Áo thun nam in hình', 'Áo thun nam với họa tiết in độc đáo.', 'ACTIVE', 1, 3, 1, 'Japan', 2, 2, '2023-09-22 11:00:00', '2023-09-22 11:00:00'),
 ('Áo thun nữ in hình', 'Áo thun nữ với họa tiết in sáng tạo.', 'ACTIVE', 1, 4, 1, 'Taiwan', 3, 3, '2023-09-23 12:00:00', '2023-09-23 12:00:00'),
 ('Áo thun dài tay nam', 'Áo thun dài tay dành cho nam, giữ ấm tốt.', 'ACTIVE', 1, 1, 2, 'Vietnam', 1, 1, '2023-09-24 10:30:00', '2023-09-24 10:30:00'),
-('Áo thun dài tay nữ', 'Áo thun dài tay dành cho nữ, phong cách hiện đại.', 'ACTIVE', 1, 2, 2, 'Japan', 2, 2, '2023-09-25 10:30:00', '2023-09-25 10:30:00'),
-('Áo thun polo nam', 'Áo polo nam chất liệu cao cấp, lịch lãm.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-09-26 11:00:00', '2023-09-26 11:00:00'),
+('Áo thun dài tay nữ', 'Áo thun dài tay dành cho nữ, phong cách hiện đại.', 'ACTIVE', 1, 2, 2, 'Japan', 1,1, '2023-09-25 10:30:00', '2023-09-25 10:30:00'),
+('Áo thun polo nam', 'Áo polo nam chất liệu cao cấp, lịch lãm.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-09-26 11:00:00', '2023-09-26 11:00:00'),
 ('Áo thun polo nữ', 'Áo polo nữ thời trang, phù hợp đi làm.', 'ACTIVE', 1, 4, 1, 'Vietnam', 1, 1, '2023-09-27 12:00:00', '2023-09-27 12:00:00'),
-('Áo thun tay lỡ nam', 'Áo thun tay lỡ, trẻ trung và năng động.', 'ACTIVE', 1, 1, 2, 'Japan', 2, 2, '2023-09-28 10:30:00', '2023-09-28 10:30:00'),
-('Áo thun tay lỡ nữ', 'Áo thun tay lỡ, phù hợp cho mùa hè.', 'ACTIVE', 1, 2, 2, 'Taiwan', 3, 3, '2023-09-29 11:00:00', '2023-09-29 11:00:00'),
+('Áo thun tay lỡ nam', 'Áo thun tay lỡ, trẻ trung và năng động.', 'ACTIVE', 1, 1, 2, 'Japan', 1, 1, '2023-09-28 10:30:00', '2023-09-28 10:30:00'),
+('Áo thun tay lỡ nữ', 'Áo thun tay lỡ, phù hợp cho mùa hè.', 'ACTIVE', 1, 2, 2, 'Taiwan', 1, 1, '2023-09-29 11:00:00', '2023-09-29 11:00:00'),
 ('Áo thun họa tiết mùa hè', 'Áo thun với họa tiết mùa hè, chất liệu thoáng mát.', 'ACTIVE', 1, 3, 1, 'Vietnam', 1, 1, '2023-09-30 12:00:00', '2023-09-30 12:00:00'),
-('Áo thun nam cổ tròn', 'Áo thun cổ tròn dành cho nam, kiểu dáng thể thao.', 'ACTIVE', 1, 1, 1, 'Japan', 2, 2, '2023-08-20 10:30:00', '2023-08-20 10:30:00'),
-('Áo thun nữ cổ tròn', 'Áo thun cổ tròn dành cho nữ, thoải mái.', 'ACTIVE', 1, 2, 1, 'Taiwan', 3, 3, '2023-08-21 11:00:00', '2023-08-21 11:00:00'),
+('Áo thun nam cổ tròn', 'Áo thun cổ tròn dành cho nam, kiểu dáng thể thao.', 'ACTIVE', 1, 1, 1, 'Japan', 1, 1, '2023-08-20 10:30:00', '2023-08-20 10:30:00'),
+('Áo thun nữ cổ tròn', 'Áo thun cổ tròn dành cho nữ, thoải mái.', 'ACTIVE', 1, 2, 1, 'Taiwan', 1, 1, '2023-08-21 11:00:00', '2023-08-21 11:00:00'),
 ('Áo thun nam cổ bẻ', 'Áo thun cổ bẻ, thanh lịch cho nam.', 'ACTIVE', 1, 3, 1, 'Vietnam', 1, 1, '2023-08-22 12:00:00', '2023-08-22 12:00:00'),
-('Áo thun nữ cổ bẻ', 'Áo thun cổ bẻ, hiện đại và quyến rũ.', 'ACTIVE', 1, 4, 1, 'Japan', 2, 2, '2023-08-23 10:30:00', '2023-08-23 10:30:00'),
-('Áo thun nam thể thao', 'Áo thun thể thao, phù hợp cho vận động.', 'ACTIVE', 1, 1, 2, 'Taiwan', 3, 3, '2023-08-24 11:00:00', '2023-08-24 11:00:00'),
+('Áo thun nữ cổ bẻ', 'Áo thun cổ bẻ, hiện đại và quyến rũ.', 'ACTIVE', 1, 4, 1, 'Japan', 1, 1, '2023-08-23 10:30:00', '2023-08-23 10:30:00'),
+('Áo thun nam thể thao', 'Áo thun thể thao, phù hợp cho vận động.', 'ACTIVE', 1, 1, 2, 'Taiwan', 1, 1, '2023-08-24 11:00:00', '2023-08-24 11:00:00'),
 ('Áo thun nữ thể thao', 'Áo thun thể thao, thoáng mát và thoải mái.', 'ACTIVE', 1, 2, 2, 'Vietnam', 1, 1, '2023-08-25 12:00:00', '2023-08-25 12:00:00'),
-('Áo thun chống nắng nam', 'Áo thun chống nắng cho nam, chất liệu đặc biệt.', 'ACTIVE', 1, 3, 1, 'Japan', 2, 2, '2023-08-26 10:30:00', '2023-08-26 10:30:00'),
-('Áo thun chống nắng nữ', 'Áo thun chống nắng cho nữ, thiết kế thời trang.', 'ACTIVE', 1, 4, 1, 'Taiwan', 3, 3, '2023-08-27 11:00:00', '2023-08-27 11:00:00'),
+('Áo thun chống nắng nam', 'Áo thun chống nắng cho nam, chất liệu đặc biệt.', 'ACTIVE', 1, 3, 1, 'Japan', 1, 1, '2023-08-26 10:30:00', '2023-08-26 10:30:00'),
+('Áo thun chống nắng nữ', 'Áo thun chống nắng cho nữ, thiết kế thời trang.', 'ACTIVE', 1, 4, 1, 'Taiwan', 1, 1, '2023-08-27 11:00:00', '2023-08-27 11:00:00'),
 ('Áo thun mùa đông nam', 'Áo thun mùa đông, giữ ấm tốt cho nam.', 'ACTIVE', 1, 1, 2, 'Vietnam', 1, 1, '2023-08-28 12:00:00', '2023-08-28 12:00:00'),
 ('Áo thun mùa đông nữ', 'Áo thun mùa đông, thiết kế đẹp cho nữ.', 'ACTIVE', 1, 2, 2, 'Japan', 2, 2, '2023-08-29 10:30:00', '2023-08-29 10:30:00'),
-('Áo thun lót mỏng nam', 'Áo lót mỏng cho nam, thoáng mát vào mùa hè.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-08-30 11:00:00', '2023-08-30 11:00:00'),
+('Áo thun lót mỏng nam', 'Áo lót mỏng cho nam, thoáng mát vào mùa hè.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-08-30 11:00:00', '2023-08-30 11:00:00'),
 ('Áo thun lót mỏng nữ', 'Áo lót mỏng cho nữ, tiện lợi và dễ mặc.', 'ACTIVE', 1, 4, 1, 'Vietnam', 1, 1, '2023-08-31 12:00:00', '2023-08-31 12:00:00'),
-('Áo thun đơn giản nam', 'Áo thun đơn giản, dễ phối đồ cho nam.', 'ACTIVE', 1, 1, 2, 'Japan', 2, 2, '2023-09-01 10:30:00', '2023-09-01 10:30:00'),
-('Áo thun đơn giản nữ', 'Áo thun đơn giản, phù hợp với mọi phong cách.', 'ACTIVE', 1, 2, 2, 'Taiwan', 3, 3, '2023-09-02 11:00:00', '2023-09-02 11:00:00'),
+('Áo thun đơn giản nam', 'Áo thun đơn giản, dễ phối đồ cho nam.', 'ACTIVE', 1, 1, 2, 'Japan', 1, 1, '2023-09-01 10:30:00', '2023-09-01 10:30:00'),
+('Áo thun đơn giản nữ', 'Áo thun đơn giản, phù hợp với mọi phong cách.', 'ACTIVE', 1, 2, 2, 'Taiwan', 1, 1, '2023-09-02 11:00:00', '2023-09-02 11:00:00'),
 ('Áo thun oversized nam', 'Áo thun oversized dành cho nam, thời trang.', 'ACTIVE', 1, 3, 1, 'Vietnam', 1, 1, '2023-09-03 12:00:00', '2023-09-03 12:00:00'),
-('Áo thun oversized nữ', 'Áo thun oversized dành cho nữ, trẻ trung.', 'ACTIVE', 1, 4, 1, 'Japan', 2, 2, '2023-09-04 10:30:00', '2023-09-04 10:30:00'),
-('Áo thun màu sắc nam', 'Áo thun với nhiều màu sắc tươi sáng cho nam.', 'ACTIVE', 1, 1, 2, 'Taiwan', 3, 3, '2023-09-05 11:00:00', '2023-09-05 11:00:00'),
+('Áo thun oversized nữ', 'Áo thun oversized dành cho nữ, trẻ trung.', 'ACTIVE', 1, 4, 1, 'Japan', 1, 1, '2023-09-04 10:30:00', '2023-09-04 10:30:00'),
+('Áo thun màu sắc nam', 'Áo thun với nhiều màu sắc tươi sáng cho nam.', 'ACTIVE', 1, 1, 2, 'Taiwan', 1, 1, '2023-09-05 11:00:00', '2023-09-05 11:00:00'),
 ('Áo thun màu sắc nữ', 'Áo thun với nhiều màu sắc tươi sáng cho nữ.', 'ACTIVE', 1, 2, 2, 'Vietnam', 1, 1, '2023-09-06 12:00:00', '2023-09-06 12:00:00'),
-('Áo thun chất lượng cao nam', 'Áo thun chất lượng cao, thoải mái cho nam.', 'ACTIVE', 1, 3, 1, 'Japan', 2, 2, '2023-09-07 10:30:00', '2023-09-07 10:30:00'),
-('Áo thun chất lượng cao nữ', 'Áo thun chất lượng cao, thời trang cho nữ.', 'ACTIVE', 1, 4, 1, 'Taiwan', 3, 3, '2023-09-08 11:00:00', '2023-09-08 11:00:00'),
+('Áo thun chất lượng cao nam', 'Áo thun chất lượng cao, thoải mái cho nam.', 'ACTIVE', 1, 3, 1, 'Japan', 1, 1, '2023-09-07 10:30:00', '2023-09-07 10:30:00'),
+('Áo thun chất lượng cao nữ', 'Áo thun chất lượng cao, thời trang cho nữ.', 'ACTIVE', 1, 4, 1, 'Taiwan', 1, 1, '2023-09-08 11:00:00', '2023-09-08 11:00:00'),
 ('Áo thun thiết kế riêng nam', 'Áo thun thiết kế riêng cho nam, độc đáo.', 'ACTIVE', 1, 1, 2, 'Vietnam', 1, 1, '2023-09-09 12:00:00', '2023-09-09 12:00:00'),
-('Áo thun thiết kế riêng nữ', 'Áo thun thiết kế riêng cho nữ, nổi bật.', 'ACTIVE', 1, 2, 2, 'Japan', 2, 2, '2023-09-10 10:30:00', '2023-09-10 10:30:00'),
-('Áo thun với màu sắc nổi bật', 'Áo thun với màu sắc nổi bật, thu hút mọi ánh nhìn.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-09-11 11:00:00', '2023-09-11 11:00:00'),
+('Áo thun thiết kế riêng nữ', 'Áo thun thiết kế riêng cho nữ, nổi bật.', 'ACTIVE', 1, 2, 2, 'Japan', 1, 1, '2023-09-10 10:30:00', '2023-09-10 10:30:00'),
+('Áo thun với màu sắc nổi bật', 'Áo thun với màu sắc nổi bật, thu hút mọi ánh nhìn.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-09-11 11:00:00', '2023-09-11 11:00:00'),
 ('Áo thun nhiều họa tiết', 'Áo thun với nhiều họa tiết độc đáo, sáng tạo.', 'ACTIVE', 1, 4, 1, 'Vietnam', 1, 1, '2023-09-12 12:00:00', '2023-09-12 12:00:00'),
-('Áo thun trẻ em', 'Áo thun dành cho trẻ em, màu sắc tươi sáng.', 'ACTIVE', 1, 1, 2, 'Japan', 2, 2, '2023-09-13 10:30:00', '2023-09-13 10:30:00'),
-('Áo thun cặp đôi', 'Áo thun dành cho cặp đôi, thiết kế dễ thương.', 'ACTIVE', 1, 2, 2, 'Taiwan', 3, 3, '2023-09-14 11:00:00', '2023-09-14 11:00:00'),
+('Áo thun trẻ em', 'Áo thun dành cho trẻ em, màu sắc tươi sáng.', 'ACTIVE', 1, 1, 2, 'Japan', 1, 1, '2023-09-13 10:30:00', '2023-09-13 10:30:00'),
+('Áo thun cặp đôi', 'Áo thun dành cho cặp đôi, thiết kế dễ thương.', 'ACTIVE', 1, 2, 2, 'Taiwan', 1, 1, '2023-09-14 11:00:00', '2023-09-14 11:00:00'),
 ('Áo thun in chữ nổi', 'Áo thun với chữ in nổi, phong cách cá tính.', 'ACTIVE', 1, 3, 1, 'Vietnam', 1, 1, '2023-09-15 12:00:00', '2023-09-15 12:00:00'),
-('Áo thun hoa văn', 'Áo thun với hoa văn trang trí, nhẹ nhàng.', 'ACTIVE', 1, 4, 1, 'Japan', 2, 2, '2023-09-16 10:30:00', '2023-09-16 10:30:00'),
-('Áo thun chui đầu', 'Áo thun chui đầu, đơn giản và dễ mặc.', 'ACTIVE', 1, 1, 2, 'Taiwan', 3, 3, '2023-09-17 11:00:00', '2023-09-17 11:00:00'),
+('Áo thun hoa văn', 'Áo thun với hoa văn trang trí, nhẹ nhàng.', 'ACTIVE', 1, 4, 1, 'Japan', 1, 1, '2023-09-16 10:30:00', '2023-09-16 10:30:00'),
+('Áo thun chui đầu', 'Áo thun chui đầu, đơn giản và dễ mặc.', 'ACTIVE', 1, 1, 2, 'Taiwan', 1, 1, '2023-09-17 11:00:00', '2023-09-17 11:00:00'),
 ('Áo thun cổ lọ', 'Áo thun cổ lọ, giữ ấm cho mùa đông.', 'ACTIVE', 1, 2, 2, 'Vietnam', 1, 1, '2023-09-18 12:00:00', '2023-09-18 12:00:00'),
-('Áo thun lưng dài', 'Áo thun lưng dài, phong cách trẻ trung.', 'ACTIVE', 1, 3, 1, 'Japan', 2, 2, '2023-09-19 10:30:00', '2023-09-19 10:30:00'),
+('Áo thun lưng dài', 'Áo thun lưng dài, phong cách trẻ trung.', 'ACTIVE', 1, 3, 1, 'Japan', 1, 1, '2023-09-19 10:30:00', '2023-09-19 10:30:00'),
 ('Áo thun nam kẻ sọc', 'Áo thun nam họa tiết kẻ sọc thời trang.', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-09-20 10:30:00', '2023-09-20 10:30:00'),
-('Áo thun nữ kẻ sọc', 'Áo thun nữ họa tiết kẻ sọc hiện đại.', 'ACTIVE', 1, 2, 1, 'Japan', 2, 2, '2023-09-21 11:00:00', '2023-09-21 11:00:00'),
-('Áo thun in logo', 'Áo thun với logo thương hiệu nổi bật.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-09-22 12:00:00', '2023-09-22 12:00:00'),
+('Áo thun nữ kẻ sọc', 'Áo thun nữ họa tiết kẻ sọc hiện đại.', 'ACTIVE', 1, 2, 1, 'Japan', 1, 1, '2023-09-21 11:00:00', '2023-09-21 11:00:00'),
+('Áo thun in logo', 'Áo thun với logo thương hiệu nổi bật.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-09-22 12:00:00', '2023-09-22 12:00:00'),
 ('Áo thun tay dài in chữ', 'Áo thun tay dài với chữ in phong cách.', 'ACTIVE', 1, 1, 2, 'Vietnam', 1, 1, '2023-09-23 10:30:00', '2023-09-23 10:30:00'),
-('Áo thun cổ tròn tay dài', 'Áo thun cổ tròn tay dài cho nam.', 'ACTIVE', 1, 2, 2, 'Japan', 2, 2, '2023-09-24 11:00:00', '2023-09-24 11:00:00'),
-('Áo thun lửng nữ', 'Áo thun lửng cho nữ, phong cách năng động.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-09-25 12:00:00', '2023-09-25 12:00:00'),
+('Áo thun cổ tròn tay dài', 'Áo thun cổ tròn tay dài cho nam.', 'ACTIVE', 1, 2, 2, 'Japan', 1, 1, '2023-09-24 11:00:00', '2023-09-24 11:00:00'),
+('Áo thun lửng nữ', 'Áo thun lửng cho nữ, phong cách năng động.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-09-25 12:00:00', '2023-09-25 12:00:00'),
 ('Áo thun hình hoạt hình', 'Áo thun với hình hoạt hình vui nhộn.', 'ACTIVE', 1, 1, 2, 'Vietnam', 1, 1, '2023-09-26 10:30:00', '2023-09-26 10:30:00'),
-('Áo thun oversize in hình', 'Áo thun oversize với họa tiết in cá tính.', 'ACTIVE', 1, 2, 2, 'Japan', 2, 2, '2023-09-27 11:00:00', '2023-09-27 11:00:00'),
-('Áo thun chất liệu linen', 'Áo thun chất liệu linen, thoáng mát và dễ chịu.', 'ACTIVE', 1, 3, 1, 'Taiwan', 3, 3, '2023-09-28 12:00:00', '2023-09-28 12:00:00'),
+('Áo thun oversize in hình', 'Áo thun oversize với họa tiết in cá tính.', 'ACTIVE', 1, 2, 2, 'Japan', 1, 1, '2023-09-27 11:00:00', '2023-09-27 11:00:00'),
+('Áo thun chất liệu linen', 'Áo thun chất liệu linen, thoáng mát và dễ chịu.', 'ACTIVE', 1, 3, 1, 'Taiwan', 1, 1, '2023-09-28 12:00:00', '2023-09-28 12:00:00'),
 ('Áo thun phản quang', 'Áo thun với chi tiết phản quang, an toàn khi đi đêm.', 'ACTIVE', 1, 1, 1, 'Vietnam', 1, 1, '2023-09-29 10:30:00', '2023-09-29 10:30:00');
 
 INSERT INTO product_images (product_id, image_url, public_id) VALUES
@@ -685,14 +686,14 @@ VALUES
 INSERT INTO promotions (name, code, percent, start_date, end_date, note, created_by, updated_by, create_at, update_at, is_deleted)
 VALUES 
 ('Khuyến mãi Tết Nguyên Đán', 'TET2024', 15, '2024-02-01', '2024-02-15', 'Giảm giá cho Tết Nguyên Đán', 1, 1, '2023-10-01 08:00:00', '2023-10-01 08:00:00', 0),
-('Khuyến mãi 8/3', 'QUOCTEPN', 20, '2024-03-01', '2024-03-08', 'Khuyến mãi nhân ngày Quốc tế Phụ nữ', 2, 2, '2023-10-05 09:00:00', '2023-10-05 09:00:00', 0),
-('Sale cuối năm', 'CUOINAM2024', 30, '2024-12-15', '2024-12-31', 'Giảm giá đặc biệt cuối năm', 3, 3, '2023-10-10 10:30:00', '2023-10-10 10:30:00', 0),
+('Khuyến mãi 8/3', 'QUOCTEPN', 20, '2024-03-01', '2024-03-08', 'Khuyến mãi nhân ngày Quốc tế Phụ nữ', 1, 1, '2023-10-05 09:00:00', '2023-10-05 09:00:00', 0),
+('Sale cuối năm', 'CUOINAM2024', 30, '2024-12-15', '2024-12-31', 'Giảm giá đặc biệt cuối năm', 1, 1, '2023-10-10 10:30:00', '2023-10-10 10:30:00', 0),
 ('Mừng Ngày Nhà giáo', 'NGAYNHA23', 10, '2024-11-10', '2024-11-20', 'Khuyến mãi nhân ngày Nhà giáo Việt Nam', 1, 1, '2023-10-15 11:45:00', '2023-10-15 11:45:00', 0),
 ('Giảm giá mùa hè', 'SUMMER2024', 25, '2024-06-01', '2024-06-30', 'Khuyến mãi mùa hè', 2, 2, '2023-10-20 13:20:00', '2023-10-20 13:20:00', 0),
-('Khuyến mãi Giáng sinh', 'NOEL2024', 35, '2024-12-20', '2024-12-25', 'Ưu đãi đặc biệt nhân dịp Giáng sinh', 3, 3, '2023-10-25 15:00:00', '2023-10-25 15:00:00', 0),
+('Khuyến mãi Giáng sinh', 'NOEL2024', 35, '2024-12-20', '2024-12-25', 'Ưu đãi đặc biệt nhân dịp Giáng sinh', 1, 1, '2023-10-25 15:00:00', '2023-10-25 15:00:00', 0),
 ('Ưu đãi mùa thu', 'AUTUMN23', 10, '2024-09-01', '2024-09-30', 'Giảm giá mùa thu', 1, 1, '2023-10-28 16:45:00', '2023-10-28 16:45:00', 0),
-('Giảm giá dịp lễ 30/4', 'LE304', 20, '2024-04-25', '2024-05-01', 'Ưu đãi đặc biệt dịp lễ 30/4', 2, 2, '2023-10-30 17:30:00', '2023-10-30 17:30:00', 0),
-('Khuyến mãi Thứ 6 Đen', 'BLACKFRI2024', 50, '2024-11-25', '2024-11-29', 'Khuyến mãi Black Friday', 3, 3, '2023-11-01 08:15:00', '2023-11-01 08:15:00', 0),
+('Giảm giá dịp lễ 30/4', 'LE304', 20, '2024-04-25', '2024-05-01', 'Ưu đãi đặc biệt dịp lễ 30/4', 1, 1, '2023-10-30 17:30:00', '2023-10-30 17:30:00', 0),
+('Khuyến mãi Thứ 6 Đen', 'BLACKFRI2024', 50, '2024-11-25', '2024-11-29', 'Khuyến mãi Black Friday', 1, 1, '2023-11-01 08:15:00', '2023-11-01 08:15:00', 0),
 ('Ưu đãi Valentine', 'VALENTINE', 15, '2024-02-10', '2024-02-14', 'Ưu đãi dành cho ngày Valentine', 1, 1, '2023-11-05 09:45:00', '2023-11-05 09:45:00', 0);
 
 INSERT INTO promotion_details (promotion_id, product_id)
