@@ -686,6 +686,23 @@ public class ProductCustomizeQuery {
                 .build();
     }
 
+    public List<ProductRequests.ProductBase> searchBase(String keyword) {
+        if (StringUtils.hasLength(keyword.trim())) {
+            String sql = "SELECT prd FROM Product prd WHERE (prd.status = 'ACTIVE') AND (prd.isDeleted = false) AND ( lower(prd.name) like lower(:keyword)) AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)";
+            TypedQuery<Product> execute = entityManager.createQuery(sql, Product.class);
+            execute.setParameter("keyword", String.format(LIKE_FORMAT, keyword));
+            execute.setMaxResults(5);
+            return execute.getResultList().stream().map(p ->
+                    ProductRequests.ProductBase.builder()
+                            .id(p.getId())
+                            .name(p.getName())
+                            .imageUrl(p.getProductImages().getFirst().getImageUrl())
+                            .build()
+            ).toList();
+        }
+        return null;
+    }
+
     private sd79.dto.response.productResponse.ProductResponse convertToProductResponse(Product product) {
         return sd79.dto.response.productResponse.ProductResponse.builder()
                 .id(product.getId())

@@ -131,7 +131,7 @@ export const fetchAllCouponCustomer = async (
   keyword = '',
   pageSize = 5
 ) => {
-  const uri = `/coupon/getAllCouponCustomers/${customerId}`; // Include customerId in the URL path
+  const uri = `/coupon/getAllCouponCustomers/${customerId}`; 
   const params = new URLSearchParams();
 
   if (pageNo !== null && pageNo >= 1) {

@@ -15,7 +15,7 @@ public class BillDetailRequest {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal discountAmount;
-//    private BigDecimal totalAmountProduct;
+    private BigDecimal totalAmountProduct;
 
 
 }

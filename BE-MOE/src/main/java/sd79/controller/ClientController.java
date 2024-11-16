@@ -179,4 +179,9 @@ public class ClientController {
     public ResponseData<?> filters(ProductRequests.ParamFilters paramFilters) {
         return new ResponseData<>(HttpStatus.OK.value(), "Get products Successfully", this.clientService.productFilters(paramFilters));
     }
+
+    @GetMapping("/search-base")
+    public ResponseData<?> searchBase(@RequestParam(required = false, defaultValue = "") String keyword) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get products Successfully", this.clientService.searchBase(keyword));
+    }
 }

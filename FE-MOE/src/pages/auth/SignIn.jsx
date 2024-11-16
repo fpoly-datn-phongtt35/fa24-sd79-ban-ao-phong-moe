@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormHelperText,
   Alert,
+  Checkbox,
 } from "@mui/joy";
 import SideImage from "~/assert/images/SideImage.svg";
 import { API_ROOT } from "~/utils/constants";
@@ -21,16 +22,31 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import InfoIcon from "@mui/icons-material/Info";
 import { CommonContext } from "~/context/CommonContext";
+import Cookies from "js-cookie";
 
-function LoginPage() {
+function SignIn() {
   const navigate = useNavigate();
+
+  const usernameCookie = Cookies.get("usernameCookie") || "";
+  const passwordCookie = Cookies.get("passwordCookie") || "";
   const [message, setMessage] = useState("");
+
+  const [isRememberMe, setIsRememberMe] = useState(
+    Cookies.get("isRememberMe") === "true"
+  );
+
   const context = useContext(CommonContext);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      username: usernameCookie,
+      password: passwordCookie,
+    },
+  });
 
   const onSubmit = async (data) => {
     const result = {
@@ -50,6 +66,16 @@ function LoginPage() {
           localStorage.setItem("accessToken", res.data.accessToken);
           localStorage.setItem("refreshToken", res.data.refreshToken);
           context.handleFetchCarts();
+
+          if (isRememberMe) {
+            Cookies.set("usernameCookie", data.username, { expires: 30 });
+            Cookies.set("passwordCookie", data.password, { expires: 30 });
+            Cookies.set("isRememberMe", "true", { expires: 30 });
+          } else {
+            Cookies.remove("usernameCookie");
+            Cookies.remove("passwordCookie");
+            Cookies.remove("isRememberMe");
+          }
           navigate("/dashboard");
         }
       })
@@ -62,10 +88,13 @@ function LoginPage() {
       sx={{
         display: "flex",
         justifyContent: "center",
+        alignItems: "center",
         minHeight: 750,
         maxHeight: 750,
         maxWidth: 1305,
         margin: "auto",
+        p: 3,
+        backgroundColor: "#f9f9f9",
       }}
     >
       <Box
@@ -74,6 +103,8 @@ function LoginPage() {
           width: "100%",
           maxWidth: 1400,
           overflow: "hidden",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          borderRadius: 2,
         }}
       >
         <Box
@@ -84,40 +115,55 @@ function LoginPage() {
             backgroundPosition: "center",
             width: 636,
             height: 636,
+            borderRadius: "8px 0 0 8px",
           }}
         />
 
         <Box
           sx={{
             flex: 1,
-            padding: "40px",
-            marginLeft: "40px",
+            padding: 4,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: "0 8px 8px 0",
           }}
         >
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Typography level="h4" marginBottom={3}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            style={{ width: "100%", maxWidth: 400 }}
+          >
+            <Typography
+              level="h4"
+              marginBottom={3}
+              textAlign="center"
+              fontWeight="bold"
+            >
               ĐĂNG NHẬP
             </Typography>
             {message.length > 0 && (
               <Alert
-                sx={{ alignItems: "flex-start", mb: 2, maxWidth: 320 }}
+                sx={{
+                  alignItems: "flex-start",
+                  mb: 2,
+                  maxWidth: "100%",
+                  backgroundColor: "#fff9e6",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
                 startDecorator={<InfoIcon />}
                 variant="soft"
                 color="warning"
               >
-                <div>
-                  <Typography level="body-sm" color="warning">
-                    {message}
-                  </Typography>
-                </div>
+                <Typography level="body-sm" color="warning">
+                  {message}
+                </Typography>
               </Alert>
             )}
             <FormControl
               error={!!errors?.username}
-              sx={{ mb: 2, maxWidth: 320 }}
+              sx={{ mb: 2, width: "100%" }}
             >
               <FormLabel required>Tên tài khoản hoặc email</FormLabel>
               <Input
@@ -125,6 +171,11 @@ function LoginPage() {
                 type="text"
                 fullWidth
                 {...register("username", { required: true })}
+                sx={{
+                  borderRadius: 2,
+                  borderColor: "#d1d1d1",
+                  "&:focus": { borderColor: "#3f51b5" },
+                }}
               />
               {errors.username && (
                 <FormHelperText>
@@ -134,7 +185,7 @@ function LoginPage() {
             </FormControl>
             <FormControl
               error={!!errors?.password}
-              sx={{ mb: 2, maxWidth: 320 }}
+              sx={{ mb: 2, width: "100%" }}
             >
               <FormLabel required>Mật khẩu</FormLabel>
               <Input
@@ -142,24 +193,43 @@ function LoginPage() {
                 type="password"
                 fullWidth
                 {...register("password", { required: true })}
+                sx={{
+                  borderRadius: 2,
+                  borderColor: "#d1d1d1",
+                  "&:focus": { borderColor: "#3f51b5" },
+                }}
               />
               {errors.password && (
                 <FormHelperText>Vui lòng nhập mật khẩu!</FormHelperText>
               )}
             </FormControl>
+            <Checkbox
+              label="Remember me"
+              size="sm"
+              checked={isRememberMe}
+              onChange={(e) => setIsRememberMe(e.target.checked)}
+            />
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                maxWidth: 320,
+                width: "100%",
+                mt: 2,
               }}
             >
               <Button
                 type="submit"
                 variant="soft"
                 color="neutral"
-                sx={{ width: "35%" }}
+                sx={{
+                  width: "45%",
+                  backgroundColor: "#3f51b5",
+                  color: "#fff",
+                  "&:hover": {
+                    backgroundColor: "#303f9f",
+                  },
+                }}
               >
                 Đăng nhập
               </Button>
@@ -174,4 +244,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignIn;

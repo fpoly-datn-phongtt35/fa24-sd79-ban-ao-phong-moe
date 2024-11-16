@@ -6,9 +6,7 @@
  */
 package sd79.dto.requests.productRequests;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -40,10 +38,23 @@ public abstract class ProductRequests {
         private SortBy sortBy;
     }
 
-    public enum SortBy{
+    public enum SortBy {
         PRICE_ASC,
         PRICE_DESC,
         CREATED_AT,
         DEFAULT
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ProductBase {
+
+        private Long id;
+
+        private String name;
+
+        private String imageUrl;
     }
 }

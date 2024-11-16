@@ -248,7 +248,8 @@ CREATE TABLE bill_status (
     'DELIVERED', 
     'DELIVERY_FAILED',
     'CANCELED',
-		'COMPLETED'
+		'COMPLETED',
+    'OTHER'
 	),
   description TEXT
 );
@@ -290,6 +291,20 @@ CREATE TABLE bill_detail (
   update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (product_detail_id) REFERENCES product_details(id),
   FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bill_status_detail (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  bill_id BIGINT,
+  bill_status_id INT,
+  note TEXT,
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted BIT DEFAULT 0,
+  FOREIGN KEY (bill_id) REFERENCES bill(id) ON DELETE CASCADE,
+  FOREIGN KEY (bill_status_id) REFERENCES bill_status(id)
 );
 
 -- Employee
@@ -729,4 +744,5 @@ INSERT INTO bill_status (name, status) VALUES
 ('Đã giao thành công', 'DELIVERED'),
 ('Giao hàng thất bại', 'DELIVERY_FAILED'),
 ('Đã hủy đơn hàng', 'CANCELED'),
-('Đơn hàng hoàn tất', 'COMPLETED');
+('Đơn hàng hoàn tất', 'COMPLETED'),
+('Khác', 'OTHER');

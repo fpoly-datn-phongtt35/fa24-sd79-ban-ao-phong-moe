@@ -1,3 +1,7 @@
+// Author: Nong Hoang Vu || JavaTech
+// Facebook:https://facebook.com/NongHoangVu04
+// Github: https://github.com/JavaTech04
+// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
   Box,
   Button,
@@ -58,6 +62,14 @@ function Products() {
     handleFetchBrands();
     handleFetchMaterials();
   }, []);
+
+  useEffect(() => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      keyword: context.keyword,
+      pageNo: 1,
+    }));
+  }, [context.keyword]);
 
   useEffect(() => {
     const debouncedFetch = debounce(() => {
@@ -324,7 +336,16 @@ function Products() {
                 </Box>
               </Box>
               <Box marginTop sx={{ width: "100%" }}>
-                <Grid marginTop={2} container spacing={2}>
+                {context.keyword && (
+                  <Typography margin={1} level="body-md">
+                    Kết quả tìm kiếm cho từ khoá:&nbsp;
+                    <strong style={{ color: "red" }}>
+                      '{context.keyword}'
+                    </strong>
+                  </Typography>
+                )}
+
+                <Grid marginTop={1} container spacing={2}>
                   {products &&
                     products.content?.map((product, index) => (
                       <Grid key={index} xs={12} sm={6} md={3} lg={2}>
