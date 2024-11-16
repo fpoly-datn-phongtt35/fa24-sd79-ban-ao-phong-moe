@@ -30,8 +30,11 @@ import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
+import sd79.utils.CloudinaryUtils;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -57,6 +60,8 @@ public class AuthenticationService {
     private final CustomerRepository customerRepository;
 
     private final CustomerAddressRepository addressRepository;
+
+    private final CloudinaryUtils cloudinary;
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
@@ -127,14 +132,7 @@ public class AuthenticationService {
 
     @Transactional
     public Long register(SignUpRequest request) {
-        Optional<User> byUsername = this.userRepository.findByUsername(request.getUsername());
-        Optional<User> byEmail = this.userRepository.findByEmail(request.getEmail());
-        if (byUsername.isPresent()) {
-            throw new InvalidDataException("Username đã tồn tại!");
-        }
-        if (byEmail.isPresent()) {
-            throw new InvalidDataException("Email đã tồn tại!");
-        }
+        validInfo(request.getEmail(), request.getUsername());
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -146,9 +144,16 @@ public class AuthenticationService {
                 .updatedAt(new Date())
                 .isDeleted(false)
                 .build();
-
         var userSave = this.userRepository.save(user);
-        var address = this.addressRepository.save(CustomerAddress.builder().build());
+        var address = this.addressRepository.save(CustomerAddress.builder()
+                .streetName(request.getStreetName())
+                .ward(request.getWard())
+                .district(request.getDistrict())
+                .city(request.getCity())
+                .districtId(request.getDistrictId())
+                .cityId(request.getCityId())
+                .build());
+        Map<String, String> uploadResult = request.getAvatar() != null ? this.cloudinary.upload(request.getAvatar()) : null;
         Customer customer = Customer.builder()
                 .phoneNumber(request.getPhoneNumber())
                 .user(userSave)
@@ -159,6 +164,8 @@ public class AuthenticationService {
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .customerAddress(address)
+                .image(request.getAvatar() != null ? Objects.requireNonNull(uploadResult).get("url") : null)
+                .publicId(request.getAvatar() != null ? Objects.requireNonNull(uploadResult).get("publicId") : null)
                 .build();
         this.customerRepository.save(customer);
         return userSave.getId();

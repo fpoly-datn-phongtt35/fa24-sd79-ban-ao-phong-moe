@@ -1,5 +1,5 @@
 // Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
+// Facebook: https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
@@ -49,7 +49,6 @@ function SignUpBase() {
     validInfo(result.email, result.username)
       .then(() => {
         setMessage("");
-        console.log(result);
         context.setStep(1);
         context.setDataRegister(result);
       })
@@ -63,16 +62,28 @@ function SignUpBase() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      style={{ width: "100%", maxWidth: 400 }}
+      style={{
+        width: "100%",
+        maxWidth: 400,
+        margin: "0 auto",
+        padding: "20px",
+        backgroundColor: "white",
+        borderRadius: "15px",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+      }}
     >
       <Typography
         level="h4"
         marginBottom={3}
         textAlign="center"
         fontWeight="bold"
+        sx={{
+          color: "#1976d2",
+        }}
       >
         ĐĂNG KÝ TÀI KHOẢN
       </Typography>
+
       {message.length > 0 && (
         <Alert
           sx={{
@@ -91,6 +102,7 @@ function SignUpBase() {
           </Typography>
         </Alert>
       )}
+
       <FormControl error={!!errors?.username} sx={{ mb: 2, width: "100%" }}>
         <FormLabel required>Username</FormLabel>
         <Input
@@ -222,15 +234,28 @@ function SignUpBase() {
           variant="soft"
           color="neutral"
           onClick={() => navigate("/sign-in")}
-          sx={{ width: "45%" }}
+          sx={{
+            width: "45%",
+            backgroundColor: "#f0f0f0",
+            "&:hover": {
+              backgroundColor: "#d6d6d6",
+            },
+          }}
         >
-          Đăng nhập
+          Tôi đã có tài khoản
         </Button>
         <Button
           type="submit"
           variant="soft"
-          color="neutral"
-          sx={{ width: "45%" }}
+          color="primary"
+          sx={{
+            width: "45%",
+            backgroundColor: "#1976d2",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
         >
           Tiếp tục
         </Button>

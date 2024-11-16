@@ -4,7 +4,7 @@
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useContext, useState } from "react";
 import { Box } from "@mui/joy";
-import SideImage from "~/assert/images/SideImage.svg";
+import SideImage from "~/assert/images/signUp.svg";
 
 import SignUpBase from "~/components/auth/SignUpBase";
 import { AuthContext } from "~/context/AuthContext";
@@ -67,11 +67,6 @@ function SignUp() {
           {context.step === 1 && <SignUpInfo />}
           {context.step === 2 && <SignUpAddress />}
           {context.step === 3 && <SignUpAvatar />}
-          {context.step === 4 && (
-            <p onClick={() => context.setStep(1)}>
-              HI{console.log(context.dataRegister)}
-            </p>
-          )}
         </Box>
       </Box>
     </Box>
