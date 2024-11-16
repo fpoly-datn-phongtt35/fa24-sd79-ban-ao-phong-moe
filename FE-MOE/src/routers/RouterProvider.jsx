@@ -45,6 +45,7 @@ import MyOrder from "~/pages/clients/orders/MyOrder";
 import BillList from "~/pages/bill/BillList";
 import BillEdit from "~/pages/bill/BillEdit";
 import Products from "~/pages/clients/Products";
+import { AddressInfo } from "~/pages/clients/customer/AddressManager";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -190,6 +191,7 @@ function RouterProvider() {
         <Route path="/checkout" element={<CheckOut />} />
         <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
+        <Route path="/my-address" element={<AddressInfo />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
