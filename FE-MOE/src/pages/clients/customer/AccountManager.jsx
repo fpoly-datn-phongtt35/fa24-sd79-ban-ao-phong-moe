@@ -218,9 +218,9 @@ export const AccountInfo = () => {
       }
       const formData = new FormData();
       formData.append("images", imageObject)
-      formData.append("userId", localStorage.getItem("userId"))
+      formData.append("UserId", id)
       await postcustomerImage(formData).then(() => {
-        toast.success('Sửa thành công');
+        toast.success('Cập nhật thành công');
         setIsLoading(false);
       })
 
@@ -249,14 +249,14 @@ export const AccountInfo = () => {
       <Grid container spacing={2}>
         <Grid xs={12} md={3}>
           <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
-            <Typography level="h6" color="primary" fontWeight="lg">Thông tin tài khoản</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("//my-account")}>Thông tin tài khoản</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sổ địa chỉ</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi mật khẩu</Typography>
+             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
           </Sheet>
         </Grid>
 
@@ -436,9 +436,9 @@ export const AccountInfo = () => {
                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                           Cập Nhật Người Dùng
                         </Button>
-                        <Button variant="soft" color="danger" onClick={() => navigate("/")}>
+                        {/* <Button variant="soft" color="danger" onClick={() => navigate("/")}>
                           Hủy
-                        </Button>
+                        </Button> */}
                       </Grid>
                     </Grid>
                   </Grid>

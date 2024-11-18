@@ -49,6 +49,7 @@ import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
+import { UpdatePassWord } from "~/pages/clients/customer/PassWordManager";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -199,6 +200,7 @@ function RouterProvider() {
         <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
         <Route path="/my-address" element={<AddressInfo />} />
+        <Route path="/my-passWord" element={<UpdatePassWord />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>

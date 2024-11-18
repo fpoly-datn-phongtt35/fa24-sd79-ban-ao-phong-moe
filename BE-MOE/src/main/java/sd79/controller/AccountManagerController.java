@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.accountInfo.AccountImageReq;
+import sd79.dto.requests.productRequests.AddressAccountRequest;
 import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.PassWordRequest;
 import sd79.dto.requests.productRequests.ProductImageReq;
 import sd79.dto.response.ResponseData;
 import sd79.repositories.auth.UserAuthRepository;
@@ -32,6 +34,15 @@ public class AccountManagerController {
     @PutMapping("/updateAccount/{id}")
     public ResponseData<?> accountInformation(@PathVariable Long id, @Valid @RequestBody CustomerRequest customerRequest) {
         return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin thành công", accountManagerService.accountInformation(id, customerRequest));
+    }
+    @PutMapping("/updateAddress/{id}")
+    public ResponseData<?> addressInformation(@PathVariable Long id, @Valid @RequestBody AddressAccountRequest addressAccountRequest) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin thành công", accountManagerService.addressInformation(id, addressAccountRequest));
+    }
+
+    @PutMapping("/updatePassWord/{id}")
+    public ResponseData<?> updatePassWord(@PathVariable Long id, @Valid @RequestBody PassWordRequest passWordRequest) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Đổi mật khẩu thành công", accountManagerService.UpdatePassWord(id, passWordRequest));
     }
     @PostMapping("/upload")
     public ResponseData<?> uploadFile(@Valid @ModelAttribute AccountImageReq request) {

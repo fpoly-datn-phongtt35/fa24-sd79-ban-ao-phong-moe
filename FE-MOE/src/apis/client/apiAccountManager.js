@@ -19,6 +19,14 @@ export const putAccountInfo = async (data, id) => {
   return await authorizedAxiosInstance.put(`${API_ROOT}/accountManager/updateAccount/${id}`, data);
 };
 
+export const putAddressInfo = async (data, id) => {
+  return await authorizedAxiosInstance.put(`${API_ROOT}/accountManager/updateAddress/${id}`, data);
+};
+
+export const putPassword = async (data, id) => {
+  return await authorizedAxiosInstance.put(`${API_ROOT}/accountManager/updatePassWord/${id}`, data);
+};
+
 export const postcustomerImage = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/accountManager/upload`, data)
