@@ -24,7 +24,7 @@ import UpdateCoupon from "~/pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesUpdate from "~/pages/employee/EmployeeUpdate";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
-import  ChangePasswordForm  from "~/pages/employee/ChangePasswordForm";
+import ChangePasswordForm from "~/pages/employee/ChangePasswordForm";
 import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { UpdatePromotion } from "~/pages/promotions/UpdatePromotion";
 import { ProductDetail } from "~/pages/products/main/ProductDetail";
@@ -167,7 +167,6 @@ function RouterProvider() {
             <div>
               <Header_Client />
             </div>
-            {/* style={{backgroundColor: '#4545ff1a'}} */}
             <div className="content-area_client">
               <Outlet />
             </div>

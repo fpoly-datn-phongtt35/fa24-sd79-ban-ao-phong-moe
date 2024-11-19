@@ -10,7 +10,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-import CelebrationIcon from "@mui/icons-material/Celebration";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/images/MainLogo.jpg";
@@ -100,26 +100,15 @@ export const Sidebar_Admin = (props) => {
               Trang chủ
             </Typography>
           </MenuItem>
-          <SubMenu
-            label="Bán hàng"
+          <MenuItem
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/bill" />}
           >
-            <MenuItem component={<Link to="/bill" />}>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Bán tại quầy
-              </Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Đơn đặt hàng
-              </Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Hóa đơn
-              </Typography>
-            </MenuItem>
-          </SubMenu>
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Bán tại quầy
+            </Typography>
+          </MenuItem>
+
           <SubMenu
             label="Sản phẩm"
             icon={
@@ -195,11 +184,11 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
           </SubMenu>
           <MenuItem
-            icon={<CelebrationIcon style={{ color: "#0071bd" }} />}
+            icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
             component={<Link to="/product" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
-              Quản lý sự kiện
+              Thống kê
             </Typography>
           </MenuItem>
         </Menu>

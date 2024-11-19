@@ -305,6 +305,22 @@ function CheckOut() {
             >
               Mặc định
             </Typography>
+            <Typography
+              onClick={() => navigate("/my-account")}
+              color="primary"
+              sx={{
+                cursor: "pointer",
+                ":hover": {
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                },
+              }}
+              level="body-xs"
+              noWrap
+              marginLeft={2}
+            >
+              Thay đổi thông tin
+            </Typography>
           </Typography>
         </Box>
         <Box
@@ -571,7 +587,12 @@ function CheckOut() {
                 message="Bạn có muốn tiếp tục không?"
                 event={() => onPay()}
                 button={
-                  <Button variant="solid" size="lg" color="primary" loading={loading}>
+                  <Button
+                    variant="solid"
+                    size="lg"
+                    color="primary"
+                    loading={loading}
+                  >
                     Đặt Hàng
                   </Button>
                 }
