@@ -24,11 +24,15 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
   const fetchBillStatus = async () => {
     try {
       const status = await getAllStatuses();
-      setStatuses(status.data);
+      const filteredStatuses = status.data.filter((status) =>
+        [5, 7, 8, 9].includes(status.id)
+      );
+      setStatuses(filteredStatuses);
     } catch (err) {
       console.error("Error fetching statuses:", err);
     }
   };
+
 
   const handleStatusChange = (event) => {
     const statusValue = event.target.value;
@@ -43,13 +47,13 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
   };
 
   const handleConfirm = () => {
-    onStatusConfirm(selectedStatus, customNote); // Pass selected status and custom note to parent
+    onStatusConfirm(selectedStatus, customNote);
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Nhập ghi chú</DialogTitle>
+    <Dialog open={open} onClose={onClose}  maxWidth="sm"  fullWidth>
+      <DialogTitle>Chọn trạng thái đơn hàng</DialogTitle>
       <DialogContent>
         <RadioGroup value={selectedStatus} onChange={handleStatusChange}>
           {statuses.map((status) => (

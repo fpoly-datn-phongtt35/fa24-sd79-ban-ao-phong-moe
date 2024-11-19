@@ -31,7 +31,7 @@ export default function BillList() {
         '7': 'Đã hủy',
         '8': 'Đơn hàng hoàn tất',
         '9': 'Khác',
-      };
+    };
 
     // Tab definitions with labels and associated status filters
     const tabs = [
@@ -90,7 +90,7 @@ export default function BillList() {
     }, [status, pageNo]);
 
     return (
-        <Container maxWidth="lg" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
+        <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'left', mb: 3 }}>
                 QUẢN LÝ DANH SÁCH HÓA ĐƠN
             </Typography>
@@ -124,14 +124,14 @@ export default function BillList() {
                 <Table sx={{ minWidth: 800, borderCollapse: 'collapse' }}>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: '#0071bd' }}>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', padding: '12px 16px' }}>#</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Mã</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Khách hàng</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>SĐT</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Tổng tiền</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Loại đơn hàng</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Ngày tạo</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px' }}>Hành động</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', padding: '12px 16px', color: 'white' }}>#</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Mã</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Khách hàng</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>SĐT</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Tổng tiền</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Loại đơn hàng</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Ngày tạo</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', padding: '12px 16px', color: 'white' }}>Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -146,7 +146,7 @@ export default function BillList() {
                                 </TableCell>
                                 <TableCell sx={{ padding: '12px 16px' }}>{bill.customer ? `${bill.customer.phoneNumber}` : 'XXXXXXXXX'}</TableCell>
                                 <TableCell sx={{ color: 'red', padding: '12px 16px' }}>
-                                    {formatCurrencyVND(bill.total)}
+                                    {bill.total === null ? 'Chưa thanh toán' : formatCurrencyVND(bill.total)}
                                 </TableCell>
                                 <TableCell sx={{ padding: '12px 16px' }}>
                                     {statusMap[bill.billStatus] || 'N/A'}
@@ -155,8 +155,8 @@ export default function BillList() {
                                 <TableCell sx={{ padding: '12px 16px' }}>
                                     <IconButton
                                         onClick={() => {
-                                            localStorage.setItem('billId', bill.id); 
-                                            navigate(`/bill/detail/${bill.id}`);    
+                                            localStorage.setItem('billId', bill.id);
+                                            navigate(`/bill/detail/${bill.id}`);
                                         }}
                                         color="primary"
                                     >

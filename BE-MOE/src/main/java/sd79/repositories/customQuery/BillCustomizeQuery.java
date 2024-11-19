@@ -270,6 +270,7 @@ public class BillCustomizeQuery {
                     .bill(bsd.getBill().getId())
                     .billStatus(bsd.getBillStatus().getId())
                     .note(bsd.getNote())
+                    .createAt(bsd.getCreateAt())
                     .build();
 
             responseList.add(response);

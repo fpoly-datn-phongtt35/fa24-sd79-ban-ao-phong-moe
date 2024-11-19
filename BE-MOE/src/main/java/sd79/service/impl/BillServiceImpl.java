@@ -483,8 +483,6 @@ public class BillServiceImpl implements BillService {
             throw new IllegalArgumentException("Price and discount cannot be null.");
         }
 
-
-
         // Return the total amount for the product, factoring in price, discount, and quantity
         return price.subtract(discount).multiply(new BigDecimal(quantity));
     }

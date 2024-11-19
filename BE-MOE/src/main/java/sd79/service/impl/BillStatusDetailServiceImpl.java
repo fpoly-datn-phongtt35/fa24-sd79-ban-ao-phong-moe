@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.BillStatusDetailRequest;
 import sd79.dto.response.bills.BillStatusDetailResponse;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.InvalidDataException;
 import sd79.model.Bill;
 import sd79.model.BillStatus;
 import sd79.model.BillStatusDetail;
@@ -41,16 +42,23 @@ public class BillStatusDetailServiceImpl implements BillStatusDetailService {
         BillStatus billStatus = billStatusRepository.findById(request.getBillStatus())
                 .orElseThrow(() -> new IllegalArgumentException("BillStatus not found"));
 
+        boolean statusExists = billStatusDetailRepo.existsByBillAndBillStatus(bill, billStatus);
+        if (statusExists) {
+            throw new InvalidDataException("Trạng thái này đã tồn tại cho hóa đơn.");
+        }
+
+        // Tạo mới nếu chưa tồn tại
         BillStatusDetail billStatusDetail = new BillStatusDetail();
         billStatusDetail.setBill(bill);
         billStatusDetail.setBillStatus(billStatus);
         billStatusDetail.setNote(request.getNote());
-
         billStatusDetail.setCreatedBy(getUserById(request.getUserId()));
         billStatusDetail.setUpdatedBy(getUserById(request.getUserId()));
+
         this.billStatusDetailRepo.save(billStatusDetail);
         return billStatusDetail.getId();
     }
+
 
     private User getUserById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy user"));

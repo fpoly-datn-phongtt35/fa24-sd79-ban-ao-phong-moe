@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, TextField, Pagination } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
-import { deleteCoupon, fetchAllCouponCustomer } from '~/apis/billsApi';
+import { fetchAllCouponCustomerGood } from '~/apis/billListApi';
+import { toast } from 'react-toastify';
 
-export default function CouponModal({ open, onClose, onSelectCoupon, customerId, subtotal }) {
+export default function CouponModalBillEdit({ open, onClose, onSelectCoupon, customerId, subtotal }) {
     const [coupons, setCoupons] = useState([]);
     const [page, setPage] = useState(1);
     const [pageSize] = useState(5);
@@ -16,24 +17,16 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
     useEffect(() => {
         if (open) {
-            // Fetch coupons when modal opens
             setIsAutoApplied(false);
             setSelectedCoupon(null);
-            setPage(1); // Reset page to 1 when modal opens
-            handleSetCouponCustomer();
+            setPage(1);
         }
-    }, [open, validCustomerId, keyword]); // Depend on `open`, `validCustomerId`, and `keyword`
+        handleSetCouponCustomer();
+    }, [open, validCustomerId, keyword]);
 
-    useEffect(() => {
-        if (subtotal > 0) {
-            applyBestCouponAutomatically();
-        }
-    }, [subtotal]);
-
-    const handleSetCouponCustomer = async (allCoupons = false) => {
+    const handleSetCouponCustomer = async () => {
         try {
-            const size = allCoupons ? 1000 : pageSize;
-            const res = await fetchAllCouponCustomer(validCustomerId, page, keyword, size);
+            const res = await fetchAllCouponCustomerGood(validCustomerId, page, keyword, pageSize, subtotal);
             setCoupons(res.data.content);
             setTotalPages(res.data.totalPages);
         } catch (error) {
@@ -43,28 +36,18 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
     const applyBestCouponAutomatically = async () => {
         try {
-            // Lấy tất cả các phiếu giảm giá từ API
-            const res = await fetchAllCouponCustomer(validCustomerId, 1, keyword, pageSize);
-            let allCoupons = res.data.content;
+            const res = await fetchAllCouponCustomerGood(validCustomerId, 1, keyword, 1000, subtotal);
+            const allCoupons = res.data.content;
 
-            // Fetch all pages of coupons
-            for (let currentPage = 2; currentPage <= res.data.totalPages; currentPage++) {
-                const nextRes = await fetchAllCouponCustomer(validCustomerId, currentPage, keyword, pageSize);
-                allCoupons = [...allCoupons, ...nextRes.data.content];
-            }
-
-            // Lọc các phiếu giảm giá đủ điều kiện
             const eligibleCoupons = allCoupons.filter(coupon => subtotal >= coupon.conditions);
             if (eligibleCoupons.length === 0) return;
 
-            // Tính giá trị giảm giá của phiếu hiện tại nếu có
             const selectedDiscount = selectedCoupon
                 ? (selectedCoupon.discountType === 'FIXED_AMOUNT'
                     ? selectedCoupon.discountValue
                     : subtotal * (selectedCoupon.discountValue / 100))
                 : 0;
 
-            // Tìm phiếu giảm giá tốt nhất từ danh sách
             const bestCoupon = eligibleCoupons.reduce((prev, current) => {
                 const prevDiscount =
                     prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
@@ -74,27 +57,25 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 return prevDiscount > currentDiscount ? prev : current;
             });
 
-            // Tính giá trị giảm giá của phiếu giảm giá tốt nhất từ danh sách
             const bestDiscount =
                 bestCoupon.discountType === 'FIXED_AMOUNT'
                     ? bestCoupon.discountValue
                     : subtotal * (bestCoupon.discountValue / 100);
 
-            // So sánh phiếu giảm giá đang áp dụng và phiếu giảm giá tốt nhất
             if (selectedDiscount >= bestDiscount) {
-                // console.log('Giữ phiếu giảm giá hiện tại vì nó tốt hơn hoặc bằng phiếu mới.');
-                return; // Không thay thế nếu phiếu hiện tại tốt hơn
+                return;
             }
 
-            // Cập nhật phiếu giảm giá tốt nhất nếu nó có giá trị giảm nhiều hơn
             onSelectCoupon(bestCoupon);
             setSelectedCoupon(bestCoupon);
             setIsAutoApplied(true);
+
+            toast.success(`Áp dụng phiếu giảm giá thành công: ${bestCoupon.code}`);
         } catch (error) {
             console.error('Failed to apply the best coupon:', error);
+            toast.error('Có lỗi xảy ra khi áp dụng phiếu giảm giá tốt nhất.');
         }
     };
-
 
     const handlePageChange = (event, value) => {
         setPage(value);
@@ -102,7 +83,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
     const handleSearchChange = (event) => {
         setKeyword(event.target.value);
-        setPage(1); // Reset page to 1 on search
+        setPage(1);
     };
 
     const formatDate = (dateString) => {
@@ -146,11 +127,13 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                                     cursor: isEligible ? 'pointer' : 'not-allowed',
                                     opacity: isEligible ? 1 : 0.5
                                 }}
-                                onClick={() => {
+                                onClick={async () => {
                                     if (isEligible) {
                                         onSelectCoupon(coupon);
                                         setSelectedCoupon(coupon);
                                         setIsAutoApplied(false);
+                                        toast.success(`Bạn đã chọn phiếu giảm giá: ${coupon.code}`);
+                                        await handleSetCouponCustomer();
                                         onClose();
                                     }
                                 }}
@@ -158,8 +141,13 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                                 <Box sx={{ flex: 1 }}>
                                     <Typography variant="body2" color="textPrimary" sx={{ fontWeight: 'bold' }}>
                                         <span style={{ color: '#FFD700' }}>[{coupon.code}]</span> {coupon.name}
-                                        <Box component="span" sx={{ ml: 1, bgcolor: '#FFD700', color: 'black', px: 1, borderRadius: '4px', fontSize: '12px' }}>
-                                            {coupon.discountType === 'FIXED_AMOUNT' ? `${formatCurrencyVND(coupon.discountValue)}` : `${coupon.discountValue}%`}
+                                        <Box
+                                            component="span"
+                                            sx={{ ml: 1, bgcolor: '#FFD700', color: 'black', px: 1, borderRadius: '4px', fontSize: '12px' }}
+                                        >
+                                            {coupon.discountType === 'FIXED_AMOUNT'
+                                                ? `${formatCurrencyVND(coupon.discountValue)}`
+                                                : `${coupon.discountValue}%`}
                                         </Box>
                                     </Typography>
                                     <Typography variant="caption" color="textSecondary">
@@ -189,7 +177,13 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={applyBestCouponAutomatically} color="primary">
+                <Button
+                    onClick={async () => {
+                        await applyBestCouponAutomatically();
+                        await handleSetCouponCustomer();
+                    }}
+                    color="primary"
+                >
                     Áp dụng phiếu giảm giá tốt nhất
                 </Button>
                 <Button onClick={onClose} color="primary">

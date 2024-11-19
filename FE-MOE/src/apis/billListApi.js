@@ -77,19 +77,13 @@ export const getAllStatuses = async () => {
 };
 
 export const addBillStatusDetail = async (requestData) => {
-    try {
-        const response = await authorizedAxiosInstance.post(
-            `${API_ROOT}/bill/addBillStatusDetail`, 
-            requestData
-        );
-        
-        if (response.data) {         
-            return response.data;  
-        }
-    } catch (error) {
-        console.error("Error adding bill status detail:", error);
-        toast.error("Failed to add bill status detail.");
-        throw error;
+    const response = await authorizedAxiosInstance.post(
+        `${API_ROOT}/bill/addBillStatusDetail`,
+        requestData
+    );
+
+    if (response.data) {
+        return response.data;
     }
 };
 
