@@ -73,6 +73,8 @@ public class ClientServiceImpl implements ClientService {
 
     private final BillStatusRepo billStatusRepo;
 
+    private final BillStatusDetailRepo billStatusDetailRepo;
+
     private final JwtService jwtService;
 
     @Override
@@ -319,6 +321,16 @@ public class ClientServiceImpl implements ClientService {
                 .build();
 
         Bill billSave = this.billRepository.save(bill);
+
+        this.billStatusDetailRepo.save(BillStatusDetail.builder()
+                .bill(billSave)
+                .billStatus(this.billStatusRepository.findById(1).orElse(null))
+                .build());
+        this.billStatusDetailRepo.save(BillStatusDetail.builder()
+                .bill(billSave)
+                .billStatus(this.billStatusRepository.findById(2).orElse(null))
+                .build());
+
         if (req.getCouponId() != null) {
             Coupon coupon = this.couponRepo.findById(req.getCouponId()).orElseThrow(() -> new EntityNotFoundException("Coupon not found"));
             coupon.setQuantity(coupon.getQuantity() - 1);

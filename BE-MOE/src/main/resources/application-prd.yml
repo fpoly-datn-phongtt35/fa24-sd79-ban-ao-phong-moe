@@ -1,17 +1,17 @@
 # Author: Nong Hoang Vu || JavaTech
 # Facebook:https://facebook.com/NongHoangVu04
 # Github: https://github.com/JavaTech04
-# Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
+# Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1 13.230.106.99
 server:
   port: 2004
 api:
   version: v2
 spring:
   datasource:
-    url: ${DATASOURCE_URL:jdbc:mysql://sql10.freesqldatabase.com/sql10743672}
+    url: ${DATASOURCE_URL:jdbc:mysql://localhost:3307/sd79_db_moe}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DATASOURCE_USERNAME:sql10743672}
-    password: ${DATASOURCE_PASSWORD:U48L6gBTSh}
+    username: ${DATASOURCE_USERNAME:root}
+    password: ${DATASOURCE_PASSWORD:123}
   jpa:
     show-sql: true
     hibernate:
@@ -20,7 +20,7 @@ spring:
       ddl-auto: none
   data:
     redis:
-      host: localhost
+      host: ${HOST:localhost}
       port: 6379
   config:
     activate:
@@ -35,14 +35,14 @@ jwt:
 openapi:
   service:
     api-docs: api-moe-shop
-    title: MOE-SHOP-API
+    title: ${API_TITLE:DUMMY_VALUE_API}
     version: ${api.version}
     description: description
-    server: http://localhost:2004
+    server: http://${HOST:localhost}:2004
     serverName: JavaTech
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:null}
-  api-secret: ${CLOUDINARY_API_SECRET:null}
-  api-key: ${CLOUDINARY_API_KEY:null}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:DUMMY_VALUE}
+  api-secret: ${CLOUDINARY_API_SECRET:DUMMY_VALUE}
+  api-key: ${CLOUDINARY_API_KEY:DUMMY_VALUE}

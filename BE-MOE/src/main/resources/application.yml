@@ -14,12 +14,14 @@ spring:
   authentication:
     username: sysadmin
     password: sd79
+  cors:
+    url: ${CORS_POLICY:http://localhost:1004}
 payment:
   vnPay:
-    url: ${VNPAY_URL}
-    tmnCode: ${VNPAY_TMNCODE}
-    secretKey: ${VNPAY_SECRET_KEY}
-    returnUrl: http://localhost:1004/
+    url: ${VNPAY_URL:DUMMY_VALUE}
+    tmnCode: ${VNPAY_TMNCODE:DUMMY_VALUE}
+    secretKey: ${VNPAY_SECRET_KEY:DUMMY_VALUE}
+    returnUrl: http://${HOST:localhost}:1004/
     version: 2.1.0
     command: pay
     orderType: OTHER
