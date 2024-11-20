@@ -46,7 +46,6 @@ import BillList from "~/pages/bill/BillList";
 import Products from "~/pages/clients/Products";
 import { AddressInfo } from "~/pages/clients/customer/AddressManager";
 import BillDetail from "~/pages/bill/BillDetail";
-import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
@@ -227,8 +226,7 @@ function RouterProvider() {
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
-        <Route path="/bill/detail/:id" element={<BillDetail />} />
-        <Route path="/bill/edit/:id" element={<BillEdit />} />
+        <Route path="/bill/detail/:id" element={<BillDetail />} />     
       </Route>
     </Routes>
   );

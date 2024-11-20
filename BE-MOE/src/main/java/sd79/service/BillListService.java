@@ -10,4 +10,5 @@ import java.util.List;
 public interface BillListService {
     PageableResponse getAllBillList(BillListParamFilter param);
     List<BillEditResponse> getAllBillEdit(Long billId);
+    void deleteBill(Long billId);
 }
