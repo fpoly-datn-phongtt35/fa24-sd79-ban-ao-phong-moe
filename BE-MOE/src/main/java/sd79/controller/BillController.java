@@ -208,4 +208,14 @@ public class BillController {
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách chi tiết trạng thái hóa đơn thành công", billStatusDetails);
     }
 
+    @Operation(
+            summary = "Xóa chi tiết trạng thái hóa đơn",
+            description = "Xóa chi tiết trạng thái hóa đơn bằng cách cập nhật isDeleted thành true"
+    )
+    @DeleteMapping("/deleteBillList/{billId}")
+    public ResponseData<?> deleteBillList(@PathVariable Long billId) {
+        billListService.deleteBill(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa hóa đơn thành công", null);
+    }
+
 }

@@ -29,7 +29,7 @@ import {
 } from "@mui/joy";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-
+import ChangePasswordForm from '~/pages/employee/ChangePasswordForm';
 const managementOptions = [
   { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
@@ -49,9 +49,12 @@ const managementOptions = [
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
-export const Header_Admin = (props) => {
+export const Header_Admin = ({...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
+  // const [showChangePassword, setShowChangePassword] = useState(false); // Thêm dòng này
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     handleAccessData();
@@ -63,7 +66,6 @@ export const Header_Admin = (props) => {
     });
   };
 
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -191,13 +193,14 @@ export const Header_Admin = (props) => {
                     </ListItemButton>
                   </ListItem>
                   <ListItem>
-                    <ListItemButton onClick={() => alert("Comming soon!")}>
+                    <ListItemButton onClick={() => navigate('/updatePassword')}>
                       <ListItemDecorator>
                         <HttpsOutlinedIcon />
                       </ListItemDecorator>
                       Đổi mật khẩu
                     </ListItemButton>
                   </ListItem>
+                  {/* {showChangePassword && <ChangePasswordForm userId={userId} />} */}
                   <ListDivider />
                   <ListItem>
                     <ListItemButton onClick={() => alert("Comming soon!")}>

@@ -11,6 +11,9 @@ spring:
     location: static/banner.txt
   profiles:
     active: @spring.profiles.active@
+  authentication:
+    username: sysadmin
+    password: sd79
 payment:
   vnPay:
     url: ${VNPAY_URL}

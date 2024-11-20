@@ -246,8 +246,6 @@ export const AddCustomer = () => {
       ...prevErrors,
       [name]: value ? '' : prevErrors[name],
     }));
-    console.log('Username:', customerData.username);
-    console.log('Password:', customerData.password);
 
     setErrors(newErrors);
   };
@@ -288,7 +286,7 @@ export const AddCustomer = () => {
           formData.append("images", imageObject)
           formData.append("productId", res)
           await postcustomerImage(formData).then(() => {
-            toast.success('Thêm thành công');
+            // toast.success('Thêm thành công');
             setIsLoading(false);
             navigate('/customer');
           })

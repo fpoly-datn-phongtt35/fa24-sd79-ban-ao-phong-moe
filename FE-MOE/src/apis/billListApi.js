@@ -97,3 +97,10 @@ export const getBillStatusDetailsByBillId = async (id) => {
         throw error;
     }
 };
+
+export const deleteBillList = async (id) => {
+    const response = await authorizedAxiosInstance.delete(`${API_ROOT}/bill/deleteBillList/${id}`);
+    toast.success(response.data.message);
+    return response.data;
+};
+

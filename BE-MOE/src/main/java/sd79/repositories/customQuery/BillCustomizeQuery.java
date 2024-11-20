@@ -63,66 +63,66 @@ public class BillCustomizeQuery {
     }
 
     public PageableResponse getAllBillList(BillListParamFilter param) {
-        List<Integer> allowedStatusIds = List.of(2, 4, 7, 8);
+        List<Integer> allowedStatusIds = List.of(1, 2, 4, 7, 8);
 
-        // Constructing the SQL query for filtering bills based on status and keyword
-        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE 1=1");
-
+        // Constructing the SQL query for filtering bills based on status, keyword, and deletion status
+        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
 
         if (StringUtils.hasLength(param.getKeyword())) {
             sql.append(" AND lower(b.code) like lower(:keyword)");
         }
 
-        if (param.getStatus() != null) {
-            if (allowedStatusIds.contains(param.getStatus())) {
-                sql.append(" AND b.billStatus.id = :statusId");
+        // Default status to 2 if none is provided
+        Integer status = param.getStatus() != null ? param.getStatus() : 2;
+
+        if (allowedStatusIds.contains(status)) {
+            sql.append(" AND b.billStatus.id = :statusId");
+
+            // Sorting based on status
+            if (status == 2) {
+                sql.append(" ORDER BY b.createAt ASC"); // Oldest first for status 2
+            } else if (status == 8) {
+                sql.append(" ORDER BY b.createAt DESC"); // Newest first for status 8
             } else {
-                throw new InvalidDataException("Status ID is invalid");
+                sql.append(" ORDER BY b.createAt DESC"); // Default sorting for other statuses (including status 1)
             }
+        } else {
+            throw new InvalidDataException("Status ID is invalid");
         }
 
-        sql.append(" ORDER BY b.createAt DESC");
         TypedQuery<Bill> query = entityManager.createQuery(sql.toString(), Bill.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
             query.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
         }
-        if (param.getStatus() != null) {
-            query.setParameter("statusId", param.getStatus());
-        }
+        query.setParameter("statusId", status);
 
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
-        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> {
 
-            return BillListResponse.builder()
-                    .id(bill.getId())
-                    .code(bill.getCode())
-                    .customer(bill.getCustomer())
-                    .total(bill.getTotal())
-                    .billStatus(bill.getBillStatus().getId())
-                    .createAt(bill.getCreateAt())
-                    .build();
-        }).toList();
+        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> BillListResponse.builder()
+                .id(bill.getId())
+                .code(bill.getCode())
+                .customer(bill.getCustomer())
+                .total(bill.getTotal())
+                .billStatus(bill.getBillStatus().getId())
+                .createAt(bill.getCreateAt())
+                .build()).toList();
 
-        // Count query to get total number of records
-        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE 1=1");
+        // Count query to get total number of records (also ensuring isDelete = 0)
+        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
 
         if (StringUtils.hasLength(param.getKeyword())) {
             countPage.append(" AND lower(b.code) like lower(:keyword)");
         }
-        if (param.getStatus() != null && allowedStatusIds.contains(param.getStatus())) {
-            countPage.append(" AND b.billStatus.id = :statusId");
-        }
+        countPage.append(" AND b.billStatus.id = :statusId");
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
             countQuery.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
         }
-        if (param.getStatus() != null) {
-            countQuery.setParameter("statusId", param.getStatus());
-        }
+        countQuery.setParameter("statusId", status);
 
         Long totalElements = countQuery.getSingleResult();
 
@@ -182,6 +182,7 @@ public class BillCustomizeQuery {
                             .message(bill.getMessage())
                             .note(bill.getNote())
                             .paymentTime(bill.getPaymentTime())
+                            .createAt(bill.getCreateAt())
                             .employee(employee)
                             .billDetails(bill.getBillDetails().stream()
                                     .map(this::convertToBillResponse)
@@ -278,6 +279,5 @@ public class BillCustomizeQuery {
 
         return responseList;
     }
-
 
 }

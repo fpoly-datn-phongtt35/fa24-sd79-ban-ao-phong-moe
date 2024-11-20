@@ -28,5 +28,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByKeywordAndPhone(@Param("keyword") String keyword,
                                             @Param("phone_number") String phoneNumber);
 
+    @Query("SELECT COUNT(*) > 0 FROM User u WHERE u.username = :username")
+    boolean existsByUsername(String username);
 
+    @Query("SELECT COUNT(*) > 0 FROM User u WHERE u.email = :email")
+    boolean existsByEmail(String email);
+
+    @Query("SELECT COUNT(*) > 0 FROM Customer c WHERE c.phoneNumber = :phoneNumber")
+    boolean existsByPhoneNumber(String phoneNumber);
 }

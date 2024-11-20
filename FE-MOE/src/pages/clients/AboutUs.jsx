@@ -15,282 +15,254 @@ import {
 } from "@mui/joy";
 import Features from "~/components/clients/other/Features";
 import { ScrollToTop } from "~/utils/defaultScroll";
+import StoreIcon from "@mui/icons-material/Store";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import SavingsIcon from "@mui/icons-material/Savings";
 
 const AboutUs = () => {
   ScrollToTop();
+
+  const stats = [
+    {
+      title: "10.5k",
+      subtitle: "Cửa hàng liên kết",
+      icon: <StoreIcon fontSize="large" />,
+      color: "default",
+    },
+    {
+      title: "33k",
+      subtitle: "Sản phẩm bán mỗi tháng",
+      icon: <AttachMoneyIcon fontSize="large" />,
+      color: "default",
+    },
+    {
+      title: "45.5k",
+      subtitle: "Khách hàng đang hoạt động",
+      icon: <ShoppingBagIcon fontSize="large" />,
+      color: "default",
+    },
+    {
+      title: "25k",
+      subtitle: "Doanh thu hàng năm",
+      icon: <SavingsIcon fontSize="large" />,
+      color: "default",
+    },
+  ];
+
   return (
-    <Box sx={{ padding: 4 }}>
-      <Grid container spacing={2}>
+    <Box sx={{ padding: 4, backgroundColor: "#f9f9f9" }}>
+      {/* Title Section */}
+      <Typography
+        level="h2"
+        fontWeight="bold"
+        textAlign="center"
+        gutterBottom
+        sx={{ color: "#333", textTransform: "uppercase", mb: 3 }}
+      >
+        Về Chúng Tôi
+      </Typography>
+
+      {/* Story Section */}
+      <Grid container spacing={4}>
         <Grid xs={12} md={6}>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
+          <Typography
+            level="h3"
+            fontWeight="bold"
+            gutterBottom
+            sx={{ color: "#444" }}
+          >
             Câu chuyện của chúng tôi
           </Typography>
-          <Typography level="body1" gutterBottom>
-            Được thành lập vào năm 2023, MOE Store đã nhanh chóng vươn lên trở
-            thành một trong những nền tảng thương mại điện tử hàng đầu tại Nam
-            Á. Với sứ mệnh mang đến sự tiện lợi và trải nghiệm mua sắm thú vị
-            cho khách hàng, chúng tôi đã xây dựng một hệ thống mạnh mẽ với sự
-            hiện diện đặc biệt tại Bangladesh.
+          <Typography
+            level="body1"
+            gutterBottom
+            sx={{ color: "#555", lineHeight: 1.8 }}
+          >
+            Được thành lập vào năm 2023, MOE Store đã từng bước khẳng định vị
+            thế của mình trong ngành thương mại điện tử. Ban đầu, chúng tôi chỉ
+            là một cửa hàng nhỏ phục vụ khách hàng địa phương. Nhưng nhờ sự nỗ
+            lực không ngừng nghỉ và niềm đam mê dành cho việc mang đến trải
+            nghiệm mua sắm tuyệt vời nhất, MOE Store đã phát triển thành một
+            trong những nền tảng mua sắm trực tuyến đáng tin cậy và được yêu
+            thích nhất tại khu vực Nam Á.
           </Typography>
-          <Typography level="body1" gutterBottom>
-            Tại MOE Store, chúng tôi tin tưởng vào sức mạnh của công nghệ và dữ
-            liệu. Đội ngũ của chúng tôi, nhóm SD79 từ FPT Polytechnic, đã dành
-            thời gian nghiên cứu và phát triển các giải pháp tiếp thị cá nhân
-            hóa, giúp kết nối giữa khách hàng và sản phẩm một cách gần gũi hơn.
-            Hiện tại, chúng tôi tự hào phục vụ hơn 3 triệu khách hàng và hợp tác
-            với hơn 10.500 nhà bán hàng cùng 300 thương hiệu uy tín.
+          <Typography
+            level="body1"
+            gutterBottom
+            sx={{ color: "#555", lineHeight: 1.8 }}
+          >
+            Chúng tôi tự hào sở hữu hơn 1 triệu sản phẩm trong danh mục, đặc
+            biệt nổi bật với các mẫu áo phông thời trang, phù hợp với mọi độ
+            tuổi và phong cách. Từ những thiết kế cơ bản đến những sản phẩm mang
+            phong cách hiện đại, sáng tạo, MOE Store luôn cam kết mang lại sự
+            hài lòng tối đa cho khách hàng.
           </Typography>
-          <Typography level="body1" gutterBottom>
-            Với hơn 1 triệu sản phẩm đa dạng trong danh mục của mình, MOE Store
-            chuyên cung cấp áo phông chất lượng cao với nhiều mẫu mã, màu sắc và
-            thiết kế độc đáo. Chúng tôi không chỉ đơn thuần là một cửa hàng trực
-            tuyến; chúng tôi là nơi khách hàng có thể tìm thấy những sản phẩm
-            phản ánh cá tính và phong cách riêng của họ.
+          <Typography
+            level="body1"
+            gutterBottom
+            sx={{ color: "#555", lineHeight: 1.8 }}
+          >
+            Điều làm nên sự khác biệt của MOE Store không chỉ nằm ở sản phẩm, mà
+            còn ở dịch vụ chăm sóc khách hàng tận tâm và chu đáo. Chúng tôi hiểu
+            rằng mỗi khách hàng đều có những nhu cầu và mong muốn riêng, vì vậy
+            chúng tôi luôn sẵn sàng hỗ trợ, tư vấn để khách hàng có thể tìm thấy
+            những sản phẩm phù hợp nhất. Bên cạnh đó, hệ thống giao hàng nhanh
+            chóng, chính sách đổi trả linh hoạt và đội ngũ nhân viên chuyên
+            nghiệp đã giúp chúng tôi xây dựng được niềm tin vững chắc từ khách
+            hàng.
           </Typography>
-          <Typography level="body1" gutterBottom>
-            Chúng tôi luôn nỗ lực phát triển và mở rộng, nhằm cung cấp những sản
-            phẩm tốt nhất cho khách hàng. MOE Store không chỉ là một thương
-            hiệu; nó là biểu tượng của sự sáng tạo và niềm đam mê với thời
-            trang. Hãy cùng chúng tôi khám phá thế giới áo phông đầy màu sắc và
-            phong cách!
-          </Typography>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
-            Giới Thiệu Về MOE Store
-          </Typography>
-          <Typography level="body1" gutterBottom>
-            Tại MOE Store, chúng tôi không chỉ bán áo phông; chúng tôi tạo ra
-            những câu chuyện. Mỗi chiếc áo phông mà chúng tôi cung cấp đều mang
-            trong mình tâm huyết, sự sáng tạo và phong cách riêng biệt, phản ánh
-            cá tính của người mặc. Chúng tôi hiểu rằng thời trang không chỉ là
-            bề ngoài mà còn là một phần của bản sắc cá nhân. Đó là lý do tại sao
-            chúng tôi cam kết cung cấp những sản phẩm không chỉ đẹp mà còn chất
-            lượng cao, bền bỉ theo thời gian.
-          </Typography>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
-            Sứ Mệnh Của Chúng Tôi
-          </Typography>
-          <Typography level="body1" gutterBottom>
-            Chúng tôi đặt sứ mệnh của mình là mang đến cho khách hàng những sản
-            phẩm thời trang độc đáo và giá trị tốt nhất. Chúng tôi tin rằng mỗi
-            người đều xứng đáng có được một chiếc áo phông phù hợp với cá tính
-            và phong cách sống của mình. MOE Store cam kết lắng nghe ý kiến và
-            nhu cầu của khách hàng, từ đó không ngừng cải tiến và đa dạng hóa
-            sản phẩm.
-          </Typography>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
-            Tầm Nhìn Của Chúng Tôi
-          </Typography>
-          <Typography level="body1" gutterBottom>
-            MOE Store hướng tới việc trở thành thương hiệu áo phông hàng đầu tại
-            Việt Nam, nơi mà mỗi sản phẩm không chỉ là một món đồ thời trang mà
-            còn là một phần của văn hóa và cộng đồng. Chúng tôi mong muốn xây
-            dựng một nền tảng kết nối những người yêu thích thời trang, nơi mọi
-            người có thể chia sẻ ý tưởng, phong cách và nguồn cảm hứng.
-          </Typography>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
-            Cam Kết Về Chất Lượng
-          </Typography>
-          <Typography level="body1" gutterBottom>
-            Chất lượng là ưu tiên hàng đầu của chúng tôi. Mỗi sản phẩm được chọn
-            lựa kỹ lưỡng từ nguyên liệu cho đến quy trình sản xuất, đảm bảo mang
-            đến cho khách hàng những sản phẩm hoàn hảo nhất. Chúng tôi làm việc
-            với những nhà cung cấp đáng tin cậy, sử dụng công nghệ tiên tiến để
-            tạo ra những chiếc áo phông không chỉ đẹp mà còn bền đẹp qua thời
-            gian.
-          </Typography>
-          <Typography level="h3" fontWeight="bold" gutterBottom>
-            Giá Trị Của Cộng Đồng
-          </Typography>
-          <Typography level="body1" gutterBottom>
-            Tại MOE Store, chúng tôi tin rằng sức mạnh của một thương hiệu không
-            chỉ nằm ở sản phẩm mà còn ở cộng đồng. Chúng tôi tích cực tham gia
-            vào các hoạt động cộng đồng và các sự kiện xã hội, với mong muốn góp
-            phần tạo nên sự thay đổi tích cực trong xã hội. Chúng tôi hiểu rằng
-            mỗi khách hàng đều là một phần của câu chuyện lớn hơn, và cùng nhau,
-            chúng ta có thể tạo ra những điều kỳ diệu.
+          <Typography
+            level="body1"
+            gutterBottom
+            sx={{ color: "#555", lineHeight: 1.8 }}
+          >
+            Không dừng lại ở đó, MOE Store còn hướng đến mục tiêu trở thành một
+            thương hiệu toàn cầu. Chúng tôi không ngừng cải tiến và mở rộng để
+            đáp ứng nhu cầu của thị trường, đồng thời tiếp tục mang đến những
+            sản phẩm chất lượng và dịch vụ hoàn hảo nhất. Với sứ mệnh "Mang
+            phong cách đến gần hơn với mọi người", chúng tôi hy vọng sẽ trở
+            thành người bạn đồng hành đáng tin cậy trên hành trình mua sắm của
+            bạn.
           </Typography>
         </Grid>
+
         <Grid xs={12} md={6}>
           <Box
-            component="img"
-            src="https://www.pngitem.com/pimgs/m/525-5258987_tienda-en-lnea-ecuador-hd-png-download.png"
-            alt="Our Story"
-            sx={{ width: "800px", borderRadius: "8px" }}
-          />
+            sx={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/80oIbalUOco"
+              title="YouTube video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </Box>
         </Grid>
       </Grid>
 
       {/* Stats Section */}
-      <Grid container spacing={2} mt={4}>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography level="h2" fontWeight="bold">
-                105
-              </Typography>
-              <Typography level="body2">Chi nhánh trên toàn quốc</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
-          <Card variant="solid" color="danger">
-            <CardContent>
-              <Typography level="h2" fontWeight="bold" color="white">
-                33B
-              </Typography>
-              <Typography level="body2" color="white">
-                Doanh thu hàng tháng
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined">
-            <CardContent>
-              <Typography level="h2" fontWeight="bold">
-                45.5k
-              </Typography>
-              <Typography level="body2">Khách hàng đang hoạt động</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+      <Grid container spacing={3} mt={6}>
+        {stats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card
+              sx={{
+                textAlign: "center",
+                border:
+                  stat.color === "error"
+                    ? "1px solid red"
+                    : "1px solid #e0e0e0",
+                borderRadius: 2,
+                boxShadow: stat.color === "error" ? 4 : 2,
+                backgroundColor: stat.color === "error" ? "#fbe9e7" : "#fff",
+                "&:hover": {
+                  boxShadow: 6,
+                  transform: "scale(1.05)",
+                },
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              }}
+            >
+              <CardContent>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    mb: 2,
+                    color: stat.color === "error" ? "red" : "black",
+                  }}
+                >
+                  {stat.icon}
+                </Box>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  color={stat.color === "error" ? "red" : "text.primary"}
+                >
+                  {stat.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {stat.subtitle}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
-      <Typography level="h4" fontWeight="bold" mt={6} mb={4}>
+      {/* Team Section */}
+      <Typography level="h3" fontWeight="bold" mt={6} mb={4} textAlign="center">
         Đội Ngũ Của Chúng Tôi
       </Typography>
       <Grid container spacing={4}>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined" sx={{ boxShadow: 2 }}>
-            <Box
+        {[
+          {
+            name: "Nông Hoàng Vũ",
+            role: "Người sáng lập & Chủ tịch",
+            img: "https://avatars.githubusercontent.com/u/117331143?v=4",
+          },
+          {
+            name: "Khương Văn Thành",
+            role: "Giám đốc điều hành",
+            img: "https://scontent.fhan2-5.fna.fbcdn.net/v/t39.30808-6/457097707_1294496031931867_3245612015580574624_n.jpg",
+          },
+          {
+            name: "MOE",
+            role: "Thiết kế sản phẩm",
+            img: "./src/assert/MainLogo.jpg",
+          },
+        ].map((member, index) => (
+          <Grid xs={12} md={4} key={index}>
+            <Card
+              variant="outlined"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                padding: 2,
+                textAlign: "center",
+                borderRadius: 3,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               }}
             >
-              <Avatar
-                src="https://avatars.githubusercontent.com/u/117331143?v=4"
-                alt="Founder"
+              <Box
                 sx={{
-                  width: 120,
-                  height: 120,
-                  mb: 2,
-                  border: "2px solid #1976d2",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  p: 3,
                 }}
-              />
-              <CardContent sx={{ textAlign: "center" }}>
+              >
+                <Avatar
+                  src={member.img}
+                  alt={member.name}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    mb: 2,
+                    border: "4px solid #1976d2",
+                  }}
+                />
                 <Typography level="h5" fontWeight="bold">
-                  Nông Hoàng Vũ
+                  {member.name}
                 </Typography>
                 <Typography level="body2" color="text.secondary">
-                  Người sáng lập & Chủ tịch
+                  {member.role}
                 </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IG
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    FB
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IN
-                  </Button>
-                </Box>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-
-        <Grid xs={12} md={4}>
-          <Card variant="outlined" sx={{ boxShadow: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                padding: 2,
-              }}
-            >
-              <Avatar
-                src="https://scontent.fhan2-5.fna.fbcdn.net/v/t39.30808-6/457097707_1294496031931867_3245612015580574624_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=TQ5gjZgM7UMQ7kNvgHv1uw-&_nc_ht=scontent.fhan2-5.fna&_nc_gid=AGu184gIBF4VT7SZ3BUk45t&oh=00_AYAUDXpooFXa-UtkjF7FzKpqrDWhtVIj7DNAM-pjpHN_4g&oe=671E5176"
-                alt="Managing Director"
-                sx={{
-                  width: 120,
-                  height: 120,
-                  mb: 2,
-                  border: "2px solid #1976d2",
-                }}
-              />
-              <CardContent sx={{ textAlign: "center" }}>
-                <Typography level="h5" fontWeight="bold">
-                  Khương Văn Thành
-                </Typography>
-                <Typography level="body2" color="text.secondary">
-                  Giám đốc điều hành
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IG
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    FB
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IN
-                  </Button>
-                </Box>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
-
-        <Grid xs={12} md={4}>
-          <Card variant="outlined" sx={{ boxShadow: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                padding: 2,
-              }}
-            >
-              <Avatar
-                src="./src/assert/MainLogo.jpg"
-                alt="Product Designer"
-                sx={{
-                  width: 120,
-                  height: 120,
-                  mb: 2,
-                  border: "2px solid #1976d2",
-                }}
-              />
-              <CardContent sx={{ textAlign: "center" }}>
-                <Typography level="h5" fontWeight="bold">
-                  MOE
-                </Typography>
-                <Typography level="body2" color="text.secondary">
-                  Thiết kế sản phẩm
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IG
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    FB
-                  </Button>
-                  <Button variant="plain" sx={{ mx: 1, color: "#1976d2" }}>
-                    IN
-                  </Button>
-                </Box>
-              </CardContent>
-            </Box>
-          </Card>
-        </Grid>
+              </Box>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
-      <Box marginTop={5}>
-        <Divider sx={{ my: 1, width: "100%" }} />
+
+      {/* Features Section */}
+      <Box mt={6}>
+        <Divider sx={{ my: 3 }} />
         <Features />
       </Box>
     </Box>

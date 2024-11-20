@@ -1008,7 +1008,7 @@ export default function BillDetail() {
                     <TableRow key={bill.id}>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
-                      <TableCell>{bill.paymentTime}</TableCell>
+                      <TableCell>{bill.createAt}</TableCell>
                       <TableCell>{bill.code}</TableCell>
                       <TableCell>{bill.paymentMethod}</TableCell>
                       <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
@@ -1268,7 +1268,7 @@ export default function BillDetail() {
           <>
             <div className="invoice-info">
               <p><strong>Mã hóa đơn:</strong> {billData[0]?.code || 'N/A'}</p>
-              <p><strong>Ngày thanh toán:</strong> {billData[0]?.paymentTime || 'N/A'}</p>
+              <p><strong>Ngày thanh toán:</strong> {billData[0]?.createAt || 'N/A'}</p>
               <p><strong>Trạng thái:</strong> {statusMap[billData[0]?.status] || 'N/A'}</p>
               <p><strong>Khách hàng:</strong> {`${billData[0]?.customer?.lastName || ''} ${billData[0]?.customer?.firstName || ''}`}</p>
               <p><strong>Số điện thoại:</strong> {billData[0]?.customer?.phoneNumber || 'N/A'}</p>
@@ -1335,8 +1335,7 @@ export default function BillDetail() {
         {billData?.[0] ? (
           <>
             <div className="shipping-invoice-info">
-              <p><strong>Mã hóa đơn:</strong> {billData[0]?.code || 'N/A'}</p>
-              <p><strong>Ngày thanh toán:</strong> {billData[0]?.paymentTime || 'N/A'}</p>
+              <p><strong>Mã hóa đơn:</strong> {billData[0]?.code || 'N/A'}</p>           
               <p><strong>Trạng thái:</strong> {statusMap[billData[0]?.status] || 'N/A'}</p>
               <p><strong>Khách hàng:</strong> {`${billData[0]?.customer?.lastName || ''} ${billData[0]?.customer?.firstName || ''}`}</p>
               <p><strong>Số điện thoại:</strong> {billData[0]?.customer?.phoneNumber || 'N/A'}</p>

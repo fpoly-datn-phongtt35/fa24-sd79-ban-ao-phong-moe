@@ -229,13 +229,19 @@ function Products() {
                 </List>
               </Box>
               <Box>
-                <Typography level="h4">Khoảng giá</Typography>
-                <Divider />
+                <Typography
+                  level="h4"
+                  sx={{ fontWeight: "bold", color: "#333", marginBottom: 2 }}
+                >
+                  Khoảng giá
+                </Typography>
+                <Divider sx={{ marginBottom: 2 }} />
+
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginTop: 3,
+                    marginTop: 2,
                   }}
                 >
                   <Input
@@ -243,25 +249,45 @@ function Products() {
                     type="number"
                     placeholder="Min"
                     sx={{
-                      "--Input-focusedThickness": "0px",
+                      width: "48%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      "&:focus": {
+                        borderColor: "#4CAF50",
+                      },
+                      backgroundColor: "#fff",
                     }}
-                  />{" "}
-                  &nbsp;
+                  />
                   <Input
                     onChange={(e) => setMaxPrice(e.target.value)}
                     type="number"
                     placeholder="Max"
                     sx={{
-                      "--Input-focusedThickness": "0px",
+                      width: "48%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      "&:focus": {
+                        borderColor: "#4CAF50",
+                      },
+                      backgroundColor: "#fff",
                     }}
                   />
                 </Box>
-                <Box marginTop={1}>
+
+                <Box marginTop={2}>
                   <Button
                     fullWidth
                     onClick={() => handleApplyFilter()}
-                    variant="outlined"
-                    color="neutral"
+                    variant="contained"
+                    sx={{
+                      padding: "10px",
+                      textTransform: "none",
+                      borderRadius: "8px",
+                      color: "#fff",
+                      backgroundColor: "#45a9ec",
+                    }}
                   >
                     Áp dụng
                   </Button>
@@ -298,7 +324,7 @@ function Products() {
                     }}
                   >
                     <Radio
-                      checked={filters.sortBy === "DEFAULT"}
+                      checked={filters?.sortBy === "DEFAULT"}
                       value="DEFAULT"
                       label="Mặc định"
                       onChange={(e) => updateSortBy(e.target.value)}

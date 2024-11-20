@@ -30,4 +30,5 @@ public class BillEditResponse {
     private Date paymentTime;
     private Employee employee;
     private List<BillDetailResponse> billDetails;
+    private Date createAt;
 }

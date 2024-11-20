@@ -429,9 +429,9 @@ function Bill() {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
             return;
         }
-
+    
         const paymentMethodName = "CASH";
-
+    
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
@@ -456,10 +456,17 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-
+    
         try {
             await addPay(billStoreRequest);
-            await updateBillStatusDetail();
+    
+            if (isDeliveryEnabled) {
+                await updateBillStatusDetail(1); // Update status to 1
+            } else {
+                await updateBillStatusDetail(1); // Update status to 1
+                await updateBillStatusDetail(8); // Update status to 8
+            }
+    
             toast.success("Hóa đơn đã được tạo thành công!");
             clearData();
             await handleSetBill();
@@ -467,22 +474,22 @@ function Bill() {
             console.error("Error processing payment:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
-        
     };
-
-    const updateBillStatusDetail = async () => {
+    
+    const updateBillStatusDetail = async (status) => {
         const statusDetail = {
-            bill: localStorage.getItem('selectedOrder'),
-            billStatus: 1,
-            note: '',
+            bill: localStorage.getItem("selectedOrder"),
+            billStatus: status,
+            note: "",
             userId: localStorage.getItem("userId"),
         };
+    
         try {
             await addBillStatusDetail(statusDetail);
             console.log("Status and note saved:", statusDetail);
         } catch (error) {
             console.error("Error updating status:", error);
-        }        
+        }
     };
 
     //dia chi

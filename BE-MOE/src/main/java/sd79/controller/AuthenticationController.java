@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.authRequests.SignInRequest;
+import sd79.dto.requests.authRequests.SignUpRequest;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.auth.TokenResponse;
 import sd79.enums.UserRole;
@@ -81,5 +82,24 @@ public class AuthenticationController {
     @GetMapping("/user")
     public ResponseData<?> getUser(HttpServletRequest request, UserRole role) {
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Success", this.userAuthRepository.getUser(request, role));
+    }
+
+    @Operation(
+            summary = "Register User",
+            description = "Register a new user with the provided details."
+    )
+    @PostMapping("/register")
+    public ResponseData<?> register(@Valid @ModelAttribute SignUpRequest request) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", this.authenticationService.register(request));
+    }
+
+    @Operation(
+            summary = "Validate User Information",
+            description = "Check if the provided email and username are valid and not taken."
+    )
+    @GetMapping("/valid-info/{email}/{username}")
+    public ResponseData<?> validInfo(@PathVariable String email, @PathVariable String username) {
+        this.authenticationService.validInfo(email, username);
+        return new ResponseData<>(HttpStatus.OK.value(), "Data is valid");
     }
 }

@@ -59,7 +59,7 @@
 .invoice-table th, .invoice-table td {
   border: 1px solid #000;
   padding: 6px;
-  text-align: center;
+  text-align: left;
 }
 
 .invoice-summary {

@@ -1,5 +1,6 @@
 package sd79.service.impl;
 
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.EmployeeReq;
 import sd79.dto.requests.employees.EmployeeImageReq;
+import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.employees.PositionResponse;
 import sd79.enums.Gender;
@@ -65,6 +67,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public int storeEmployee(EmployeeReq req) {
+        if (this.employeeRepository.existsByUsername(req.getUsername())) {
+            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
+        } else if (this.employeeRepository.existsByEmail(req.getEmail())) {
+            throw new EntityExistsException("Email đã tồn tại.");
+        } else if (this.employeeRepository.existsByPhoneNumber(req.getPhone_number())) {
+            throw new EntityExistsException("Số điện thoại đã tồn tại.");
+        }
         User user = this.userRepository.save(User.builder()
                 .username(req.getUsername())
                 .email(req.getEmail())
@@ -79,12 +88,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build());
         Salary salary = this.salaryRepository.save(Salary.builder().amount(req.getSalary()).build());
         EmployeeAddress address = this.addressRepository.save(EmployeeAddress.builder()
-                .streetName(req.getAddress().getStreetName())
-                .ward(req.getAddress().getWard())
-                .district(req.getAddress().getDistrict())
-                .districtId(req.getAddress().getDistrictId())
-                .province(req.getAddress().getProvince())
-                .provinceId(req.getAddress().getProvinceId())
+                .streetName(req.getStreetName())
+                .ward(req.getWard())
+                .district(req.getDistrict())
+                .districtId(req.getDistrict_id())
+                .city(req.getCity())
+                .cityId(req.getCity_id())
                 .build());
 
         System.out.println(req.getPosition());
@@ -115,9 +124,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void updateEmp(EmployeeReq req, Long id) {
+
         Employee employee = this.employeeRepository.findByIdEmp(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhân viên với ID: " + id));
 
+        EmployeeAddress address = employee.getEmployee_address();
+        if (address == null) {
+            address = new EmployeeAddress();
+        }
         // Tìm và cập nhật lương
         Salary salary = this.salaryRepository.findById(employee.getSalaries().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin lương cho nhân viên"));
@@ -127,10 +141,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Tìm và cập nhật thông tin người dùng
         User user = this.userRepository.findById(employee.getUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin user"));
-        user.setIsLocked(req.getIsLocked());
         user.setEmail(req.getEmail());
         this.userRepository.save(user); // Lưu riêng đối tượng User trước khi gán vào Employee
 
+        address.setCity(req.getCity());
+        address.setCityId(req.getCity_id());
+        address.setDistrict(req.getDistrict());
+        address.setDistrictId(req.getDistrict_id());
+        address.setWard(req.getWard());
+        address.setStreetName(req.getStreetName());
+        address = addressRepository.save(address);
         // Cập nhật các thông tin khác của nhân viên
         employee.setFirst_name(req.getFirst_name());
         employee.setLast_name(req.getLast_name());
@@ -139,6 +159,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDate_of_birth(req.getDate_of_birth());
         employee.setPosition(getPositionById(req.getPosition()));
         employee.setSalaries(salary);
+        employee.setEmployee_address(address);
         employee.setUser(user); // Gán lại user đã cập nhật vào employee
         this.employeeRepository.save(employee); // Lưu lại employee sau khi cập nhật
     }
@@ -173,6 +194,29 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.save(employee);
     }
 
+    @Override
+    public void updatePassword(PasswordUpdateRequest request, long userId) {
+        // Tìm người dùng dựa vào userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
+
+        // Kiểm tra mật khẩu cũ có đúng không
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu cũ không đúng");
+        }
+
+        // Kiểm tra mật khẩu mới và mật khẩu nhắc lại có giống nhau không
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới và mật khẩu nhắc lại không giống nhau");
+        }
+
+        // Mã hóa và cập nhật mật khẩu mới
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(new Date());
+
+        // Lưu thông tin người dùng đã cập nhật
+        userRepository.save(user);
+    }
     Positions getPositionById(int id) {
         return this.positionsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Position not found!"));
     }

@@ -90,7 +90,41 @@ const Home = () => {
     <Box>
       <AdBanner />
       <Box padding={3}>
-        <Typography level="h4">Sản Phẩm Bán Chạy</Typography>
+        <Typography
+          level="h4"
+          sx={{
+            textAlign: "center",
+            fontWeight: "700",
+            color: "text.primary",
+            fontSize: "2rem",
+            textTransform: "uppercase",
+            letterSpacing: 1.5,
+            position: "relative",
+            mb: 3,
+            padding: "0 20px",
+            ":before": {
+              content: '""',
+              position: "absolute",
+              bottom: -5,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "60%",
+              height: "3px",
+              backgroundColor: "primary.main",
+              borderRadius: "4px",
+              transition: "all 0.3s ease",
+            },
+            ":hover": {
+              color: "primary.main",
+              transform: "scale(1.05)",
+              ":before": {
+                width: "100%",
+              },
+            },
+          }}
+        >
+          Sản Phẩm Bán Chạy
+        </Typography>
         <Divider sx={{ my: 1, width: "100%" }} />
         <Grid marginTop={2} container spacing={2}>
           {bestSellingProducts &&
@@ -102,20 +136,37 @@ const Home = () => {
         </Grid>
       </Box>
       <Box>
-        <Grid padding={3} container spacing={2}>
-          <Grid xs={12} sm={1}>
+        <Grid container spacing={2} padding={3}>
+          <Grid
+            xs={12}
+            sm={2.5}
+            sx={{
+              maxHeight: "100%",
+              overflowY: "auto",
+            }}
+          >
             <ListCategories />
           </Grid>
           <Grid
             xs={12}
-            sm={11}
-            sx={{ display: "flex", justifyContent: "center", width: "80%" }}
+            sm={9.5}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+            }}
           >
             <img
-              src="https://cf.shopee.vn/file/vn-11134258-7ras8-m0tqrdrnnfynfd"
+              src="https://i.pinimg.com/originals/a5/cb/fe/a5cbfe3fcc1932ba364ef3cf75313415.png"
               alt="banner"
-              width="95%"
-              style={{ maxHeight: "350px", objectFit: "cover" }}
+              style={{
+                width: "100%", // Đảm bảo chiếm hết chiều rộng cột
+                maxHeight: "350px", // Giữ chiều cao tối đa
+                objectFit: "cover", // Cắt ảnh phù hợp với kích thước
+                borderRadius: "8px", // Bo góc mềm mại cho hình ảnh
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Hiệu ứng shadow
+              }}
             />
           </Grid>
         </Grid>

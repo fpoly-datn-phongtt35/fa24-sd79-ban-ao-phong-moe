@@ -21,8 +21,8 @@ public class AddressRequest {
     private Integer districtId;
 
     @NotBlank
-    private String province;
+    private String city;
 
     @NotNull
-    private Integer provinceId;
+    private Integer city_id;
 }

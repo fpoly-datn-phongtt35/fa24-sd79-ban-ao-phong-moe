@@ -53,3 +53,15 @@ export const reqPay = async (data, uri) => {
       }
     });
 };
+
+export const validInfo = async (email, username) => {
+  return await axios
+    .get(`${API_ROOT}/auth/valid-info/${email}/${username}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+
+export const register = async (data) => {
+  return await axios.post(`${API_ROOT}/auth/register`, data);
+};
