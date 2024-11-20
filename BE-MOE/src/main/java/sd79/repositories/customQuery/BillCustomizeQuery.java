@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.BillEditParamFilter;
@@ -279,5 +281,89 @@ public class BillCustomizeQuery {
 
         return responseList;
     }
+
+    public Page<Integer> findPreviousBillStatusId(Long billId, Pageable pageable) {
+        // Query to get the current status of the bill
+        String currentStatusSql = """
+    SELECT bsd.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Long> currentStatusQuery = entityManager.createQuery(currentStatusSql, Long.class);
+        currentStatusQuery.setParameter("billId", billId);
+        currentStatusQuery.setMaxResults(1); // LIMIT 1
+        Long currentStatusId = currentStatusQuery.getSingleResult();
+
+        // Query to get all previous statuses in order
+        String allStatusesSql = """
+    SELECT bsd.billStatus.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Integer> allStatusesQuery = entityManager.createQuery(allStatusesSql, Integer.class);
+        allStatusesQuery.setParameter("billId", billId);
+        List<Integer> allStatuses = allStatusesQuery.getResultList();
+
+        // Logic to determine the previous status based on the current sequence
+        Integer previousStatus = null;
+
+        // Check for the specific sequences and set the previous status accordingly
+        if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3) && allStatuses.contains(5)) {
+            // Rule for going back to 2 if the sequence is 1, 2, 5, 3, 5
+            previousStatus = 2;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3)) {
+            // Rule for going back to 5 if the sequence is 1, 2, 5, 3
+            previousStatus = 5;
+        } else if (allStatuses.contains(1) || allStatuses.contains(2) || allStatuses.contains(5)) {
+            // Rule for going back to 2 if in 1, 2, or 5
+            previousStatus = 2;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3)) {
+            // Rule for going back to 5 if in 1, 2, 5, 3
+            previousStatus = 5;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3) && allStatuses.contains(5)) {
+            // Rule for going back to 2 if in 1, 2, 5, 3, 5
+            previousStatus = 2;
+        }
+
+        // Query to find the previous status of the bill based on the modified logic
+        String sql = """
+    SELECT bsd.billStatus.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+      AND bsd.billStatus.id = :previousStatus
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Integer> query = entityManager.createQuery(sql, Integer.class);
+        query.setParameter("billId", billId);
+        query.setParameter("previousStatus", previousStatus);
+
+        // Apply pagination
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Integer> result = query.getResultList();
+
+        // Count query to get the total number of records
+        String countSql = """
+    SELECT COUNT(bsd)
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+      AND bsd.billStatus.id = :previousStatus
+    """;
+
+        TypedQuery<Long> countQuery = entityManager.createQuery(countSql, Long.class);
+        countQuery.setParameter("billId", billId);
+        countQuery.setParameter("previousStatus", previousStatus);
+        Long totalElements = countQuery.getSingleResult();
+
+        // Return paginated result
+        return new PageImpl<>(result, pageable, totalElements);
+    }
+
 
 }

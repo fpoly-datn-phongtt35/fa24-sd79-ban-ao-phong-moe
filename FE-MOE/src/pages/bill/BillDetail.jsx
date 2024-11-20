@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Container, Input } from '@mui/joy';
-import { addBillStatusDetail, getBillEdit, getBillStatusDetailsByBillId } from '~/apis/billListApi';
+import { addBillStatusDetail, addBillStatusDetailV2, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Dialog, Grid, List, ListItem, ListItemText, Paper, Breadcrumbs, Link, Modal, TextField, StepLabel, IconButton, Step, Stepper, StepConnector, Tooltip } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
 import { addPayBillEdit, deleteProduct, fetchBill, fetchCoupon, fetchProduct, postCoupon, postProduct, putCustomer } from '~/apis/billsApi';
@@ -20,6 +20,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import BookIcon from '@mui/icons-material/Book';
+import UndoIcon from '@mui/icons-material/Undo';
 
 import {
   LocalShippingRounded as LocalShippingRoundedIcon,
@@ -85,6 +86,7 @@ export default function BillDetail() {
   const [statusNote, setStatusNote] = useState("");
   const [statusDetails, setStatusDetails] = useState([]);
   const [isShippingDisabled, setIsShippingDisabled] = useState(false);
+  const [prevStatus, setPrevStatus] = useState(null);
 
   //bill
   const [isModalOpenNote, setIsModalOpenNote] = useState(false);
@@ -109,6 +111,7 @@ export default function BillDetail() {
     fetchBillStatusDetails();
     handleSetProduct();
     handleSetCoupon();
+    // fetchPreviousStatus();
   }, []);
 
   const fetchBillEdit = async () => {
@@ -128,8 +131,7 @@ export default function BillDetail() {
 
   //Hien thi du lieu trang thai
   const statusMap = {
-    '0': 'Đã tạo hóa đơn',
-    '1': 'Đang chờ xử lý',
+    '1': 'Đã tạo hóa đơn',
     '2': 'Chờ xác nhận',
     '3': 'Đã xác nhận',
     '4': 'Chờ giao',
@@ -361,47 +363,116 @@ export default function BillDetail() {
   const closeCouponModal = () => setCouponModalOpen(false);
 
   //----------------------------------------------Status-------------------------------------//
+  useEffect(() => {
+    if (prevStatus !== 1) {
+      fetchPreviousStatus();
+    }
+  }, [prevStatus]);
+
   const fetchBillStatusDetails = async () => {
     try {
       const statusData = await getBillStatusDetailsByBillId(id);
       setStatusDetails(statusData.data);
-      console.log(statusData.data)
+
     } catch (error) {
       console.error("Error fetching bill status details:", error);
       setErrorMessage("Failed to fetch bill status details");
     }
   };
 
+  const fetchPreviousStatus = async () => {
+    try {
+      const response = await getPreviousBillStatusId(id);
+
+      if (response?.data) {
+        const previousStatus = response.data;
+        setPrevStatus(previousStatus);
+        if (previousStatus === 1) {
+          toast.info("Không còn trạng thái nào.");
+        }
+      } else {
+      }
+    } catch (error) {
+      console.error("Error fetching previous status ID:", error);
+    }
+  };
+
   const handleStatusConfirm = (status, customNote) => {
-    if (statuses === 8 || statuses === 5 && (!noteRef || noteRef.trim() === "")) {
-      toast.error("Chưa xác nhận thanh toán đơn hàng");
-      return;
-    } else if (statuses === 7) {
-      toast.error("Đơn hàng đã bị hủy");
+    // Kiểm tra nếu trạng thái là 8 (hoàn tất) hoặc 5 (đang xử lý) mà chưa có ghi chú
+    if ((status === 8 || status === 5) && (!noteRef || noteRef.trim() === "")) {
+      toast.error("Chưa xác nhận thanh toán đơn hàng.");
       return;
     }
 
-    const userId = localStorage.getItem("userId");
+    // Kiểm tra nếu trạng thái là 7 (đã hủy)
+    if (status === 7) {
+      toast.error("Đơn hàng đã bị hủy.");
+      return;
+    }
+
+    // Kiểm tra logic giao hàng và thanh toán trước khi hoàn tất (nếu cần)
+    if (billData[0]?.status === 2 && status === '8') {
+      toast.error("Phải giao hàng và xác nhận thanh toán trước khi hoàn tất đơn hàng.");
+      return;
+    }
+
+    const userId = localStorage.getItem("userId") || null;
     onPay(tempBillNote, status, customNote, userId);
     updateBillStatusDetail(status, customNote, userId);
     fetchBillStatusDetails();
   };
 
   const updateBillStatusDetail = async (status, customNote, userId) => {
+    if (billData[0]?.status === 2 && status === '8') {
+      toast.error("Phải giao hàng và xác nhận thanh toán trước khi hoàn tất đơn hàng.");
+      return false; // Indicate failure here
+    }
+
     const statusDetail = {
       bill: billData[0].id,
       billStatus: status,
       note: customNote || '',
-      userId: userId
+      userId: userId,
     };
+
     try {
       await addBillStatusDetail(statusDetail);
+      fetchBillEdit();
+      fetchBillStatusDetails();
       console.log("Status and note saved:", statusDetail);
+      return true; // Indicate success here
     } catch (error) {
       console.error("Error updating status:", error);
+      return false; // Indicate failure here
     }
-    fetchBillEdit();
-    fetchBillStatusDetails();
+
+  };
+
+  const handleRestorePreviousStatus = async () => {
+    const customNote = prompt("Vui lòng nhập ghi chú cho việc khôi phục trạng thái:");
+
+    if (!customNote || customNote.trim() === "") {
+      toast.error("Ghi chú không được để trống.");
+      return;
+    }
+
+    const userId = localStorage.getItem("userId");
+
+    const updateSuccess = await updateBillStatusDetail(prevStatus, customNote, userId);
+
+    if (updateSuccess) {
+      onPay("", prevStatus, customNote, userId);
+      setPrevStatus(null);
+      fetchBillEdit();
+      fetchBillStatusDetails();
+    } else {
+      return;
+    }
+  };
+
+
+  const closeStatusModal = () => {
+    setIsStatusModalOpen(false);
   };
 
   //----------------------------------------------Bill-------------------------------------//
@@ -486,7 +557,7 @@ export default function BillDetail() {
         total: totalAfterDiscount + shippingCost,
         paymentMethod: updatedBillData.paymentMethod || "",
         message: updatedBillData.message || "",
-        note: billNote || updatedBillData.note || "",
+        note: (billNote === "" || billNote === null) ? "" : billNote || updatedBillData.note || "",
         paymentTime: updatedBillData.paymentTime || "",
         userId: userId || updatedBillData.userId,
       },
@@ -522,81 +593,39 @@ export default function BillDetail() {
 
   const handlePrintInvoice = () => {
     const invoiceContent = document.getElementById("invoice-content");
-
+  
     if (invoiceContent) {
       // Make the invoice content visible for printing
       invoiceContent.style.display = 'block';
-
-      // Sử dụng html2canvas để chụp màn hình nội dung hóa đơn
-      html2canvas(invoiceContent, {
-        scale: 2,
-        useCORS: true, // Bật hỗ trợ CORS cho các hình ảnh
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/jpg");
-        const pdf = new jsPDF("portrait", "mm", "a4");
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-
-        pdf.save("invoice.pdf");
-
-        // After printing, hide the content again
-        invoiceContent.style.display = 'none';
-      });
+  
+      // Print directly using the browser's print dialog
+      const originalContent = document.body.innerHTML; // Save the current page content
+      document.body.innerHTML = invoiceContent.outerHTML; // Replace with the invoice content
+  
+      window.print(); // Open the print dialog
+  
+      document.body.innerHTML = originalContent; // Restore the original page content
+      window.location.reload(); // Optional: Refresh the page to reapply JavaScript functionality
     }
   };
-
+  
   const handlePrintInvoiceShip = () => {
     const shippingInvoice = document.getElementById("shipping-invoice");
-
+  
     if (shippingInvoice) {
       // Make the invoice content visible for printing
       shippingInvoice.style.display = 'block';
-
-      // Use html2canvas to capture the invoice content as an image
-      html2canvas(shippingInvoice, {
-        scale: 2,
-        useCORS: true, // Enable CORS support for images
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/jpg");
-        const pdf = new jsPDF("portrait", "mm", "a4");
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        // Add additional pages if the content is long enough
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-
-        // Save the PDF
-        pdf.save("shipping_invoice.pdf");
-
-        // After printing, hide the content again
-        shippingInvoice.style.display = 'none';
-      });
+  
+      const originalContent = document.body.innerHTML; // Save the current page content
+      document.body.innerHTML = shippingInvoice.outerHTML; // Replace with the shipping invoice content
+  
+      window.print(); // Open the print dialog
+  
+      document.body.innerHTML = originalContent; // Restore the original page content
+      window.location.reload(); // Optional: Refresh the page to reapply JavaScript functionality
     }
   };
+  
 
   return (
     <Container maxWidth="max-Width" style={{ backgroundColor: '#f7f8fa', minHeight: '100vh', marginTop: '15px' }}>
@@ -629,97 +658,131 @@ export default function BillDetail() {
         <Box sx={{ width: '100%', mt: 2 }}>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
               width: '100%',
-              px: 4,
-              py: 3,
+              px: 3,
+              py: 2,
               background: '#f7f8fa',
-              borderRadius: 3,
+              borderRadius: 2,
+              overflowX: 'auto', // Thanh cuộn ngang
             }}
           >
-            {statusDetails.map((status, index) => {
-              const statusCode = status.billStatus;
-              const isLast = index === statusDetails.length - 1;
-              const statusColor = statusColors[statusCode] || '#a6a6a6';
-              const statusIcon = statusIcons[statusCode] || <HelpOutlineIcon />;
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: '100%',
+              }}
+            >
+              {statusDetails.map((status, index) => {
+                const statusCode = status.billStatus;
+                const isLast = index === statusDetails.length - 1;
+                const statusColor = statusColors[statusCode] || '#a6a6a6';
+                const statusIcon = statusIcons[statusCode] || <HelpOutlineIcon />;
 
-              return (
-                <React.Fragment key={index}>
-                  {/* Icon và Label */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      position: 'relative',
-                    }}
-                  >
-                    <Tooltip title={statusMap[statusCode]} arrow>
-                      <Box
-                        sx={{
-                          color: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: 60,
-                          height: 60,
-                          borderRadius: '50%',
-                          border: `4px solid ${statusColor}`,
-                          background: `linear-gradient(135deg, ${statusColor}, #f9f9f9)`,
-                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-                          transition: 'transform 0.3s ease',
-                          '&:hover': {
-                            transform: 'scale(1.1)',
-                            boxShadow: `0 6px 20px ${statusColor}`,
-                          },
-                        }}
-                      >
-                        {statusIcon}
-                      </Box>
-                    </Tooltip>
+                return (
+                  <React.Fragment key={index}>
+                    {/* Icon và Label */}
                     <Box
                       sx={{
-                        width: 3,
-                        height: 20,
-                        background: statusColor,
-                        mt: 1,
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: statusColor,
-                        mt: 1,
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        position: 'relative',
+                        flexShrink: 0,
+                        mx: 1.5, // Thu hẹp khoảng cách
                       }}
                     >
-                      {statusMap[statusCode]}
-                    </Typography>
-                    {status.createAt}
-                  </Box>
+                      <Tooltip title={statusMap[statusCode]} arrow>
+                        <Box
+                          sx={{
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 40, // Giảm kích thước icon
+                            height: 40,
+                            borderRadius: '50%',
+                            border: `3px solid ${statusColor}`,
+                            background: `linear-gradient(135deg, ${statusColor}, #f9f9f9)`,
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                            transition: 'transform 0.3s ease',
+                            '&:hover': {
+                              transform: 'scale(1.1)',
+                              boxShadow: `0 4px 12px ${statusColor}`,
+                            },
+                          }}
+                        >
+                          {statusIcon}
+                        </Box>
+                      </Tooltip>
+                      <Box
+                        sx={{
+                          width: 2,
+                          height: 16,
+                          background: statusColor,
+                          mt: 0.5,
+                        }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: statusColor,
+                          mt: 0.5,
+                          fontWeight: 600,
+                          textAlign: 'center',
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {statusMap[statusCode]}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '10px',
+                          textAlign: 'center', // Căn giữa nếu cần
+                        }}
+                      >
+                        {status.createAt}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '10px',
+                          marginTop: '5px',
+                          minHeight: '14px', // Đặt chiều cao tối thiểu để đồng nhất
+                          textAlign: 'center',
+                          display: 'block',
+                        }}
+                      >
+                        {status.note || '\u00A0'} {/* Hiển thị khoảng trắng nếu không có note */}
+                      </Typography>
 
-                  {/* Thanh trạng thái với gradient */}
-                  {!isLast && (
-                    <Box
-                      sx={{
-                        mx: 2,
-                        flexGrow: 1,
-                        height: 8,
-                        background: `linear-gradient(90deg, ${statusColor} 0%, #f1f1f1 100%)`,
-                        borderRadius: 4,
-                        boxShadow: `inset 0 2px 4px rgba(0, 0, 0, 0.1)`,
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
+                    </Box>
+
+                    {/* Thanh trạng thái với gradient */}
+                    {!isLast && (
+                      <Box
+                        sx={{
+                          mx: 1,
+                          flexShrink: 0,
+                          width: '20px',
+                          minWidth: '20px',
+                          flexGrow: 1,
+                          height: 6,
+                          background: `linear-gradient(90deg, ${statusColor} 0%, #f1f1f1 100%)`,
+                          borderRadius: 3,
+                          boxShadow: `inset 0 1px 3px rgba(0, 0, 0, 0.1)`,
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </Box>
           </Box>
         </Box>
+
 
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
@@ -742,6 +805,16 @@ export default function BillDetail() {
           </div>
 
           <div>
+            <Button
+              variant="outlined"
+              color="warning"
+              style={{ marginRight: '8px' }}
+              onClick={handleRestorePreviousStatus}
+              hidden={statuses === 2 || statuses === 8 || statuses === 7}
+            >
+              <UndoIcon />
+            </Button>
+
             {statuses === 5 ? (
               <Button
                 variant="outlined"
@@ -776,8 +849,9 @@ export default function BillDetail() {
       <div>
         <StatusModal
           open={isStatusModalOpen}
-          onClose={() => setIsStatusModalOpen(false)}
+          onClose={closeStatusModal}
           onStatusConfirm={handleStatusConfirm}
+          currentStatuses={billData?.[0]?.billStatusDetails?.map((status) => status.id) || []}
         />
       </div>
 
@@ -1335,7 +1409,7 @@ export default function BillDetail() {
         {billData?.[0] ? (
           <>
             <div className="shipping-invoice-info">
-              <p><strong>Mã hóa đơn:</strong> {billData[0]?.code || 'N/A'}</p>           
+              <p><strong>Mã hóa đơn:</strong> {billData[0]?.code || 'N/A'}</p>
               <p><strong>Trạng thái:</strong> {statusMap[billData[0]?.status] || 'N/A'}</p>
               <p><strong>Khách hàng:</strong> {`${billData[0]?.customer?.lastName || ''} ${billData[0]?.customer?.firstName || ''}`}</p>
               <p><strong>Số điện thoại:</strong> {billData[0]?.customer?.phoneNumber || 'N/A'}</p>

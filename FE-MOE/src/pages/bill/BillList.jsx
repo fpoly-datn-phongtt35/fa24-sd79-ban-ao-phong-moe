@@ -25,7 +25,7 @@ export default function BillList() {
     const [totalPages, setTotalPages] = useState(0);
 
     const statusMap = {
-        '1': 'Đang chờ xử lý',
+        '1': 'Đã tạo hóa đơn',
         '2': 'Chờ xác nhận',
         '3': 'Đã xác nhận',
         '4': 'Chờ giao',
@@ -149,7 +149,15 @@ export default function BillList() {
                                 <TableCell>{bill.code}</TableCell>
                                 <TableCell>{bill.customer ? `${bill.customer.lastName} ${bill.customer.firstName}` : 'Khách hàng lẻ'}</TableCell>
                                 <TableCell>{bill.customer?.phoneNumber || 'XXXXXXXXX'}</TableCell>
-                                <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
+                                <TableCell
+                                    sx={{
+                                        color: bill.total === null ? "red" : "inherit",
+                                        fontWeight: bill.total === null ? "bold" : "normal",
+                                    }}
+                                >
+                                    {bill.total === null ? "Chưa thanh toán" : formatCurrencyVND(bill.total)}
+                                </TableCell>
+
                                 <TableCell>{statusMap[bill.billStatus] || 'N/A'}</TableCell>
                                 <TableCell>{bill.createAt}</TableCell>
                                 <TableCell>
