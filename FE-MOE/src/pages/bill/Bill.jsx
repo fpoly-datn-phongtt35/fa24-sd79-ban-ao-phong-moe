@@ -446,7 +446,7 @@ function Bill() {
                 paymentMethod: paymentMethodName,
                 message: null,
                 note: null,
-                paymentTime: formatDate(new Date()),
+                paymentTime: "",
                 userId: localStorage.getItem("userId"),
             },
             billDetails: products.map((product) => ({
@@ -605,9 +605,6 @@ function Bill() {
             toast.error('Có lỗi xảy ra khi cập nhật thông tin khách hàng.');
         }
     };
-
-    //May tinh casio
-
 
     return (
 

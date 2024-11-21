@@ -79,8 +79,33 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public void deleteBill(long id) {
-        this.billRepository.deleteById(id);
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found with ID: " + id));
+
+        // Trả lại số lượng sản phẩm trong các BillDetail
+        List<BillDetail> billDetails = billDetailRepository.findByBill(bill);
+        for (BillDetail billDetail : billDetails) {
+            ProductDetail productDetail = billDetail.getProductDetail();
+            productDetail.setQuantity(productDetail.getQuantity() + billDetail.getQuantity());
+            productDetailRepository.save(productDetail);
+
+            // Xóa BillDetail sau khi trả lại số lượng
+            billDetailRepository.delete(billDetail);
+        }
+
+        Coupon coupon = bill.getCoupon();
+        if (coupon != null) {
+            coupon.setQuantity(coupon.getQuantity() + 1);
+            coupon.setUsageCount((coupon.getUsageCount() != null && coupon.getUsageCount() > 0)
+                    ? coupon.getUsageCount() - 1
+                    : 0);
+            couponRepository.save(coupon);
+        }
+
+        // Xóa hóa đơn
+        billRepository.deleteById(id);
     }
+
 
     //them lan 2
     @Override

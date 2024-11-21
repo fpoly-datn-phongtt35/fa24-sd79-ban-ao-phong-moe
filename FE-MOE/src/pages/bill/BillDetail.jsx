@@ -78,6 +78,7 @@ export default function BillDetail() {
   const [isModalOpenNote, setIsModalOpenNote] = useState(false);
   const [billNote, setBillNote] = useState("");
   const [tempBillNote, setTempBillNote] = useState("");
+  const [paymentTime, setPaymentTime] = useState("");
   const [tempPaymentAmount, setTempPaymentAmount] = useState("");
   const [tempPaymentMethod, setTempPaymentMethod] = useState("");
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
@@ -91,6 +92,18 @@ export default function BillDetail() {
   const statuses = statusRef.current;
 
   const [isInvoiceVisible, setIsInvoiceVisible] = useState(false);
+
+  const formatDate = (dateTimeString) => {
+    const date = new Date(dateTimeString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
+  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -251,7 +264,7 @@ export default function BillDetail() {
 
     // Cập nhật trạng thái nếu không vi phạm điều kiện nào
     const userId = localStorage.getItem("userId") || null;
-    onPay(tempBillNote, status, customNote, userId);
+    onPay(tempBillNote, status, customNote, userId, "");
     updateBillStatusDetail(status, customNote, userId);
     console.log("Cập nhật trạng thái thành công");
     fetchBillStatusDetails();
@@ -289,7 +302,7 @@ export default function BillDetail() {
     const updateSuccess = await updateBillStatusDetail(prevStatus, customNote, userId);
 
     if (updateSuccess) {
-      onPay("", prevStatus, customNote, userId);
+      onPay("", prevStatus, customNote, userId, "");
       setPrevStatus(null);
       fetchBillEdit();
       fetchBillStatusDetails();
@@ -326,12 +339,15 @@ export default function BillDetail() {
 
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
+    const paymentTime = formatDate(new Date);
+
+    setPaymentTime(paymentTime);
     setIsPaymentConfirmed(true);
 
     const userId = localStorage.getItem("userId");
 
     updateBillStatusDetail("3", tempBillNote, userId);
-    onPay(tempBillNote, "3", tempBillNote, userId);
+    onPay(tempBillNote, "3", tempBillNote, userId, paymentTime);
     fetchBillEdit();
     fetchBillStatusDetails();
   };
@@ -340,7 +356,7 @@ export default function BillDetail() {
     setTempBillNote(event.target.value);
   };
 
-  const onPay = async (billNote, status, statusNote, userId) => {
+  const onPay = async (billNote, status, statusNote, userId, paymentTime) => {
     if (!billData || billData[0]?.billDetails?.length === 0) {
       console.log("Cannot create invoice. Please select an order and add products.");
       return;
@@ -362,7 +378,7 @@ export default function BillDetail() {
         paymentMethod: updatedBillData.paymentMethod || "",
         message: updatedBillData.message || "",
         note: (billNote === "" || billNote === null) ? "" : billNote || updatedBillData.note || "",
-        paymentTime: updatedBillData.paymentTime || "",
+        paymentTime: paymentTime || updatedBillData.paymentTime || "",
         userId: userId || updatedBillData.userId,
       },
       billDetails: updatedBillData.billDetails.map((billDetail) => ({
@@ -387,17 +403,12 @@ export default function BillDetail() {
     const invoiceContent = document.getElementById("invoice-content");
 
     if (invoiceContent) {
-      // Make the invoice content visible for printing
       invoiceContent.style.display = 'block';
-
-      // Print directly using the browser's print dialog
-      const originalContent = document.body.innerHTML; // Save the current page content
-      document.body.innerHTML = invoiceContent.outerHTML; // Replace with the invoice content
-
-      window.print(); // Open the print dialog
-
-      document.body.innerHTML = originalContent; // Restore the original page content
-      window.location.reload(); // Optional: Refresh the page to reapply JavaScript functionality
+      const originalContent = document.body.innerHTML;
+      document.body.innerHTML = invoiceContent.outerHTML;
+      window.print();
+      document.body.innerHTML = originalContent;
+      window.location.reload();
     }
   };
 

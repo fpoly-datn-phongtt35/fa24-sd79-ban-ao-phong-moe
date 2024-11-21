@@ -24,11 +24,11 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
         }
     }, [open, validCustomerId, keyword]); // Depend on `open`, `validCustomerId`, and `keyword`
 
-    useEffect(() => {
-        if (subtotal > 0) {
-            applyBestCouponAutomatically();
-        }
-    }, [subtotal]);
+    // useEffect(() => {
+    //     if (subtotal > 0) {
+    //         applyBestCouponAutomatically();
+    //     }
+    // }, [subtotal]);
 
     const handleSetCouponCustomer = async (allCoupons = false) => {
         try {
