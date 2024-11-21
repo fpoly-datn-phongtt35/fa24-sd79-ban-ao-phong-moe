@@ -12,12 +12,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import StatusModal from '~/components/bill/StatusModal';
 import { toast } from "react-toastify";
 import { ImageRotator } from '~/components/common/ImageRotator ';
-import ProductListModal from '~/components/bill/ProductListModal';
-import CouponModalBillEdit from '~/components/bill/CouponModalBillEdit';
 
-import DiscountIcon from '@mui/icons-material/Discount';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import BookIcon from '@mui/icons-material/Book';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -40,7 +35,9 @@ import { jsPDF } from 'jspdf';
 import html2canvas from "html2canvas";
 import '../../styles/style.css';
 import '../../styles/ship.css';
+import RestoreStatusModal from '~/components/bill/RestoreStatusModal ';
 // import Roboto from "../../fonts/Roboto-Regular-normal.js";
+
 
 export default function BillDetail() {
   const navigate = useNavigate();
@@ -68,18 +65,6 @@ export default function BillDetail() {
     streetName: "",
   });
 
-  //product
-  const [isProductListModalOpen, setProductListModalOpen] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
-  const [currentProductId, setCurrentProductId] = useState(null);
-
-  //coupon
-  const [isCouponModalOpen, setCouponModalOpen] = useState(false)
-  const [coupons, setCoupons] = useState([]);
-  const customerId = billData?.[0]?.customer?.id;
-
   //status
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -87,6 +72,7 @@ export default function BillDetail() {
   const [statusDetails, setStatusDetails] = useState([]);
   const [isShippingDisabled, setIsShippingDisabled] = useState(false);
   const [prevStatus, setPrevStatus] = useState(null);
+  const [isRestoreModalOpen, setRestoreModalOpen] = useState(false);
 
   //bill
   const [isModalOpenNote, setIsModalOpenNote] = useState(false);
@@ -107,12 +93,14 @@ export default function BillDetail() {
   const [isInvoiceVisible, setIsInvoiceVisible] = useState(false);
 
   useEffect(() => {
-    fetchBillEdit();
-    fetchBillStatusDetails();
-    handleSetProduct();
-    handleSetCoupon();
-    // fetchPreviousStatus();
+    const fetchInitialData = async () => {
+      await fetchBillEdit();
+      await fetchBillStatusDetails();
+    };
+
+    fetchInitialData();
   }, []);
+
 
   const fetchBillEdit = async () => {
     try {
@@ -129,7 +117,6 @@ export default function BillDetail() {
     }
   };
 
-  //Hien thi du lieu trang thai
   const statusMap = {
     '1': 'Đã tạo hóa đơn',
     '2': 'Chờ xác nhận',
@@ -143,16 +130,16 @@ export default function BillDetail() {
   };
 
   const statusColors = {
-    '0': '#B0BEC5',  // Màu xám nhẹ (Đã tạo hóa đơn)
-    '1': '#007bff',  // Xanh dương (Đang chờ xử lý)
-    '2': '#FF9800',  // Cam (Chờ xác nhận)
-    '3': '#4CAF50',  // Xanh lá (Đã xác nhận)
-    '4': '#1E88E5',  // Xanh dương đậm (Chờ giao)
-    '5': '#43A047',  // Xanh lá đậm (Đã giao thành công)
-    '6': '#E53935',  // Đỏ (Giao hàng thất bại)
-    '7': '#F44336',  // Đỏ tươi (Đã hủy)
-    '8': '#9C27B0',  // Tím (Đơn hàng hoàn tất)
-    '9': '#FF5722',  // Cam đậm (Khác)
+    '0': '#B0BEC5',
+    '1': '#007bff',
+    '2': '#FF9800',
+    '3': '#4CAF50',
+    '4': '#1E88E5',
+    '5': '#43A047',
+    '6': '#E53935',
+    '7': '#F44336',
+    '8': '#9C27B0',
+    '9': '#FF5722',
   };
 
   const statusIcons = {
@@ -199,169 +186,6 @@ export default function BillDetail() {
 
   const isCustomerAvailable = billData && billData.length > 0 && billData[0]?.customer?.id;
 
-  //----------------------------------------------Product-------------------------------------//
-  let initialQuantity = {};
-  const onProduct = async (pr) => {
-
-    const product = {
-      productDetail: pr.id,
-      bill: id,
-      quantity: 1,
-      price: parseFloat(pr.price),
-      discountAmount: pr.sellPrice || 0,
-    };
-    try {
-      await postProduct(product);
-      initialQuantity[pr.id] = 1;
-    } catch (error) {
-      console.error('Failed to add product:', error);
-    }
-    fetchBillEdit();
-  };
-
-  const handleSetProduct = async () => {
-    try {
-      const response = await fetchProduct(id);
-      if (response?.data) {
-        setProducts(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-  const handleQuantityChange = (productId, newQuantity) => {
-    // Kiểm tra số lượng hợp lệ, nếu không đặt mặc định là 1
-    const sanitizedQuantity = newQuantity === 0 || newQuantity === '' ? 1 : newQuantity;
-
-    if (sanitizedQuantity === 1) {
-      setErrorMessage(""); // Xóa thông báo lỗi nếu số lượng hợp lệ
-    } else if (newQuantity === 0 || newQuantity === '') {
-      setErrorMessage("Số lượng chưa nhập");
-    }
-
-    const productToUpdate = products.find(
-      (product) => product.productDetail.id === productId
-    );
-
-    if (!productToUpdate) return;
-
-    const maxQuantity = productToUpdate.productDetail.quantity + 1;
-    const updatedQuantity = sanitizedQuantity > maxQuantity ? maxQuantity : sanitizedQuantity;
-
-    // Hủy timeout cũ nếu có
-    if (quantityTimeoutId) {
-      clearTimeout(quantityTimeoutId);
-    }
-
-    // Cập nhật danh sách sản phẩm
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.productDetail.id === productId
-          ? { ...product, quantity: updatedQuantity }
-          : product
-      )
-    );
-
-    // Tạo timeout mới để cập nhật số lượng
-    const timeoutId = setTimeout(async () => {
-      await updateProductQuantity(productId, updatedQuantity);
-    }, 500);
-    setQuantityTimeoutId(timeoutId);
-  };
-
-  const updateProductQuantity = async (productId, newQuantity) => {
-    try {
-      const productToUpdate = products.find(
-        (product) => product.productDetail.id === productId
-      );
-      if (!productToUpdate) return;
-
-      const product = {
-        productDetail: productToUpdate.productDetail.id,
-        bill: id,
-        quantity: newQuantity,
-        price: productToUpdate.productDetail.price,
-        discountAmount: productToUpdate.discountAmount || 0,
-      };
-
-      await postProduct(product);
-      initialQuantity[productId] = newQuantity;
-    } catch (error) {
-      console.error('Failed to update product quantity:', error);
-    }
-    fetchBillEdit();
-  };
-
-  const openProductListModal = (id) => {
-    if (id) {
-      setSelectedOrder(id);
-      setProductListModalOpen(true);
-    } else {
-      console.log('No order selected.');
-    }
-  };
-
-  const handleDeleteProduct = async (productDetailId) => {
-    if (!billData || !billData[0]?.billDetails) {
-      console.error("No bill data or product details available.");
-      return;
-    }
-
-    const productToDelete = billData[0].billDetails.find(
-      (detail) => detail.productDetail.id === productDetailId
-    );
-
-    if (!productToDelete) {
-      console.error("Product not found in bill details.");
-      return;
-    }
-
-    try {
-      await deleteProduct(productToDelete.id);
-      console.log("Product deleted successfully:", productToDelete.id);
-      fetchBillEdit();
-    } catch (error) {
-      console.error("Failed to delete product:", error);
-    }
-  };
-
-  const closeProductListModal = () => setProductListModalOpen(false);
-
-  //----------------------------------------------------------Coupon--------------------------------------//  
-
-  const onCoupon = async (coupon) => {
-    const couponData = {
-      bill: id,
-      coupon: coupon.id,
-    };
-    await postCoupon(couponData);
-    await handleSetCoupon(id);
-    await fetchBillEdit();
-  };
-
-  const handleSetCoupon = async () => {
-    try {
-      const response = await fetchCoupon(id || localStorage.getItem("billId"));
-      if (response?.data) {
-        setCoupons(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching coupons:", error);
-    }
-  };
-
-  const subtotal = billData?.[0]?.billDetails?.reduce((total, billDetail) => {
-    return total + (billDetail.discountAmount * billDetail.quantity);
-  }, 0) || 0;
-
-  const openCouponModal = () => {
-    handleSetCoupon(id);
-    setCouponModalOpen(true);
-  };
-
-  const closeCouponModal = () => setCouponModalOpen(false);
-
   //----------------------------------------------Status-------------------------------------//
   useEffect(() => {
     if (prevStatus !== 1) {
@@ -398,27 +222,38 @@ export default function BillDetail() {
   };
 
   const handleStatusConfirm = (status, customNote) => {
-    // Kiểm tra nếu trạng thái là 8 (hoàn tất) hoặc 5 (đang xử lý) mà chưa có ghi chú
-    if ((status === 8 || status === 5) && (!noteRef || noteRef.trim() === "")) {
-      toast.error("Chưa xác nhận thanh toán đơn hàng.");
+    // Lấy trạng thái hiện tại
+    const currentStatus = billData[0]?.status;
+
+    // 1. Nếu đang ở trạng thái 2, chỉ cho phép chuyển sang trạng thái 5
+    if (currentStatus === 2 && Number(status) !== 5 && Number(status) !== 7) {
+      toast.error("Vui lòng giao hàng trước khi chọn trạng thái khác.");
       return;
     }
 
-    // Kiểm tra nếu trạng thái là 7 (đã hủy)
-    if (status === 7) {
+    // 2. Nếu đang ở trạng thái 5, chỉ cho phép chuyển sang trạng thái 8
+    if (currentStatus === 5 && (Number(status) !== 8 || !noteRef || noteRef.trim() === "") && Number(status) !== 7) {
+      toast.error("Vui lòng xác nhận thanh toán trước khi hoàn tất.");
+      return;
+    }
+
+    // 3. Nếu đang ở trạng thái 3, chỉ cho phép chuyển sang trạng thái 8 hoặc 7
+    if (currentStatus === 3 && Number(status) !== 8 && Number(status) !== 7) {
+      toast.error("Vui lòng hoàn tất thanh toán hoặc hủy đơn hàng.");
+      return;
+    }
+
+    // 4. Nếu đơn hàng đã bị hủy (trạng thái 7), không được thay đổi
+    if (currentStatus === 7) {
       toast.error("Đơn hàng đã bị hủy.");
       return;
     }
 
-    // Kiểm tra logic giao hàng và thanh toán trước khi hoàn tất (nếu cần)
-    if (billData[0]?.status === 2 && status === '8') {
-      toast.error("Phải giao hàng và xác nhận thanh toán trước khi hoàn tất đơn hàng.");
-      return;
-    }
-
+    // Cập nhật trạng thái nếu không vi phạm điều kiện nào
     const userId = localStorage.getItem("userId") || null;
     onPay(tempBillNote, status, customNote, userId);
     updateBillStatusDetail(status, customNote, userId);
+    console.log("Cập nhật trạng thái thành công");
     fetchBillStatusDetails();
   };
 
@@ -448,14 +283,7 @@ export default function BillDetail() {
 
   };
 
-  const handleRestorePreviousStatus = async () => {
-    const customNote = prompt("Vui lòng nhập ghi chú cho việc khôi phục trạng thái:");
-
-    if (!customNote || customNote.trim() === "") {
-      toast.error("Ghi chú không được để trống.");
-      return;
-    }
-
+  const handleConfirmRestore = async (customNote) => {
     const userId = localStorage.getItem("userId");
 
     const updateSuccess = await updateBillStatusDetail(prevStatus, customNote, userId);
@@ -465,18 +293,23 @@ export default function BillDetail() {
       setPrevStatus(null);
       fetchBillEdit();
       fetchBillStatusDetails();
+      toast.success("Khôi phục trạng thái thành công.");
     } else {
-      return;
+      toast.error("Khôi phục trạng thái thất bại.");
     }
-  };
 
+    setRestoreModalOpen(false); // Đóng modal sau khi xử lý
+  };
 
   const closeStatusModal = () => {
     setIsStatusModalOpen(false);
   };
 
-  //----------------------------------------------Bill-------------------------------------//
+  const handleRestorePreviousStatus = () => {
+    setRestoreModalOpen(true);
+  };
 
+  //----------------------------------------------Bill-------------------------------------//
   const openNoteModal = () => {
     fetchBillEdit(id);
     setIsModalOpenNote(true);
@@ -515,35 +348,6 @@ export default function BillDetail() {
 
     const updatedBillData = billData[0];
 
-    // -------------------------------------- Calculations --------------------------------------
-    const subtotal = updatedBillData.billDetails.reduce((total, billDetail) => {
-      return total + billDetail.discountAmount * billDetail.quantity;
-    }, 0);
-
-    const couponDetails = updatedBillData.coupon || null;
-
-    const discountAmount = (() => {
-      if (!couponDetails) return 0;
-
-      const { discountType, discountValue, conditions, maxValue } = couponDetails;
-
-      if (subtotal < conditions) return 0;
-
-      if (discountType === "FIXED_AMOUNT") {
-        return Math.min(discountValue, subtotal);
-      } else if (discountType === "PERCENTAGE") {
-        const calculatedDiscount = (subtotal * discountValue) / 100;
-        return Math.min(calculatedDiscount, maxValue);
-      }
-
-      return 0;
-    })();
-
-    const totalAfterDiscount = subtotal - discountAmount;
-
-    const shippingCost = updatedBillData.shippingCost || 0;
-
-    // -------------------------------------- Bill Request --------------------------------------
     const billStoreRequest = {
       billRequest: {
         code: updatedBillData.code || "",
@@ -551,10 +355,10 @@ export default function BillDetail() {
         customer: updatedBillData.customer?.id || "",
         coupon: updatedBillData.coupon?.id || "",
         billStatus: status || updatedBillData.status || "",
-        shipping: shippingCost,
-        subtotal,
-        sellerDiscount: discountAmount || 0,
-        total: totalAfterDiscount + shippingCost,
+        shipping: updatedBillData.shippingCost || 0,
+        subtotal: updatedBillData.subtotal || 0,
+        sellerDiscount: updatedBillData.sellerDiscount || 0,
+        total: updatedBillData.total || 0,
         paymentMethod: updatedBillData.paymentMethod || "",
         message: updatedBillData.message || "",
         note: (billNote === "" || billNote === null) ? "" : billNote || updatedBillData.note || "",
@@ -569,7 +373,6 @@ export default function BillDetail() {
       })),
     };
 
-    // -------------------------------------- Submit Request -------------------------------------
     try {
       await addPayBillEdit(billStoreRequest);
       console.log("billStoreRequest:", billStoreRequest);
@@ -579,53 +382,41 @@ export default function BillDetail() {
     fetchBillEdit();
   };
 
-  const handUpdateBill = async () => {
-    const updatedBill = {
-      billNote: "",
-      status: null,
-      statusNote: "",
-      userId: localStorage.getItem("userId"),
-    };
-    await onPay(updatedBill.billNote, updatedBill.status, updatedBill.statusNote, updatedBill.userId);
-  };
-
   //----------------------------------------------Xuất hóa đơn-------------------------------------//
-
   const handlePrintInvoice = () => {
     const invoiceContent = document.getElementById("invoice-content");
-  
+
     if (invoiceContent) {
       // Make the invoice content visible for printing
       invoiceContent.style.display = 'block';
-  
+
       // Print directly using the browser's print dialog
       const originalContent = document.body.innerHTML; // Save the current page content
       document.body.innerHTML = invoiceContent.outerHTML; // Replace with the invoice content
-  
+
       window.print(); // Open the print dialog
-  
+
       document.body.innerHTML = originalContent; // Restore the original page content
       window.location.reload(); // Optional: Refresh the page to reapply JavaScript functionality
     }
   };
-  
+
   const handlePrintInvoiceShip = () => {
     const shippingInvoice = document.getElementById("shipping-invoice");
-  
+
     if (shippingInvoice) {
       // Make the invoice content visible for printing
       shippingInvoice.style.display = 'block';
-  
+
       const originalContent = document.body.innerHTML; // Save the current page content
       document.body.innerHTML = shippingInvoice.outerHTML; // Replace with the shipping invoice content
-  
+
       window.print(); // Open the print dialog
-  
+
       document.body.innerHTML = originalContent; // Restore the original page content
       window.location.reload(); // Optional: Refresh the page to reapply JavaScript functionality
     }
   };
-  
 
   return (
     <Container maxWidth="max-Width" style={{ backgroundColor: '#f7f8fa', minHeight: '100vh', marginTop: '15px' }}>
@@ -855,35 +646,22 @@ export default function BillDetail() {
         />
       </div>
 
+      <div>
+        <RestoreStatusModal
+          open={isRestoreModalOpen}
+          onClose={() => setRestoreModalOpen(false)}
+          onConfirm={handleConfirmRestore}
+        />
+      </div>
       {/* ------------------Thông tin đơn hàng------------------ */}
 
       <div>
         <hr />
         <Box mb={4}>
           <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column', alignItems: 'stretch', mt: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography level="h5" sx={{ fontWeight: 'bold' }}>
-                THÔNG TIN ĐƠN HÀNG
-              </Typography>
-
-              <Button
-                startIcon={<DiscountIcon />}
-                variant="outlined"
-                onClick={openCouponModal}
-                disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
-                sx={{ borderColor: '#4caf50', color: '#4caf50' }}
-              >
-                Phiếu giảm giá
-              </Button>
-            </Box>
-
-            <CouponModalBillEdit
-              open={isCouponModalOpen}
-              onClose={closeCouponModal}
-              onSelectCoupon={onCoupon}
-              customerId={customerId}
-              subtotal={subtotal}
-            />
+            <Typography level="h5" sx={{ fontWeight: 'bold' }}>
+              THÔNG TIN ĐƠN HÀNG
+            </Typography>
           </Box>
 
           {billData?.map((bd) => (
@@ -1168,30 +946,13 @@ export default function BillDetail() {
                 variant="outlined"
                 color="success"
                 startIcon={<UpdateIcon />}
-                onClick={() => handUpdateBill()}
+                onClick={() => navigate(`/bill/edit/${id}`)}
                 disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
               >
-                Cập nhật sản phẩm
-              </Button>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={openProductListModal}
-                disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
-              >
-                Thêm sản phẩm
+                Sửa sản phẩm
               </Button>
             </Box>
           </Box>
-
-          <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="lg" fullWidth>
-            <ProductListModal
-              onAddProduct={onProduct}
-              onClose={closeProductListModal}
-              order={id}
-            />
-          </Dialog>
 
         </div>
 
@@ -1257,34 +1018,13 @@ export default function BillDetail() {
                     </Grid>
 
                     {/* Quantity Input */}
-                    <Grid
-                      item
-                      xs={4}
-                      sm={2}
-                      md={2}
-                      display="flex"
-                      justifyContent="center"
-                      flexDirection="column"
-                      alignItems="center"
-                    >
-                      <Input
-                        type="number"
-                        value={
-                          products.find((p) => p.productDetail.id === detail.productDetail.id)?.quantity
-                        }
-                        onChange={(e) =>
-                          handleQuantityChange(detail.productDetail?.id, parseInt(e.target.value, 10) || '')
-                        }
-                        sx={{ width: '80%', '& input': { textAlign: 'center' } }}
-                        disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
-                      />
-                      {errorMessage && (
-                        <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
-                          {errorMessage}
-                        </Typography>
-                      )}
+                    <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center"                   >
+                      <Typography variant="body1" sx={{
+                        width: '80%', textAlign: 'center', padding: '8px 0', backgroundColor: '#f5f5f5', borderRadius: '4px', border: '1px solid #ddd',
+                      }}                      >
+                        {detail.productDetail.quantity}
+                      </Typography>
                     </Grid>
-
 
                     {/* Price and Delete Button */}
                     <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
@@ -1302,12 +1042,6 @@ export default function BillDetail() {
                           </>
                         )}
                       </Typography>
-                      <IconButton
-                        color="error"
-                        disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
-                        onClick={() => handleDeleteProduct(detail.productDetail.id)}>
-                        <DeleteIcon />
-                      </IconButton>
                     </Grid>
                   </Grid>
                 </ListItem>
