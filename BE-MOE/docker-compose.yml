@@ -28,6 +28,15 @@ services:
       - REDIS_DISABLE_COMMANDS=FLUSHDB;FLUSHALL
     networks:
       - backend
+  api-service:
+    container_name: api-moe
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - '2004:2004'
 networks:
   backend:
     driver: bridge

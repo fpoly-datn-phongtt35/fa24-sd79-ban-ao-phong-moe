@@ -1,8 +1,7 @@
 package sd79.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import java.io.Serializable;
@@ -11,11 +10,10 @@ import java.io.Serializable;
 @Setter
 @Entity
 @Table(name = "bill_status_detail")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BillStatusDetail extends AbstractEntity<Long> implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -26,7 +24,6 @@ public class BillStatusDetail extends AbstractEntity<Long> implements Serializab
     @JoinColumn(name = "bill_status_id")
     private BillStatus billStatus;
 
-    @Lob
     @Column(name = "note")
     private String note;
 
