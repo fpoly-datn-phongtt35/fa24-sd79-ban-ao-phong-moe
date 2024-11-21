@@ -29,10 +29,11 @@ services:
     networks:
       - backend
   api-service:
-    container_name: api-moe
+    container_name: moe-shop-api-container
     build:
       context: ./
       dockerfile: Dockerfile
+    image: moe-shop-api:0.0.1
     env_file:
       - .env
     ports:
