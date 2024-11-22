@@ -29,7 +29,8 @@ import {
 } from "@mui/joy";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import ChangePasswordForm from '~/pages/employee/ChangePasswordForm';
+import { getAllSupport } from "~/apis/supportApi";
+
 const managementOptions = [
   { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
@@ -49,11 +50,39 @@ const managementOptions = [
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
-export const Header_Admin = ({...props }) => {
+export const Header_Admin = ({ ...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
   // const [showChangePassword, setShowChangePassword] = useState(false); // Thêm dòng này
   const navigate = useNavigate();
+
+  const [notifications, setNotifications] = useState([]);
+  const [unresolvedCount, setUnresolvedCount] = useState(0);
+
+  useEffect(() => {
+    const fetchSupportRequests = async () => {
+      try {
+        const response = await getAllSupport();
+        const data = response.data; // Truyền dữ liệu trả về từ API
+
+        console.log(data); // Kiểm tra dữ liệu nhận được từ API
+
+        if (Array.isArray(data)) {
+          // Xử lý mảng yêu cầu hỗ trợ
+          setNotifications(data);
+
+          // Lọc các yêu cầu hỗ trợ có trạng thái "Đang chờ xử lý"
+          const unresolved = data.filter((support) => support.status === "Đang chờ xử lý");
+          setUnresolvedCount(unresolved.length);
+        } else {
+          console.error("Dữ liệu không phải là mảng:", data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin yêu cầu hỗ trợ:", error);
+      }
+    };
+    fetchSupportRequests();
+  }, []);
 
 
   useEffect(() => {
@@ -102,16 +131,15 @@ export const Header_Admin = ({...props }) => {
             }}
           />
         </Box>
-        <Box
-          sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}
-        >
+        <Box sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}>
           <Tooltip title="Thông báo" variant="plain">
             <Button
               size="sm"
               variant="soft"
               sx={{ backgroundColor: "#fffbf2", color: "#ffc86e" }}
+              onClick={() => navigate('/support')}
             >
-              <Badge color="danger" size="sm">
+              <Badge color="danger" size="sm" badgeContent={unresolvedCount}>
                 <NotificationsNoneOutlinedIcon />
               </Badge>
             </Button>
@@ -200,7 +228,6 @@ export const Header_Admin = ({...props }) => {
                       Đổi mật khẩu
                     </ListItemButton>
                   </ListItem>
-                  {/* {showChangePassword && <ChangePasswordForm userId={userId} />} */}
                   <ListDivider />
                   <ListItem>
                     <ListItemButton onClick={() => alert("Comming soon!")}>

@@ -50,6 +50,7 @@ import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
+import { Support } from "~/pages/support/support";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -230,6 +231,7 @@ function RouterProvider() {
         <Route path="/bill/list" element={<BillList />} />
         <Route path="/bill/detail/:id" element={<BillDetail />} />
         <Route path="/bill/edit/:id" element={<BillEdit />} />
+        <Route path="/support" element={<Support />} />
       </Route>
     </Routes>
   );

@@ -1,8 +1,5 @@
-// Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
-// Github: https://github.com/JavaTech04
-// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState } from "react";
+import { postSupportRequest } from "~/apis/supportApi"; // Đường dẫn đến file service API
 import {
   Box,
   Button,
@@ -12,15 +9,13 @@ import {
   Textarea,
   Typography,
   Grid,
-  IconButton,
   Divider,
 } from "@mui/joy";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
-import { ScrollToTop } from "~/utils/defaultScroll";
+import { toast } from "react-toastify";
 
 export const Contact = () => {
-  ScrollToTop();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -36,13 +31,37 @@ export const Contact = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data submitted:", formData);
+    try {
+      const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
+      if (!userId) {
+        toast.error("Vui lòng đăng nhập để gửi yêu cầu hỗ trợ.");
+        return;
+      }
+
+      const requestData = {
+        customerId: userId, // Dùng userId thay vì hardcode giá trị
+        issueDescription: formData.message,
+      };
+
+      await postSupportRequest(requestData);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+      // toast.success("Yêu cầu hỗ trợ đã được gửi thành công!");
+    } catch (error) {
+      console.error("Lỗi khi gửi yêu cầu hỗ trợ:", error);
+      toast.error("Đã xảy ra lỗi khi gửi yêu cầu hỗ trợ.");
+    }
   };
 
   return (
     <Grid container spacing={4} sx={{ padding: 3 }}>
+      {/* Phần hiển thị thông tin liên hệ */}
       <Grid item xs={12} sm={4}>
         <Box
           sx={{
@@ -53,38 +72,27 @@ export const Contact = () => {
             border: "1px solid #e0e0e0",
           }}
         >
-          <Typography
-            level="h6"
-            startDecorator={<PhoneIcon />}
-            sx={{ marginBottom: 2, fontWeight: "bold" }}
-          >
+          <Typography level="h6" startDecorator={<PhoneIcon />} sx={{ marginBottom: 2, fontWeight: "bold" }}>
             Gọi cho chúng tôi
           </Typography>
-          <Typography level="body2">
-            Chúng tôi hoạt động 24/7, 7 ngày trong tuần.
-          </Typography>
+          <Typography level="body2">Chúng tôi hoạt động 24/7, 7 ngày trong tuần.</Typography>
           <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
             Điện thoại: +84 999 999
           </Typography>
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography
-            level="h6"
-            startDecorator={<EmailIcon />}
-            sx={{ marginBottom: 2, fontWeight: "bold" }}
-          >
+          <Typography level="h6" startDecorator={<EmailIcon />} sx={{ marginBottom: 2, fontWeight: "bold" }}>
             Viết thư cho chúng tôi
           </Typography>
-          <Typography level="body2">
-            Điền vào form và chúng tôi sẽ liên hệ lại trong vòng 24 giờ.
-          </Typography>
+          <Typography level="body2">Điền vào form và chúng tôi sẽ liên hệ lại trong vòng 24 giờ.</Typography>
           <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
             Email: supportmoestore@moe.vn
           </Typography>
         </Box>
       </Grid>
 
+      {/* Form liên hệ */}
       <Grid item xs={12} sm={8}>
         <Box
           component="form"
