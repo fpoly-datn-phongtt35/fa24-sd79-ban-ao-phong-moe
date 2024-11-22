@@ -185,7 +185,7 @@ export const Sidebar_Admin = (props) => {
           </SubMenu>
           <MenuItem
             icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/product" />}
+            component={<Link to="/dashboard" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
               Thống kê
