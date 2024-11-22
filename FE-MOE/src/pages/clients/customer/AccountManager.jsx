@@ -34,20 +34,64 @@ export const AccountInfo = () => {
   });
 
   const validateForm = () => {
-
-    const newErrors = {
-      lastName: accountData.lastName ? '' : 'Họ không được để trống',
-      firstName: accountData.firstName ? '' : 'Tên không được để trống',
-      phoneNumber: accountData.phoneNumber ? '' : 'Số điện thoại không được để trống',
-      gender: accountData.gender ? '' : 'Phải chọn giới tính',
-      dateOfBirth: accountData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: accountData.email ? '' : 'Email không được để trống',
-
+    const specialCharRegex = /^[a-zA-ZÀ-ỹ]+( [a-zA-ZÀ-ỹ]+)*$/;
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const minAge = 16;
+  
+    const calculateAge = (dob) => {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
     };
-
+  
+    const newErrors = {
+      lastName: accountData.lastName
+        ? accountData.lastName.length > 20
+          ? "Họ không được vượt quá 20 ký tự"
+          : !specialCharRegex.test(accountData.lastName)
+          ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
+          : ""
+        : "Họ không được để trống",
+  
+      firstName: accountData.firstName
+        ? accountData.firstName.length > 50
+          ? "Tên không được vượt quá 50 ký tự"
+          : !specialCharRegex.test(accountData.firstName)
+          ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
+          : ""
+        : "Tên không được để trống",
+  
+      phoneNumber: accountData.phoneNumber
+        ? phoneRegex.test(accountData.phoneNumber)
+          ? ""
+          : "Số điện thoại Không hợp lệ"
+        : "Số điện thoại không được để trống",
+  
+      gender: accountData.gender ? "" : "Phải chọn giới tính",
+  
+      dateOfBirth: accountData.dateOfBirth
+        ? calculateAge(accountData.dateOfBirth) >= minAge
+          ? ""
+          : "Phải trên 16 tuổi"
+        : "Phải chọn ngày sinh",
+  
+      email: accountData.email
+        ? emailRegex.test(accountData.email)
+          ? ""
+          : "Email không đúng định dạng"
+        : "Email không được để trống",
+        
+    };
+  
     setErrors(newErrors);
-
-    return Object.values(newErrors).every((error) => error === '');
+     
+    return Object.values(newErrors).every((error) => error === "");
   };
 
 
@@ -95,107 +139,21 @@ export const AccountInfo = () => {
   }, []);
 
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
-    const phoneNumberRegex = /^0\d{9,11}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const minAge = 16;
-
-    const calculateAge = (dob) => {
-      const birthDate = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      return age;
-    };
-    if (name === 'lastName') {
-      if (value.length > 20) {
-        newErrors.lastName = "Họ không được vượt quá 20 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.lastName;
-        setIsLoading(false);
-      }
-    }
-    if (name === 'firstName') {
-      if (value.length > 50) {
-        newErrors.firstName = "Tên không được vượt quá 50 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.firstName;
-        setIsLoading(false);
-      }
-    }
-
-    if (name === 'phoneNumber') {
-      if (!phoneNumberRegex.test(value)) {
-        newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
-        setIsLoading(true);
-      } else {
-        delete newErrors.phoneNumber;
-        setIsLoading(false);
-      }
-    }
-
-
-
-    if (name === 'gender') {
-      if (!value) {
-        newErrors.gender = "Phải chọn giới tính";
-        setIsLoading(true);
-      } else {
-        delete newErrors.gender;
-        setIsLoading(false);
-      }
-      setAccountData({ ...accountData, gender: value });
-    } else {
-      setAccountData({ ...accountData, [name]: value });
-    }
-
-    if (name === 'dateOfBirth') {
-      const age = calculateAge(value);
-      if (age < minAge) {
-        newErrors.dateOfBirth = "Phải trên 16 tuổi";
-        setIsLoading(true);
-      } else {
-        delete newErrors.dateOfBirth;
-        setIsLoading(false);
-      }
-      setAccountData({ ...accountData, dateOfBirth: value });
-    } else {
-      setAccountData({ ...accountData, [name]: value });
-    }
-    if (name === 'email') {
-      if (!emailRegex.test(value)) {
-        newErrors.email = "Email không đúng định dạng";
-        setIsLoading(true);
-      } else {
-        delete newErrors.email;
-        setIsLoading(false);
-      }
-    }
-
-    setAccountData({ ...accountData, [name]: value });
-
+  
+    
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: value ? '' : prevErrors[name],
+      [name]: '', 
     }));
-
-
-    setErrors(newErrors);
-  }
+  
+  
+    setAccountData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -220,7 +178,7 @@ export const AccountInfo = () => {
       formData.append("images", imageObject)
       formData.append("UserId", id)
       await postcustomerImage(formData).then(() => {
-        toast.success('Cập nhật thành công');
+        toast.success('Sửa thành công');
         setIsLoading(false);
       })
 

@@ -17,19 +17,20 @@ export const UpdatePassWord = () => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [backendErrors, setBackendErrors] = useState({});
+    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setPasswords({ ...passwords, [name]: value });
     };
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
+    const passwordRegex = /^[^\s]{6,50}$/;
 
     const validateForm = () => {
         const errors = {};
         if (!passwords.currentPassword) errors.currentPassword = 'Vui lòng nhập mật khẩu cũ';
         if (!passwords.newPassword) errors.newPassword = 'Vui lòng nhập mật khẩu mới';
         else if (!passwordRegex.test(passwords.newPassword)) {
-            errors.newPassword = 'Mật khẩu mới phải có ít nhất 1 chữ cái in hoa và 1 ký tự đặc biệt, độ dài từ 6 đến 20 ký tự';
+            errors.newPassword = 'Mật khẩu mới phải có phải từ 6 đến 50 kí tự!';
         }
         if (passwords.newPassword !== passwords.confirmPassword)
             errors.confirmPassword = 'Mật khẩu mới và xác nhận mật khẩu không khớp';
@@ -82,7 +83,7 @@ export const UpdatePassWord = () => {
             <Grid container spacing={2}>
                 <Grid xs={12} md={3}>
                     <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("//my-account")}>Thông tin tài khoản</Typography>
+                        <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-account")}>Thông tin tài khoản</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
