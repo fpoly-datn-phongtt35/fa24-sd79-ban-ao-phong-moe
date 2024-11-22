@@ -486,10 +486,24 @@ public class ProductCustomizeQuery {
                 ).toList();
     }
 
-    public Set<ProductResponse.Product> getBestSellingProducts() {
-        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
-        query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
-        query.append(" ORDER BY prd.updateAt DESC");
+    public List<ProductResponse.Product> getBestSellingProducts() {
+        StringBuilder query = new StringBuilder(
+                "SELECT prd FROM Product prd " +
+                        "WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false " +
+                        "AND (" +
+                        "    SELECT COALESCE(SUM(pd.quantity), 0) " +
+                        "    FROM ProductDetail pd " +
+                        "    WHERE pd.product.id = prd.id AND pd.status = 'ACTIVE'" +
+                        ") > 0 "
+        );
+        query.append(
+                "ORDER BY (" +
+                        "    SELECT COUNT(bd) " +
+                        "    FROM BillDetail bd " +
+                        "    JOIN bd.productDetail pd " +
+                        "    WHERE pd.product.id = prd.id" +
+                        ") DESC, prd.updateAt DESC"
+        );
         TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
         execute.setMaxResults(6);
 
@@ -514,7 +528,7 @@ public class ProductCustomizeQuery {
                                     .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
                                     .build();
                         }
-                ).collect(Collectors.toSet());
+                ).collect(Collectors.toList());
     }
 
     public PageableResponse getProductsFilters(ProductRequests.ParamFilters param) {

@@ -73,7 +73,8 @@ export const ViewDetail = () => {
   const handleChange = (e) => {
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
-      setQuantity(value === "" ? "" : Number(value));
+      const numericValue = value === "" ? "" : Math.min(Number(value), 1000);
+      setQuantity(numericValue);
     }
   };
 
@@ -292,7 +293,7 @@ export const ViewDetail = () => {
                       marginLeft={3}
                       variant="outlined"
                     >
-                      -50%
+                      -{product?.percent}%
                     </Typography>
                   </>
                 )}
@@ -300,7 +301,7 @@ export const ViewDetail = () => {
             </Box>
 
             <Typography variant="h3" sx={{ mb: 3 }}>
-              Đã bán: 40
+              Đã bán: {product?.purchase == null ? 0 : product?.purchase}
             </Typography>
 
             <Box sx={{ resize: "horizontal", overflow: "auto", px: 1 }}>

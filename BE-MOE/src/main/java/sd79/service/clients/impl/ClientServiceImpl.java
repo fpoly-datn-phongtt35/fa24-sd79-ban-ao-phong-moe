@@ -86,7 +86,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Set<ProductResponse.Product> getBestSellingProducts() {
+    public List<ProductResponse.Product> getBestSellingProducts() {
         return this.productCustomizeQuery.getBestSellingProducts();
     }
 
@@ -148,6 +148,7 @@ public class ClientServiceImpl implements ClientService {
                 .discountPrice(discountPrice)
                 .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
                 .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                .purchase(this.billDetailRepository.getPurchase(product.getId()))
                 .build();
     }
 
