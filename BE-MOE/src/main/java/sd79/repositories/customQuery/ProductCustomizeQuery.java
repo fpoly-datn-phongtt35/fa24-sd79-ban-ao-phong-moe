@@ -487,24 +487,25 @@ public class ProductCustomizeQuery {
     }
 
     public List<ProductResponse.Product> getBestSellingProducts() {
-        StringBuilder query = new StringBuilder(
-                "SELECT prd FROM Product prd " +
-                        "WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false " +
-                        "AND (" +
-                        "    SELECT COALESCE(SUM(pd.quantity), 0) " +
-                        "    FROM ProductDetail pd " +
-                        "    WHERE pd.product.id = prd.id AND pd.status = 'ACTIVE'" +
-                        ") > 0 "
-        );
-        query.append(
-                "ORDER BY (" +
-                        "    SELECT COUNT(bd) " +
-                        "    FROM BillDetail bd " +
-                        "    JOIN bd.productDetail pd " +
-                        "    WHERE pd.product.id = prd.id" +
-                        ") DESC, prd.updateAt DESC"
-        );
-        TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
+        String query = """
+                    SELECT prd FROM Product prd\s
+                    WHERE prd.status = 'ACTIVE'\s
+                    AND prd.isDeleted = false\s
+                    AND (
+                        SELECT COALESCE(SUM(pd.quantity), 0)\s
+                        FROM ProductDetail pd\s
+                        WHERE pd.product.id = prd.id\s
+                        AND pd.status = 'ACTIVE'
+                    ) > 0\s
+                    ORDER BY (
+                        SELECT COUNT(bd)\s
+                        FROM BillDetail bd\s
+                        JOIN bd.productDetail pd\s
+                        WHERE pd.product.id = prd.id
+                    ) DESC, prd.updateAt DESC
+               \s""";
+
+        TypedQuery<Product> execute = entityManager.createQuery(query, Product.class);
         execute.setMaxResults(6);
 
         return execute.getResultList().stream()

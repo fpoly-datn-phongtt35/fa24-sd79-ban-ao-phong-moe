@@ -101,7 +101,7 @@ public class ClientServiceImpl implements ClientService {
 
         BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
 
-        List<ProductResponse.Product> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> {
+        List<ProductResponse.Product> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 6)).stream().map(s -> {
                     PromotionDetail promotionDetail2 = this.promotionDetailRepository.findByProductId(s.getId());
 
                     BigDecimal retailPrice2 = s.getProductDetails().getFirst().getRetailPrice();
@@ -204,7 +204,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void addToCart(CartRequest.FilterParams req) {
-        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Màu sắc hoặc kích thước này không có sẵn!"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(prd.getId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
             Cart updatedCart = isAlreadyExists.get();
@@ -235,7 +235,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public CartResponse.Cart buyNow(CartRequest.FilterParams req) {
-        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Màu sắc hoặc kích thước này không có sẵn!"));
         if (req.getQuantity() > prd.getQuantity()) {
             throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity()));
         }
