@@ -13,6 +13,13 @@ export const AccountInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const [accountData, setAccountData] = useState({
     firstName: '',
@@ -38,7 +45,7 @@ export const AccountInfo = () => {
     const phoneRegex = /^0\d{9,11}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
-  
+
     const calculateAge = (dob) => {
       const birthDate = new Date(dob);
       const today = new Date();
@@ -49,48 +56,48 @@ export const AccountInfo = () => {
       }
       return age;
     };
-  
+
     const newErrors = {
       lastName: accountData.lastName
         ? accountData.lastName.length > 20
           ? "Họ không được vượt quá 20 ký tự"
           : !specialCharRegex.test(accountData.lastName)
-          ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
-          : ""
+            ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
         : "Họ không được để trống",
-  
+
       firstName: accountData.firstName
         ? accountData.firstName.length > 50
           ? "Tên không được vượt quá 50 ký tự"
           : !specialCharRegex.test(accountData.firstName)
-          ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
-          : ""
+            ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
         : "Tên không được để trống",
-  
+
       phoneNumber: accountData.phoneNumber
         ? phoneRegex.test(accountData.phoneNumber)
           ? ""
           : "Số điện thoại Không hợp lệ"
         : "Số điện thoại không được để trống",
-  
+
       gender: accountData.gender ? "" : "Phải chọn giới tính",
-  
+
       dateOfBirth: accountData.dateOfBirth
         ? calculateAge(accountData.dateOfBirth) >= minAge
           ? ""
           : "Phải trên 16 tuổi"
         : "Phải chọn ngày sinh",
-  
+
       email: accountData.email
         ? emailRegex.test(accountData.email)
           ? ""
           : "Email không đúng định dạng"
         : "Email không được để trống",
-        
+
     };
-  
+
     setErrors(newErrors);
-     
+
     return Object.values(newErrors).every((error) => error === "");
   };
 
@@ -122,12 +129,12 @@ export const AccountInfo = () => {
         const data = await fetchAccountInfoById(localStorage.getItem("userId"));
         const customerData = data.data;
         setAccountData({
-          firstName: customerData.firstName,
-          lastName: customerData.lastName,
+          firstName: capitalizeFirstLetter(customerData.firstName),
+          lastName: capitalizeFirstLetter(customerData.lastName),
           phoneNumber: customerData.phoneNumber,
           gender: customerData.gender,
           dateOfBirth: formatDate2(customerData.dateOfBirth),
-          image: customerData.image,
+          image: customerData.image,        
           email: customerData.email,
         });
         setImagePreview(customerData.image || '/placeholder-image.png');
@@ -141,17 +148,17 @@ export const AccountInfo = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    
+
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '', 
+      [name]: '',
     }));
-  
-  
+
     setAccountData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: ['firstName', 'lastName'].includes(name)
+        ? capitalizeFirstLetter(value)
+        : value,
     }));
   };
 
@@ -214,7 +221,7 @@ export const AccountInfo = () => {
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
-             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
           </Sheet>
         </Grid>
 
@@ -390,7 +397,7 @@ export const AccountInfo = () => {
                         </FormControl>
                       </Grid>
 
-                      <Grid  xs={6} sx={{ marginTop: 1 }}>
+                      <Grid xs={6} sx={{ marginTop: 1 }}>
                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                           Cập Nhật Người Dùng
                         </Button>

@@ -6,12 +6,11 @@
  */
 package sd79.dto.requests.authRequests;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 import sd79.dto.validator.EnumPattern;
 import sd79.enums.Gender;
 
@@ -30,7 +29,7 @@ public class SignUpRequest {
     private String email;
 
     @NotBlank(message = "Password must not be null or empty")
-    @Length(min = 8, max = 50, message = "Password must be between 8 and 50 characters")
+    @Length(min = 6, max = 50, message = "Password must be between 8 and 50 characters")
     private String password;
 
     @Size(max = 50, message = "First name must not exceed 50 characters")
@@ -43,13 +42,30 @@ public class SignUpRequest {
     @EnumPattern(name = "status", regexp = "MALE|FEMALE|OTHER", message = "gender invalid format!")
     private Gender gender;
 
-    @Past(message = "Date of birth must be a date in the past")
     @NotNull(message = "Date of birth must not be null")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
 
     @NotBlank(message = "Phone number must not be null or empty")
     @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Phone number must be valid and contain between 7 and 15 digits")
     private String phoneNumber;
+
+    @NotNull(message = "Street Name cannot be null")
+    private String streetName;
+
+    @NotNull(message = "Ward cannot be null")
+    private String ward;
+
+    @NotNull(message = "District cannot be null")
+    private String district;
+
+    @Positive(message = "District ID must be a positive number")
+    private Integer districtId;
+
+    @NotNull(message = "City cannot be null")
+    private String city;
+
+    @Positive(message = "City ID must be a positive number")
+    private Integer cityId;
+
+    private MultipartFile avatar;
 }

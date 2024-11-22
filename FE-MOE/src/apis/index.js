@@ -61,3 +61,7 @@ export const validInfo = async (email, username) => {
       return res.data;
     });
 };
+
+export const register = async (data) => {
+  return await axios.post(`${API_ROOT}/auth/register`, data);
+};

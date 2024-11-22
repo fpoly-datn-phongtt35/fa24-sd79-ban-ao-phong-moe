@@ -6,6 +6,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,7 @@ import sd79.model.Customer;
 import sd79.service.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/${api.version}/bill")
@@ -201,11 +205,50 @@ public class BillController {
         return new ResponseData<>(HttpStatus.OK.value(), "Bill status detail added successfully", id);
     }
 
+    @Operation(summary = "Thêm mới chi tiết trạng thái hóa đơn", description = "Thêm mới chi tiết trạng thái hóa đơn")
+    @PostMapping("/addBillStatusDetailV2")
+    public ResponseData<?> addBillStatusDetailV2(@RequestBody BillStatusDetailRequest request) {
+        long id = billStatusDetailService.addBillStatusDetailV2(request);
+        return new ResponseData<>(HttpStatus.OK.value(), "Bill status detail added successfully", id);
+    }
+
     @Operation(summary = "Danh sách chi tiết trạng thái hóa đơn theo id hóa đơn", description = "Lấy danh sách chi tiết trạng thái hóa đơn theo id hóa đơn")
     @GetMapping("/billStatusDetails/{billId}")
     public ResponseData<?> getBillStatusDetailsByBillId(@PathVariable Long billId) {
         List<BillStatusDetailResponse> billStatusDetails = billStatusDetailService.getBillStatusDetailsByBillId(billId);
         return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách chi tiết trạng thái hóa đơn thành công", billStatusDetails);
     }
+
+    @Operation(
+            summary = "Xóa chi tiết trạng thái hóa đơn",
+            description = "Xóa chi tiết trạng thái hóa đơn bằng cách cập nhật isDeleted thành true"
+    )
+    @DeleteMapping("/deleteBillList/{billId}")
+    public ResponseData<?> deleteBillList(@PathVariable Long billId) {
+        billListService.deleteBill(billId);
+        return new ResponseData<>(HttpStatus.OK.value(), "Xóa hóa đơn thành công", null);
+    }
+
+    @Operation(
+            summary = "Lấy trạng thái hóa đơn trước đó",
+            description = "Truy vấn trạng thái hóa đơn trước đó dựa trên billId"
+    )
+    @GetMapping("/previousStatus/{billId}")
+    public ResponseData<?> getPreviousBillStatusId(@PathVariable Long billId, Pageable pageable) {
+        // Fetch the previous bill status from the service
+        Page<Integer> previousStatusPage = billStatusDetailService.getPreviousBillStatus(billId, pageable);
+
+        // Check if the page contains any results
+        if (previousStatusPage.hasContent()) {
+            Integer previousStatusId = previousStatusPage.getContent().get(0);  // Get the first status
+            return new ResponseData<>(HttpStatus.OK.value(),
+                    "Lấy trạng thái hóa đơn trước đó thành công", previousStatusId);
+        } else {
+            // Return not found if there is no previous status
+            return new ResponseData<>(HttpStatus.NOT_FOUND.value(),
+                    "Không tìm thấy trạng thái hóa đơn trước đó", null);
+        }
+    }
+
 
 }

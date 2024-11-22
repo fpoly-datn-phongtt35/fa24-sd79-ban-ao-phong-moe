@@ -38,10 +38,12 @@ import axios from 'axios';
 import { fetchCustomerById } from '~/apis/customerApi';
 import SvgIconDisplay from '~/components/other/SvgIconDisplay';
 import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
+import Calculator from '~/components/bill/Calculator';
+import { addBillStatusDetail } from '~/apis/billListApi';
 
 function Bill() {
     const navigate = useNavigate();
-    const [activeTabIndex, setActiveTabIndex] = useState(0); 
+    const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [bills, setBills] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isProductListModalOpen, setProductListModalOpen] = useState(false);
@@ -82,14 +84,14 @@ function Bill() {
     });
 
     const handleTabChange = (event, newValue) => {
-        setActiveTabIndex(newValue); 
+        setActiveTabIndex(newValue);
         setLoading(true);
 
         setTimeout(() => {
             if (newValue === 0) {
-                navigate('/bill'); 
+                navigate('/bill');
             } else {
-                navigate('/bill/list'); 
+                navigate('/bill/list');
                 localStorage.removeItem('selectedOrder');
                 localStorage.removeItem('bankCode');
             }
@@ -119,19 +121,6 @@ function Bill() {
         }
     }, [selectedOrder]);
 
-    useEffect(() => {
-        init();
-    }, []);
-
-    const init = () => {
-        setBankCode(searchParams.get("vnp_BankTranNo"))
-        localStorage.setItem("bankCode", searchParams.get("vnp_BankTranNo"))
-        handleVerifyBanking(
-            searchParams.get("vnp_TransactionStatus"),
-            searchParams.get("vnp_BankTranNo"),
-        )
-        navigate("/bill");
-    };
 
     //----------------------------------------------------------Bill--------------------------------------//
     const onSubmit = async () => {
@@ -181,6 +170,7 @@ function Bill() {
         await deleteBill(orderToDelete);
         setBills(prevBills => prevBills.filter(order => order.id !== orderToDelete));
         if (selectedOrder === orderToDelete) setSelectedOrder(null);
+        clearData();
     };
 
     const selectOrder = (order) => {
@@ -373,7 +363,7 @@ function Bill() {
 
     //----------------------------------------------------------Tính toán--------------------------------------//  
     const handleCustomerAmountChange = (event) => {
-        const value = parseFloat(event.target.value) || 0;
+        const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
         setCustomerAmount(value);
     };
 
@@ -408,8 +398,6 @@ function Bill() {
         BANK: 1,
     };
 
-    //----------------------------------------------------------Giao diện--------------------------------------//  
-
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -441,19 +429,16 @@ function Bill() {
             toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
             return;
         }
-    
-        const paymentMethodName = {
-            [PaymentMethod.CASH]: "CASH",
-            [PaymentMethod.BANK]: "BANK",
-        }[selectedPaymentMethod] || "UNKNOWN";
-    
+
+        const paymentMethodName = "CASH";
+
         const billStoreRequest = {
             billRequest: {
                 code: currentOrder.code,
                 bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: isDeliveryEnabled ? 2 : 8, 
+                billStatus: isDeliveryEnabled ? 2 : 8,
                 shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
@@ -471,25 +456,43 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-    
+
         try {
-            if (paymentMethodName === "BANK") {
-                localStorage.setItem("temp_data", JSON.stringify(billStoreRequest));
-                await reqPay(billStoreRequest, "&uri=bill");
-                clearData();
-                return;
+            await addPay(billStoreRequest);
+
+            if (isDeliveryEnabled) {
+                await updateBillStatusDetail(1); // Update status to 1
+                await updateBillStatusDetail(2); // Update status to 2
             } else {
-                await addPay(billStoreRequest);
-                toast.success("Hóa đơn đã được tạo thành công!");
-                clearData();
-                await handleSetBill();
+                await updateBillStatusDetail(1); // Update status to 1
+                await updateBillStatusDetail(8); // Update status to 8
             }
+
+            toast.success("Hóa đơn đã được tạo thành công!");
+            clearData();
+            await handleSetBill();
         } catch (error) {
             console.error("Error processing payment:", error);
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-    
+
+    const updateBillStatusDetail = async (status) => {
+        const statusDetail = {
+            bill: localStorage.getItem("selectedOrder"),
+            billStatus: status,
+            note: "",
+            userId: localStorage.getItem("userId"),
+        };
+
+        try {
+            await addBillStatusDetail(statusDetail);
+            console.log("Status and note saved:", statusDetail);
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
+    };
+
     //dia chi
 
     const handleToggleDelivery = () => {
@@ -603,6 +606,9 @@ function Bill() {
         }
     };
 
+    //May tinh casio
+
+
     return (
 
         <Container maxWidth="max-Width" className="bg-white" style={{ height: "100%", marginTop: "15px" }}>
@@ -645,7 +651,7 @@ function Bill() {
                 )}
 
                 {!loading && (
-                    <>                  
+                    <>
                         <Tabs
                             value={activeTabIndex}
                             onChange={handleTabChange}
@@ -737,7 +743,7 @@ function Bill() {
                 </Box>
 
 
-                <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="lg" fullWidth>
+                <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="lg" >
                     <ProductListModal
                         onAddProduct={onProduct}
                         onClose={closeProductListModal}
@@ -1116,50 +1122,21 @@ function Bill() {
                                 </Grid>
                             </Grid>
 
-                            {selectedPaymentMethod === PaymentMethod.CASH && (
-                                <TextField
-                                    label="Tiền khách đưa"
-                                    variant="outlined"
-                                    fullWidth
-                                    sx={{ mb: 2 }}
-                                    value={customerAmount}
-                                    onChange={handleCustomerAmountChange}
-                                />
-                            )}
-
-                            {selectedPaymentMethod === PaymentMethod.CASH && customerAmount < totalAfterDiscount && (
-                                <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                                    Vui lòng nhập đủ tiền khách đưa!
-                                </Typography>
-                            )}
-                            {selectedPaymentMethod === PaymentMethod.CASH && (
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                    <Typography variant="body2">Tiền thừa:</Typography>
-                                    <Typography fontWeight="bold" color="success.main">
-                                        {changeAmount >= 0 ? formatCurrencyVND(changeAmount) : formatCurrencyVND(0)}
-                                    </Typography>
-                                </Box>
-                            )}
-
                             <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
                             <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán:</Typography>
                             <Box display="flex" justifyContent="space-between" gap={2}>
                                 <Button
                                     variant="contained"
-                                    sx={{ backgroundColor: selectedPaymentMethod === PaymentMethod.CASH ? '#FFD700' : 'gray', color: 'black', flex: 1 }}
+                                    sx={{
+                                        backgroundColor: selectedPaymentMethod === PaymentMethod.CASH ? '#FFD700' : 'gray',
+                                        color: 'black',
+                                        flex: 1,
+                                    }}
                                     startIcon={<LocalAtmIcon />}
                                     onClick={() => setSelectedPaymentMethod(PaymentMethod.CASH)}
                                 >
                                     Tiền mặt
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    sx={{ backgroundColor: selectedPaymentMethod === PaymentMethod.BANK ? '#2196f3' : 'gray', color: 'white', flex: 1 }}
-                                    startIcon={<CreditCardIcon />}
-                                    onClick={() => setSelectedPaymentMethod(PaymentMethod.BANK)}
-                                >
-                                    Chuyển khoản
                                 </Button>
                             </Box>
 
@@ -1168,7 +1145,7 @@ function Bill() {
                                 color="primary"
                                 onClick={onPay}
                                 sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
-                                disabled={selectedPaymentMethod === PaymentMethod.CASH && customerAmount < totalAfterDiscount}
+                                disabled={selectedPaymentMethod !== PaymentMethod.CASH}
                             >
                                 Tạo hóa đơn
                             </Button>

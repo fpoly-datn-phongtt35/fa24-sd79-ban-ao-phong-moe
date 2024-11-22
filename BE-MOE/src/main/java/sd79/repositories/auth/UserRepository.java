@@ -25,3 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(*) > 0 FROM User u WHERE u.password = :passWord")
     boolean existsByPassWord(String passWord);
 }
+
+
+

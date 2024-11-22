@@ -22,6 +22,13 @@ export const CustomerDetailPage = () => {
     streetName: '',
     email: '',
   });
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageObject, setImageObject] = useState(null);
@@ -54,7 +61,7 @@ export const CustomerDetailPage = () => {
     const phoneRegex = /^0\d{9,11}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
-  
+
     const calculateAge = (dob) => {
       const birthDate = new Date(dob);
       const today = new Date();
@@ -65,48 +72,48 @@ export const CustomerDetailPage = () => {
       }
       return age;
     };
-  
+
     const newErrors = {
       lastName: customerData.lastName
         ? customerData.lastName.length > 20
           ? "Họ không được vượt quá 20 ký tự"
           : !specialCharRegex.test(customerData.lastName)
-          ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
-          : ""
+            ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
         : "Họ không được để trống",
-  
+
       firstName: customerData.firstName
         ? customerData.firstName.length > 50
           ? "Tên không được vượt quá 50 ký tự"
           : !specialCharRegex.test(customerData.firstName)
-          ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
-          : ""
+            ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
         : "Tên không được để trống",
-  
+
       phoneNumber: customerData.phoneNumber
         ? phoneRegex.test(customerData.phoneNumber)
           ? ""
           : "Số điện thoại Không hợp lệ"
         : "Số điện thoại không được để trống",
-  
+
       gender: customerData.gender ? "" : "Phải chọn giới tính",
-  
+
       dateOfBirth: customerData.dateOfBirth
         ? calculateAge(customerData.dateOfBirth) >= minAge
           ? ""
           : "Phải trên 16 tuổi"
         : "Phải chọn ngày sinh",
-  
+
       email: customerData.email
         ? emailRegex.test(customerData.email)
           ? ""
           : "Email không đúng định dạng"
         : "Email không được để trống",
-        
+
     };
-  
+
     setErrors(newErrors);
-     
+
     return Object.values(newErrors).every((error) => error === "");
   };
 
@@ -129,9 +136,10 @@ export const CustomerDetailPage = () => {
       setDistricts(response.data.districts);
     } else {
       setDistricts([]);
+      setWards([]);
     }
   };
-
+  
   const handleDistrictChange = async (e) => {
     const districtId = e;
     setSelectedDistrict(districtId);
@@ -143,10 +151,11 @@ export const CustomerDetailPage = () => {
       setWards([]);
     }
   };
-
+  
   const handleWardChange = (e) => {
     setSelectedWard(e);
   };
+  
 
 
   const formatDate = (dateString, time = "00:00:00") => {
@@ -164,21 +173,18 @@ export const CustomerDetailPage = () => {
   };
 
   useEffect(() => {
-
     const fetchCustomerDetail = async () => {
       try {
         const response = await fetchCustomerById(id);
-
-
+  
         const customerData = response.data;
-
-
-        handleCityChange(customerData.city_id);
-        handleDistrictChange(customerData.district_id)
-        handleWardChange(customerData.ward)
+  
+        await handleCityChange(customerData.city_id);
+        await handleDistrictChange(customerData.district_id);
+  
         setCustomerData({
-          firstName: customerData.firstName,
-          lastName: customerData.lastName,
+          firstName: capitalizeFirstLetter(customerData.firstName),
+          lastName: capitalizeFirstLetter(customerData.lastName),
           phoneNumber: customerData.phoneNumber,
           gender: customerData.gender,
           dateOfBirth: formatDate2(customerData.dateOfBirth),
@@ -187,33 +193,39 @@ export const CustomerDetailPage = () => {
           district: customerData.district,
           ward: customerData.ward,
           email: customerData.email,
-          streetName: customerData.streetName
+          streetName: customerData.streetName,
         });
+         
+        setSelectedCity(customerData.city_id);
+        setSelectedDistrict(customerData.district_id);
+        setSelectedWard(customerData.ward);
+  
         setImagePreview(customerData.image);
       } catch (error) {
-
         toast.error('Error fetching customer details: ' + (error.response?.data?.message || error.message));
       }
     };
-
+  
     fetchCustomerDetail();
   }, [id]);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    
+
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '', 
+      [name]: '',
     }));
-  
-  
+
     setCustomerData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: ['firstName', 'lastName'].includes(name)
+        ? capitalizeFirstLetter(value)
+        : value,
     }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -497,7 +509,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Thành phố</FormLabel>
-                        <Select value={selectedCity}
+                        <Select value={selectedCity || ''}
                           onChange={(e, v) => handleCityChange(v)}
                           placeholder="Chọn thành phố">
                           <Option value="" disabled>
@@ -514,7 +526,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Quận/Huyện</FormLabel>
-                        <Select value={selectedDistrict}
+                        <Select value={selectedDistrict || ''}
                           onChange={(e, v) => handleDistrictChange(v)}
                           placeholder="Chọn quận huyện">
                           <Option value="" disabled>
@@ -531,7 +543,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Phường/Xã</FormLabel>
-                        <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                        <Select value={selectedWard || ''} onChange={(e, v) => handleWardChange(v)}
                           placeholder="Chọn phường xã">
                           <Option value="" disabled>
                             Chọn phường xã

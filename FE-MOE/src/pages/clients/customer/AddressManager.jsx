@@ -67,6 +67,7 @@ export const AddressInfo = () => {
             setDistricts(response.data.districts);
         } else {
             setDistricts([]);
+            setWards([]);
         }
     };
 
@@ -86,6 +87,7 @@ export const AddressInfo = () => {
         setSelectedWard(e);
     };
 
+
     useEffect(() => {
 
         const fetchAddressDetail = async () => {
@@ -93,9 +95,8 @@ export const AddressInfo = () => {
                 const response = await fetchAddressInfoById(localStorage.getItem("userId"));
                 const addressData = response.data;
 
-                handleCityChange(addressData.city_id);
-                handleDistrictChange(addressData.district_id)
-                handleWardChange(addressData.ward)
+                await handleCityChange(addressData.city_id);
+                await handleDistrictChange(addressData.district_id);
                 setAddressData({
                     firstName: addressData.firstName,
                     lastName: addressData.lastName,
@@ -105,6 +106,9 @@ export const AddressInfo = () => {
                     ward: addressData.ward,
                     streetName: addressData.streetName
                 });
+                setSelectedCity(addressData.city_id);
+                setSelectedDistrict(addressData.district_id);
+                setSelectedWard(addressData.ward);
             } catch (error) {
 
                 toast.error('Error fetching address details: ' + (error.response?.data?.message || error.message));
@@ -136,12 +140,12 @@ export const AddressInfo = () => {
             updatedAt: new Date().toISOString(),
         };
         setIsLoading(true);
-       
-        await putAddressInfo(updatedAddress, localStorage.getItem("userId")).then(async (res) => {         
-                toast.success('Sửa thành công');
-                setIsLoading(false);
-                // navigate('/my-address');
-                return;        
+
+        await putAddressInfo(updatedAddress, localStorage.getItem("userId")).then(async (res) => {
+            toast.success('Sửa thành công');
+            setIsLoading(false);
+            // navigate('/my-address');
+            return;
 
         });
     };
@@ -160,7 +164,7 @@ export const AddressInfo = () => {
                             Tài khoản
                         </Link>
                         <Link underline="hover" color="inherit" onClick={() => navigate("/my-address")}>
-                        Sổ địa chỉ
+                            Sổ địa chỉ
                         </Link>
                     </Breadcrumbs>
                 </Sheet>
@@ -206,7 +210,7 @@ export const AddressInfo = () => {
                                             <Grid xs={12} mb={2}>
                                                 <FormControl>
                                                     <FormLabel >Thành phố</FormLabel>
-                                                    <Select value={selectedCity}
+                                                    <Select value={selectedCity || ''}
                                                         onChange={(e, v) => handleCityChange(v)}
                                                         placeholder="Chọn thành phố">
                                                         <Option value="" disabled>
@@ -223,7 +227,7 @@ export const AddressInfo = () => {
                                             <Grid xs={12} mb={2}>
                                                 <FormControl>
                                                     <FormLabel >Quận/Huyện</FormLabel>
-                                                    <Select value={selectedDistrict}
+                                                    <Select value={selectedDistrict || ''}
                                                         onChange={(e, v) => handleDistrictChange(v)}
                                                         placeholder="Chọn quận huyện">
                                                         <Option value="" disabled>
@@ -241,7 +245,7 @@ export const AddressInfo = () => {
                                             <Grid xs={12} mb={2}>
                                                 <FormControl>
                                                     <FormLabel >Phường/Xã</FormLabel>
-                                                    <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                                                    <Select value={selectedWard || ''} onChange={(e, v) => handleWardChange(v)}
                                                         placeholder="Chọn phường xã">
                                                         <Option value="" disabled>
                                                             Chọn phường xã
@@ -271,9 +275,6 @@ export const AddressInfo = () => {
                                                 <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                                                     Cập Nhật
                                                 </Button>
-                                                {/* <Button variant="soft" color="danger" onClick={() => navigate("/")}>
-                                                    Hủy
-                                                </Button> */}
                                             </Grid>
                                         </Grid>
                                     </Grid>

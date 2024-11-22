@@ -39,6 +39,6 @@ openapi:
     license: Apache 2.0
     license-url: https://facebook.com/NongHoangVu04
 cloudinary:
-  cloud-name: dniokvxat
-  api-secret: f4HHBNNCvXdHRQxQn375VT5K8Yg
-  api-key: 163797688946354
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-secret: ${CLOUDINARY_API_SECRET}
+  api-key: ${CLOUDINARY_API_KEY}

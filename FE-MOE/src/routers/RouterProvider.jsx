@@ -23,6 +23,8 @@ import CreateCoupon from "~/pages/coupon/CreateCoupon";
 import UpdateCoupon from "~/pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesUpdate from "~/pages/employee/EmployeeUpdate";
+import { EmployeeStore } from "~/pages/employee/EmployeeStore";
+import ChangePasswordForm from "~/pages/employee/ChangePasswordForm";
 import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { UpdatePromotion } from "~/pages/promotions/UpdatePromotion";
 import { ProductDetail } from "~/pages/products/main/ProductDetail";
@@ -35,7 +37,6 @@ import AboutUs from "~/pages/clients/AboutUs";
 import { Contact } from "~/pages/clients/Contact";
 import { ViewDetail } from "~/pages/clients/ViewDetail";
 import LocationSelector from "~/pages/other/LocationSelector";
-import { EmployeeStore } from "~/pages/employee/EmployeeStore";
 import ShoppingCart from "~/pages/clients/ShoppingCart";
 import CheckOut from "~/pages/clients/CheckOut";
 import Bill from "~/pages/bill/Bill";
@@ -45,11 +46,11 @@ import BillList from "~/pages/bill/BillList";
 import Products from "~/pages/clients/Products";
 import { AddressInfo } from "~/pages/clients/customer/AddressManager";
 import BillDetail from "~/pages/bill/BillDetail";
-import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
 import { UpdatePassWord } from "~/pages/clients/customer/PassWordManager";
+import BillEdit from "~/pages/bill/BillEdit";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -167,7 +168,6 @@ function RouterProvider() {
             <div>
               <Header_Client />
             </div>
-            {/* style={{backgroundColor: '#4545ff1a'}} */}
             <div className="content-area_client">
               <Outlet />
             </div>
@@ -224,12 +224,13 @@ function RouterProvider() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/employee/add" element={<EmployeeStore />} />
         <Route path="/employee/:id" element={<EmployeesUpdate />} />
+        <Route path="/updatePassword" element={<ChangePasswordForm />} />
         <Route path="/promotions/add" element={<AddPromotion />} />
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
-        <Route path="/bill/detail/:id" element={<BillDetail />} />
-        <Route path="/bill/edit/:id" element={<BillEdit />} />
+        <Route path="/bill/detail/:id" element={<BillDetail />} />   
+        <Route path="/bill/edit/:id" element={<BillEdit />} />    
       </Route>
     </Routes>
   );
