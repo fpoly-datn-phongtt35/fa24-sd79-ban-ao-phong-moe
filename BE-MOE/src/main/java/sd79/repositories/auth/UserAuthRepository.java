@@ -17,6 +17,8 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Component;
 import sd79.dto.response.auth.UserResponse;
 import sd79.enums.UserRole;
+import sd79.model.Customer;
+import sd79.model.Employee;
 import sd79.service.JwtService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -38,18 +40,30 @@ public class UserAuthRepository {
         }
         final String token = authorization.substring("Bearer ".length());
         final String username = this.jwtService.extractUsername(token, ACCESS_TOKEN);
-        StringBuilder sql = new StringBuilder(String.format("SELECT new sd79.dto.response.auth.UserResponse(u.user.username, %s , u.user.email, u.image)", role.equals(UserRole.ADMIN) ? "(CONCAT(u.last_name, ' ', u.first_name))" : "(CONCAT(u.lastName, ' ', u.firstName))"));
         if (role.equals(UserRole.ADMIN)) {
-            //TODO
-            sql.append(" FROM employees  u WHERE u.user.username = :username");
-            TypedQuery<UserResponse> query = entityManager.createQuery(sql.toString(), UserResponse.class);
+            String queryAdmin = "FROM employees  u WHERE u.user.username = :username";
+            TypedQuery<Employee> query = entityManager.createQuery(queryAdmin, Employee.class);
             query.setParameter("username", username);
-            return query.getSingleResult();
+            Employee result = query.getSingleResult();
+            return UserResponse.builder()
+                    .username(result.getUser().getUsername())
+                    .fullName(String.format("%s %s", result.getLast_name(), result.getFirst_name()))
+                    .email(result.getUser().getEmail())
+                    .avatar(result.getImage())
+                    .isManager(result.getPosition().getId() == 1) // 1 is manager
+                    .build();
         } else {
-            sql.append(" FROM Customer u WHERE u.user.username = :username");
-            TypedQuery<UserResponse> query = entityManager.createQuery(sql.toString(), UserResponse.class);
+            String queryUser = "FROM Customer u WHERE u.user.username = :username";
+
+            TypedQuery<Customer> query = entityManager.createQuery(queryUser, Customer.class);
             query.setParameter("username", username);
-            return query.getSingleResult();
+            Customer result = query.getSingleResult();
+            return UserResponse.builder()
+                    .username(result.getUser().getUsername())
+                    .fullName(String.format("%s %s", result.getLastName(), result.getFirstName()))
+                    .email(result.getUser().getEmail())
+                    .avatar(result.getImage())
+                    .build();
         }
     }
 }

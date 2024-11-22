@@ -188,7 +188,7 @@ export const ViewDetail = () => {
         >
           <Grid xs={12} sm={1}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {product?.imageUrl?.map((url, index) => (
+              {[...new Set(product?.imageUrl)]?.map((url, index) => (
                 <img
                   key={index}
                   src={url}

@@ -15,12 +15,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { playAudio } from "~/utils/speak";
+import { CommonContext } from "~/context/CommonContext";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
+
+  const context = useContext(CommonContext);
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -110,6 +113,7 @@ export const Sidebar_Admin = (props) => {
           </MenuItem>
 
           <SubMenu
+            disabled={!context?.isManager}
             label="Sản phẩm"
             icon={
               <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>
@@ -162,13 +166,17 @@ export const Sidebar_Admin = (props) => {
                 Khách hàng
               </Typography>
             </MenuItem>
-            <MenuItem component={<Link to="/employee" />}>
+            <MenuItem
+              component={<Link to="/employee" />}
+              disabled={!context?.isManager}
+            >
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Nhân viên
               </Typography>
             </MenuItem>
           </SubMenu>
           <SubMenu
+            disabled={!context?.isManager}
             label="Giảm giá"
             icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >

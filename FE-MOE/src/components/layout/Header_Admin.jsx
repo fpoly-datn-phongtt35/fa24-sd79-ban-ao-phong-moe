@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Avatar, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import PermIdentityOutlinedIcon from "@mui/icons-material/PermIdentityOutlined";
@@ -29,7 +29,7 @@ import {
 } from "@mui/joy";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import ChangePasswordForm from '~/pages/employee/ChangePasswordForm';
+import { CommonContext } from "~/context/CommonContext";
 const managementOptions = [
   { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
@@ -52,7 +52,7 @@ const managementOptions = [
 export const Header_Admin = ({...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
-  // const [showChangePassword, setShowChangePassword] = useState(false); // Thêm dòng này
+  const context = useContext(CommonContext);
   const navigate = useNavigate();
 
 
@@ -63,6 +63,7 @@ export const Header_Admin = ({...props }) => {
   const handleAccessData = async () => {
     await accessUserAPI("ADMIN").then((res) => {
       setData(res);
+      context.setIsManager(res?.manager)
     });
   };
 
@@ -200,7 +201,6 @@ export const Header_Admin = ({...props }) => {
                       Đổi mật khẩu
                     </ListItemButton>
                   </ListItem>
-                  {/* {showChangePassword && <ChangePasswordForm userId={userId} />} */}
                   <ListDivider />
                   <ListItem>
                     <ListItemButton onClick={() => alert("Comming soon!")}>

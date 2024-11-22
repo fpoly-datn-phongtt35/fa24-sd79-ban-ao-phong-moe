@@ -372,8 +372,7 @@ VALUES
 INSERT INTO positions (name, created_at, updated_at)
 VALUES
 ('Quản lý', NOW(), NOW()),
-('Nhân viên', NOW(), NOW()),
-('Hệ thống', NOW(), NOW());
+('Nhân viên', NOW(), NOW());
 
 INSERT INTO employee_address (street_name, ward, district, district_id, city, city_id)
 VALUES

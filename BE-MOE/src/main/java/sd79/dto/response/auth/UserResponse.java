@@ -6,17 +6,21 @@
  */
 package sd79.dto.response.auth;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@Builder
 public class UserResponse {
     private String username;
 
     private String fullName;
 
     private String email;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private boolean isManager;
 
     private String avatar;
 }
