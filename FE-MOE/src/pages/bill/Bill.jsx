@@ -431,6 +431,8 @@ function Bill() {
         }
 
         const paymentMethodName = "CASH";
+        const paymentTime = !isDeliveryEnabled ? formatDate(new Date().toISOString()) : ""; // Ngày thanh toán nếu không giao hàng
+        const note = !isDeliveryEnabled ? "đã thanh toán" : null; // Thêm ghi chú nếu không giao hàng
 
         const billStoreRequest = {
             billRequest: {
@@ -445,8 +447,8 @@ function Bill() {
                 total: totalAfterDiscount,
                 paymentMethod: paymentMethodName,
                 message: null,
-                note: null,
-                paymentTime: "",
+                note: note, // Thêm note khi `isDeliveryEnabled` tắt
+                paymentTime: paymentTime, // Ghi lại thời gian thanh toán nếu không giao hàng
                 userId: localStorage.getItem("userId"),
             },
             billDetails: products.map((product) => ({
@@ -460,12 +462,13 @@ function Bill() {
         try {
             await addPay(billStoreRequest);
 
+            // Xử lý trạng thái hóa đơn dựa trên `isDeliveryEnabled`
             if (isDeliveryEnabled) {
-                await updateBillStatusDetail(1); // Update status to 1
-                await updateBillStatusDetail(2); // Update status to 2
+                await updateBillStatusDetail(1); // Chuyển trạng thái sang 1
+                await updateBillStatusDetail(2); // Chuyển trạng thái sang 2
             } else {
-                await updateBillStatusDetail(1); // Update status to 1
-                await updateBillStatusDetail(8); // Update status to 8
+                await updateBillStatusDetail(1); // Chuyển trạng thái sang 1
+                await updateBillStatusDetail(8); // Chuyển trạng thái sang 8
             }
 
             toast.success("Hóa đơn đã được tạo thành công!");
@@ -476,6 +479,7 @@ function Bill() {
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
+
 
     const updateBillStatusDetail = async (status) => {
         const statusDetail = {

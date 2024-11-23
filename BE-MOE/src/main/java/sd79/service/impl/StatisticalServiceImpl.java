@@ -80,10 +80,17 @@ public class StatisticalServiceImpl implements StatisticalService {
     }
 
     /**
+     * Lấy danh sách hóa đơn thành công với thất bại
+     */
+    public List<Object[]> getTotalBillsByStatus(StatisticalParamFilter filter){
+        return statisticalCustomizeQuery.getTotalBillsByStatus(filter);
+    }
+
+    /**
      * Lấy doanh thu phân chia theo các giai đoạn (ngày, tuần, tháng, năm) trong khoảng thời gian.
      */
     @Override
-    public List<Object[]> getRevenueByPeriod(StatisticalParamFilter filter) {
-        return statisticalCustomizeQuery.getRevenueByPeriod(filter);
+    public List<Object[]> getCustomerRegistrations(StatisticalParamFilter filter) {
+        return statisticalCustomizeQuery.getCustomerRegistrations(filter);
     }
 }

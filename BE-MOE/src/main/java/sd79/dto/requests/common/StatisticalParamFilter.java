@@ -12,5 +12,7 @@ import java.util.Date;
 public class StatisticalParamFilter {
     private Date startDate;
     private Date endDate;
-    private String granularity; // daily, weekly, monthly, yearly
+    private String granularity;
+    private Integer pageNo = 0;
+    private Integer pageSize = 3;
 }

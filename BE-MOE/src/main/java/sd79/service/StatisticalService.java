@@ -26,5 +26,7 @@ public interface StatisticalService {
 
     List<Object[]> getTopSellingProducts(StatisticalParamFilter filter, int limit);
 
-    List<Object[]> getRevenueByPeriod(StatisticalParamFilter filter);
+    List<Object[]> getTotalBillsByStatus(StatisticalParamFilter filter);
+
+    List<Object[]> getCustomerRegistrations(StatisticalParamFilter filter);
 }

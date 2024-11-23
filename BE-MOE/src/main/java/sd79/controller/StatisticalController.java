@@ -76,10 +76,17 @@ public class StatisticalController {
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved top selling products", topSellingProducts);
     }
 
-    @Operation(summary = "Get Revenue By Period", description = "Get revenue statistics grouped by the specified period granularity for the given time period.")
-    @GetMapping("/revenue-by-period")
-    public ResponseData<List<Object[]>> getRevenueByPeriod( StatisticalParamFilter filter) {
-        List<Object[]> revenueByPeriod = statisticalService.getRevenueByPeriod(filter);
-        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved revenue by period", revenueByPeriod);
+    @Operation(summary = "Get Total Bills By Status", description = "Get Total Bills By Status within the given time period.")
+    @GetMapping("/total-bill-status")
+    public ResponseData<List<Object[]>> getTotalBillsByStatus( StatisticalParamFilter filter) {
+        List<Object[]> totalBillsByStatus = statisticalService.getTotalBillsByStatus(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully total bills by status", totalBillsByStatus);
+    }
+
+    @Operation(summary = "Get Customer Registrations", description = "Get customer registrations within the given time period.")
+    @GetMapping("/customer-registrations")
+    public ResponseData<List<Object[]>> getCustomerRegistrations( StatisticalParamFilter filter) {
+        List<Object[]> customerRegistrations = statisticalService.getCustomerRegistrations(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully customer registrations", customerRegistrations);
     }
 }

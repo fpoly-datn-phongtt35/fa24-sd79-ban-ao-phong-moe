@@ -264,9 +264,8 @@ export default function BillDetail() {
 
     // Cập nhật trạng thái nếu không vi phạm điều kiện nào
     const userId = localStorage.getItem("userId") || null;
-    onPay(tempBillNote, status, customNote, userId, "");
+    onPay(tempBillNote, status, customNote, userId, paymentTime);
     updateBillStatusDetail(status, customNote, userId);
-    console.log("Cập nhật trạng thái thành công");
     fetchBillStatusDetails();
   };
 
@@ -301,6 +300,9 @@ export default function BillDetail() {
 
     const updateSuccess = await updateBillStatusDetail(prevStatus, customNote, userId);
 
+    setTempBillNote("");
+    setPaymentTime("");
+
     if (updateSuccess) {
       onPay("", prevStatus, customNote, userId, "");
       setPrevStatus(null);
@@ -332,6 +334,13 @@ export default function BillDetail() {
   };
 
   const handleNoteCloseModal = () => {
+    const currentStatus = billData[0]?.status;
+
+    if (currentStatus === 2 && Number(status) !== 5 && Number(status) !== 7) {
+      toast.error("Vui lòng giao hàng trước khi xác nhận.");
+      return;
+    }
+
     if (statuses === 7) {
       toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");
       return;
@@ -378,7 +387,7 @@ export default function BillDetail() {
         paymentMethod: updatedBillData.paymentMethod || "",
         message: updatedBillData.message || "",
         note: (billNote === "" || billNote === null) ? "" : billNote || updatedBillData.note || "",
-        paymentTime: paymentTime || updatedBillData.paymentTime || "",
+        paymentTime: (paymentTime === "" || paymentTime === null) ? "" : paymentTime || updatedBillData.paymentTime || "",
         userId: userId || updatedBillData.userId,
       },
       billDetails: updatedBillData.billDetails.map((billDetail) => ({
