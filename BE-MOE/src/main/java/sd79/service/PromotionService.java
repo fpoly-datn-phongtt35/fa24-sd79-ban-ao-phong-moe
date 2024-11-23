@@ -30,9 +30,8 @@ public interface PromotionService {
 
     Page<PromotionResponse> getPromotion(Pageable pageable);
 
-   Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable);
+    Page<PromotionResponse> searchPromotions(Date startDate, Date endDate, String name, Pageable pageable);
 
     Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate, String status, Pageable pageable);
-//
-//    Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate, String status, Pageable pageable);
+
 }

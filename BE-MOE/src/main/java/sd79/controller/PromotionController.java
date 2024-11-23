@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import sd79.dto.requests.PromotionRequest;
+import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
 import sd79.service.PromotionService;
@@ -117,4 +118,5 @@ public class PromotionController {
 
         return new ResponseData<>(HttpStatus.OK.value(), "List promotion", response);
     }
+
 }

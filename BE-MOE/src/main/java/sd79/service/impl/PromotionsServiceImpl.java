@@ -228,7 +228,6 @@ public class PromotionsServiceImpl implements PromotionService {
         return promotions.map(this::convertPromotionResponsse);  // Convert entity to response DTO
     }
 
-
     @Override
     public Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate,
                                                         String status, Pageable pageable) {
@@ -252,7 +251,6 @@ public class PromotionsServiceImpl implements PromotionService {
         }
         return promotions.map(this::convertPromotionResponsse);
     }
-
 
     @Override
     public Page<PromotionResponse> getPromotion(Pageable pageable) {
