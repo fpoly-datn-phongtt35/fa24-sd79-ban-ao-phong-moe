@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa Đơn Mua Hàng</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .email-container {
+            width: 90%;
+            max-width: 700px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            background-color: #3498DB;
+            color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .email-header p {
+            font-size: 18px;
+            margin-top: 5px;
+            font-weight: 300;
+        }
+
+        .email-content {
+            padding: 40px;
+            background-color: #ffffff;
+        }
+
+        .customer-info {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .customer-info strong {
+            font-weight: bold;
+            color: #3498DB;
+        }
+
+        .product-item img {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            padding: 18px 30px;
+            background-color: #3498DB;
+            color: #fff;
+            text-decoration: none;
+            font-size: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #2980B9;
+            transform: translateY(-3px);
+        }
+
+        .footer {
+            background-color: #ecf0f1;
+            text-align: center;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1>Hóa Đơn Mua Hàng</h1>
+        <p>Cảm ơn bạn đã tin tưởng mua sắm tại cửa hàng <strong>MOE SHOP</strong> của chúng tôi!</p>
+    </div>
+
+    <div class="email-content">
+        <div class="customer-info">
+            <p><strong>Họ và tên khách hàng:</strong> &nbsp;<span th:text="${customer_name}"></span></p>
+            <p><strong>Email:</strong> &nbsp;<span th:text="${customer_email}"></span></p>
+            <p><strong>Mã hóa đơn:</strong> &nbsp;<span th:text="${bill_code}"></span></p>
+            <p><strong>Ngày lập hóa đơn:</strong> &nbsp;<span th:text="${invoice_date}"></span></p>
+            <p><strong>Địa chỉ giao hàng:</strong> &nbsp;<span th:text="${delivery_address}"></span></p>
+        </div>
+        <div class="button-container">
+            <a href="http://localhost:1004/my-order" class="button">Xem chi tiết</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 MOE T-Shirts. Tất cả quyền được bảo lưu.</p>
+        <p>Nếu bạn cần hỗ trợ, vui lòng liên hệ với chúng tôi <a href="http://localhost:1004/contact">tại đây</a>!</p>
+    </div>
+</div>
+</body>
+</html>

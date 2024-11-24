@@ -47,4 +47,4 @@ logging:
 notification:
   email:
     brevo-url: https://api.brevo.com
-    brevo-apikey: <key>
+    brevo-apikey: ${BREVO_KEY:DUMMY_CAN_NOT_SEND}

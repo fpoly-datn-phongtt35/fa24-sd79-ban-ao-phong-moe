@@ -12,9 +12,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartRequest;
+import sd79.dto.requests.notifications.Recipient;
+import sd79.dto.requests.notifications.SendEmailRequest;
 import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
@@ -43,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static sd79.enums.TokenType.ACCESS_TOKEN;
+import static sd79.utils.TemplateHtml.printInvoice;
 
 @Slf4j
 @Service
@@ -76,6 +82,9 @@ public class ClientServiceImpl implements ClientService {
     private final BillStatusDetailRepo billStatusDetailRepo;
 
     private final JwtService jwtService;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
 
     @Override
     public List<ProductResponse.Product> getExploreOurProducts(Integer page) {
@@ -360,7 +369,32 @@ public class ClientServiceImpl implements ClientService {
             this.productDetailRepository.save(prd);
         });
 
+        sendInvoiceToClient(billSave);
         return billSave.getId();
+    }
+
+    private final SpringTemplateEngine templateEngine;
+    private void sendInvoiceToClient(Bill bill) {
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("customer_name", String.format("%s %s",bill.getCustomer().getLastName(),  bill.getCustomer().getFirstName()));
+        properties.put("customer_email", bill.getCustomer().getUser().getEmail());
+        properties.put("invoice_date", bill.getCreateAt());
+        properties.put("bill_code", bill.getCode());
+        properties.put("delivery_address", String.format("%s, %s, %s, %s", bill.getCustomer().getCustomerAddress().getStreetName(), bill.getCustomer().getCustomerAddress().getWard(), bill.getCustomer().getCustomerAddress().getDistrict(), bill.getCustomer().getCustomerAddress().getCity()) );
+        context.setVariables(properties);
+        String html = templateEngine.process("success_invoice.html", context);
+        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
+                .to(Recipient.builder()
+                        .name(String.format("%s %s", bill.getCustomer().getFirstName(), bill.getCustomer().getLastName()))
+                        .email(bill.getCustomer().getUser().getEmail())
+                        .build())
+                .subject("Hóa đơn " + bill.getCode())
+                .htmlContent(html)
+                .build();
+
+
+        kafkaTemplate.send("send-mail", bestSellingProducts);
     }
 
     @Override

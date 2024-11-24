@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.clients.bills.BillClientRequest;
@@ -46,8 +45,6 @@ public class ClientController {
 
     private final MaterialService materialService;
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-
     @Operation(
             summary = "Get all product listings",
             description = "Get the entire product list (updating search and pagination functions)"
@@ -63,10 +60,8 @@ public class ClientController {
     )
     @GetMapping("/best-selling-products")
     public ResponseData<?> getBestSellingProduct() {
-        kafkaTemplate.send("test", "Hello Nong Hoang Vu");
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully 5 best selling product", this.clientService.getBestSellingProducts());
     }
-
 
     @Operation(
             summary = "Get Category",
