@@ -10,6 +10,7 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -84,6 +85,8 @@ public class ClientServiceImpl implements ClientService {
     private final JwtService jwtService;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final SpringTemplateEngine templateEngine;
 
 
     @Override
@@ -373,30 +376,6 @@ public class ClientServiceImpl implements ClientService {
         return billSave.getId();
     }
 
-    private final SpringTemplateEngine templateEngine;
-    private void sendInvoiceToClient(Bill bill) {
-        Context context = new Context();
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("customer_name", String.format("%s %s",bill.getCustomer().getLastName(),  bill.getCustomer().getFirstName()));
-        properties.put("customer_email", bill.getCustomer().getUser().getEmail());
-        properties.put("invoice_date", bill.getCreateAt());
-        properties.put("bill_code", bill.getCode());
-        properties.put("delivery_address", String.format("%s, %s, %s, %s", bill.getCustomer().getCustomerAddress().getStreetName(), bill.getCustomer().getCustomerAddress().getWard(), bill.getCustomer().getCustomerAddress().getDistrict(), bill.getCustomer().getCustomerAddress().getCity()) );
-        context.setVariables(properties);
-        String html = templateEngine.process("success_invoice.html", context);
-        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
-                .to(Recipient.builder()
-                        .name(String.format("%s %s", bill.getCustomer().getFirstName(), bill.getCustomer().getLastName()))
-                        .email(bill.getCustomer().getUser().getEmail())
-                        .build())
-                .subject("Hóa đơn " + bill.getCode())
-                .htmlContent(html)
-                .build();
-
-
-        kafkaTemplate.send("send-mail", bestSellingProducts);
-    }
-
     @Override
     public PageableResponse getInvoices(InvoiceResponse.Param param) {
         if (param.getPageNo() < 1) {
@@ -441,6 +420,32 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<ProductRequests.ProductBase> searchBase(String keyword) {
         return this.productCustomizeQuery.searchBase(keyword);
+    }
+
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
+    private void sendInvoiceToClient(Bill bill) {
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("customer_name", String.format("%s %s", bill.getCustomer().getLastName(), bill.getCustomer().getFirstName()));
+        properties.put("customer_email", bill.getCustomer().getUser().getEmail());
+        properties.put("invoice_date", bill.getCreateAt());
+        properties.put("bill_code", bill.getCode());
+        properties.put("delivery_address", String.format("%s, %s, %s, %s", bill.getCustomer().getCustomerAddress().getStreetName(), bill.getCustomer().getCustomerAddress().getWard(), bill.getCustomer().getCustomerAddress().getDistrict(), bill.getCustomer().getCustomerAddress().getCity()));
+        properties.put("url", host_frontend);
+        log.info(host_frontend);
+        context.setVariables(properties);
+        String html = templateEngine.process("success_invoice.html", context);
+        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
+                .to(Recipient.builder()
+                        .name(String.format("%s %s", bill.getCustomer().getFirstName(), bill.getCustomer().getLastName()))
+                        .email(bill.getCustomer().getUser().getEmail())
+                        .build())
+                .subject("MOE SHOP - ĐẶT HÀNG THÀNH CÔNG HÓA ĐƠN " + bill.getCode())
+                .htmlContent(html)
+                .build();
+
+        kafkaTemplate.send("send-mail", bestSellingProducts);
     }
 
 }
