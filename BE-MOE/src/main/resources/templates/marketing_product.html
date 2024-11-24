@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ra Mắt Áo Thun Mới</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .email-header {
+      background: linear-gradient(to right, #6d28d9, #4f46e5);
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    .email-header h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+    .email-header p {
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .email-body {
+      padding: 20px;
+      text-align: center;
+      color: #333333;
+    }
+    .email-body h2 {
+      font-size: 20px;
+      margin: 16px 0;
+      color: #4f46e5;
+    }
+    .email-body p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .email-button {
+      display: inline-block;
+      background-color: #e11d48;
+      color: #ffffff;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .email-button:hover {
+      background-color: #be123c;
+    }
+    .email-footer {
+      background: #f9fafb;
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: #666666;
+    }
+    .email-footer a {
+      color: #6d28d9;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <div class="email-header">
+    <h1>✨ Ra Mắt Bộ Sưu Tập Áo Thun Mới ✨</h1>
+    <p>Thời trang, thoải mái, và giới hạn số lượng!</p>
+  </div>
+  <div class="email-body">
+    <p style="font-size: 16px; font-weight: bold; color: #333;">
+      Xin chào <span style="color: #4f46e5;">Quý Khách Hàng Thân Mến</span>,
+    </p>
+    <p style="font-size: 14px; color: #666;">
+      Chúng tôi rất vui được giới thiệu đến bạn bộ sưu tập áo thun mới nhất! Hy vọng bạn sẽ yêu thích thiết kế lần này và tìm được sản phẩm phù hợp với phong cách của mình.
+    </p>
+  </div>
+  <div class="email-body">
+    <img src="https://1.bp.blogspot.com/-r9paFwCVnfc/X2HxheB1e-I/AAAAAAAAW00/sp21N8n6IDYJA4de62aWbXnPT5vAgekWQCLcBGAsYHQ/s1820/cover1.jpg" alt="Áo Thun Mới" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;">
+    <h2>"Đột Phá Phong Cách - Chất Lượng Hoàn Hảo"</h2>
+    <p>Hãy khám phá mẫu áo thun mới nhất của chúng tôi. Sự kết hợp hoàn hảo giữa chất liệu cao cấp và thiết kế hiện đại, mang lại cảm giác thoải mái và phong cách riêng cho bạn. Số lượng có hạn, hãy đặt mua ngay!</p>
+    <a th:href="@{${url} + '/view/' + ${productId}}" class="email-button">Khám Phá Ngay</a>
+  </div>
+  <div class="email-footer">
+    <p>Bạn nhận được email này vì đã đăng ký nhận thông tin từ chúng tôi.</p>
+    <p><a href="#">Hủy đăng ký</a> nếu bạn không muốn nhận email này nữa.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -88,6 +88,8 @@ public class ClientServiceImpl implements ClientService {
 
     private final SpringTemplateEngine templateEngine;
 
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
 
     @Override
     public List<ProductResponse.Product> getExploreOurProducts(Integer page) {
@@ -422,8 +424,6 @@ public class ClientServiceImpl implements ClientService {
         return this.productCustomizeQuery.searchBase(keyword);
     }
 
-    @Value("${spring.frontend.url}")
-    private String host_frontend;
     private void sendInvoiceToClient(Bill bill) {
         Context context = new Context();
         Map<String, Object> properties = new HashMap<>();
@@ -433,14 +433,13 @@ public class ClientServiceImpl implements ClientService {
         properties.put("bill_code", bill.getCode());
         properties.put("delivery_address", String.format("%s, %s, %s, %s", bill.getCustomer().getCustomerAddress().getStreetName(), bill.getCustomer().getCustomerAddress().getWard(), bill.getCustomer().getCustomerAddress().getDistrict(), bill.getCustomer().getCustomerAddress().getCity()));
         properties.put("url", host_frontend);
-        log.info(host_frontend);
         context.setVariables(properties);
         String html = templateEngine.process("success_invoice.html", context);
         SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
-                .to(Recipient.builder()
+                .to(List.of(Recipient.builder()
                         .name(String.format("%s %s", bill.getCustomer().getFirstName(), bill.getCustomer().getLastName()))
                         .email(bill.getCustomer().getUser().getEmail())
-                        .build())
+                        .build()))
                 .subject("MOE SHOP - ĐẶT HÀNG THÀNH CÔNG HÓA ĐƠN " + bill.getCode())
                 .htmlContent(html)
                 .build();

@@ -41,7 +41,7 @@ public class EmailService {
                         .name("MOE SHOP")
                         .email("mobahoangvu2004@gmail.com")
                         .build())
-                .to(List.of(request.getTo()))
+                .to(request.getTo())
                 .subject(request.getSubject())
                 .htmlContent(request.getHtmlContent())
                 .build();
