@@ -2,12 +2,18 @@ package sd79.service.impl;
 
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import sd79.dto.requests.CouponImageReq;
 import sd79.dto.requests.CouponRequest;
 import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
+import sd79.dto.requests.notifications.Recipient;
+import sd79.dto.requests.notifications.SendEmailRequest;
 import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.CouponResponse;
 import sd79.dto.response.PageableResponse;
@@ -23,9 +29,9 @@ import sd79.repositories.auth.UserRepository;
 import sd79.repositories.customQuery.CouponCustomizeQuery;
 import sd79.service.CouponService;
 import sd79.utils.CloudinaryUploadCoupon;
-import sd79.utils.Email;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +46,12 @@ public class CouponServiceImpl implements CouponService {
     private final CouponImageRepo couponImageRepo;
     private final CustomerRepository customerRepository;
     private final CouponShareRepo couponShareRepo;
-    private final Email email;
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final SpringTemplateEngine templateEngine;
 
     @Override
     public PageableResponse getAllCoupon(CouponParamFilter param) {
@@ -118,48 +129,81 @@ public class CouponServiceImpl implements CouponService {
         return coupon.getId();
     }
 
-    @Override
+//    @Override
+//    public void sendCouponEmail(Coupon coupon, Customer customer) {
+//        try {
+//            CouponImage couponImage = findByImage(coupon.getId());
+//            String imageUrl = couponImage.getImageUrl();
+//            String subject = "Thông Báo Phiếu Giảm Giá";
+//            String discountType = coupon.getDiscountType() == TodoDiscountType.PERCENTAGE ? "%" : "VND";
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+//            String formattedStartDate = dateFormat.format(coupon.getStartDate());
+//            String formattedEndDate = dateFormat.format(coupon.getEndDate());
+//
+//            String body = String.format(
+//                    "<div style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;\">" +
+//                            "<div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\">" +
+//                            "<div style=\"text-align: center;\">" +
+//                            "<img src=\"https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg\" alt=\"Logo\" style=\"max-width: 120px; margin-bottom: 20px;\" />" +
+//                            "<h1 style=\"font-size: 24px; color: #333; margin: 0 0 10px;\">🎉 Bạn có một phiếu giảm giá đặc biệt! 🎉</h1>" +
+//                            "<p style=\"font-size: 18px; color: #ff6f61; margin: 0;\">Thông Tin Phiếu Giảm Giá - %s</p>" +
+//                            "</div>" +
+//                            "<p style=\"font-size: 16px; color: #555; line-height: 1.6; text-align: center;\">Xin chào <strong style='color:#ff6f61;'>%s</strong>, chúng tôi rất vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt cho lần mua sắm tiếp theo của mình!</p>" +
+//                            "<div style=\"background-image: url('%s'); background-size: cover; padding: 20px; text-align: center; color: white; border-radius: 10px; margin: 20px 0;\">" +
+//                            "<strong style=\"font-size: 24px;\">Giảm %s %s</strong><br />" +
+//                            "<p style=\"font-size: 16px;\">Mã phiếu giảm giá: <strong style='color:#e74c3c;'>%s</strong></p>" +
+//                            "<p style=\"font-size: 16px;\">Có hiệu lực từ <strong>%s</strong> đến <strong>%s</strong></p>" +
+//                            "</div>" +
+//                            "<p style=\"font-size: 16px; color: #555; text-align: center;\">Hãy sử dụng mã này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
+//                            "<div style=\"text-align: center;\">" +
+//                            "<a href=\"http://localhost:1004/\" style=\"display: inline-block; padding: 15px 30px; background-color: #ff6f61; color: white; font-size: 18px; border-radius: 8px; text-decoration: none;\">Xem Chi Tiết</a>" +
+//                            "</div>" +
+//                            "<p style=\"font-size: 14px; color: #aaa; text-align: center; margin-top: 30px;\">Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
+//                            "</div>" +
+//                            "</div>",
+//                    coupon.getName(),
+//                    customer.getFirstName(), imageUrl,
+//                    coupon.getDiscountValue(), discountType, coupon.getCode(),
+//                    formattedStartDate, formattedEndDate
+//            );
+//
+//            email.sendEmail(customer.getUser().getEmail(), subject, body);
+//        } catch (Exception e) {
+//            System.out.println("THAT BAI: " + e.getMessage());
+//        }
+//    }
+
     public void sendCouponEmail(Coupon coupon, Customer customer) {
-        try {
-            CouponImage couponImage = findByImage(coupon.getId());
-            String imageUrl = couponImage.getImageUrl();
-            String subject = "Thông Báo Phiếu Giảm Giá";
-            String discountType = coupon.getDiscountType() == TodoDiscountType.PERCENTAGE ? "%" : "VND";
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-            String formattedStartDate = dateFormat.format(coupon.getStartDate());
-            String formattedEndDate = dateFormat.format(coupon.getEndDate());
+        CouponImage couponImage = findByImage(coupon.getId());
+        String imageUrl = couponImage != null ? couponImage.getImageUrl() : "";
+        String discountType = coupon.getDiscountType() == TodoDiscountType.PERCENTAGE ? "%" : "VND";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        String formattedStartDate = dateFormat.format(coupon.getStartDate());
+        String formattedEndDate = dateFormat.format(coupon.getEndDate());
 
-            String body = String.format(
-                    "<div style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;\">" +
-                            "<div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\">" +
-                            "<div style=\"text-align: center;\">" +
-                            "<img src=\"https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg\" alt=\"Logo\" style=\"max-width: 120px; margin-bottom: 20px;\" />" +
-                            "<h1 style=\"font-size: 24px; color: #333; margin: 0 0 10px;\">🎉 Bạn có một phiếu giảm giá đặc biệt! 🎉</h1>" +
-                            "<p style=\"font-size: 18px; color: #ff6f61; margin: 0;\">Thông Tin Phiếu Giảm Giá - %s</p>" +
-                            "</div>" +
-                            "<p style=\"font-size: 16px; color: #555; line-height: 1.6; text-align: center;\">Xin chào <strong style='color:#ff6f61;'>%s</strong>, chúng tôi rất vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt cho lần mua sắm tiếp theo của mình!</p>" +
-                            "<div style=\"background-image: url('%s'); background-size: cover; padding: 20px; text-align: center; color: white; border-radius: 10px; margin: 20px 0;\">" +
-                            "<strong style=\"font-size: 24px;\">Giảm %s %s</strong><br />" +
-                            "<p style=\"font-size: 16px;\">Mã phiếu giảm giá: <strong style='color:#e74c3c;'>%s</strong></p>" +
-                            "<p style=\"font-size: 16px;\">Có hiệu lực từ <strong>%s</strong> đến <strong>%s</strong></p>" +
-                            "</div>" +
-                            "<p style=\"font-size: 16px; color: #555; text-align: center;\">Hãy sử dụng mã này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.</p>" +
-                            "<div style=\"text-align: center;\">" +
-                            "<a href=\"http://localhost:1004/\" style=\"display: inline-block; padding: 15px 30px; background-color: #ff6f61; color: white; font-size: 18px; border-radius: 8px; text-decoration: none;\">Xem Chi Tiết</a>" +
-                            "</div>" +
-                            "<p style=\"font-size: 14px; color: #aaa; text-align: center; margin-top: 30px;\">Cảm ơn bạn đã ủng hộ chúng tôi!</p>" +
-                            "</div>" +
-                            "</div>",
-                    coupon.getName(),
-                    customer.getFirstName(), imageUrl,
-                    coupon.getDiscountValue(), discountType, coupon.getCode(),
-                    formattedStartDate, formattedEndDate
-            );
+        // Only one recipient, so no need for stream processing
+        Recipient recipient = Recipient.builder()
+                .name(String.format("%s %s", customer.getFirstName(), customer.getLastName()))
+                .email(customer.getUser().getEmail())
+                .build();
 
-            email.sendEmail(customer.getUser().getEmail(), subject, body);
-        } catch (Exception e) {
-            System.out.println("THAT BAI: " + e.getMessage());
-        }
+        Context context = new Context();
+        context.setVariable("couponName", coupon.getName());
+        context.setVariable("imageUrl", imageUrl);
+        context.setVariable("discountValue", coupon.getDiscountValue());
+        context.setVariable("discountType", discountType);
+        context.setVariable("couponCode", coupon.getCode());
+        context.setVariable("startDate", formattedStartDate);
+        context.setVariable("endDate", formattedEndDate);
+
+        String htmlContent = templateEngine.process("coupon.html", context);
+
+        SendEmailRequest sendEmailRequest = SendEmailRequest.builder()
+                .to(Collections.singletonList(recipient))
+                .subject("Thông Báo Phiếu Giảm Giá")
+                .htmlContent(htmlContent)
+                .build();
+        kafkaTemplate.send("send-mail", sendEmailRequest);
     }
 
     public CouponImage findByImage(Long couponId) {
@@ -187,7 +231,6 @@ public class CouponServiceImpl implements CouponService {
 
         if (coupon.getType() == TodoType.PERSONAL) {
             List<CouponShare> sharedCoupons = couponShareRepo.findByCoupon(coupon);
-
 
             for (CouponShare couponShare : sharedCoupons) {
                 Customer customer = couponShare.getCustomer();
@@ -260,8 +303,10 @@ public class CouponServiceImpl implements CouponService {
                 couponShare.setIsDeleted(false);
                 couponShareRepo.save(couponShare);
             }
+
         } else {
             deleteCouponShare(coupon.getId());
+            deleteCouponImage(coupon.getId());
         }
         return couponRepo.save(coupon).getId();
     }
@@ -281,7 +326,8 @@ public class CouponServiceImpl implements CouponService {
             cloudinaryUploadCoupon.delete(couponImage.getPublicId());
             couponImageRepo.delete(couponImage);
         } else {
-            throw new RuntimeException("Coupon image not found or public ID is null");
+//            throw new RuntimeException("Coupon image not found or public ID is null");
+            return;
         }
     }
 
@@ -325,7 +371,7 @@ public class CouponServiceImpl implements CouponService {
     private String convertToUrl(CouponImage image) {
         return (image != null) ? image.getImageUrl() : null;
     }
-//-----------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------
     private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
         return CouponCustomerResponse.builder()
                 .id(coupon.getId())
