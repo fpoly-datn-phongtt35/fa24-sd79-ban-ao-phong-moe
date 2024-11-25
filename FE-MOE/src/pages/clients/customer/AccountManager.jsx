@@ -13,6 +13,13 @@ export const AccountInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const [accountData, setAccountData] = useState({
     firstName: '',
@@ -34,20 +41,64 @@ export const AccountInfo = () => {
   });
 
   const validateForm = () => {
+    const specialCharRegex = /^[a-zA-ZÀ-ỹ]+( [a-zA-ZÀ-ỹ]+)*$/;
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const minAge = 16;
+
+    const calculateAge = (dob) => {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    };
 
     const newErrors = {
-      lastName: accountData.lastName ? '' : 'Họ không được để trống',
-      firstName: accountData.firstName ? '' : 'Tên không được để trống',
-      phoneNumber: accountData.phoneNumber ? '' : 'Số điện thoại không được để trống',
-      gender: accountData.gender ? '' : 'Phải chọn giới tính',
-      dateOfBirth: accountData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: accountData.email ? '' : 'Email không được để trống',
+      lastName: accountData.lastName
+        ? accountData.lastName.length > 20
+          ? "Họ không được vượt quá 20 ký tự"
+          : !specialCharRegex.test(accountData.lastName)
+            ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
+        : "Họ không được để trống",
+
+      firstName: accountData.firstName
+        ? accountData.firstName.length > 50
+          ? "Tên không được vượt quá 50 ký tự"
+          : !specialCharRegex.test(accountData.firstName)
+            ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
+        : "Tên không được để trống",
+
+      phoneNumber: accountData.phoneNumber
+        ? phoneRegex.test(accountData.phoneNumber)
+          ? ""
+          : "Số điện thoại Không hợp lệ"
+        : "Số điện thoại không được để trống",
+
+      gender: accountData.gender ? "" : "Phải chọn giới tính",
+
+      dateOfBirth: accountData.dateOfBirth
+        ? calculateAge(accountData.dateOfBirth) >= minAge
+          ? ""
+          : "Phải trên 16 tuổi"
+        : "Phải chọn ngày sinh",
+
+      email: accountData.email
+        ? emailRegex.test(accountData.email)
+          ? ""
+          : "Email không đúng định dạng"
+        : "Email không được để trống",
 
     };
 
     setErrors(newErrors);
 
-    return Object.values(newErrors).every((error) => error === '');
+    return Object.values(newErrors).every((error) => error === "");
   };
 
 
@@ -78,12 +129,12 @@ export const AccountInfo = () => {
         const data = await fetchAccountInfoById(localStorage.getItem("userId"));
         const customerData = data.data;
         setAccountData({
-          firstName: customerData.firstName,
-          lastName: customerData.lastName,
+          firstName: capitalizeFirstLetter(customerData.firstName),
+          lastName: capitalizeFirstLetter(customerData.lastName),
           phoneNumber: customerData.phoneNumber,
           gender: customerData.gender,
           dateOfBirth: formatDate2(customerData.dateOfBirth),
-          image: customerData.image,
+          image: customerData.image,        
           email: customerData.email,
         });
         setImagePreview(customerData.image || '/placeholder-image.png');
@@ -95,107 +146,21 @@ export const AccountInfo = () => {
   }, []);
 
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
-    const phoneNumberRegex = /^0\d{9,11}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const minAge = 16;
-
-    const calculateAge = (dob) => {
-      const birthDate = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      return age;
-    };
-    if (name === 'lastName') {
-      if (value.length > 20) {
-        newErrors.lastName = "Họ không được vượt quá 20 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.lastName;
-        setIsLoading(false);
-      }
-    }
-    if (name === 'firstName') {
-      if (value.length > 50) {
-        newErrors.firstName = "Tên không được vượt quá 50 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.firstName;
-        setIsLoading(false);
-      }
-    }
-
-    if (name === 'phoneNumber') {
-      if (!phoneNumberRegex.test(value)) {
-        newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
-        setIsLoading(true);
-      } else {
-        delete newErrors.phoneNumber;
-        setIsLoading(false);
-      }
-    }
-
-
-
-    if (name === 'gender') {
-      if (!value) {
-        newErrors.gender = "Phải chọn giới tính";
-        setIsLoading(true);
-      } else {
-        delete newErrors.gender;
-        setIsLoading(false);
-      }
-      setAccountData({ ...accountData, gender: value });
-    } else {
-      setAccountData({ ...accountData, [name]: value });
-    }
-
-    if (name === 'dateOfBirth') {
-      const age = calculateAge(value);
-      if (age < minAge) {
-        newErrors.dateOfBirth = "Phải trên 16 tuổi";
-        setIsLoading(true);
-      } else {
-        delete newErrors.dateOfBirth;
-        setIsLoading(false);
-      }
-      setAccountData({ ...accountData, dateOfBirth: value });
-    } else {
-      setAccountData({ ...accountData, [name]: value });
-    }
-    if (name === 'email') {
-      if (!emailRegex.test(value)) {
-        newErrors.email = "Email không đúng định dạng";
-        setIsLoading(true);
-      } else {
-        delete newErrors.email;
-        setIsLoading(false);
-      }
-    }
-
-    setAccountData({ ...accountData, [name]: value });
 
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: value ? '' : prevErrors[name],
+      [name]: '',
     }));
 
-
-    setErrors(newErrors);
-  }
+    setAccountData((prevData) => ({
+      ...prevData,
+      [name]: ['firstName', 'lastName'].includes(name)
+        ? capitalizeFirstLetter(value)
+        : value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,7 +183,7 @@ export const AccountInfo = () => {
       }
       const formData = new FormData();
       formData.append("images", imageObject)
-      formData.append("userId", localStorage.getItem("userId"))
+      formData.append("UserId", id)
       await postcustomerImage(formData).then(() => {
         toast.success('Sửa thành công');
         setIsLoading(false);
@@ -249,14 +214,14 @@ export const AccountInfo = () => {
       <Grid container spacing={2}>
         <Grid xs={12} md={3}>
           <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
-            <Typography level="h6" color="primary" fontWeight="lg">Thông tin tài khoản</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("//my-account")}>Thông tin tài khoản</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sổ địa chỉ</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi mật khẩu</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
           </Sheet>
         </Grid>
 
@@ -432,13 +397,13 @@ export const AccountInfo = () => {
                         </FormControl>
                       </Grid>
 
-                      <Grid  xs={6} sx={{ marginTop: 1 }}>
+                      <Grid xs={6} sx={{ marginTop: 1 }}>
                         <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
                           Cập Nhật Người Dùng
                         </Button>
-                        <Button variant="soft" color="danger" onClick={() => navigate("/")}>
+                        {/* <Button variant="soft" color="danger" onClick={() => navigate("/")}>
                           Hủy
-                        </Button>
+                        </Button> */}
                       </Grid>
                     </Grid>
                   </Grid>

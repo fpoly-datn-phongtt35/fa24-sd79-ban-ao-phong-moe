@@ -77,19 +77,24 @@ export const getAllStatuses = async () => {
 };
 
 export const addBillStatusDetail = async (requestData) => {
-    try {
-        const response = await authorizedAxiosInstance.post(
-            `${API_ROOT}/bill/addBillStatusDetail`, 
-            requestData
-        );
-        
-        if (response.data) {         
-            return response.data;  
-        }
-    } catch (error) {
-        console.error("Error adding bill status detail:", error);
-        toast.error("Failed to add bill status detail.");
-        throw error;
+    const response = await authorizedAxiosInstance.post(
+        `${API_ROOT}/bill/addBillStatusDetail`,
+        requestData
+    );
+
+    if (response.data) {
+        return response.data;
+    }
+};
+
+export const addBillStatusDetailV2 = async (requestData) => {
+    const response = await authorizedAxiosInstance.post(
+        `${API_ROOT}/bill/addBillStatusDetailV2`,
+        requestData
+    );
+
+    if (response.data) {
+        return response.data;
     }
 };
 
@@ -103,3 +108,26 @@ export const getBillStatusDetailsByBillId = async (id) => {
         throw error;
     }
 };
+
+export const deleteBillList = async (id) => {
+    const response = await authorizedAxiosInstance.delete(`${API_ROOT}/bill/deleteBillList/${id}`);
+    toast.success(response.data.message);
+    return response.data;
+};
+
+export const getPreviousBillStatusId = async (billId, page = 0, size = 1) => {
+    try {
+        const { data } = await authorizedAxiosInstance.get(
+            `${API_ROOT}/bill/previousStatus/${billId}`,
+            { params: { page, size } } 
+        );
+
+        return data;
+    } catch (error) {
+        console.error("Error fetching previous bill status:", error);
+        const errorMessage = error.response?.data?.message || "Failed to fetch the previous bill status.";
+        toast.error(errorMessage);
+        throw error;
+    }
+};
+

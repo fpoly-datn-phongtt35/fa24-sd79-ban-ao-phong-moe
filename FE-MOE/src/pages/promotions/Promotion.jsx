@@ -8,7 +8,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { fetchAllDiscounts, deleteDiscount, searchDiscounts } from "~/apis/discountApi";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Pagination, IconButton, TextField } from "@mui/material";
+import { Pagination, IconButton, TextField, TableRow, TableCell } from "@mui/material";
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -19,7 +19,7 @@ export const Promotion = () => {
   const [searchEndDate, setSearchEndDate] = useState("");
   const itemsPerPage = 5;
   const navigate = useNavigate();
-
+  
   // Lấy dữ liệu ban đầu
   useEffect(() => {
     handleSetDiscounts();
@@ -163,19 +163,47 @@ export const Promotion = () => {
           <tbody>
             {discounts.length > 0 ? (
               discounts.map((discount, index) => (
-                <tr key={discount.id}>
-                  <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td>{discount.name}</td>
-                  <td>{discount.code}</td>
-                  <td>{discount.percent}%</td>
-                  <td>{new Date(discount.startDate).toLocaleDateString()}</td>
-                  <td>{new Date(discount.endDate).toLocaleDateString()}</td>
-                  <td>{discount.note}</td>
-                  <td>
-                    <IconButton color='warning' onClick={() => navigate(`/promotions/update/${discount.id}`)}><EditIcon /></IconButton>
-                    <IconButton color='error' onClick={() => onDelete(discount.id)}><HighlightOffIcon /></IconButton>
-                  </td>
-                </tr>
+                <TableRow key={discount.id}>
+                  <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                  <TableCell>{discount.name}</TableCell>
+                  <TableCell>{discount.code}</TableCell>
+                  <TableCell>{discount.percent}%</TableCell>
+                  <TableCell align="left">
+                    {discount.startDate
+                      ? `${new Date(discount.startDate).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })} ${new Date(discount.startDate).toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}`
+                      : ""}
+                  </TableCell>
+                  <TableCell align="left">
+                    {discount.endDate
+                      ? `${new Date(discount.endDate).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })} ${new Date(discount.endDate).toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}`
+                      : ""}
+                  </TableCell>
+                  <TableCell>{discount.note}</TableCell>
+                  <TableCell>
+                    <IconButton color="warning" onClick={() => navigate(`/promotions/update/${discount.id}`)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => onDelete(discount.id)}>
+                      <HighlightOffIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))
             ) : (
               <tr>
@@ -183,6 +211,7 @@ export const Promotion = () => {
               </tr>
             )}
           </tbody>
+
         </Table>
       </Sheet>
 

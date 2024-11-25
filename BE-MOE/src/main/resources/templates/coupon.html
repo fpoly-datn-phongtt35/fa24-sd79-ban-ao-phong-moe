@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Phiếu Giảm Giá</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+            text-align: center;
+        }
+        .email-header img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+        .email-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin: 0 0 10px;
+        }
+        .email-header p {
+            font-size: 18px;
+            color: #ff6f61;
+            margin: 0;
+        }
+        .email-body {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .email-highlight {
+            background-size: cover;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .email-highlight strong {
+            font-size: 24px;
+        }
+        .email-footer {
+            text-align: center;
+        }
+        .email-footer a {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #ff6f61;
+            color: white;
+            font-size: 18px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .email-note {
+            font-size: 14px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <img src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg" alt="Logo" />
+        <h1>🎉 Bạn có một phiếu giảm giá đặc biệt! 🎉</h1>
+        <p>Thông Tin Phiếu Giảm Giá - <span th:text="${couponName}"></span></p>
+    </div>
+    <p class="email-body">
+        Xin chào <strong style="color:#ff6f61;" th:text="${customerName}"></strong>, chúng tôi rất vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt cho lần mua sắm tiếp theo của mình!
+    </p>
+    <div class="email-highlight" th:style="'background-image: url(' + ${imageUrl} + ');'">
+        <strong>Giảm <span th:text="${discountValue}"></span> <span th:text="${discountType}"></span></strong><br />
+        <p>Mã phiếu giảm giá: <strong style="color:#e74c3c;" th:text="${couponCode}"></strong></p>
+        <p>Có hiệu lực từ <strong th:text="${startDate}"></strong> đến <strong th:text="${endDate}"></strong></p>
+    </div>
+    <p class="email-body">
+        Hãy sử dụng mã này khi bạn mua sắm trên trang web của chúng tôi để nhận được ưu đãi đặc biệt.
+    </p>
+    <div class="email-footer">
+        <a href="http://localhost:1004/">Xem Chi Tiết</a>
+    </div>
+    <p class="email-note">
+        Cảm ơn bạn đã ủng hộ chúng tôi!
+    </p>
+</div>
+</body>
+</html>

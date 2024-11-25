@@ -28,10 +28,6 @@ public class PromotionResponse {
 
     private String note;
 
-//    private String status;
-//
-//    private int numberOfProduct;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private Date createdAt;
 

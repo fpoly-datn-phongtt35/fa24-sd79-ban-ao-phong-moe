@@ -190,7 +190,7 @@ export const deleteCoupon = async (billId) => {
 export const addPay = async (billStoreRequest) => {
   try {
     const res = await authorizedAxiosInstance.post(`${API_ROOT}/bill/storePay`, billStoreRequest);
-    toast.success("Thêm mới hóa đơn thành công");
+    // toast.success("Thêm mới hóa đơn thành công");
     return res.data.data;
   } catch (error) {
     const errorMessage = error.response?.data?.message || "Thêm mới hóa đơn không thành công";

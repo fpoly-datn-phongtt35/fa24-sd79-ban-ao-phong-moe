@@ -10,11 +10,7 @@ package sd79.service.payment;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sd79.configuration.VNPAYConfig;
-import sd79.model.Bill;
-import sd79.repositories.BillRepo;
-import sd79.service.BillService;
 import sd79.utils.VNPayUtil;
 
 import java.util.Map;
@@ -23,7 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
     private final VNPAYConfig vnPayConfig;
-    private final BillRepo billRepository;
 
     public String createVnPayPayment(HttpServletRequest request) {
         long amount = Integer.parseInt(request.getParameter("amount")) * 100L;

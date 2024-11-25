@@ -22,7 +22,7 @@ import java.util.Set;
 public interface ClientService {
     List<ProductResponse.Product> getExploreOurProducts(Integer page);
 
-    Set<ProductResponse.Product> getBestSellingProducts();
+    List<ProductResponse.Product> getBestSellingProducts();
 
     ProductResponse.ProductDetail getProductDetail(Long id);
 

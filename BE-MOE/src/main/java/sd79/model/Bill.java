@@ -7,9 +7,7 @@ import sd79.enums.PaymentMethod;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -68,6 +66,6 @@ public class Bill extends AbstractEntity<Long> implements Serializable {
     private Date paymentTime;
 
     @OneToMany(mappedBy = "bill")
-    private Set<BillDetail> billDetails = new LinkedHashSet<>();
+    private List<BillDetail> billDetails = new ArrayList<>();
 
 }

@@ -24,7 +24,7 @@ import UpdateCoupon from "~/pages/coupon/UpdateCoupon";
 import { Employee } from "~/pages/employee/Employee";
 import EmployeesUpdate from "~/pages/employee/EmployeeUpdate";
 import { EmployeeStore } from "~/pages/employee/EmployeeStore";
-import  ChangePasswordForm  from "~/pages/employee/ChangePasswordForm";
+import ChangePasswordForm from "~/pages/employee/ChangePasswordForm";
 import { AddPromotion } from "~/pages/promotions/AddPromotion";
 import { UpdatePromotion } from "~/pages/promotions/UpdatePromotion";
 import { ProductDetail } from "~/pages/products/main/ProductDetail";
@@ -46,11 +46,13 @@ import BillList from "~/pages/bill/BillList";
 import Products from "~/pages/clients/Products";
 import { AddressInfo } from "~/pages/clients/customer/AddressManager";
 import BillDetail from "~/pages/bill/BillDetail";
-import BillEdit from "~/pages/bill/BillEdit";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
 import  Support  from "~/pages/support/support";
+import { UpdatePassWord } from "~/pages/clients/customer/PassWordManager";
+import BillEdit from "~/pages/bill/BillEdit";
+import Statistical from "~/pages/other/Statistical";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -168,7 +170,6 @@ function RouterProvider() {
             <div>
               <Header_Client />
             </div>
-            {/* style={{backgroundColor: '#4545ff1a'}} */}
             <div className="content-area_client">
               <Outlet />
             </div>
@@ -201,6 +202,7 @@ function RouterProvider() {
         <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
         <Route path="/my-address" element={<AddressInfo />} />
+        <Route path="/my-passWord" element={<UpdatePassWord />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -229,9 +231,10 @@ function RouterProvider() {
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
-        <Route path="/bill/detail/:id" element={<BillDetail />} />
-        <Route path="/bill/edit/:id" element={<BillEdit />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/bill/detail/:id" element={<BillDetail />} />   
+        <Route path="/bill/edit/:id" element={<BillEdit />} />   
+        <Route path="/statistical" element={<Statistical />} />   
       </Route>
     </Routes>
   );

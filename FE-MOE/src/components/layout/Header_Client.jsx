@@ -118,10 +118,6 @@ const Header_Client = () => {
           variant="h6"
           style={{ fontWeight: "bold", color: "#000", fontSize: "24px" }}
         >
-          <img
-            src="https://cdn.pixabay.com/animation/2024/10/24/21/44/21-44-27-689_512.gif"
-            width={90}
-          />
           MOE SHOP
         </Typography>
 
@@ -129,25 +125,61 @@ const Header_Client = () => {
         <Box display="flex" alignItems="center" gap={3}>
           <Button
             onClick={() => navigate("/")}
-            style={{ color: "#000", textTransform: "none" }}
+            sx={{
+              color: location.pathname === "/" ? "primary.main" : "#000",
+              textTransform: "none",
+              fontWeight: 600,
+              transition: "all 0.3s ease",
+              ":hover": {
+                color: "primary.main",
+                transform: "scale(1.05)",
+              },
+            }}
           >
             Trang chủ
           </Button>
           <Button
             onClick={() => navigate("/search")}
-            style={{ color: "#000", textTransform: "none" }}
+            sx={{
+              color: location.pathname === "/search" ? "primary.main" : "#000",
+              textTransform: "none",
+              fontWeight: 600,
+              transition: "all 0.3s ease",
+              ":hover": {
+                color: "primary.main",
+                transform: "scale(1.05)",
+              },
+            }}
           >
             Sản phẩm
           </Button>
           <Button
             onClick={() => navigate("/contact")}
-            style={{ color: "#000", textTransform: "none" }}
+            sx={{
+              color: location.pathname === "/contact" ? "primary.main" : "#000",
+              textTransform: "none",
+              fontWeight: 600,
+              transition: "all 0.3s ease",
+              ":hover": {
+                color: "primary.main",
+                transform: "scale(1.05)",
+              },
+            }}
           >
             Liên hệ
           </Button>
           <Button
             onClick={() => navigate("/about")}
-            style={{ color: "#000", textTransform: "none" }}
+            sx={{
+              color: location.pathname === "/about" ? "primary.main" : "#000",
+              textTransform: "none",
+              fontWeight: 600,
+              transition: "all 0.3s ease",
+              ":hover": {
+                color: "primary.main",
+                transform: "scale(1.05)",
+              },
+            }}
           >
             Giới thiệu
           </Button>
@@ -155,14 +187,32 @@ const Header_Client = () => {
             (location.pathname.includes("sign-up") ? (
               <Button
                 onClick={singIn}
-                style={{ color: "#000", textTransform: "none" }}
+                sx={{
+                  color: "#000",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  transition: "all 0.3s ease",
+                  ":hover": {
+                    color: "primary.main",
+                    transform: "scale(1.05)",
+                  },
+                }}
               >
                 Đăng nhập
               </Button>
             ) : (
               <Button
                 onClick={() => navigate("/sign-up")}
-                style={{ color: "#000", textTransform: "none" }}
+                sx={{
+                  color: "#000",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  transition: "all 0.3s ease",
+                  ":hover": {
+                    color: "primary.main",
+                    transform: "scale(1.05)",
+                  },
+                }}
               >
                 Đăng ký
               </Button>

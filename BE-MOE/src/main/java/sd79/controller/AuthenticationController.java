@@ -102,4 +102,5 @@ public class AuthenticationController {
         this.authenticationService.validInfo(email, username);
         return new ResponseData<>(HttpStatus.OK.value(), "Data is valid");
     }
+
 }
