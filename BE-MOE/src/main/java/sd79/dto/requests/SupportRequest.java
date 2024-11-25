@@ -6,10 +6,10 @@ import java.time.LocalDateTime;
 
 @Data
 public class SupportRequest {
-    private Long customerId;
-//    private String customerName;
-//    private String phoneNumber;
+    private String hoTen;
+    private String email;
+    private String sdt;
     private String issueDescription;
-//    private LocalDateTime createdDate;
+    private LocalDateTime createdDate;
 }
 

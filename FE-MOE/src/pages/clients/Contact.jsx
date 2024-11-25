@@ -17,9 +17,9 @@ import { toast } from "react-toastify";
 
 export const Contact = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    hoTen: "",
     email: "",
-    phone: "",
+    sdt:"",
     message: "",
   });
 
@@ -34,22 +34,19 @@ export const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userId = localStorage.getItem("userId"); // Lấy userId từ localStorage
-      if (!userId) {
-        toast.error("Vui lòng đăng nhập để gửi yêu cầu hỗ trợ.");
-        return;
-      }
 
       const requestData = {
-        customerId: userId, // Dùng userId thay vì hardcode giá trị
+        hoTen: formData.hoTen,
+        email: formData.email,
+        sdt: formData.sdt,
         issueDescription: formData.message,
       };
 
       await postSupportRequest(requestData);
       setFormData({
-        name: "",
+        hoTen: "",
         email: "",
-        phone: "",
+        sdt:"",
         message: "",
       });
       // toast.success("Yêu cầu hỗ trợ đã được gửi thành công!");
@@ -114,8 +111,8 @@ export const Contact = () => {
                 <FormLabel>Tên của bạn</FormLabel>
                 <Input
                   placeholder="Nhập tên của bạn"
-                  name="name"
-                  value={formData.name}
+                  name="hoTen"
+                  value={formData.hoTen}
                   onChange={handleInputChange}
                   sx={{
                     borderColor: "#d0d0d0",
@@ -145,8 +142,8 @@ export const Contact = () => {
                 <FormLabel>Số điện thoại của bạn</FormLabel>
                 <Input
                   placeholder="Nhập số điện thoại của bạn"
-                  name="phone"
-                  value={formData.phone}
+                  name="sdt"
+                  value={formData.sdt}
                   onChange={handleInputChange}
                   sx={{
                     borderColor: "#d0d0d0",

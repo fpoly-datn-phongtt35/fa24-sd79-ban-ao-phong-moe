@@ -309,8 +309,9 @@ CREATE TABLE bill_status_detail (
 
 CREATE TABLE support (
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-	customer_id BIGINT REFERENCES customers(id),
-	employee_id BIGINT REFERENCES employees(id),
+	hoTen VARCHAR(50),
+	email VARCHAR(50),
+	sdt VARCHAR(15),
 	issue_description TEXT,
 	status VARCHAR(20),
 	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

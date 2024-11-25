@@ -1,10 +1,11 @@
 import { API_ROOT } from "~/utils/constants";
-import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { toast } from "react-toastify";
+import axios from "axios";
+import authorizedAxiosInstance from "~/utils/authorizedAxios";
 
 export const postSupportRequest = async (data) => {
   try {
-    const response = await authorizedAxiosInstance.post(`${API_ROOT}/client/support/create`, data);
+    const response = await axios.post(`${API_ROOT}/client/support/create`, data);
     toast.success("Gửi thành công");
     return response.data;
   } catch (error) {

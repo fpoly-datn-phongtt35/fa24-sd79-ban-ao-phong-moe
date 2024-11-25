@@ -31,12 +31,14 @@ public class SupportController {
     // API để tạo một yêu cầu hỗ trợ mới
     @PostMapping("/create")
     public ResponseData<?> createSupportTicket(@RequestBody SupportRequest request) {
-        Long customerId = request.getCustomerId();
-        String issueDescription = request.getIssueDescription();
-
-        Support newSupport = supportService.createSupportRequest(customerId, issueDescription);
-
+        supportService.createSupportRequest(request);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Gửi thành công");
+    }
+    // API để cập nhật trạng thái yêu cầu hỗ trợ
+    @PutMapping("/updateStatus/{id}")
+    public ResponseData<?> updateSupportStatus(@PathVariable Long id, @RequestBody String status) {
+        supportService.updateSupportStatus(id, status);
+        return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật trạng thái thành công");
     }
 }
 

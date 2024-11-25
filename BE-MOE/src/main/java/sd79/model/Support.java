@@ -20,11 +20,14 @@ public class Support {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "customer_id")
-    private Long customerId;
+    @Column(name = "hoTen")
+    private String hoTen;
 
-    @Column(name = "employee_id")
-    private Long employeeId;
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "sdt")
+    private String sdt;
 
     @Lob
     @Column(name = "issue_description")

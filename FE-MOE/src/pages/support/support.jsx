@@ -1,40 +1,82 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Avatar, Breadcrumbs, Button, Link } from '@mui/joy';
 import { getAllSupport } from "~/apis/supportApi";
+import {
+  Grid, TextField, Typography, Paper,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Pagination, IconButton, Switch, Box, FormControl, InputLabel, Select, MenuItem
+} from '@mui/material';
 
-export const Support = () => {
-const navigate = useNavigate();
+const Support = () => {
+  const [supports, setSupports] = useState([]); // Mặc định là mảng rỗng
+  const [formValues, setFormValues] = useState({
+    hoTen: "",
+    email: "",
+    sdt: "",
+    issue_description: "",
+    status: "",
+  });
 
-  const [notifications, setNotifications] = useState([]);
-  const [unresolvedCount, setUnresolvedCount] = useState(0);
-
+  // Gọi API khi component mount
   useEffect(() => {
-    const fetchSupportRequests = async () => {
+    const fetchSupports = async () => {
       try {
         const response = await getAllSupport();
-        const data = response.data; // Truyền dữ liệu trả về từ API
-
-        console.log(data); // Kiểm tra dữ liệu nhận được từ API
-
+        const data = response.data; // Giả sử data nằm trong response.data
+        // Kiểm tra xem data có phải là mảng không trước khi gọi filter
         if (Array.isArray(data)) {
-          // Xử lý mảng yêu cầu hỗ trợ
-          setNotifications(data);
-
-          // Lọc các yêu cầu hỗ trợ có trạng thái "Đang chờ xử lý"
-          const unresolved = data.filter((support) => support.status === "Đang chờ xử lý");
-          setUnresolvedCount(unresolved.length);
+          const validData = data.filter((item) => item.hoTen && item.email && item.sdt && item.issueDescription);
+          if (validData.length > 0) {
+            setSupports(validData); // Cập nhật dữ liệu hợp lệ vào state
+          } else {
+            console.log("Không có dữ liệu hợp lệ.");
+          }
         } else {
-          console.error("Dữ liệu không phải là mảng:", data);
+          console.error("Dữ liệu trả về không phải mảng:", data);
         }
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin yêu cầu hỗ trợ:", error);
+        console.error("Lỗi khi lấy dữ liệu từ API:", error);
       }
     };
-    fetchSupportRequests();
+    fetchSupports();
   }, []);
-  return(
-    <div>
-        <h3>Danh Sách liên hệ </h3>
-    </div>
+  
+
+  return (
+    <Box sx={{ maxWidth: 900, mx: "auto", mt: 4, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 4 }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Danh Sách Liên Hệ
+      </Typography>
+      <Box sx={{ mt: 4 }}>
+        {/* Table hiển thị dữ liệu */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Họ Tên</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Số Điện Thoại</TableCell>
+                <TableCell>Mô Tả</TableCell>
+                <TableCell>Trạng Thái</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Array.isArray(supports) && supports.map((support) => (
+                <TableRow key={support.id}>
+                  <TableCell>{support.hoTen || "(Chưa có dữ liệu)"}</TableCell>
+                  <TableCell>{support.email || "(Chưa có dữ liệu)"}</TableCell>
+                  <TableCell>{support.sdt || "(Chưa có dữ liệu)"}</TableCell>
+                  <TableCell>{support.issueDescription || "(Chưa có dữ liệu)"}</TableCell>
+                  <TableCell>{support.status || "(Chưa có dữ liệu)"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
-}
+};
+
+export default Support;
