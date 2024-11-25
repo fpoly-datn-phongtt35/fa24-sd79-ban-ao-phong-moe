@@ -11,12 +11,31 @@ spring:
     location: static/banner.txt
   profiles:
     active: @spring.profiles.active@
+  authentication:
+    username: sysadmin
+    password: sd79
+  cors:
+    url: ${CORS_POLICY:http://localhost:1004}
+  frontend:
+    url: http://${HOST:localhost}:1004
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
 payment:
   vnPay:
-    url: ${VNPAY_URL}
-    tmnCode: ${VNPAY_TMNCODE}
-    secretKey: ${VNPAY_SECRET_KEY}
-    returnUrl: http://localhost:1004/
+    url: ${VNPAY_URL:DUMMY_VALUE}
+    tmnCode: ${VNPAY_TMNCODE:DUMMY_VALUE}
+    secretKey: ${VNPAY_SECRET_KEY:DUMMY_VALUE}
+    returnUrl: http://${HOST:localhost}:1004/
     version: 2.1.0
     command: pay
     orderType: OTHER
@@ -27,3 +46,7 @@ logging:
     org.springframework: INFO
     org.apache: ERROR
     kafka: ERROR
+notification:
+  email:
+    brevo-url: https://api.brevo.com
+    brevo-apikey: ${BREVO_KEY:DUMMY_CAN_NOT_SEND}

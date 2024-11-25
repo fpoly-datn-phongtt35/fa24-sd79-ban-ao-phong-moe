@@ -59,6 +59,7 @@ export const CustomerDetailPage = () => {
       email: customerData.email ? '' : 'Email không được để trống',
 
     };
+    
 
     setErrors(newErrors);
 

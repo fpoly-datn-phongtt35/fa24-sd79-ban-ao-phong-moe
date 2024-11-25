@@ -1,11 +1,13 @@
 // Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
+// Facebook: https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import {
+  Alert,
   Box,
   Button,
   FormControl,
+  FormHelperText,
   FormLabel,
   Grid,
   Input,
@@ -17,6 +19,7 @@ import { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { AuthContext } from "~/context/AuthContext";
 import { convertToMMDDYYYY, formatDateSignUp } from "~/utils/format";
+import InfoIcon from "@mui/icons-material/Info";
 
 function SignUpInfo() {
   const context = useContext(AuthContext);
@@ -37,8 +40,6 @@ function SignUpInfo() {
   });
 
   const onSubmit = (data) => {
-    console.log(data.birthDate);
-
     context.setDataRegister((prev) => ({
       ...prev,
       firstName: data.firstName,
@@ -68,18 +69,50 @@ function SignUpInfo() {
 
   return (
     <form
-      style={{ width: "100%", maxWidth: 400 }}
       onSubmit={handleSubmit(onSubmit)}
+      style={{
+        width: "100%",
+        maxWidth: 400,
+        margin: "0 auto",
+        padding: "20px",
+        backgroundColor: "white",
+        borderRadius: "15px",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+      }}
     >
       <Typography
         level="h4"
         marginBottom={3}
         textAlign="center"
         fontWeight="bold"
+        sx={{
+          color: "#1976d2",
+        }}
       >
         THÔNG TIN NGƯỜI DÙNG
       </Typography>
-      <Grid container spacing={3} sx={{ flexGrow: 1 }}>
+
+      {/* Thông báo lỗi nếu có */}
+      {errors.length > 0 && (
+        <Alert
+          sx={{
+            alignItems: "flex-start",
+            mb: 2,
+            maxWidth: "100%",
+            backgroundColor: "#fff9e6",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+          }}
+          startDecorator={<InfoIcon />}
+          variant="soft"
+          color="warning"
+        >
+          <Typography level="body-sm" color="warning">
+            {errors[0]?.message}
+          </Typography>
+        </Alert>
+      )}
+
+      <Grid container spacing={3}>
         <Grid xs={6}>
           <FormControl error={!!errors?.lastName} sx={{ mb: 2, width: "100%" }}>
             <FormLabel required>Họ</FormLabel>
@@ -89,7 +122,7 @@ function SignUpInfo() {
               {...register("lastName", {
                 required: "Họ không được để trống",
                 minLength: {
-                  value: 3,
+                  value: 2,
                   message: "Vui lòng nhập đúng thông tin!",
                 },
                 maxLength: {
@@ -99,9 +132,7 @@ function SignUpInfo() {
               })}
             />
             {errors.lastName && (
-              <Typography color="danger" fontSize="sm">
-                {errors.lastName.message}
-              </Typography>
+              <FormHelperText>{errors.lastName.message}</FormHelperText>
             )}
           </FormControl>
         </Grid>
@@ -117,7 +148,7 @@ function SignUpInfo() {
               {...register("firstName", {
                 required: "Tên không được để trống",
                 minLength: {
-                  value: 3,
+                  value: 2,
                   message: "Vui lòng nhập đúng thông tin!",
                 },
                 maxLength: {
@@ -127,13 +158,12 @@ function SignUpInfo() {
               })}
             />
             {errors.firstName && (
-              <Typography color="danger" fontSize="sm">
-                {errors.firstName.message}
-              </Typography>
+              <FormHelperText>{errors.firstName.message}</FormHelperText>
             )}
           </FormControl>
         </Grid>
       </Grid>
+
       <FormControl error={!!errors?.birthDate} sx={{ mb: 2, width: "100%" }}>
         <FormLabel required>Ngày sinh</FormLabel>
         <Input
@@ -145,9 +175,7 @@ function SignUpInfo() {
           })}
         />
         {errors.birthDate && (
-          <Typography color="danger" fontSize="sm">
-            {errors.birthDate.message}
-          </Typography>
+          <FormHelperText>{errors.birthDate.message}</FormHelperText>
         )}
       </FormControl>
 
@@ -192,9 +220,7 @@ function SignUpInfo() {
           </Box>
         </RadioGroup>
         {errors.gender && (
-          <Typography color="danger" fontSize="sm">
-            {errors.gender.message}
-          </Typography>
+          <FormHelperText>{errors.gender.message}</FormHelperText>
         )}
       </FormControl>
 
@@ -211,7 +237,13 @@ function SignUpInfo() {
           type="button"
           variant="soft"
           color="neutral"
-          sx={{ width: "45%" }}
+          sx={{
+            width: "45%",
+            backgroundColor: "#f0f0f0",
+            "&:hover": {
+              backgroundColor: "#d6d6d6",
+            },
+          }}
           onClick={() => context.setStep(0)}
         >
           Quay lại
@@ -219,8 +251,15 @@ function SignUpInfo() {
         <Button
           type="submit"
           variant="soft"
-          color="neutral"
-          sx={{ width: "45%" }}
+          color="primary"
+          sx={{
+            width: "45%",
+            backgroundColor: "#1976d2",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
         >
           Tiếp tục
         </Button>

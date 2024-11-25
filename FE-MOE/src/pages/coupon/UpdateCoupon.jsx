@@ -102,27 +102,29 @@ const UpdateCoupon = () => {
 
     const onSubmit = async (data) => {
         let isValid = true;
-
+    
+        // Validate images
         if (couponType === 'PERSONAL' && (!images || images.length === 0) && storedImageUrl === null) {
             setImagesError('Chưa chọn ảnh.');
             isValid = false;
         } else {
             setImagesError('');
         }
-
+    
+        // Validate customers
         if (couponType === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
             setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
             isValid = false;
         } else {
             setSelectedCustomersError('');
         }
-
+    
         if (!isValid) {
             return;
         }
-
+    
         const incrementedUsageCount = data.usageCount;
-
+    
         const coupon = {
             code: data.code,
             name: data.name,
@@ -130,7 +132,7 @@ const UpdateCoupon = () => {
             discountType: discountType,
             maxValue: data.maxValue,
             quantity: data.quantity,
-            usageCount : incrementedUsageCount,
+            usageCount: incrementedUsageCount,
             conditions: data.conditions,
             startDate: formatDate(data.startDate),
             endDate: formatDate(data.endDate),
@@ -139,47 +141,52 @@ const UpdateCoupon = () => {
             userId: localStorage.getItem("userId"),
             customerIds: selectedCustomers,
         };
-
+    
         try {
             setLoading(true);
             const response = await updateCoupon(id, coupon);
-
+    
             if (couponType === 'PERSONAL') {
                 let formData = new FormData();
                 formData.append("couponID", response);
-
-                // Trường hợp 1: Không có ảnh
-                if (!images || images.length === 0) {
-                    if (storedImageUrl !== null) {
-                        // Ảnh cũ vẫn được giữ lại, không cần thay đổi
-                        const customerId = Array.isArray(selectedCustomers) ? selectedCustomers[0] : selectedCustomers;
-                        for (const customerId of selectedCustomers) {
-                            await sendCouponEmail(response, customerId);
-                        }
+    
+                const hasNewImages = images && images.length > 0;
+                const hasStoredImages = storedImageUrl && storedImageUrl.length > 0;
+    
+                if (!hasStoredImages && (!images || images.length === 0)) {
+                    // Case 1: No existing images and no new images
+                    console.log("Không có ảnh. Vui lòng thêm ảnh.");
+                    setImagesError('Chưa có ảnh. Vui lòng chọn ảnh.');
+                    return;
+                } else if (!hasStoredImages && hasNewImages) {
+                    // Case 2: No existing images but new images are provided
+                    console.log("Adding new images as none exist.");
+                    images.forEach((image) => formData.append("images", image));
+                    await postCouponImage(formData);
+                } else if (hasStoredImages && !hasNewImages) {
+                    // Case 3: Existing images are retained
+                    console.log("Retaining existing images.");
+                    const customerId = Array.isArray(selectedCustomers) ? selectedCustomers[0] : selectedCustomers;
+                    for (const customerId of selectedCustomers) {
+                        await sendCouponEmail(response, customerId);
                     }
-                } else {
-                    // Có ảnh mới
-                    const isImageChanged = images.length > 0 && storedImageUrl &&
-                        (images.length !== storedImageUrl.length ||
-                            images.some((image, index) => image.name !== storedImageUrl[index]?.name));
-
-                    // Trường hợp 2: Ảnh cũ và giữ nguyên ảnh
-                    if (!isImageChanged) {
-                        const customerId = Array.isArray(selectedCustomers) ? selectedCustomers[0] : selectedCustomers;
-                        for (const customerId of selectedCustomers) {
-                            await sendCouponEmail(response, customerId);
-                        }
-                    }
-                    // Trường hợp 3: Thay ảnh mới
-                    else {
-                        await deleteCouponImage(response); // Xóa ảnh cũ
-                        images.forEach((image) => {
-                            formData.append("images", image);
-                        });
-                        await postCouponImage(formData); // Đăng ảnh mới
+                } else if (hasNewImages) {
+                    // Case 4: New images replace existing ones
+                    const isImageChanged =
+                        images.length !== storedImageUrl.length ||
+                        images.some((image, index) => image.name !== storedImageUrl[index]?.name);
+    
+                    if (isImageChanged) {
+                        console.log("Replacing old images with new ones.");
+                        await deleteCouponImage(response);
+                        images.forEach((image) => formData.append("images", image));
+                        await postCouponImage(formData);
+                    } else {
+                        console.log("Images remain unchanged.");
                     }
                 }
             }
+    
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
@@ -187,6 +194,7 @@ const UpdateCoupon = () => {
             setLoading(false);
         }
     };
+    
 
     const fetchCouponDetail = async () => {
         try {
@@ -444,9 +452,9 @@ const UpdateCoupon = () => {
                                             validate: value => {
                                                 if (discountType === 'PERCENTAGE') {
                                                     const discountValue = getValues('discountValue');
-                                                    const conditionsValue = getValues('conditions');                                                                      
+                                                    const conditionsValue = getValues('conditions');
                                                     const minRequiredMaxValue = (discountValue / 100) * conditionsValue;
-                                
+
                                                     if (value < minRequiredMaxValue) {
                                                         return `Giá trị giảm tối đa phải lớn hơn hoặc bằng ${minRequiredMaxValue.toFixed(2)} cho điều kiện đơn hàng hiện tại`;
                                                     }

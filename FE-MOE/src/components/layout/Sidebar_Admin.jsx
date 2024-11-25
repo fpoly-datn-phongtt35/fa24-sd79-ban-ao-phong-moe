@@ -10,17 +10,20 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-import CelebrationIcon from "@mui/icons-material/Celebration";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, Typography } from "@mui/joy";
 import logo from "~/assert/images/MainLogo.jpg";
 import { MoeAlert } from "../other/MoeAlert";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { playAudio } from "~/utils/speak";
+import { CommonContext } from "~/context/CommonContext";
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
+
+  const context = useContext(CommonContext);
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -100,27 +103,17 @@ export const Sidebar_Admin = (props) => {
               Trang chủ
             </Typography>
           </MenuItem>
-          <SubMenu
-            label="Bán hàng"
+          <MenuItem
             icon={<ShoppingCartIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/bill" />}
           >
-            <MenuItem component={<Link to="/bill" />}>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Bán tại quầy
-              </Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Đơn đặt hàng
-              </Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography sx={{ color: "#32383e" }} level="body-md">
-                Hóa đơn
-              </Typography>
-            </MenuItem>
-          </SubMenu>
+            <Typography sx={{ color: "#32383e" }} level="body-md">
+              Bán tại quầy
+            </Typography>
+          </MenuItem>
+
           <SubMenu
+            disabled={!context?.isManager}
             label="Sản phẩm"
             icon={
               <i className="fa-solid fa-shirt" style={{ color: "#0071bd" }}></i>
@@ -173,13 +166,17 @@ export const Sidebar_Admin = (props) => {
                 Khách hàng
               </Typography>
             </MenuItem>
-            <MenuItem component={<Link to="/employee" />}>
+            <MenuItem
+              component={<Link to="/employee" />}
+              disabled={!context?.isManager}
+            >
               <Typography sx={{ color: "#32383e" }} level="body-md">
                 Nhân viên
               </Typography>
             </MenuItem>
           </SubMenu>
           <SubMenu
+            disabled={!context?.isManager}
             label="Giảm giá"
             icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >
@@ -195,11 +192,11 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
           </SubMenu>
           <MenuItem
-            icon={<CelebrationIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/product" />}
+            icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
+            component={<Link to="/statistical" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
-              Quản lý sự kiện
+              Thống kê
             </Typography>
           </MenuItem>
         </Menu>

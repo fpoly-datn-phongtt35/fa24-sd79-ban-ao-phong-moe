@@ -12,10 +12,11 @@ import {
 } from '@mui/material';
 import { getAllStatuses } from '~/apis/billListApi';
 
-const StatusModal = ({ open, onClose, onStatusConfirm }) => {
+const StatusModal = ({ open, onClose, onStatusConfirm, currentStatuses }) => {
   const [statuses, setStatuses] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [customNote, setCustomNote] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchBillStatus();
@@ -24,14 +25,26 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
   const fetchBillStatus = async () => {
     try {
       const status = await getAllStatuses();
-      setStatuses(status.data);
+      const filteredStatuses = status.data.filter((status) =>
+        [5, 7, 8, 9].includes(status.id)
+      );
+      setStatuses(filteredStatuses);
     } catch (err) {
-      console.error("Error fetching statuses:", err);
+      console.error('Error fetching statuses:', err);
     }
   };
 
   const handleStatusChange = (event) => {
     const statusValue = event.target.value;
+    console.log(currentStatuses.includes(Number(statusValue)))
+
+    // Kiểm tra trạng thái đã tồn tại
+    if (currentStatuses.includes(Number(statusValue))) {
+      setError('Trạng thái này đã tồn tại!');
+      return;
+    }
+
+    setError(''); // Xóa lỗi nếu hợp lệ
     setSelectedStatus(statusValue);
     if (statusValue !== '9') {
       setCustomNote('');
@@ -43,13 +56,18 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
   };
 
   const handleConfirm = () => {
-    onStatusConfirm(selectedStatus, customNote); // Pass selected status and custom note to parent
+    if (selectedStatus === '') {
+      setError('Vui lòng chọn trạng thái.');
+      return;
+    }
+
+    onStatusConfirm(selectedStatus, customNote);
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Nhập ghi chú</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Chọn trạng thái đơn hàng</DialogTitle>
       <DialogContent>
         <RadioGroup value={selectedStatus} onChange={handleStatusChange}>
           {statuses.map((status) => (
@@ -71,10 +89,13 @@ const StatusModal = ({ open, onClose, onStatusConfirm }) => {
             style={{ marginTop: '10px' }}
           />
         )}
+        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">Hủy</Button>
-        <Button onClick={handleConfirm} color="primary" variant="contained">Xác nhận</Button>
+        <Button onClick={handleConfirm} color="primary" variant="contained">
+          Xác nhận
+        </Button>
       </DialogActions>
     </Dialog>
   );

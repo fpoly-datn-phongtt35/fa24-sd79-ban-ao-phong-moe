@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import sd79.dto.requests.common.BillEditParamFilter;
@@ -63,66 +65,66 @@ public class BillCustomizeQuery {
     }
 
     public PageableResponse getAllBillList(BillListParamFilter param) {
-        List<Integer> allowedStatusIds = List.of(2, 4, 7, 8);
+        List<Integer> allowedStatusIds = List.of(1, 2, 4, 7, 8);
 
-        // Constructing the SQL query for filtering bills based on status and keyword
-        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE 1=1");
-
+        // Constructing the SQL query for filtering bills based on status, keyword, and deletion status
+        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
 
         if (StringUtils.hasLength(param.getKeyword())) {
             sql.append(" AND lower(b.code) like lower(:keyword)");
         }
 
-        if (param.getStatus() != null) {
-            if (allowedStatusIds.contains(param.getStatus())) {
-                sql.append(" AND b.billStatus.id = :statusId");
+        // Default status to 2 if none is provided
+        Integer status = param.getStatus() != null ? param.getStatus() : 2;
+
+        if (allowedStatusIds.contains(status)) {
+            sql.append(" AND b.billStatus.id = :statusId");
+
+            // Sorting based on status
+            if (status == 2) {
+                sql.append(" ORDER BY b.createAt ASC"); // Oldest first for status 2
+            } else if (status == 8) {
+                sql.append(" ORDER BY b.createAt DESC"); // Newest first for status 8
             } else {
-                throw new InvalidDataException("Status ID is invalid");
+                sql.append(" ORDER BY b.createAt DESC"); // Default sorting for other statuses (including status 1)
             }
+        } else {
+            throw new InvalidDataException("Status ID is invalid");
         }
 
-        sql.append(" ORDER BY b.createAt DESC");
         TypedQuery<Bill> query = entityManager.createQuery(sql.toString(), Bill.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
             query.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
         }
-        if (param.getStatus() != null) {
-            query.setParameter("statusId", param.getStatus());
-        }
+        query.setParameter("statusId", status);
 
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
-        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> {
 
-            return BillListResponse.builder()
-                    .id(bill.getId())
-                    .code(bill.getCode())
-                    .customer(bill.getCustomer())
-                    .total(bill.getTotal())
-                    .billStatus(bill.getBillStatus().getId())
-                    .createAt(bill.getCreateAt())
-                    .build();
-        }).toList();
+        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> BillListResponse.builder()
+                .id(bill.getId())
+                .code(bill.getCode())
+                .customer(bill.getCustomer())
+                .total(bill.getTotal())
+                .billStatus(bill.getBillStatus().getId())
+                .createAt(bill.getCreateAt())
+                .build()).toList();
 
-        // Count query to get total number of records
-        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE 1=1");
+        // Count query to get total number of records (also ensuring isDelete = 0)
+        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
 
         if (StringUtils.hasLength(param.getKeyword())) {
             countPage.append(" AND lower(b.code) like lower(:keyword)");
         }
-        if (param.getStatus() != null && allowedStatusIds.contains(param.getStatus())) {
-            countPage.append(" AND b.billStatus.id = :statusId");
-        }
+        countPage.append(" AND b.billStatus.id = :statusId");
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
             countQuery.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
         }
-        if (param.getStatus() != null) {
-            countQuery.setParameter("statusId", param.getStatus());
-        }
+        countQuery.setParameter("statusId", status);
 
         Long totalElements = countQuery.getSingleResult();
 
@@ -182,6 +184,7 @@ public class BillCustomizeQuery {
                             .message(bill.getMessage())
                             .note(bill.getNote())
                             .paymentTime(bill.getPaymentTime())
+                            .createAt(bill.getCreateAt())
                             .employee(employee)
                             .billDetails(bill.getBillDetails().stream()
                                     .map(this::convertToBillResponse)
@@ -270,12 +273,96 @@ public class BillCustomizeQuery {
                     .bill(bsd.getBill().getId())
                     .billStatus(bsd.getBillStatus().getId())
                     .note(bsd.getNote())
+                    .createAt(bsd.getCreateAt())
                     .build();
 
             responseList.add(response);
         }
 
         return responseList;
+    }
+
+    public Page<Integer> findPreviousBillStatusId(Long billId, Pageable pageable) {
+        // Query to get the current status of the bill
+        String currentStatusSql = """
+    SELECT bsd.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Long> currentStatusQuery = entityManager.createQuery(currentStatusSql, Long.class);
+        currentStatusQuery.setParameter("billId", billId);
+        currentStatusQuery.setMaxResults(1); // LIMIT 1
+        Long currentStatusId = currentStatusQuery.getSingleResult();
+
+        // Query to get all previous statuses in order
+        String allStatusesSql = """
+    SELECT bsd.billStatus.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Integer> allStatusesQuery = entityManager.createQuery(allStatusesSql, Integer.class);
+        allStatusesQuery.setParameter("billId", billId);
+        List<Integer> allStatuses = allStatusesQuery.getResultList();
+
+        // Logic to determine the previous status based on the current sequence
+        Integer previousStatus = null;
+
+        // Check for the specific sequences and set the previous status accordingly
+        if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3) && allStatuses.contains(5)) {
+            // Rule for going back to 2 if the sequence is 1, 2, 5, 3, 5
+            previousStatus = 2;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3)) {
+            // Rule for going back to 5 if the sequence is 1, 2, 5, 3
+            previousStatus = 5;
+        } else if (allStatuses.contains(1) || allStatuses.contains(2) || allStatuses.contains(5)) {
+            // Rule for going back to 2 if in 1, 2, or 5
+            previousStatus = 2;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3)) {
+            // Rule for going back to 5 if in 1, 2, 5, 3
+            previousStatus = 5;
+        } else if (allStatuses.contains(1) && allStatuses.contains(2) && allStatuses.contains(5) && allStatuses.contains(3) && allStatuses.contains(5)) {
+            // Rule for going back to 2 if in 1, 2, 5, 3, 5
+            previousStatus = 2;
+        }
+
+        // Query to find the previous status of the bill based on the modified logic
+        String sql = """
+    SELECT bsd.billStatus.id
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+      AND bsd.billStatus.id = :previousStatus
+    ORDER BY bsd.id DESC
+    """;
+
+        TypedQuery<Integer> query = entityManager.createQuery(sql, Integer.class);
+        query.setParameter("billId", billId);
+        query.setParameter("previousStatus", previousStatus);
+
+        // Apply pagination
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<Integer> result = query.getResultList();
+
+        // Count query to get the total number of records
+        String countSql = """
+    SELECT COUNT(bsd)
+    FROM BillStatusDetail bsd
+    WHERE bsd.bill.id = :billId
+      AND bsd.billStatus.id = :previousStatus
+    """;
+
+        TypedQuery<Long> countQuery = entityManager.createQuery(countSql, Long.class);
+        countQuery.setParameter("billId", billId);
+        countQuery.setParameter("previousStatus", previousStatus);
+        Long totalElements = countQuery.getSingleResult();
+
+        // Return paginated result
+        return new PageImpl<>(result, pageable, totalElements);
     }
 
 

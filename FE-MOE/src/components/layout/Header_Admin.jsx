@@ -2,7 +2,7 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Avatar, Box, IconButton, Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import PermIdentityOutlinedIcon from "@mui/icons-material/PermIdentityOutlined";
@@ -29,7 +29,7 @@ import {
 } from "@mui/joy";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-
+import { CommonContext } from "~/context/CommonContext";
 const managementOptions = [
   { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
@@ -49,9 +49,12 @@ const managementOptions = [
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
-export const Header_Admin = (props) => {
+export const Header_Admin = ({...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
+  const context = useContext(CommonContext);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     handleAccessData();
@@ -60,10 +63,10 @@ export const Header_Admin = (props) => {
   const handleAccessData = async () => {
     await accessUserAPI("ADMIN").then((res) => {
       setData(res);
+      context.setIsManager(res?.manager)
     });
   };
 
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await handleLogoutAPI();
@@ -191,7 +194,7 @@ export const Header_Admin = (props) => {
                     </ListItemButton>
                   </ListItem>
                   <ListItem>
-                    <ListItemButton onClick={() => alert("Comming soon!")}>
+                    <ListItemButton onClick={() => navigate('/updatePassword')}>
                       <ListItemDecorator>
                         <HttpsOutlinedIcon />
                       </ListItemDecorator>

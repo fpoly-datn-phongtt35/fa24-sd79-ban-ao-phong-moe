@@ -33,10 +33,10 @@ public class EmployeeAddress {
     private Integer districtId;
 
     @Size(max = 50)
-    @Column(name = "province", length = 50)
-    private String province;
+    @Column(name = "city", length = 50)
+    private String city;
 
-    @Column(name = "province_id")
-    private Integer provinceId;
+    @Column(name = "city_id")
+    private Integer cityId;
 
 }

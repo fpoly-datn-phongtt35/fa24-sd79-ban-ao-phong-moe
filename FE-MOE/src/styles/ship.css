@@ -1,0 +1,97 @@
+.shipping-invoice-container {
+  font-family: 'Arial', sans-serif; /* Adjust font style */
+  background-color: #fff;
+  padding: 20px;
+  display: none; /* Initially hidden */
+  width: 210mm; /* Same size as A4, consider adjustments if layout varies */
+  margin: 0 auto; /* Centering the container */
+}
+
+.shipping-invoice-container.visible {
+  display: block; /* Show when the 'visible' class is added */
+}
+
+@media print {
+  .shipping-invoice-container {
+    display: block !important; /* Force display during print */
+  }
+}
+
+.shipping-invoice-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.shipping-invoice-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.shipping-invoice-logo-background {
+  width: 100px; /* Adjusted size */
+  height: 100px;
+}
+
+.shipping-invoice-logo {
+  width: 100%;
+  height: auto;
+}
+
+.shipping-invoice-header-right h1 {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.shipping-invoice-info {
+  margin-bottom: 20px;
+}
+
+.shipping-invoice-info p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.shipping-invoice-details-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.shipping-invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.shipping-invoice-table th, .shipping-invoice-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.shipping-invoice-summary {
+  font-size: 16px;
+  font-weight: bold;
+  display: flex; /* Adding flex display */
+  flex-direction: column; /* Stack the items vertically */
+  align-items: flex-end; /* Align all items to the right */
+}
+
+.shipping-invoice-summary p {
+  margin: 5px 0;
+  display: flex; /* Use flexbox for each line */
+  justify-content: space-between; /* Ensure title and value are on the same line */
+  width: 100%; /* Make sure each line takes full width */
+}
+
+.shipping-invoice-summary p strong {
+  text-align: left; /* Align title to the left */
+}
+
+.shipping-invoice-summary p span {
+  text-align: right; /* Align value to the right */
+}
+
+

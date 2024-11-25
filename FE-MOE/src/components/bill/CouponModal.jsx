@@ -15,22 +15,20 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
     const validCustomerId = customerId ?? 0;
 
     useEffect(() => {
-        if (open && subtotal > 0 && !isAutoApplied) {
-            applyBestCouponAutomatically();
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (subtotal > 0) {
-            applyBestCouponAutomatically();
-        }
-    }, [subtotal]);
-
-    useEffect(() => {
-        if (validCustomerId) {
+        if (open) {
+            // Fetch coupons when modal opens
+            setIsAutoApplied(false);
+            setSelectedCoupon(null);
+            setPage(1); // Reset page to 1 when modal opens
             handleSetCouponCustomer();
         }
-    }, [validCustomerId, page, keyword]);
+    }, [open, validCustomerId, keyword]); // Depend on `open`, `validCustomerId`, and `keyword`
+
+    // useEffect(() => {
+    //     if (subtotal > 0) {
+    //         applyBestCouponAutomatically();
+    //     }
+    // }, [subtotal]);
 
     const handleSetCouponCustomer = async (allCoupons = false) => {
         try {
@@ -45,17 +43,28 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
 
     const applyBestCouponAutomatically = async () => {
         try {
+            // Lấy tất cả các phiếu giảm giá từ API
             const res = await fetchAllCouponCustomer(validCustomerId, 1, keyword, pageSize);
             let allCoupons = res.data.content;
 
+            // Fetch all pages of coupons
             for (let currentPage = 2; currentPage <= res.data.totalPages; currentPage++) {
                 const nextRes = await fetchAllCouponCustomer(validCustomerId, currentPage, keyword, pageSize);
                 allCoupons = [...allCoupons, ...nextRes.data.content];
             }
 
+            // Lọc các phiếu giảm giá đủ điều kiện
             const eligibleCoupons = allCoupons.filter(coupon => subtotal >= coupon.conditions);
             if (eligibleCoupons.length === 0) return;
 
+            // Tính giá trị giảm giá của phiếu hiện tại nếu có
+            const selectedDiscount = selectedCoupon
+                ? (selectedCoupon.discountType === 'FIXED_AMOUNT'
+                    ? selectedCoupon.discountValue
+                    : subtotal * (selectedCoupon.discountValue / 100))
+                : 0;
+
+            // Tìm phiếu giảm giá tốt nhất từ danh sách
             const bestCoupon = eligibleCoupons.reduce((prev, current) => {
                 const prevDiscount =
                     prev.discountType === 'FIXED_AMOUNT' ? prev.discountValue : subtotal * (prev.discountValue / 100);
@@ -65,6 +74,19 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 return prevDiscount > currentDiscount ? prev : current;
             });
 
+            // Tính giá trị giảm giá của phiếu giảm giá tốt nhất từ danh sách
+            const bestDiscount =
+                bestCoupon.discountType === 'FIXED_AMOUNT'
+                    ? bestCoupon.discountValue
+                    : subtotal * (bestCoupon.discountValue / 100);
+
+            // So sánh phiếu giảm giá đang áp dụng và phiếu giảm giá tốt nhất
+            if (selectedDiscount >= bestDiscount) {
+                // console.log('Giữ phiếu giảm giá hiện tại vì nó tốt hơn hoặc bằng phiếu mới.');
+                return; // Không thay thế nếu phiếu hiện tại tốt hơn
+            }
+
+            // Cập nhật phiếu giảm giá tốt nhất nếu nó có giá trị giảm nhiều hơn
             onSelectCoupon(bestCoupon);
             setSelectedCoupon(bestCoupon);
             setIsAutoApplied(true);
@@ -73,13 +95,14 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
         }
     };
 
+
     const handlePageChange = (event, value) => {
         setPage(value);
     };
 
     const handleSearchChange = (event) => {
         setKeyword(event.target.value);
-        setPage(1);
+        setPage(1); // Reset page to 1 on search
     };
 
     const formatDate = (dateString) => {

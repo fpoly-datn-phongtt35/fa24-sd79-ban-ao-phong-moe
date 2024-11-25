@@ -92,6 +92,17 @@ function VoucherModal({ handleDiscount, vouchers, totalAmout, setKeword }) {
               />
             </FormControl>
           </Box>
+          {vouchers && (
+            <Typography
+              sx={{
+                textAlign: "center",
+                color: "text.disabled",
+                marginTop: 20,
+              }}
+            >
+              Không tìm thấy phiếu giảm giá nào
+            </Typography>
+          )}
           {vouchers &&
             vouchers.map((value) => (
               <Box sx={{ marginTop: 2 }} key={value.id}>
