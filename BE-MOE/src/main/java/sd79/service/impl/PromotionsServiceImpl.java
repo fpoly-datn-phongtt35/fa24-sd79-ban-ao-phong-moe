@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor    
 public class PromotionsServiceImpl implements PromotionService {
 
     private final PromotionRepository promotionRepository;
