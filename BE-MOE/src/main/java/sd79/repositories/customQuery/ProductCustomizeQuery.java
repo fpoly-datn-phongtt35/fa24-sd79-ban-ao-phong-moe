@@ -486,11 +486,26 @@ public class ProductCustomizeQuery {
                 ).toList();
     }
 
-    public Set<ProductResponse.Product> getBestSellingProducts() {
-        StringBuilder query = new StringBuilder("SELECT prd FROM Product prd WHERE prd.status = 'ACTIVE' AND prd.isDeleted = false");
-        query.append(" AND ((SELECT coalesce(sum(d.quantity), 0) FROM ProductDetail d WHERE d.product.id = prd.id AND d.status = 'ACTIVE') > 0)");
-        query.append(" ORDER BY prd.updateAt DESC");
-        TypedQuery<Product> execute = entityManager.createQuery(query.toString(), Product.class);
+    public List<ProductResponse.Product> getBestSellingProducts() {
+        String query = """
+                    SELECT prd FROM Product prd\s
+                    WHERE prd.status = 'ACTIVE'\s
+                    AND prd.isDeleted = false\s
+                    AND (
+                        SELECT COALESCE(SUM(pd.quantity), 0)\s
+                        FROM ProductDetail pd\s
+                        WHERE pd.product.id = prd.id\s
+                        AND pd.status = 'ACTIVE'
+                    ) > 0\s
+                    ORDER BY (
+                        SELECT COUNT(bd)\s
+                        FROM BillDetail bd\s
+                        JOIN bd.productDetail pd\s
+                        WHERE pd.product.id = prd.id
+                    ) DESC, prd.updateAt DESC
+               \s""";
+
+        TypedQuery<Product> execute = entityManager.createQuery(query, Product.class);
         execute.setMaxResults(6);
 
         return execute.getResultList().stream()
@@ -514,7 +529,7 @@ public class ProductCustomizeQuery {
                                     .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
                                     .build();
                         }
-                ).collect(Collectors.toSet());
+                ).collect(Collectors.toList());
     }
 
     public PageableResponse getProductsFilters(ProductRequests.ParamFilters param) {

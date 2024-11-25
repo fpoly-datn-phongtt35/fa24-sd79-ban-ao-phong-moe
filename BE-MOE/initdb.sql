@@ -218,21 +218,21 @@ CREATE TABLE coupon_share(
 CREATE TABLE promotions(
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255),
-	code VARCHAR(20) UNIQUE,
+  code VARCHAR(20) UNIQUE,
   percent INT,
   start_date DATE,
   end_date DATE,
   note VARCHAR(255),
-	created_by BIGINT,
-	updated_by BIGINT,
-	create_at DATETIME,
-	update_at DATETIME,
-	is_deleted BIT DEFAULT 0
+  created_by BIGINT,
+  updated_by BIGINT,
+  create_at DATETIME,
+  update_at DATETIME,
+  is_deleted BIT DEFAULT 0
 );
 
 CREATE TABLE promotion_details(
   id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id BIGINT,
+  product_id BIGINT,
   promotion_id INT
 );
 
@@ -372,8 +372,7 @@ VALUES
 INSERT INTO positions (name, created_at, updated_at)
 VALUES
 ('Quản lý', NOW(), NOW()),
-('Nhân viên', NOW(), NOW()),
-('Hệ thống', NOW(), NOW());
+('Nhân viên', NOW(), NOW());
 
 INSERT INTO employee_address (street_name, ward, district, district_id, city, city_id)
 VALUES
@@ -1050,32 +1049,18 @@ VALUES
 (9, 14), (9, 17), (9, 33),
 (10, 6), (10, 11), (10, 29);
 
-
-
 -- Coupons
-INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity,usage_count, type, start_date, end_date, description, created_by, updated_by) VALUES
-('COUP01', 'Summer Sale', 'PERCENTAGE', 10, 5000, 100, 100,0, 'PUBLIC', '2024-06-01 00:00:00', '2024-07-01 00:00:00', '10% off summer sale', 1, 1),
-('COUP02', 'Winter Offer', 'FIXED_AMOUNT', 500, 5000, 1000, 50,0, 'PERSONAL', '2024-12-01 00:00:00', '2024-12-31 00:00:00', '500 off winter offer', 2, 2),
-('COUP03', 'Black Friday', 'PERCENTAGE', 20, 10000, 500, 200,0, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 00:00:00', '20% off Black Friday', 3, 3),
-('COUP04', 'New Year Discount', 'FIXED_AMOUNT', 1000, 10000,0, 2000, 150, 'PERSONAL', '2024-12-31 00:00:00', '2025-01-01 23:59:59', '1000 off New Year Discount', 4, 4),
-('COUP05', 'Flash Sale', 'PERCENTAGE', 15, 8000, 300, 500,0, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-16 00:00:00', '15% off Flash Sale', 5, 5),
-('COUP06', 'Holiday Offer', 'FIXED_AMOUNT', 200, 2000, 1000,0, 300, 'PERSONAL', '2024-12-20 00:00:00', '2024-12-25 00:00:00', '200 off Holiday Offer', 6, 6),
-('COUP07', 'Exclusive Discount', 'PERCENTAGE', 5, 3000, 500, 50,0, 'PERSONAL', '2024-11-01 00:00:00', '2024-11-10 00:00:00', '5% Exclusive Discount', 7, 7),
-('COUP08', 'Limited Offer', 'FIXED_AMOUNT', 1500, 6000, 2000, 100,0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-30 00:00:00', '1500 off Limited Offer', 8, 8),
-('COUP09', 'Birthday Special', 'PERCENTAGE', 25, 7000, 500, 50,0, 'PERSONAL', '2024-11-20 00:00:00', '2024-11-25 00:00:00', '25% off Birthday Special', 9, 9),
-('COUP10', 'Anniversary Deal', 'FIXED_AMOUNT', 300, 2000, 800, 50,0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-10 00:00:00', '300 off Anniversary Deal', 10, 10);
-
-INSERT INTO coupon_images (coupon_id, image_url, public_id) VALUES
-(1, 'https://example.com/images/coupon01.jpg', 'abc123'),
-(2, 'https://example.com/images/coupon02.jpg', 'def456'),
-(3, 'https://example.com/images/coupon03.jpg', 'ghi789'),
-(4, 'https://example.com/images/coupon04.jpg', 'jkl012'),
-(5, 'https://example.com/images/coupon05.jpg', 'mno345'),
-(6, 'https://example.com/images/coupon06.jpg', 'pqr678'),
-(7, 'https://example.com/images/coupon07.jpg', 'stu901'),
-(8, 'https://example.com/images/coupon08.jpg', 'vwx234'),
-(9, 'https://example.com/images/coupon09.jpg', 'yz567'),
-(10, 'https://example.com/images/coupon10.jpg', 'abc890');
+INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, usage_count, type, start_date, end_date, description, created_by, updated_by) VALUES
+('VNCOUP001', 'Giảm giá mùa hè', 'PERCENTAGE', 10, 2000000, 500000, 100, 0, 'PUBLIC', '2024-06-01 00:00:00', '2024-06-30 23:59:59', 'Giảm 10% cho mùa hè', 1, 1),
+('VNCOUP002', 'Ưu đãi mùa đông', 'FIXED_AMOUNT', 100000, 1000000, 300000, 50, 0, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', 'Giảm ngay 100.000 VNĐ mùa đông', 2, 2),
+('VNCOUP003', 'Black Friday', 'PERCENTAGE', 25, 5000000, 1000000, 200, 0, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 23:59:59', 'Giảm 25% Black Friday', 3, 3),
+('VNCOUP004', 'Khuyến mãi Tết Nguyên Đán', 'FIXED_AMOUNT', 500000, 2000000, 0, 200, 0, 'PUBLIC', '2024-12-31 00:00:00', '2025-01-01 23:59:59', 'Giảm 500.000 VNĐ dịp Tết', 4, 4),
+('VNCOUP005', 'Flash Sale 24h', 'PERCENTAGE', 15, 3000000, 1000000, 500, 0, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-15 23:59:59', 'Giảm 15% trong 24 giờ', 5, 5),
+('VNCOUP006', 'Ưu đãi lễ 30/4', 'FIXED_AMOUNT', 200000, 1000000, 500000, 300, 0, 'PUBLIC', '2024-04-28 00:00:00', '2024-05-01 23:59:59', 'Giảm 200.000 VNĐ dịp lễ', 6, 6),
+('VNCOUP007', 'Giảm giá đặc biệt', 'PERCENTAGE', 5, 1500000, 300000, 50, 0, 'PUBLIC', '2024-11-01 00:00:00', '2024-11-05 23:59:59', 'Giảm 5% đơn hàng', 7, 7),
+('VNCOUP008', 'Ưu đãi giới hạn', 'FIXED_AMOUNT', 700000, 3000000, 1500000, 100, 0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-25 23:59:59', 'Giảm 700.000 VNĐ giới hạn', 8, 8),
+('VNCOUP009', 'Ưu đãi sinh nhật', 'PERCENTAGE', 20, 2000000, 800000, 50, 0, 'PUBLIC', '2024-11-20 00:00:00', '2024-11-22 23:59:59', 'Giảm 20% mừng sinh nhật', 9, 9),
+('VNCOUP010', 'Deal kỷ niệm', 'FIXED_AMOUNT', 300000, 1500000, 500000, 50, 0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-05 23:59:59', 'Giảm 300.000 VNĐ nhân dịp kỷ niệm', 10, 10);
     
 INSERT INTO bill_status (name, status) VALUES
 ('Đang chờ xử lý', 'PENDING'),

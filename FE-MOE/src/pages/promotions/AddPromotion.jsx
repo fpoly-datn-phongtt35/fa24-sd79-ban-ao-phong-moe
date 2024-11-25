@@ -10,10 +10,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DoDisturbOnIcon from '@mui/icons-material/DoDisturbOn';
 
 export const AddPromotion = () => {
-    const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm();
+    const { register, handleSubmit, formState: { errors }, watch } = useForm();
     const navigate = useNavigate();
     const [selectedProducts, setSelectedProducts] = useState([]);
 
+    // Hàm định dạng ngày tháng, giờ, phút, giây
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -22,7 +23,6 @@ export const AddPromotion = () => {
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const seconds = String(date.getSeconds()).padStart(2, '0');
-
         return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
     };
 
@@ -30,23 +30,21 @@ export const AddPromotion = () => {
         // Kiểm tra nếu ngày kết thúc không hợp lệ
         if (isEndDateInvalid) {
             Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
-            return; // Ngăn không cho tiếp tục nếu có lỗi
+            return;
         }
-    
+
         try {
             const response = await postDiscount({
                 name: data.name,
                 code: data.code,
                 percent: data.percent,
-                startDate: formatDate(data.startDate),
-                endDate: formatDate(data.endDate),
+                startDate: formatDate(data.startDate), // Gửi đúng định dạng ngày giờ
+                endDate: formatDate(data.endDate),   // Gửi đúng định dạng ngày giờ
                 note: data.note,
                 userId: localStorage.getItem("userId"),
                 productIds: selectedProducts,
             });
-    
-            console.log("Response:", response);
-    
+
             if (response.status === 201) {
                 Swal.fire("Thành công", response.message, "success").then(() => {
                     navigate("/promotions");
@@ -59,7 +57,6 @@ export const AddPromotion = () => {
             Swal.fire("Lỗi", "Có lỗi xảy ra khi thêm đợt giảm giá", "error");
         }
     };
-    
 
     // Theo dõi ngày bắt đầu và ngày kết thúc
     const startDate = watch("startDate");
@@ -113,14 +110,14 @@ export const AddPromotion = () => {
                             <Grid md={6}>
                                 <FormControl error={!!errors?.startDate}>
                                     <FormLabel>Ngày bắt đầu</FormLabel>
-                                    <Input type="date" {...register("startDate", { required: true })} />
+                                    <Input type="datetime-local" {...register("startDate", { required: true })} />
                                     {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
                             </Grid>
                             <Grid xs={6}>
                                 <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                                     <FormLabel>Ngày kết thúc</FormLabel>
-                                    <Input type="date" {...register("endDate", { required: true })} />
+                                    <Input type="datetime-local" {...register("endDate", { required: true })} />
                                     {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
                                     {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
@@ -134,7 +131,7 @@ export const AddPromotion = () => {
                             <Grid xs={12}>
                                 <Grid spacing={2}>
                                     <Grid size={6}>
-                                        <Button startDecorator={<AddIcon />} type="submit" re>Thêm mới</Button>
+                                        <Button startDecorator={<AddIcon />} type="submit">Thêm mới</Button>
                                         <IconButton onClick={() => navigate("/promotions")}>
                                             <DoDisturbOnIcon /> Hủy
                                         </IconButton>
@@ -146,7 +143,6 @@ export const AddPromotion = () => {
                 </Grid>
 
                 <Grid item xs={5}>
-                    {/* Pass selectedProducts and setSelectedProducts to ProductList */}
                     <ProductList selectedProducts={selectedProducts} setSelectedProducts={setSelectedProducts} />
                 </Grid>
             </Grid>

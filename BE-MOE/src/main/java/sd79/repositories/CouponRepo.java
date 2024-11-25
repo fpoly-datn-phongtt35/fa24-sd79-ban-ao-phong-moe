@@ -19,7 +19,6 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
     @Query("SELECT COUNT(*) > 0 FROM Coupon c WHERE c.code = :code")
     boolean existsCouponByAttribute(String code);
 
-
     @Query("SELECT c FROM Coupon c WHERE c.type = 'PUBLIC' AND c.isDeleted = false " +
             "AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)")
     List<Coupon> findAllPublicCouponsWithStartStatus();
@@ -29,5 +28,4 @@ public interface CouponRepo extends JpaRepository<Coupon, Long> {
             "AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)) " +
             "OR (cs.customer.id = :customerId AND c.startDate <= CURRENT_DATE AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)))")
     List<Coupon> findAllCustomerAndPublicCouponsWithStartStatus(@Param("customerId") Long customerId);
-
 }

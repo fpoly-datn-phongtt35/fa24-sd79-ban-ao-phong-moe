@@ -11,6 +11,7 @@ function CommonProvider({ children }) {
   const [amoutCart, setAmoutCart] = useState(null);
   const [carts, setCarts] = useState(null);
   const [keyword, setKeyword] = useState("");
+  const [isManager, setIsManager] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
@@ -36,6 +37,8 @@ function CommonProvider({ children }) {
     handleFetchCarts,
     keyword,
     setKeyword,
+    setIsManager,
+    isManager
   };
 
   return (

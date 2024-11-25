@@ -16,6 +16,20 @@ spring:
     password: sd79
   cors:
     url: ${CORS_POLICY:http://localhost:1004}
+  frontend:
+    url: http://${HOST:localhost}:1004
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
 payment:
   vnPay:
     url: ${VNPAY_URL:DUMMY_VALUE}
@@ -32,3 +46,7 @@ logging:
     org.springframework: INFO
     org.apache: ERROR
     kafka: ERROR
+notification:
+  email:
+    brevo-url: https://api.brevo.com
+    brevo-apikey: ${BREVO_KEY:DUMMY_CAN_NOT_SEND}

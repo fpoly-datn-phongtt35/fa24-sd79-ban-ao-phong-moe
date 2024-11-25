@@ -63,7 +63,6 @@ public class ClientController {
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully 5 best selling product", this.clientService.getBestSellingProducts());
     }
 
-
     @Operation(
             summary = "Get Category",
             description = "Get all Category from database"

@@ -9,9 +9,15 @@ package sd79.service.impl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import sd79.dto.requests.common.ProductParamFilter2;
+import sd79.dto.requests.notifications.Recipient;
+import sd79.dto.requests.notifications.SendEmailRequest;
 import sd79.dto.requests.productRequests.*;
 import sd79.dto.requests.common.ProductParamFilter;
 import sd79.dto.response.PageableResponse;
@@ -20,12 +26,14 @@ import sd79.enums.ProductStatus;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.NotAllowedDeleteEntityException;
 import sd79.model.*;
+import sd79.repositories.CustomerRepository;
 import sd79.repositories.customQuery.ProductCustomizeQuery;
 import sd79.repositories.products.*;
 import sd79.service.ProductService;
 import sd79.utils.CloudinaryUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +63,15 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryUtils cloudinary;
 
     private final ProductCustomizeQuery productCustomizeQuery;
+
+    private final CustomerRepository customerRepository;
+
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final SpringTemplateEngine templateEngine;
 
     @Override
     public PageableResponse getAllProducts(ProductParamFilter param) {
@@ -119,6 +136,7 @@ public class ProductServiceImpl implements ProductService {
             productImage.setPublicId(uploadResult.get("publicId"));
             this.productImageRepository.save(productImage);
         }
+        marketingProduct(product.getId());
     }
 
     @Override
@@ -289,4 +307,26 @@ public class ProductServiceImpl implements ProductService {
         return imageResponses;
     }
 
+    private void marketingProduct(Long productId) {
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("productId", productId);
+        properties.put("url", host_frontend);
+        context.setVariables(properties);
+
+        List<Recipient> customers = this.customerRepository.findAll().stream().map(customer ->
+                Recipient.builder()
+                        .name(String.format("%s %s", customer.getFirstName(), customer.getLastName()))
+                        .email(customer.getUser().getEmail())
+                        .build()
+        ).toList();
+
+        String html = templateEngine.process("marketing_product.html", context);
+        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
+                .to(customers)
+                .subject("MOE SHOP - THÔNG BÁO RA MẮT BỘ SƯU TẬP MỚI")
+                .htmlContent(html)
+                .build();
+        kafkaTemplate.send("send-mail", bestSellingProducts);
+    }
 }

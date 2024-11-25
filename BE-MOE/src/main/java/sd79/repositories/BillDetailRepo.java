@@ -23,4 +23,7 @@ public interface BillDetailRepo extends JpaRepository<BillDetail, Long> {
     @Transactional
     @Query("DELETE FROM BillDetail bd WHERE bd.bill.id = :billId")
     void deleteByBillId(@Param("billId") Long billId);
+
+    @Query("SELECT count(bd) FROM BillDetail bd WHERE bd.productDetail.product.id = :productId GROUP BY bd.productDetail.product.id")
+    Long getPurchase(Long productId);
 }
