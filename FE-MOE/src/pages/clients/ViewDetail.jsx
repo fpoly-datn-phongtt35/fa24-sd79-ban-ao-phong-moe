@@ -13,7 +13,6 @@ import {
   FormLabel,
   RadioGroup,
   Sheet,
-  Textarea,
   Table,
   Divider,
   CircularProgress,
@@ -36,6 +35,8 @@ import Features from "~/components/clients/other/Features";
 import FireWorkIcon from "~/assert/icon/firecracker-firework-svgrepo-com.svg";
 import { CommonContext } from "~/context/CommonContext";
 import SvgIconDisplay from "~/components/other/SvgIconDisplay";
+import DeliveryIcon from "~/assert/icon/delivery.svg";
+import ReturnIcon from "~/assert/icon/return.svg";
 
 export const ViewDetail = () => {
   ScrollToTop();
@@ -73,7 +74,8 @@ export const ViewDetail = () => {
   const handleChange = (e) => {
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
-      setQuantity(value === "" ? "" : Number(value));
+      const numericValue = value === "" ? "" : Math.min(Number(value), 1000);
+      setQuantity(numericValue);
     }
   };
 
@@ -156,7 +158,7 @@ export const ViewDetail = () => {
         container
         spacing={2}
         alignItems="center"
-        marginLeft={30}
+        marginLeft={15}
         height={"50px"}
       >
         <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
@@ -166,7 +168,6 @@ export const ViewDetail = () => {
             color="inherit"
             onClick={() => navigate("/")}
           >
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Trang chủ
           </Link>
           <Typography level="title-md" noWrap>
@@ -174,20 +175,20 @@ export const ViewDetail = () => {
           </Typography>
         </Breadcrumbs>
       </Grid>
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
         <Grid
           container
           spacing={2}
-          maxWidth="lg"
           sx={{
             ml: 4,
-            boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
             borderRadius: 10,
+            display: "flex",
+            justifyContent: "center",
           }}
         >
           <Grid xs={12} sm={1}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {product?.imageUrl?.map((url, index) => (
+              {[...new Set(product?.imageUrl)]?.map((url, index) => (
                 <img
                   key={index}
                   src={url}
@@ -244,13 +245,32 @@ export const ViewDetail = () => {
                     justifyContent: "space-between",
                     backgroundColor: "#f47439",
                     borderRadius: 4,
-                    padding: 2,
+                    padding: 3,
+                    boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+                    backgroundImage: "linear-gradient(45deg, #ff5733, #ffbc33)",
+                    animation: "pulse 2s infinite",
                   }}
                 >
-                  <Typography sx={{ color: "#fff" }} level="title-lg">
+                  <Typography
+                    sx={{
+                      color: "#fff",
+                      fontWeight: "bold",
+                      fontSize: "1.2rem",
+                      textShadow: "2px 2px 5px rgba(0, 0, 0, 0.4)",
+                    }}
+                    level="title-lg"
+                  >
                     <SvgIconDisplay icon={FireWorkIcon} /> Kết thúc vào ngày
                   </Typography>
-                  <Typography sx={{ color: "#fff" }} level="title-lg">
+                  <Typography
+                    sx={{
+                      color: "#fff",
+                      fontWeight: "bold",
+                      fontSize: "1.2rem",
+                      textShadow: "2px 2px 5px rgba(0, 0, 0, 0.4)",
+                    }}
+                    level="title-lg"
+                  >
                     {product?.expiredDate &&
                       formatDateWithoutTime(product?.expiredDate)}
                   </Typography>
@@ -266,22 +286,28 @@ export const ViewDetail = () => {
                 }}
               >
                 <Typography
-                  color="danger"
+                  color={product?.percent !== null ? "danger" : "inherit"}
                   fontWeight="bold"
                   sx={{
-                    marginRight: "8px",
-                    padding: product?.percent !== null ? 2 : "",
+                    marginRight: "12px",
+                    padding: product?.percent !== null ? "12px 18px" : "0",
+                    borderRadius: "10px",
+                    color: product?.percent !== null ? "#ff6f61" : "#333",
+                    fontSize: product?.percent !== null ? "1.4rem" : "1.1rem",
                   }}
                   level="h4"
                 >
                   {formatCurrencyVND(product?.discountPrice)}
                 </Typography>
                 {product?.percent !== null && (
-                  <>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
                     <Typography
                       sx={{
                         textDecoration: "line-through",
-                        color: "grey",
+                        color: "#999",
+                        fontSize: "1.1rem",
+                        marginRight: "8px",
+                        fontWeight: "500",
                       }}
                     >
                       {formatCurrencyVND(product?.retailPrice)}
@@ -289,18 +315,23 @@ export const ViewDetail = () => {
                     <Typography
                       color="primary"
                       level="title-sm"
-                      marginLeft={3}
-                      variant="outlined"
+                      sx={{
+                        color: "#ff6f61",
+                        fontWeight: "bold",
+                        padding: "6px 12px",
+                        borderRadius: "20px",
+                        fontSize: "1rem",
+                      }}
                     >
-                      -50%
+                      -{product?.percent}%
                     </Typography>
-                  </>
+                  </Box>
                 )}
               </Box>
             </Box>
 
             <Typography variant="h3" sx={{ mb: 3 }}>
-              Đã bán: 40
+              Đã bán: {product?.purchase == null ? 0 : product?.purchase}
             </Typography>
 
             <Box sx={{ resize: "horizontal", overflow: "auto", px: 1 }}>
@@ -510,7 +541,6 @@ export const ViewDetail = () => {
                 Mua ngay
               </Button>
             </Box>
-
             <Box
               sx={{
                 p: 2,
@@ -519,14 +549,32 @@ export const ViewDetail = () => {
                 backgroundColor: "#fafafa",
               }}
             >
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Giao hàng miễn phí:</strong> Nhập mã bưu chính của bạn
-                để biết Khả năng giao hàng.
-              </Typography>
-              <Typography variant="body2">
-                <strong>Giao hàng trả lại:</strong> Giao hàng miễn phí trong
-                vòng 30 ngày.
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Box sx={{ mr: 5 }}>
+                  <SvgIconDisplay icon={DeliveryIcon} />
+                </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    Giao hàng miễn phí:
+                  </Typography>
+                  <Typography variant="body2">
+                    Giao hàng miễn phí cho tất cả các đơn hàng trên 100.000 VNĐ
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Box sx={{ mr: 5 }}>
+                  <SvgIconDisplay icon={ReturnIcon} />
+                </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    Giao hàng trả lại:
+                  </Typography>
+                  <Typography variant="body2">
+                    Giao hàng miễn phí trong vòng 30 ngày.
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
           </Grid>
         </Grid>
@@ -537,9 +585,7 @@ export const ViewDetail = () => {
           spacing={2}
           maxWidth="lg"
           sx={{
-            ml: 4,
-            boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
-            borderRadius: 10,
+            ml: 10,
           }}
         >
           <Grid xs={12}>
@@ -587,7 +633,7 @@ export const ViewDetail = () => {
                 <Typography level="body-md">Hướng dẫn chọn size: </Typography>
               </Box>
               <Sheet>
-                <Table borderAxis="x">
+                <Table borderAxis="both">
                   <thead>
                     <tr>
                       <th>Size</th>
@@ -616,27 +662,35 @@ export const ViewDetail = () => {
               Mô tả
             </Typography>
             <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-              <Textarea
-                defaultValue={product?.description}
-                sx={{ width: 1500 }}
-                disabled
-              />
+              <Typography
+                component="div"
+                sx={{
+                  whiteSpace: "pre-wrap",
+                  width: 1500,
+                  padding: 1,
+                  borderColor: "divider",
+                }}
+              >
+                {product?.description}
+              </Typography>
             </Box>
           </Grid>
         </Grid>
       </Box>
-      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-        <Grid container spacing={2} maxWidth="lg" sx={{ ml: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Grid
+          container
+          spacing={2}
+          maxWidth="lg"
+          sx={{
+            ml: 10,
+          }}
+        >
           <Grid xs={12}>
             <Typography color="neutral" level="h4" sx={{ mb: 3 }}>
               Sản phẩm liên quan
             </Typography>
-            <Box
-              sx={{ width: 1404 }}
-              spacing={2}
-              justifyContent="center"
-              display="flex"
-            >
+            <Box spacing={2} justifyContent="start" display="flex">
               <Grid marginTop={2} container spacing={2}>
                 {product &&
                   product?.relatedItem?.map((product, index) => (

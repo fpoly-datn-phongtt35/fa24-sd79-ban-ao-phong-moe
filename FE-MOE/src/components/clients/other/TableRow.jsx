@@ -24,6 +24,7 @@ import { formatCurrencyVND, formatDateTimeWithPending } from "~/utils/format";
 import CardOrderItem from "../cards/CardOrderItem";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import ArrowDropUpOutlinedIcon from "@mui/icons-material/ArrowDropUpOutlined";
+import { toast } from "react-toastify";
 
 function TableRow(props) {
   const { item, isOpen, onToggle, handleCancelOrder } = props;
@@ -351,19 +352,19 @@ function TableRow(props) {
                         <FormControl>
                           <FormLabel>Lý do</FormLabel>
                           <RadioGroup
-                            defaultValue="female"
+                            defaultValue=""
                             name="controlled-radio-buttons-group"
                             value={value}
                             onChange={handleChange}
                             sx={{ my: 1 }}
                           >
                             <Radio
-                              value="Tôi muốn cập nhật địa chỉ/sđt nhận hàng."
-                              label="Tôi muốn cập nhật địa chỉ/sđt nhận hàng."
+                              value="Tôi muốn cập nhật địa chỉ hoặc sđt nhận hàng."
+                              label="Tôi muốn cập nhật địa chỉ hoặc sđt nhận hàng."
                             />
                             <Radio
-                              value="Tôi muốn thêm/thay đổi Mã giảm giá"
-                              label="Tôi muốn thêm/thay đổi Mã giảm giá"
+                              value="Tôi muốn thêm hoặc thay đổi Mã giảm giá"
+                              label="Tôi muốn thêm hoặc thay đổi Mã giảm giá"
                             />
                             <Radio
                               value="Tôi muốn thay đổi sản phẩm (kích thước, màu sắc, số lượng…)"
@@ -398,9 +399,14 @@ function TableRow(props) {
                           </RadioGroup>
                           <Box marginTop={2}>
                             <Button
-                              onClick={() =>
-                                handleCancelOrder(props.item.id, message)
-                              }
+                              onClick={() => {
+                                if (message.length < 1) {
+                                  toast.error("Vui lòng chọn lý do hủy!");
+                                  return;
+                                }
+                                setOpen(false);
+                                handleCancelOrder(props.item.id, message);
+                              }}
                             >
                               Xác nhận
                             </Button>

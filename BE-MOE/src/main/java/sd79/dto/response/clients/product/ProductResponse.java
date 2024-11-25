@@ -35,12 +35,14 @@ public abstract class ProductResponse {
 
         private float rate;
 
+
         private long rateCount;
 
         private Integer percent;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private Date expiredDate;
+
 
         public Product(Long productId, String imageUrl, String name, BigDecimal retailPrice, BigDecimal discountPrice, float rate, long rateCount, Integer percent, Date expiredDate) {
             this.productId = productId;
@@ -94,5 +96,7 @@ public abstract class ProductResponse {
         private Date expiredDate;
 
         private List<ProductResponse.Product> relatedItem;
+
+        private Long purchase;
     }
 }

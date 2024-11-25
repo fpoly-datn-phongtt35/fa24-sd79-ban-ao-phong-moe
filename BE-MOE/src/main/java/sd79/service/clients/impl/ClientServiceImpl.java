@@ -10,11 +10,17 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import sd79.dto.requests.clients.bills.BillClientRequest;
 import sd79.dto.requests.clients.cart.CartRequest;
+import sd79.dto.requests.notifications.Recipient;
+import sd79.dto.requests.notifications.SendEmailRequest;
 import sd79.dto.requests.productRequests.ProductRequests;
 import sd79.dto.response.PageableResponse;
 import sd79.dto.response.clients.cart.CartResponse;
@@ -43,6 +49,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static sd79.enums.TokenType.ACCESS_TOKEN;
+import static sd79.utils.TemplateHtml.printInvoice;
 
 @Slf4j
 @Service
@@ -77,6 +84,13 @@ public class ClientServiceImpl implements ClientService {
 
     private final JwtService jwtService;
 
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final SpringTemplateEngine templateEngine;
+
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
+
     @Override
     public List<ProductResponse.Product> getExploreOurProducts(Integer page) {
         if (page < 1) {
@@ -86,7 +100,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Set<ProductResponse.Product> getBestSellingProducts() {
+    public List<ProductResponse.Product> getBestSellingProducts() {
         return this.productCustomizeQuery.getBestSellingProducts();
     }
 
@@ -101,7 +115,7 @@ public class ClientServiceImpl implements ClientService {
 
         BigDecimal discountPrice = retailPrice.multiply(BigDecimal.valueOf(1).subtract(discountPercent));
 
-        List<ProductResponse.Product> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 5)).stream().map(s -> {
+        List<ProductResponse.Product> relatedItem = this.productRepository.getRelatedItem(product.getId(), product.getCategory().getName(), product.getBrand().getName(), PageRequest.of(0, 6)).stream().map(s -> {
                     PromotionDetail promotionDetail2 = this.promotionDetailRepository.findByProductId(s.getId());
 
                     BigDecimal retailPrice2 = s.getProductDetails().getFirst().getRetailPrice();
@@ -148,6 +162,7 @@ public class ClientServiceImpl implements ClientService {
                 .discountPrice(discountPrice)
                 .percent(promotionDetail != null ? promotionDetail.getPromotion().getPercent() : null)
                 .expiredDate(promotionDetail != null ? promotionDetail.getPromotion().getEndDate() : null)
+                .purchase(this.billDetailRepository.getPurchase(product.getId()))
                 .build();
     }
 
@@ -203,7 +218,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void addToCart(CartRequest.FilterParams req) {
-        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Màu sắc hoặc kích thước này không có sẵn!"));
         Optional<Cart> isAlreadyExists = this.cartRepository.findByIdAndUsername(String.valueOf(prd.getId()), req.getUsername());
         if (isAlreadyExists.isPresent()) {
             Cart updatedCart = isAlreadyExists.get();
@@ -234,7 +249,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public CartResponse.Cart buyNow(CartRequest.FilterParams req) {
-        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Sản phẩm này không có sẵn!"));
+        ProductDetail prd = this.productDetailRepository.findByProductIdAndColorIdAndSizeId(req.getProductId(), req.getColorId(), req.getSizeId()).orElseThrow(() -> new EntityNotFoundException("Màu sắc hoặc kích thước này không có sẵn!"));
         if (req.getQuantity() > prd.getQuantity()) {
             throw new InvalidDataException(String.format("Chỉ còn %d sản phẩm có sẵn!", prd.getQuantity()));
         }
@@ -359,6 +374,7 @@ public class ClientServiceImpl implements ClientService {
             this.productDetailRepository.save(prd);
         });
 
+        sendInvoiceToClient(billSave);
         return billSave.getId();
     }
 
@@ -406,6 +422,29 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<ProductRequests.ProductBase> searchBase(String keyword) {
         return this.productCustomizeQuery.searchBase(keyword);
+    }
+
+    private void sendInvoiceToClient(Bill bill) {
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("customer_name", String.format("%s %s", bill.getCustomer().getLastName(), bill.getCustomer().getFirstName()));
+        properties.put("customer_email", bill.getCustomer().getUser().getEmail());
+        properties.put("invoice_date", bill.getCreateAt());
+        properties.put("bill_code", bill.getCode());
+        properties.put("delivery_address", String.format("%s, %s, %s, %s", bill.getCustomer().getCustomerAddress().getStreetName(), bill.getCustomer().getCustomerAddress().getWard(), bill.getCustomer().getCustomerAddress().getDistrict(), bill.getCustomer().getCustomerAddress().getCity()));
+        properties.put("url", host_frontend);
+        context.setVariables(properties);
+        String html = templateEngine.process("success_invoice.html", context);
+        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
+                .to(List.of(Recipient.builder()
+                        .name(String.format("%s %s", bill.getCustomer().getFirstName(), bill.getCustomer().getLastName()))
+                        .email(bill.getCustomer().getUser().getEmail())
+                        .build()))
+                .subject("MOE SHOP - ĐẶT HÀNG THÀNH CÔNG HÓA ĐƠN " + bill.getCode())
+                .htmlContent(html)
+                .build();
+
+        kafkaTemplate.send("send-mail", bestSellingProducts);
     }
 
 }
