@@ -38,7 +38,7 @@ services:
       - .env
     ports:
       - '2004:2004'
-  mysql_moe_container:
+  kafka_moe_container:
     image: 'bitnami/kafka:3.7.0'
     container_name: kafka_moe_container
     hostname: kafka
