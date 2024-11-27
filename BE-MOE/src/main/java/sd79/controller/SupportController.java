@@ -9,6 +9,7 @@ import sd79.model.Support;
 import sd79.service.SupportService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/${api.version}/client/support")
@@ -36,10 +37,12 @@ public class SupportController {
     }
     // API để cập nhật trạng thái yêu cầu hỗ trợ
     @PutMapping("/updateStatus/{id}")
-    public ResponseData<?> updateSupportStatus(@PathVariable Long id, @RequestBody String status) {
+    public ResponseData<?> updateSupportStatus(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+        Integer status = payload.get("status");
         supportService.updateSupportStatus(id, status);
         return new ResponseData<>(HttpStatus.OK.value(), "Cập nhật trạng thái thành công");
     }
+
 }
 
 
