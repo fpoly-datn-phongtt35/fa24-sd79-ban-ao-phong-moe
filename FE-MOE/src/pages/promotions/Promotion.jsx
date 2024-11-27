@@ -19,10 +19,10 @@ export const Promotion = () => {
   const [searchEndDate, setSearchEndDate] = useState("");
   const itemsPerPage = 5;
   const navigate = useNavigate();
-  
+
   // Lấy dữ liệu ban đầu
   useEffect(() => {
-    handleSetDiscounts();
+    handleSetDiscounts(1);
   }, []);
 
   // Giám sát thay đổi của điều kiện tìm kiếm
@@ -33,7 +33,7 @@ export const Promotion = () => {
 
   const handleSetDiscounts = async (page = currentPage) => {
     try {
-      const res = await fetchAllDiscounts(page - 1, itemsPerPage);
+      const res = await fetchAllDiscounts(page - 1, 5, "id", "desc");
       setDiscounts(res.data.content || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (error) {
@@ -41,6 +41,12 @@ export const Promotion = () => {
       setDiscounts([]);
     }
   };
+
+  // // Hàm reload lại danh sách từ trang đầu
+  // const reloadPromotions = async () => {
+  //   setCurrentPage(1);
+  //   await handleSetDiscounts(1); // Gọi lại API với trang đầu tiên
+  // };
 
   const handleSearch = async (page = 1) => {
     try {
@@ -89,6 +95,30 @@ export const Promotion = () => {
       handleSearch(newPage); // Gọi tìm kiếm nếu có điều kiện
     } else {
       handleSetDiscounts(newPage); // Lấy lại dữ liệu theo trang nếu không tìm kiếm
+    }
+  };
+
+  // Helper function to format date to "DD/MM/YYYY"
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Helper function to check if the discount is active, expired, or upcoming
+  const getDiscountStatus = (startDate, endDate) => {
+    const currentDate = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (currentDate < start) {
+      return "Chưa bắt đầu";  // Upcoming
+    } else if (currentDate > end) {
+      return "Đã hết hạn";  // Expired
+    } else {
+      return "Đang hoạt động";  // Active
     }
   };
 
@@ -156,6 +186,7 @@ export const Promotion = () => {
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
+              <th>Trạng thái</th>  {/* New column for status */}
               <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
@@ -168,32 +199,9 @@ export const Promotion = () => {
                   <TableCell>{discount.name}</TableCell>
                   <TableCell>{discount.code}</TableCell>
                   <TableCell>{discount.percent}%</TableCell>
-                  <TableCell align="left">
-                    {discount.startDate
-                      ? `${new Date(discount.startDate).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })} ${new Date(discount.startDate).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}`
-                      : ""}
-                  </TableCell>
-                  <TableCell align="left">
-                    {discount.endDate
-                      ? `${new Date(discount.endDate).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })} ${new Date(discount.endDate).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}`
-                      : ""}
-                  </TableCell>
+                  <TableCell align="left">{formatDate(discount.startDate)}</TableCell>
+                  <TableCell align="left">{formatDate(discount.endDate)}</TableCell>
+                  <TableCell>{getDiscountStatus(discount.startDate, discount.endDate)}</TableCell>
                   <TableCell>{discount.note}</TableCell>
                   <TableCell>
                     <IconButton color="warning" onClick={() => navigate(`/promotions/update/${discount.id}`)}>
@@ -207,11 +215,10 @@ export const Promotion = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8">Không có đợt giảm giá nào.</td>
+                <td colSpan="9">Không có đợt giảm giá nào.</td> {/* Adjusted colspan */}
               </tr>
             )}
           </tbody>
-
         </Table>
       </Sheet>
 

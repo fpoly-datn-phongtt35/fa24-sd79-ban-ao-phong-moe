@@ -37,7 +37,7 @@ public class PromotionsServiceImpl implements PromotionService {
 
     private boolean containsSpecialCharacters(String input) {
         // Biểu thức chính quy kiểm tra ký tự đặc biệt
-        String regex = "^[a-zA-Z0-9\\s]+$"; // Cho phép chữ cái, số, và khoảng trắng
+        String regex = "^[\\p{L}0-9\\s\\-_]*$";
         return !input.matches(regex);
     }
 
@@ -224,7 +224,10 @@ public class PromotionsServiceImpl implements PromotionService {
             throw new InvalidDataException("Tên tìm kiếm không được chứa ký tự đặc biệt.");
         }
 
+        // Tiến hành tìm kiếm từ repository
         Page<Promotion> promotions = promotionRepository.searchPromotions(startDate, endDate, name, pageable);
+
+        // Chuyển đổi dữ liệu từ entity sang DTO
         return promotions.map(this::convertPromotionResponsse);  // Convert entity to response DTO
     }
 
