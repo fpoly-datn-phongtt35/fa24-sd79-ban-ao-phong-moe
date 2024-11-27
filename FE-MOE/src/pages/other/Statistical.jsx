@@ -170,44 +170,110 @@ export default function ThongKe() {
         }
     };
 
-    const renderChart = (key, data) => {
+    const renderColorLegend = (key, data) => {
         if (key === "totalBillsByStatus") {
             return (
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="period" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [formatNumber(value), "Số lượng"]} />
-                        <Legend />
-                        <Bar dataKey="success" name="Thành công" fill="#33FF57" />
-                        <Bar dataKey="failure" name="Thất bại" fill="#FF3333" />
-                    </BarChart>
-                </ResponsiveContainer>
+                <Grid container spacing={1} sx={{ marginTop: 2 }}>
+                    <Grid item xs={6} container alignItems="center">
+                        <div
+                            style={{
+                                width: 16,
+                                height: 16,
+                                backgroundColor: "#33FF57",
+                                marginRight: 8,
+                                borderRadius: "50%",
+                            }}
+                        />
+                        <Typography variant="body2">Thành công</Typography>
+                    </Grid>
+                    <Grid item xs={6} container alignItems="center">
+                        <div
+                            style={{
+                                width: 16,
+                                height: 16,
+                                backgroundColor: "#FF3333",
+                                marginRight: 8,
+                                borderRadius: "50%",
+                            }}
+                        />
+                        <Typography variant="body2">Thất bại</Typography>
+                    </Grid>
+                </Grid>
             );
         } else {
             return (
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                        <Pie
-                            data={data}
-                            dataKey="value"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(2)}%`}
+                <Grid container spacing={1} sx={{ marginTop: 2 }}>
+                    {data.map((entry, index) => (
+                        <Grid
+                            item
+                            xs={6}
+                            sm={4}
+                            md={3}
+                            container
+                            alignItems="center"
+                            key={index}
                         >
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => [formatNumber(value), "Giá trị"]} />
-                        <Legend />
-                    </PieChart>
-                </ResponsiveContainer>
+                            <div
+                                style={{
+                                    width: 16,
+                                    height: 16,
+                                    backgroundColor: COLORS[index % COLORS.length],
+                                    marginRight: 8,
+                                    borderRadius: "50%",
+                                }}
+                            />
+                            <Typography variant="body2">{entry.period}</Typography>
+                        </Grid>
+                    ))}
+                </Grid>
             );
         }
     };
+
+    const renderChart = (key, data) => {
+        if (key === "totalBillsByStatus") {
+            return (
+                <>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <BarChart data={data}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="period" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [formatNumber(value), "Số lượng"]} />
+                            <Legend />
+                            <Bar dataKey="success" name="Thành công" fill="#33FF57" />
+                            <Bar dataKey="failure" name="Thất bại" fill="#FF3333" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                    {renderColorLegend(key, data)}
+                </>
+            );
+        } else {
+            return (
+                <>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                dataKey="value"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={100}
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(2)}%`}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => [formatNumber(value), "Giá trị"]} />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    {renderColorLegend(key, data)}
+                </>
+            );
+        }
+    }
 
     const getColumns = (key) => {
         if (key === "totalBillsByStatus") {
@@ -318,7 +384,7 @@ export default function ThongKe() {
                                             <Table>
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell>Thời kỳ</TableCell>
+                                                        <TableCell>Thời kỳ</TableCell>                                                      
                                                         {getColumns(key).map((column) => (
                                                             <TableCell key={column.key} align="right">
                                                                 {column.label}
