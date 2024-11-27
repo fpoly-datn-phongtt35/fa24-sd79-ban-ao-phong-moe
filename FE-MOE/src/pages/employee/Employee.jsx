@@ -262,18 +262,7 @@ export const Employee = () => {
                                         )}
 
                                     </TableCell>
-                                    {/* <TableCell>
-                                        {emp.employee_address && typeof emp.employee_address === 'object' ? (
-                                            <div>
-                                                <div>{emp.employee_address.province || 'N/A'}</div>
-                                                <div>{emp.employee_address.district || 'N/A'}</div>
-                                                <div>{emp.employee_address.ward || 'N/A'}</div>
-                                                <div>{emp.employee_address.streetName || 'N/A'}</div>
-                                            </div>
-                                        ) : (
-                                            'N/A'
-                                        )}
-                                    </TableCell> */}
+
                                     <TableCell>
                                         <Switch size="lg"
                                             checked={lockedStates[emp.id] ?? emp.isLocked}

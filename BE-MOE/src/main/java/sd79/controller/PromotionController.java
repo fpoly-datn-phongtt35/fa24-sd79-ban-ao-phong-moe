@@ -12,11 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.CustomerResponse;
-import sd79.dto.response.EmployeeResponse;
+import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
-import sd79.enums.Gender;
 import sd79.service.PromotionService;
 
 import java.util.Date;
@@ -56,11 +54,11 @@ public class PromotionController {
     }
 
     @Operation(
-            summary = "New Promotion",
-            description = "New promotion into database"
+            summary = "Create New Promotion",
+            description = "Add a new promotion into database"
     )
     @PostMapping("/store")
-    public ResponseData<?> storePromotions(@RequestBody PromotionRequest request) {
+    public ResponseData<?> storePromotions(@Valid @RequestBody PromotionRequest request) {
         return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm thành công", this.promotionService.storePromotion(request));
     }
 
@@ -120,4 +118,5 @@ public class PromotionController {
 
         return new ResponseData<>(HttpStatus.OK.value(), "List promotion", response);
     }
+
 }

@@ -7,11 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.accountInfo.AccountImageReq;
+import sd79.dto.requests.productRequests.AddressAccountRequest;
 import sd79.dto.requests.productRequests.CustomerRequest;
+import sd79.dto.requests.productRequests.PassWordRequest;
 import sd79.dto.response.clients.customer.UserAccountInfoRes;
 import sd79.dto.response.clients.customer.UserAddressInfoRes;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Customer;
+import sd79.model.CustomerAddress;
 import sd79.model.User;
 import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
@@ -94,6 +97,44 @@ public class AccountManagerServiceImpl implements AccountManagerService {
     }
 
     @Override
+    public long addressInformation(Long id, AddressAccountRequest addressAccountRequest) {
+        Customer customer = this.customerRepository.findByUserId(id).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin"));
+
+        CustomerAddress customerAddress = customer.getCustomerAddress();
+        if (customerAddress == null) {
+            customerAddress = new CustomerAddress();
+        }
+        customerAddress.setCity(addressAccountRequest.getCity());
+        customerAddress.setCityId(addressAccountRequest.getCity_id());
+        customerAddress.setDistrict(addressAccountRequest.getDistrict());
+        customerAddress.setDistrictId(addressAccountRequest.getDistrict_id());
+        customerAddress.setWard(addressAccountRequest.getWard());
+        customerAddress.setStreetName(addressAccountRequest.getStreetName());
+        customer.setCustomerAddress(customerAddress);
+        customer.setUpdatedAt(new Date());
+        return customerRepository.save(customer).getId();
+    }
+
+    @Override
+    public long UpdatePassWord(Long id, PassWordRequest passWordRequest) {
+        Customer customer = customerRepository.findByUserId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
+        User user = customer.getUser();
+
+
+        if (!passwordEncoder.matches(passWordRequest.getCurrentPassword(), user.getPassword())) {
+            throw new EntityExistsException("Mật khẩu cũ không chính xác");
+        }
+
+        user.setPassword(passwordEncoder.encode(passWordRequest.getNewPassword()));
+        userRepository.save(user);
+
+        customer.setUpdatedAt(new Date());
+        return this.customerRepository.save(customer).getId();
+
+    }
+
+    @Override
     public void updateImageAccInfo(AccountImageReq req) {
         Customer customer = this.customerRepository.findByUserId(req.getUserId()).orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin"));
         if (req.getImages() != null && customer.getPublicId() != null) {
@@ -114,5 +155,6 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         customer.setDateOfBirth(customerRequest.getDateOfBirth());
         customer.setUpdatedAt(new Date());
     }
+
 
 }

@@ -22,6 +22,13 @@ export const CustomerDetailPage = () => {
     streetName: '',
     email: '',
   });
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageObject, setImageObject] = useState(null);
@@ -50,20 +57,64 @@ export const CustomerDetailPage = () => {
 
   const validateForm = () => {
 
+    const specialCharRegex = /^[a-zA-ZÀ-ỹ]+( [a-zA-ZÀ-ỹ]+)*$/;
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const minAge = 16;
+
+    const calculateAge = (dob) => {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    };
+
     const newErrors = {
-      lastName: customerData.lastName ? '' : 'Họ không được để trống',
-      firstName: customerData.firstName ? '' : 'Tên không được để trống',
-      phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
-      gender: customerData.gender ? '' : 'Phải chọn giới tính',
-      dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-      email: customerData.email ? '' : 'Email không được để trống',
+      lastName: customerData.lastName
+        ? customerData.lastName.length > 20
+          ? "Họ không được vượt quá 20 ký tự"
+          : !specialCharRegex.test(customerData.lastName)
+            ? "Họ chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
+        : "Họ không được để trống",
+
+      firstName: customerData.firstName
+        ? customerData.firstName.length > 50
+          ? "Tên không được vượt quá 50 ký tự"
+          : !specialCharRegex.test(customerData.firstName)
+            ? "Tên chỉ được chứa chữ cái và dấu tiếng Việt"
+            : ""
+        : "Tên không được để trống",
+
+      phoneNumber: customerData.phoneNumber
+        ? phoneRegex.test(customerData.phoneNumber)
+          ? ""
+          : "Số điện thoại Không hợp lệ"
+        : "Số điện thoại không được để trống",
+
+      gender: customerData.gender ? "" : "Phải chọn giới tính",
+
+      dateOfBirth: customerData.dateOfBirth
+        ? calculateAge(customerData.dateOfBirth) >= minAge
+          ? ""
+          : "Phải trên 16 tuổi"
+        : "Phải chọn ngày sinh",
+
+      email: customerData.email
+        ? emailRegex.test(customerData.email)
+          ? ""
+          : "Email không đúng định dạng"
+        : "Email không được để trống",
 
     };
-    
 
     setErrors(newErrors);
 
-    return Object.values(newErrors).every((error) => error === '');
+    return Object.values(newErrors).every((error) => error === "");
   };
 
   useEffect(() => {
@@ -85,9 +136,10 @@ export const CustomerDetailPage = () => {
       setDistricts(response.data.districts);
     } else {
       setDistricts([]);
+      setWards([]);
     }
   };
-
+  
   const handleDistrictChange = async (e) => {
     const districtId = e;
     setSelectedDistrict(districtId);
@@ -99,10 +151,11 @@ export const CustomerDetailPage = () => {
       setWards([]);
     }
   };
-
+  
   const handleWardChange = (e) => {
     setSelectedWard(e);
   };
+  
 
 
   const formatDate = (dateString, time = "00:00:00") => {
@@ -120,21 +173,18 @@ export const CustomerDetailPage = () => {
   };
 
   useEffect(() => {
-
     const fetchCustomerDetail = async () => {
       try {
         const response = await fetchCustomerById(id);
-
-
+  
         const customerData = response.data;
-
-
-        handleCityChange(customerData.city_id);
-        handleDistrictChange(customerData.district_id)
-        handleWardChange(customerData.ward)
+  
+        await handleCityChange(customerData.city_id);
+        await handleDistrictChange(customerData.district_id);
+  
         setCustomerData({
-          firstName: customerData.firstName,
-          lastName: customerData.lastName,
+          firstName: capitalizeFirstLetter(customerData.firstName),
+          lastName: capitalizeFirstLetter(customerData.lastName),
           phoneNumber: customerData.phoneNumber,
           gender: customerData.gender,
           dateOfBirth: formatDate2(customerData.dateOfBirth),
@@ -143,121 +193,39 @@ export const CustomerDetailPage = () => {
           district: customerData.district,
           ward: customerData.ward,
           email: customerData.email,
-          streetName: customerData.streetName
+          streetName: customerData.streetName,
         });
+         
+        setSelectedCity(customerData.city_id);
+        setSelectedDistrict(customerData.district_id);
+        setSelectedWard(customerData.ward);
+  
         setImagePreview(customerData.image);
       } catch (error) {
-
         toast.error('Error fetching customer details: ' + (error.response?.data?.message || error.message));
       }
     };
-
+  
     fetchCustomerDetail();
   }, [id]);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    let newErrors = { ...errors };
-    const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
-    const phoneRegex = /^0\d{9,11}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const minAge = 16;
-
-    const calculateAge = (dob) => {
-      const birthDate = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      return age;
-    };
-
-    if (name === 'lastName') {
-      if (value.length > 20) {
-        newErrors.lastName = "Họ không được vượt quá 20 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.lastName;
-        setIsLoading(false);
-      }
-    }
-
-
-    if (name === 'firstName') {
-      if (value.length > 50) {
-        newErrors.firstName = "Tên không được vượt quá 50 ký tự";
-        setIsLoading(true);
-      } else if (specialCharRegex.test(value)) {
-        newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
-        setIsLoading(true);
-      } else {
-        delete newErrors.firstName;
-        setIsLoading(false);
-      }
-    }
-
-    if (name === 'phoneNumber') {
-      if (!phoneRegex.test(value)) {
-        newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
-        setIsLoading(true);
-      } else {
-        delete newErrors.phoneNumber;
-        setIsLoading(false);
-      }
-    }
-
-
-
-    if (name === 'gender') {
-      if (!value) {
-        newErrors.gender = "Phải chọn giới tính";
-        setIsLoading(true);
-      } else {
-        delete newErrors.gender;
-        setIsLoading(false);
-      }
-      setCustomerData({ ...customerData, gender: value });
-    } else {
-      setCustomerData({ ...customerData, [name]: value });
-    }
-
-    if (name === 'dateOfBirth') {
-      const age = calculateAge(value);
-      if (age < minAge) {
-        newErrors.dateOfBirth = "Phải trên 16 tuổi";
-        setIsLoading(true);
-      } else {
-        delete newErrors.dateOfBirth;
-        setIsLoading(false);
-      }
-      setCustomerData({ ...customerData, dateOfBirth: value });
-    } else {
-      setCustomerData({ ...customerData, [name]: value });
-    }
-    if (name === 'email') {
-      if (!emailRegex.test(value)) {
-        newErrors.email = "Email không đúng định dạng";
-        setIsLoading(true);
-      } else {
-        delete newErrors.email;
-        setIsLoading(false);
-      }
-    }
-    setCustomerData({ ...customerData, [name]: value });
 
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: value ? '' : prevErrors[name],
+      [name]: '',
     }));
 
-
-    setErrors(newErrors);
+    setCustomerData((prevData) => ({
+      ...prevData,
+      [name]: ['firstName', 'lastName'].includes(name)
+        ? capitalizeFirstLetter(value)
+        : value,
+    }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -294,7 +262,7 @@ export const CustomerDetailPage = () => {
       formData.append("images", imageObject)
       formData.append("productId", id)
       await postcustomerImage(formData).then(() => {
-        toast.success('Cập nhật thành công');
+        toast.success('Sửa thành công');
         setIsLoading(false);
         navigate('/customer');
       })
@@ -541,7 +509,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Thành phố</FormLabel>
-                        <Select value={selectedCity}
+                        <Select value={selectedCity || ''}
                           onChange={(e, v) => handleCityChange(v)}
                           placeholder="Chọn thành phố">
                           <Option value="" disabled>
@@ -558,7 +526,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Quận/Huyện</FormLabel>
-                        <Select value={selectedDistrict}
+                        <Select value={selectedDistrict || ''}
                           onChange={(e, v) => handleDistrictChange(v)}
                           placeholder="Chọn quận huyện">
                           <Option value="" disabled>
@@ -575,7 +543,7 @@ export const CustomerDetailPage = () => {
                     <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel >Phường/Xã</FormLabel>
-                        <Select value={selectedWard} onChange={(e, v) => handleWardChange(v)}
+                        <Select value={selectedWard || ''} onChange={(e, v) => handleWardChange(v)}
                           placeholder="Chọn phường xã">
                           <Option value="" disabled>
                             Chọn phường xã

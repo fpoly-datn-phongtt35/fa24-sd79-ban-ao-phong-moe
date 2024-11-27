@@ -41,7 +41,7 @@ services:
   kafka_moe_container:
     image: 'bitnami/kafka:3.7.0'
     container_name: kafka_moe_container
-    hostname: kafka
+    hostname: kafka.
     ports:
       - '9094:9094'
     environment:
