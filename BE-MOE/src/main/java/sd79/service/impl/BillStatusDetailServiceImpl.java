@@ -10,15 +10,11 @@ import sd79.dto.requests.BillStatusDetailRequest;
 import sd79.dto.response.bills.BillStatusDetailResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
-import sd79.model.Bill;
-import sd79.model.BillStatus;
-import sd79.model.BillStatusDetail;
-import sd79.model.User;
-import sd79.repositories.BillRepo;
-import sd79.repositories.BillStatusDetailRepo;
-import sd79.repositories.BillStatusRepo;
+import sd79.model.*;
+import sd79.repositories.*;
 import sd79.repositories.auth.UserRepository;
 import sd79.repositories.customQuery.BillCustomizeQuery;
+import sd79.repositories.products.ProductDetailRepository;
 import sd79.service.BillStatusDetailService;
 
 import java.util.ArrayList;
@@ -69,7 +65,6 @@ public class BillStatusDetailServiceImpl implements BillStatusDetailService {
         // Return the ID of the newly created BillStatusDetail
         return billStatusDetail.getId();
     }
-
 
     @Override
     public long addBillStatusDetailV2(BillStatusDetailRequest request) {

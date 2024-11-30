@@ -361,6 +361,10 @@ function Bill() {
     const openCouponModal = () => setCouponModalOpen(true);
     const closeCouponModal = () => setCouponModalOpen(false);
 
+    const clearCoupons = () => {
+        handleRemoveCoupon();
+    };
+
     //----------------------------------------------------------Tính toán--------------------------------------//  
     const handleCustomerAmountChange = (event) => {
         const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
@@ -479,7 +483,6 @@ function Bill() {
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-
 
     const updateBillStatusDetail = async (status) => {
         const statusDetail = {
@@ -840,6 +843,7 @@ function Bill() {
                     onAddCustomer={handleAddCustomer}
                     customerId={customerId}
                     setCustomerId={setCustomerId}
+                    clearCoupons={clearCoupons}
                 />
             </div>
 

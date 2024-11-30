@@ -17,7 +17,7 @@ export default function ThongKe() {
     const [statistics, setStatistics] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const quantityKeys = ["totalBills", "totalProductsSold", "customerRegistrations", "totalBillsByStatus"];
+    const quantityKeys = ["totalBills", "totalProductsSold", "customerRegistrations", "totalBillsByStatus", "couponUsageStatistics"];
     const currencyKeys = ["totalRevenue", "totalProductAmount", "totalDiscountAmount"];
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -55,6 +55,7 @@ export default function ThongKe() {
         totalBills: "Tổng số hóa đơn",
         totalProductsSold: "Tổng số sản phẩm đã bán",
         totalBillsByStatus: "Tổng số hóa đơn theo trạng thái",
+        couponUsageStatistics: "Tổng số phiếu giảm giá sử dụng",
     };
 
     //cho dữ nhiều vào bảng và sơ đồ
@@ -68,7 +69,15 @@ export default function ThongKe() {
                     success: successCount || 0, // Gán mặc định là 0 nếu giá trị null/undefined
                     failure: failureCount || 0,
                 }));
-            } else {
+            }
+            else if (key === "couponUsageStatistics") {
+                transformedData[key] = values.map(([period, publicCount, personalCount]) => ({
+                    period: String(period),
+                    public: publicCount || 0, // Gán mặc định là 0 nếu giá trị null/undefined
+                    personal: personalCount || 0,
+                }));
+            }
+            else {
                 transformedData[key] = values.map(([period, value]) => ({
                     period: String(period),
                     value: value || 0, // Gán mặc định 0 cho các giá trị null/undefined
@@ -118,7 +127,6 @@ export default function ThongKe() {
             : Number(value).toLocaleString("vi-VN");
     };
 
-
     const determineColumnLabel = (originalKey) => {
         return quantityKeys.includes(originalKey) ? "Số lượng" : "Giá trị (VNĐ)";
     };
@@ -140,6 +148,9 @@ export default function ThongKe() {
                 if (key === "totalBillsByStatus") {
                     consolidatedData[period][`${vietnameseKey} (Thành công)`] = row.success || 0;
                     consolidatedData[period][`${vietnameseKey} (Thất bại)`] = row.failure || 0;
+                } else if (key === "couponUsageStatistics") {
+                    consolidatedData[period][`${vietnameseKey} (Công khai)`] = row.public || 0;
+                    consolidatedData[period][`${vietnameseKey} (Cá nhân)`] = row.personal || 0;
                 } else {
                     consolidatedData[period][vietnameseKey] = formatNumber(row.value, determineUnit(row.originalKey));
                 }
@@ -170,9 +181,52 @@ export default function ThongKe() {
         }
     };
 
-    const renderChart = (key, data) => {
-        if (key === "totalBillsByStatus") {
+    const renderColorLegend = (key, data) => {
+        if (key === "totalBillsByStatus" || key === "couponUsageStatistics") {
+            const successLabel = key === "totalBillsByStatus" ? "Thành công" : "Công khai";
+            const failureLabel = key === "totalBillsByStatus" ? "Thất bại" : "Cá nhân";
+
             return (
+                <Grid container spacing={1} sx={{ marginTop: 2 }}>
+                    <Grid item xs={6} container alignItems="center">
+                        <div
+                            style={{
+                                width: 16,
+                                height: 16,
+                                backgroundColor: "#33FF57",
+                                marginRight: 8,
+                                borderRadius: "50%",
+                            }}
+                        />
+                        <Typography variant="body2">{successLabel}</Typography>
+                    </Grid>
+                    <Grid item xs={6} container alignItems="center">
+                        <div
+                            style={{
+                                width: 16,
+                                height: 16,
+                                backgroundColor: "#FF3333",
+                                marginRight: 8,
+                                borderRadius: "50%",
+                            }}
+                        />
+                        <Typography variant="body2">{failureLabel}</Typography>
+                    </Grid>
+                </Grid>
+            );
+        }
+        // Remaining logic for pie chart
+    };
+
+  const renderChart = (key, data) => {
+    if (key === "totalBillsByStatus" || key === "couponUsageStatistics") {
+        const successKey = key === "totalBillsByStatus" ? "success" : "public";
+        const failureKey = key === "totalBillsByStatus" ? "failure" : "personal";
+        const successLabel = key === "totalBillsByStatus" ? "Thành công" : "Công khai";
+        const failureLabel = key === "totalBillsByStatus" ? "Thất bại" : "Cá nhân";
+
+        return (
+            <>
                 <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -180,40 +234,42 @@ export default function ThongKe() {
                         <YAxis />
                         <Tooltip formatter={(value) => [formatNumber(value), "Số lượng"]} />
                         <Legend />
-                        <Bar dataKey="success" name="Thành công" fill="#33FF57" />
-                        <Bar dataKey="failure" name="Thất bại" fill="#FF3333" />
+                        <Bar dataKey={successKey} name={successLabel} fill="#33FF57" />
+                        <Bar dataKey={failureKey} name={failureLabel} fill="#FF3333" />
                     </BarChart>
                 </ResponsiveContainer>
-            );
-        } else {
-            return (
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                        <Pie
-                            data={data}
-                            dataKey="value"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={100}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(2)}%`}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => [formatNumber(value), "Giá trị"]} />
-                        <Legend />
-                    </PieChart>
-                </ResponsiveContainer>
-            );
-        }
-    };
+                {renderColorLegend(key, data)}
+            </>
+        );
+    } else {
+        return (
+            <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                    <Pie
+                        data={data}
+                        dataKey="value"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(2)}%`}
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [formatNumber(value), "Giá trị"]} />
+                    <Legend />
+                </PieChart>
+            </ResponsiveContainer>
+        );
+    }
+};
 
     const getColumns = (key) => {
-        if (key === "totalBillsByStatus") {
+        if (key === "totalBillsByStatus" || key === "couponUsageStatistics") {
             return [
-                { label: "Thành công", key: "success" },
-                { label: "Thất bại", key: "failure" },
+                { label: key === "totalBillsByStatus" ? "Thành công" : "Công khai", key: key === "totalBillsByStatus" ? "success" : "public" },
+                { label: key === "totalBillsByStatus" ? "Thất bại" : "Cá nhân", key: key === "totalBillsByStatus" ? "failure" : "personal" },
             ];
         }
         return [{ label: determineColumnLabel(key), key: "value" }];

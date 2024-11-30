@@ -19,7 +19,7 @@ import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/api
 import { deleteCustomer, fetchBill, fetchCustomer } from '~/apis/billsApi';
 import AddCustomerModal from './AddCustomerModal';
 
-export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
+export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId, clearCoupons}) {
     const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -101,6 +101,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         setShowDropdown(false);
         onAddCustomer(selectedCustomer);
         setCustomerId(selectedCustomer.id);
+        clearCoupons();
     };
 
     const handleDeleteCustomer = async () => {
