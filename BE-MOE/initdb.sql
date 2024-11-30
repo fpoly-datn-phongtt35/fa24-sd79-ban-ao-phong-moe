@@ -313,10 +313,13 @@ CREATE TABLE support (
 	email VARCHAR(50),
 	sdt VARCHAR(15),
 	issue_description TEXT,
-	status VARCHAR(20),
+	status INT,
 	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	resolved_date TIMESTAMP
 );
+
+
+
 
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_employee_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
@@ -368,6 +371,12 @@ INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, cr
 VALUES
 ('...', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0);
 
+-- Support
+INSERT INTO support (hoTen, email, sdt, issue_description, status)
+VALUES 
+('Nguyen Van A', 'nguyenvana@example.com', '0123456789', 'Vấn đề với đơn hàng', 0),
+('Tran Thi B', 'tranthib@example.com', '0987654321', 'Lỗi hệ thống khi thanh toán', 0),
+('Le Minh C', 'leminhc@example.com', '0912345678', 'Yêu cầu hỗ trợ về sản phẩm', 1);
 
 -- Insert data into employee
 INSERT INTO positions (name, created_at, updated_at)

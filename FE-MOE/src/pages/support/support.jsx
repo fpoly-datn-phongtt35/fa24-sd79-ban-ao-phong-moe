@@ -1,36 +1,63 @@
-import React, { useEffect, useState } from "react";
-import { Avatar, Breadcrumbs, Button, Link } from '@mui/joy';
-import { getAllSupport } from "~/apis/supportApi";
+import React, { useContext, useEffect, useState } from "react";
+import { getAllSupport, updateStatus } from "~/apis/supportApi";
 import {
-  Grid, TextField, Typography, Paper,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Pagination, IconButton, Switch, Box, FormControl, InputLabel, Select, MenuItem
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Container,
+  Grid,
+  Breadcrumbs,
+  Link,
+
 } from '@mui/material';
+import HomeIcon from "@mui/icons-material/Home";
+import { useNavigate } from 'react-router-dom';
+import { CommonContext } from "~/context/CommonContext";
 
 const Support = () => {
-  const [supports, setSupports] = useState([]); // Mặc định là mảng rỗng
-  const [formValues, setFormValues] = useState({
-    hoTen: "",
-    email: "",
-    sdt: "",
-    issue_description: "",
-    status: "",
-  });
+  const [supports, setSupports] = useState([]);
+  const context = useContext(CommonContext);
+  const navigate = useNavigate()
 
-  // Gọi API khi component mount
+  // Hàm để cập nhật trạng thái
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      await updateStatus(newStatus, id);
+      setSupports((prevSupports) =>
+        prevSupports.map((support) =>
+          support.id === id ? { ...support, status: newStatus } : support
+        )
+      );
+      context.fetchSupportRequests();
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      if (error.response) {
+        console.error("Phản hồi từ server:", error.response.data);
+      } else {
+        console.error("Lỗi kết nối hoặc lỗi không xác định.");
+      }
+    }
+  };
+
+  // Lấy dữ liệu hỗ trợ khi component mount
   useEffect(() => {
     const fetchSupports = async () => {
       try {
         const response = await getAllSupport();
-        const data = response.data; // Giả sử data nằm trong response.data
-        // Kiểm tra xem data có phải là mảng không trước khi gọi filter
+        const data = response.data;
         if (Array.isArray(data)) {
           const validData = data.filter((item) => item.hoTen && item.email && item.sdt && item.issueDescription);
-          if (validData.length > 0) {
-            setSupports(validData); // Cập nhật dữ liệu hợp lệ vào state
-          } else {
-            console.log("Không có dữ liệu hợp lệ.");
-          }
+          setSupports(validData);
         } else {
           console.error("Dữ liệu trả về không phải mảng:", data);
         }
@@ -40,43 +67,133 @@ const Support = () => {
     };
     fetchSupports();
   }, []);
-  
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", mt: 4, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 4 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Danh Sách Liên Hệ
-      </Typography>
-      <Box sx={{ mt: 4 }}>
-        {/* Table hiển thị dữ liệu */}
-        <TableContainer component={Paper}>
-          <Table>
+    <Container
+      maxWidth="lg"
+      sx={{
+        height: "100vh",
+        marginTop: "20px",
+        backgroundColor: "#f9f9f9",
+        padding: "20px",
+        borderRadius: "10px",
+        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      }}
+    >
+      <Grid container spacing={2} alignItems="center" marginBottom={2}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "10px" }}>
+          <Link
+            underline="hover"
+            sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            color="inherit"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Trang chủ
+          </Link>
+          <Typography sx={{ color: "text.secondary", cursor: "pointer" }}>
+            Quản lý thông báo
+          </Typography>
+        </Breadcrumbs>
+      </Grid>
+
+      <Box
+        sx={{
+          maxWidth: "100%",
+          mx: "auto",
+          mt: 3,
+          p: 3,
+          borderColor: "divider",
+          borderRadius: 4,
+          backgroundColor: "#fff",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            textAlign: "center",
+            marginBottom: 3,
+            fontWeight: "bold",
+            color: "#333",
+          }}
+        >
+          Danh sách thông báo
+        </Typography>
+
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxHeight: 500, // Giới hạn chiều cao
+            overflow: "auto", // Tạo cuộn nếu vượt quá
+            boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+          }}
+        >
+          <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell>Họ Tên</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Số Điện Thoại</TableCell>
-                <TableCell>Mô Tả</TableCell>
-                <TableCell>Trạng Thái</TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Họ Tên
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Email
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Số Điện Thoại
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Mô Tả
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Trạng Thái
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {Array.isArray(supports) && supports.map((support) => (
-                <TableRow key={support.id}>
-                  <TableCell>{support.hoTen || "(Chưa có dữ liệu)"}</TableCell>
-                  <TableCell>{support.email || "(Chưa có dữ liệu)"}</TableCell>
-                  <TableCell>{support.sdt || "(Chưa có dữ liệu)"}</TableCell>
-                  <TableCell>{support.issueDescription || "(Chưa có dữ liệu)"}</TableCell>
-                  <TableCell>{support.status || "(Chưa có dữ liệu)"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+              {Array.isArray(supports) &&
+                supports.map((support) => (
+                  <TableRow key={support.id}>
+                    <TableCell align="center">
+                      {support.hoTen || "(Chưa có dữ liệu)"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {support.email || "(Chưa có dữ liệu)"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {support.sdt || "(Chưa có dữ liệu)"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {support.issueDescription || "(Chưa có dữ liệu)"}
+                    </TableCell>
+                    <TableCell align="center">
+                      <FormControl
+                        sx={{
+                          minWidth: "150px", // Chiều rộng nhỏ hơn
+                          margin: "0 auto",  // Căn giữa trong ô
+                        }}
+                        size="small" // Kích thước nhỏ hơn
+                      >
+                        <Select
+                          value={support.status || 0}
+                          onChange={(e) =>
+                            handleUpdateStatus(support.id, Number(e.target.value))
+                          }
+                        >
+                          <MenuItem value={0}>Chưa xử lý</MenuItem>
+                          <MenuItem value={1}>Đã xử lý</MenuItem>
+                        </Select>
+                      </FormControl>
 
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
           </Table>
         </TableContainer>
       </Box>
-    </Box>
+    </Container>
   );
-};
+}
 
 export default Support;

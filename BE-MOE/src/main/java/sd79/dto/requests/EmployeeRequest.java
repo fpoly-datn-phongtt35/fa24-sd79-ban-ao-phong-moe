@@ -1,19 +1,13 @@
 package sd79.dto.requests;
 
-
 import lombok.Builder;
 import lombok.Getter;
 import sd79.enums.Gender;
 
 import java.util.Date;
-
 @Getter
 @Builder
-public class EmployeeReq {
-
-    private String username;
-
-    private String password;
+public class EmployeeRequest {
 
     private String email;
 
@@ -28,12 +22,6 @@ public class EmployeeReq {
     private Date date_of_birth;
 
     private String avatar;
-
-    private int salary;
-
-    private int position;
-
-    private Boolean isLocked;
 
     private String city;
 

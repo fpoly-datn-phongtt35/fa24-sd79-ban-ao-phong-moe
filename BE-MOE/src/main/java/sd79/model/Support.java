@@ -33,9 +33,8 @@ public class Support {
     @Column(name = "issue_description")
     private String issueDescription;
 
-    @Size(max = 20)
     @Column(name = "status", length = 20)
-    private String status;
+    private Integer  status;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_date")
