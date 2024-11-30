@@ -106,7 +106,6 @@ public class BillServiceImpl implements BillService {
         billRepository.deleteById(id);
     }
 
-
     //them lan 2
     @Override
     public List<BillDetailResponse> getAllProducts(long billId) {

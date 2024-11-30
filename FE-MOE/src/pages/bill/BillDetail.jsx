@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Container, Input } from '@mui/joy';
 import { addBillStatusDetail, addBillStatusDetailV2, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Dialog, Grid, List, ListItem, ListItemText, Paper, Breadcrumbs, Link, Modal, TextField, StepLabel, IconButton, Step, Stepper, StepConnector, Tooltip } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Dialog, Grid, List, ListItem, ListItemText, Paper, Breadcrumbs, Link, Modal, TextField, StepLabel, IconButton, Step, Stepper, StepConnector, Tooltip, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
 import { addPayBillEdit, deleteProduct, fetchBill, fetchCoupon, fetchProduct, postCoupon, postProduct, putCustomer } from '~/apis/billsApi';
 import CustomerEditModal from '~/components/bill/CustomerEditModal';
@@ -92,6 +92,7 @@ export default function BillDetail() {
   const statuses = statusRef.current;
 
   const [isInvoiceVisible, setIsInvoiceVisible] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const formatDate = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -247,6 +248,7 @@ export default function BillDetail() {
     // 2. Nếu đang ở trạng thái 5, chỉ cho phép chuyển sang trạng thái 8
     if (currentStatus === 5 && (Number(status) !== 8 || !noteRef || noteRef.trim() === "") && Number(status) !== 7) {
       toast.error("Vui lòng xác nhận thanh toán trước khi hoàn tất.");
+      handlePrintInvoice();
       return;
     }
 
@@ -260,6 +262,10 @@ export default function BillDetail() {
     if (currentStatus === 7) {
       toast.error("Đơn hàng đã bị hủy.");
       return;
+    }
+
+    if (Number(status) === 8) {
+      handlePrintInvoice();
     }
 
     // Cập nhật trạng thái nếu không vi phạm điều kiện nào
@@ -405,6 +411,19 @@ export default function BillDetail() {
       console.error("Error processing payment:", error);
     }
     fetchBillEdit();
+  };
+
+  const handleOpenConfirm = () => {
+    setOpenConfirm(true);
+  };
+
+  const handleCloseConfirm = () => {
+    setOpenConfirm(false);
+  };
+
+  const handleConfirmEdit = () => {
+    setOpenConfirm(false);
+    navigate(`/bill/edit/${id}`);
   };
 
   //----------------------------------------------Xuất hóa đơn-------------------------------------//
@@ -598,7 +617,7 @@ export default function BillDetail() {
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
             {(statuses !== 5 && statuses !== 8 && statuses !== 7) && (
-              <Button variant="contained" color="error" style={{ marginRight: '8px' }}>
+              <Button variant="contained" color="error" style={{ marginRight: '8px' }}  onClick={() => navigate("/bill/list")}>
                 Hủy
               </Button>
             )}
@@ -961,16 +980,47 @@ export default function BillDetail() {
               THÔNG TIN SẢN PHẨM
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', mt: 3, justifyContent: 'space-between' }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "end",
+                mt: 3,
+                justifyContent: "space-between",
+              }}
+            >
               <Button
                 variant="outlined"
                 color="success"
                 startIcon={<UpdateIcon />}
-                onClick={() => navigate(`/bill/edit/${id}`)}
+                onClick={handleOpenConfirm}
                 disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
               >
                 Sửa sản phẩm
               </Button>
+
+              {/* Dialog Confirm */}
+              <Dialog
+                open={openConfirm}
+                onClose={handleCloseConfirm}
+                aria-labelledby="confirm-edit-title"
+                aria-describedby="confirm-edit-description"
+              >
+                <DialogTitle id="confirm-edit-title">Xác nhận chỉnh sửa</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="confirm-edit-description">
+                    Bạn có chắc chắn muốn sửa sản phẩm này không?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseConfirm} color="primary">
+                    Hủy
+                  </Button>
+                  <Button onClick={handleConfirmEdit} color="success" autoFocus>
+                    Xác nhận
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
           </Box>
 

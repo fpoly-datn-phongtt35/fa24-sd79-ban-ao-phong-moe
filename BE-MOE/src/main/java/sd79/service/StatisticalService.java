@@ -29,4 +29,6 @@ public interface StatisticalService {
     List<Object[]> getTotalBillsByStatus(StatisticalParamFilter filter);
 
     List<Object[]> getCustomerRegistrations(StatisticalParamFilter filter);
+
+    List<Object[]> getCouponUsage(StatisticalParamFilter filter);
 }

@@ -1,7 +1,9 @@
 import {
     Container, Tab, Tabs, Typography, CircularProgress,
     TableContainer, Table, TableCell, TableBody, TableRow,
-    TableHead, Paper, Pagination
+    TableHead, Paper, Pagination, TextField,
+    Box,
+    Grid
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +13,7 @@ import { Edit } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/joy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { MoeAlert } from '~/components/other/MoeAlert';
+import debounce from 'lodash.debounce'; // Import debounce
 
 export default function BillList() {
     const navigate = useNavigate();
@@ -23,6 +26,23 @@ export default function BillList() {
     const [pageSize] = useState(5);
     const [status, setStatus] = useState('');
     const [totalPages, setTotalPages] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [minTotal, setMinTotal] = useState('');
+    const [maxTotal, setMaxTotal] = useState('');
+
+    const formatDate = (dateTimeString) => {
+        const date = new Date(dateTimeString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+        return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+    };    
 
     const statusMap = {
         '1': 'Đã tạo hóa đơn',
@@ -60,7 +80,16 @@ export default function BillList() {
     const fetchBillList = async () => {
         setLoading(true);
         try {
-            const res = await getBillList(pageNo, pageSize, '', status);
+            const res = await getBillList(
+                pageNo,
+                pageSize,
+                searchKeyword,
+                status,
+                startDate ? formatDate(startDate) : '',
+                endDate ? formatDate(endDate) : '',
+                minTotal || '',
+                maxTotal || ''
+            );
             setBillList(res?.data?.content || []);
             setTotalPages(res?.data?.totalPages || 0);
         } catch (error) {
@@ -69,6 +98,7 @@ export default function BillList() {
             setLoading(false);
         }
     };
+
 
     const handleTabChangeList = (event, newValue) => {
         setTabIndexList(newValue);
@@ -83,12 +113,44 @@ export default function BillList() {
 
     useEffect(() => {
         fetchBillList();
-    }, [status, pageNo]);
+    }, [status, pageNo, searchKeyword, startDate, endDate, minTotal, maxTotal]);
 
     const handleDelete = async (id) => {
         await deleteBillList(id);
         fetchBillList();
     };
+
+    const handleDateChange = (type, value) => {
+        if (type === 'startDate') {
+            setStartDate(value);
+        } else if (type === 'endDate') {
+            setEndDate(value);
+        }
+        setBillList([]);  
+        setPageNo(1);  
+    };
+    
+    const handlePriceChange = (type, value) => {
+        if (type === 'minTotal') {
+            debouncedPriceFilter(value, maxTotal);
+        } else if (type === 'maxTotal') {
+            debouncedPriceFilter(minTotal, value);
+        }
+        setBillList([]);  
+        setPageNo(1); 
+    };    
+
+    const debouncedPriceFilter = debounce((min, max) => {
+        setMinTotal(min);
+        setMaxTotal(max);
+    }, 3000);
+
+    const handleSearchChange = debounce((event) => {
+        setSearchKeyword(event.target.value);
+        setPageNo(1);     
+        setBillList([]);  
+    }, 1000);
+
 
     return (
         <Container maxWidth="lg" className="bg-white" style={{ marginTop: "15px" }}>
@@ -106,6 +168,62 @@ export default function BillList() {
                 </div>
             )}
 
+            {/* Search Bar */}
+            <Box sx={{ mb: 3 }}>
+    {/* Tìm kiếm */}
+    <TextField
+        placeholder="Tìm kiếm hóa đơn..."
+        fullWidth
+        onChange={handleSearchChange}
+        sx={{ mb: 3 }}
+    />
+
+    <Grid container spacing={2}>
+        {/* Bộ lọc ngày */}
+        <Grid item xs={12} sm={6} md={3}>
+            <TextField
+                label="Từ ngày"
+                type="date"
+                value={startDate}
+                onChange={(e) => handleDateChange('startDate', e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+            />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+            <TextField
+                label="Đến ngày"
+                type="date"
+                value={endDate}
+                onChange={(e) => handleDateChange('endDate', e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+            />
+        </Grid>
+
+        {/* Bộ lọc giá */}
+        <Grid item xs={12} sm={6} md={3}>
+            <TextField
+                label="Từ giá"
+                type="number"
+                onChange={(e) => handlePriceChange('minTotal', e.target.value)}
+                fullWidth
+                placeholder="Ví dụ: 100000"
+                InputProps={{ inputProps: { min: 0 } }}
+            />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+            <TextField
+                label="Đến giá"
+                type="number"
+                onChange={(e) => handlePriceChange('maxTotal', e.target.value)}
+                fullWidth
+                placeholder="Ví dụ: 500000"
+                InputProps={{ inputProps: { min: 0 } }}
+            />
+        </Grid>
+    </Grid>
+</Box>
             <Tabs
                 value={activeTabIndex}
                 onChange={handleTabChange}
@@ -130,7 +248,6 @@ export default function BillList() {
                 <Table>
                     <TableHead>
                         <TableRow sx={{ backgroundColor: '#0071bd' }}>
-                            {/* Table Columns */}
                             <TableCell sx={{ color: 'white', textAlign: 'center' }}>#</TableCell>
                             <TableCell sx={{ color: 'white' }}>Mã</TableCell>
                             <TableCell sx={{ color: 'white' }}>Khách hàng</TableCell>
@@ -166,13 +283,15 @@ export default function BillList() {
                                     </IconButton>
                                     <MoeAlert
                                         title="Cảnh báo"
-                                        message="Xóa hóa đơn này không?"
+                                        message={
+                                            bill.billStatus === Number(7)
+                                                ? 'Hóa đơn ở trạng thái hủy sẽ xóa vĩnh viễn. Bạn có muốn xóa không?'
+                                                : 'Xóa hóa đơn này không?'
+                                        }
                                         event={() => handleDelete(bill.id)}
                                         button={
                                             <Tooltip title="Xóa vĩnh viễn" variant="plain">
-                                                <IconButton
-                                                    color="danger"
-                                                >
+                                                <IconButton color="danger">
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -190,8 +309,10 @@ export default function BillList() {
                 count={totalPages}
                 page={pageNo}
                 onChange={handlePageChange}
+                variant="outlined"
+                shape="rounded"
                 color="primary"
-                sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
             />
         </Container>
     );
