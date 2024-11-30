@@ -247,8 +247,7 @@ export default function BillDetail() {
 
     // 2. Nếu đang ở trạng thái 5, chỉ cho phép chuyển sang trạng thái 8
     if (currentStatus === 5 && (Number(status) !== 8 || !noteRef || noteRef.trim() === "") && Number(status) !== 7) {
-      toast.error("Vui lòng xác nhận thanh toán trước khi hoàn tất.");
-      handlePrintInvoice();
+      toast.error("Vui lòng xác nhận thanh toán trước khi hoàn tất.");    
       return;
     }
 
