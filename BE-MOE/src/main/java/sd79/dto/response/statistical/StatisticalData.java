@@ -27,6 +27,8 @@ public abstract class StatisticalData {
 
         private Long stockQuantity;
 
+        private List<TopProduct> products;
+
         private List<DataChart> dataChart;
     }
 
@@ -41,5 +43,20 @@ public abstract class StatisticalData {
         private long client;
 
         private long total_order;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class TopProduct{
+        private long id;
+
+        private List<String> imageUrl;
+
+        private String name;
+
+        private BigDecimal totalSales;
+
+        private Long stockQuantity;
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import sd79.dto.response.statistical.StatisticalData;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ public class StatisticRepository {
                 .pendingOrders(getPendingOrders())
                 .stockQuantity(getStockQuantity())
                 .dataChart(getMonthlyStatistics(2024))
+                .products(getTop5ProductsWithSales())
                 .build();
     }
 
@@ -87,6 +89,43 @@ public class StatisticRepository {
             long totalOrder = ((Number) row[3]).longValue();
 
             return new StatisticalData.DataChart(month, totalRevenue, client, totalOrder);
+        }).collect(Collectors.toList());
+    }
+
+    private List<StatisticalData.TopProduct> getTop5ProductsWithSales() {
+        String sql = "SELECT p.name, " +
+                "COALESCE(SUM(bd.quantity), 0) AS total_sales, " +
+                "COALESCE(pd.quantity, 0) AS stock_quantity, " +
+                "GROUP_CONCAT(pi.image_url) AS image_urls, p.id " +
+                "FROM products p " +
+                "LEFT JOIN product_details pd ON p.id = pd.product_id " +
+                "LEFT JOIN bill_detail bd ON pd.id = bd.product_detail_id " +
+                "LEFT JOIN product_images pi ON p.id = pi.product_id " +
+                "WHERE p.is_deleted = 0 " +
+                "GROUP BY p.id, p.name, pd.quantity " +
+                "ORDER BY total_sales DESC";
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setMaxResults(5);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = query.getResultList();
+
+        return results.stream().map(row -> {
+            String productName = (String) row[0];
+            BigDecimal totalSales = (BigDecimal) row[1];
+            Long stockQuantity = (Long) row[2];
+            String imageUrls = (String) row[3];
+            Long productId = (Long) row[4];
+
+            List<String> imageUrlList = Arrays.asList(imageUrls.split(","));
+            return new StatisticalData.TopProduct(
+                    productId,
+                    imageUrlList,
+                    productName,
+                    totalSales,
+                    stockQuantity
+            );
         }).collect(Collectors.toList());
     }
 }

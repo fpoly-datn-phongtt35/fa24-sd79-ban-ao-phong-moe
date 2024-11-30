@@ -33,7 +33,6 @@ import sd79.repositories.promotions.PromotionDetailRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static sd79.dto.requests.productRequests.ProductRequests.SortBy.*;

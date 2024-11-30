@@ -66,7 +66,7 @@ export const Dashboard = () => {
       </Grid>
       <Grid container spacing={2} mt={2}>
         <Grid xs={12} sm={9} xl={9}>
-          <ProjectsOverview />
+          <ProjectsOverview data={data?.products}/>
         </Grid>
         <Grid xs={12} sm={3} xl={3}>
           <DashboardNotification />
