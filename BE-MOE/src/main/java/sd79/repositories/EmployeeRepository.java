@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import sd79.dto.requests.EmployeeReq;
 import sd79.model.Coupon;
 import sd79.model.Employee;
+import sd79.model.User;
 
 import java.util.Date;
 import java.util.List;
@@ -16,9 +17,8 @@ import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-//
-//    @Query("SELECT e FROM employees e WHERE e.phone_number = :phone_number")
-//    Optional<Employee> findByPhone_number(String phone_number);
+    Optional<Employee> findByUser(User user);
+
 
     @Query("from employees where id = :id")
     Optional<Employee> findByIdEmp(Long id);

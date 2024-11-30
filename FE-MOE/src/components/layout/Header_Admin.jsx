@@ -29,7 +29,6 @@ import {
 } from "@mui/joy";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import { getAllSupport } from "~/apis/supportApi";
 import { CommonContext } from "~/context/CommonContext";
 
 const managementOptions = [
@@ -186,7 +185,7 @@ export const Header_Admin = ({ ...props }) => {
                 <List>
                   <ListDivider />
                   <ListItem>
-                    <ListItemButton onClick={() => alert("Comming soon!")}>
+                    <ListItemButton onClick={() => navigate("/employeeMe")}>
                       <ListItemDecorator>
                         <PermIdentityOutlinedIcon />
                       </ListItemDecorator>

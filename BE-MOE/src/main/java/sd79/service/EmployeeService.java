@@ -4,6 +4,7 @@ package sd79.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.EmployeeRequest;
 import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
@@ -31,5 +32,9 @@ public interface EmployeeService {
     List<EmployeeResponse> findByNameAndPhone(String keyword, String phone_number);
 
     void updateImage(EmployeeImageReq req);
+
+    EmployeeResponse detailByUserId(long userId);
+
+    EmployeeResponse updateByUserId(long userId, EmployeeRequest request);
 
 }
