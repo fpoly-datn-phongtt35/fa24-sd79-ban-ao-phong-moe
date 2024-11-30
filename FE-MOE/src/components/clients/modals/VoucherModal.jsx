@@ -92,7 +92,7 @@ function VoucherModal({ handleDiscount, vouchers, totalAmout, setKeword }) {
               />
             </FormControl>
           </Box>
-          {vouchers && (
+          {vouchers?.length === 0 && (
             <Typography
               sx={{
                 textAlign: "center",
