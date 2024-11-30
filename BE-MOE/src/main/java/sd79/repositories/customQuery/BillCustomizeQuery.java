@@ -24,7 +24,10 @@ import sd79.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,74 +70,122 @@ public class BillCustomizeQuery {
     public PageableResponse getAllBillList(BillListParamFilter param) {
         List<Integer> allowedStatusIds = List.of(1, 2, 4, 7, 8);
 
-        // Constructing the SQL query for filtering bills based on status, keyword, and deletion status
-        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
-
-        if (StringUtils.hasLength(param.getKeyword())) {
-            sql.append(" AND lower(b.code) like lower(:keyword)");
-        }
-
-        // Default status to 2 if none is provided
+        // Validate status
         Integer status = param.getStatus() != null ? param.getStatus() : 2;
-
-        if (allowedStatusIds.contains(status)) {
-            sql.append(" AND b.billStatus.id = :statusId");
-
-            // Sorting based on status
-            if (status == 2) {
-                sql.append(" ORDER BY b.createAt ASC"); // Oldest first for status 2
-            } else if (status == 8) {
-                sql.append(" ORDER BY b.createAt DESC"); // Newest first for status 8
-            } else {
-                sql.append(" ORDER BY b.createAt DESC"); // Default sorting for other statuses (including status 1)
-            }
-        } else {
+        if (!allowedStatusIds.contains(status)) {
             throw new InvalidDataException("Status ID is invalid");
         }
 
+        // Constructing the JPQL query
+        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
+
+        // Add filters for keyword search
+        if (StringUtils.hasLength(param.getKeyword())) {
+            sql.append(" AND (");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                if (i > 0) sql.append(" AND ");
+                sql.append("(LOWER(c.firstName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(c.lastName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(b.code) LIKE :keyword").append(i).append(")");
+            }
+            sql.append(")");
+        }
+
+        if (param.getStartDate() != null) {
+            param.getStartDate().setHours(0);
+            param.getStartDate().setMinutes(0);
+            param.getStartDate().setSeconds(0);
+            sql.append(" AND b.createAt >= :startDate");
+        }
+
+        if (param.getEndDate() != null) {
+            param.getEndDate().setHours(23);
+            param.getEndDate().setMinutes(59);
+            param.getEndDate().setSeconds(59);
+            sql.append(" AND b.createAt <= :endDate");
+        }
+
+        // Add filters for total range
+        if (param.getMinTotal() != null) {
+            sql.append(" AND b.total >= :minTotal");
+        }
+        if (param.getMaxTotal() != null) {
+            sql.append(" AND b.total <= :maxTotal");
+        }
+
+        // Add status filter
+        sql.append(" AND b.billStatus.id = :statusId");
+
+        // Sorting
+        sql.append(status == 2 ? " ORDER BY b.createAt ASC" : " ORDER BY b.createAt DESC");
+
         TypedQuery<Bill> query = entityManager.createQuery(sql.toString(), Bill.class);
 
+        // Set parameters
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                query.setParameter("keyword" + i, "%" + keywords[i] + "%");
+            }
         }
+        if (param.getStartDate() != null) query.setParameter("startDate", param.getStartDate());
+        if (param.getEndDate() != null) query.setParameter("endDate", param.getEndDate());
+        if (param.getMinTotal() != null) query.setParameter("minTotal", param.getMinTotal());
+        if (param.getMaxTotal() != null) query.setParameter("maxTotal", param.getMaxTotal());
         query.setParameter("statusId", status);
 
+        // Pagination
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> BillListResponse.builder()
-                .id(bill.getId())
-                .code(bill.getCode())
-                .customer(bill.getCustomer())
-                .total(bill.getTotal())
-                .billStatus(bill.getBillStatus().getId())
-                .createAt(bill.getCreateAt())
-                .build()).toList();
+        // Fetch results
+        List<BillListResponse> billResponses = query.getResultList().stream()
+                .map(bill -> BillListResponse.builder()
+                        .id(bill.getId())
+                        .code(bill.getCode())
+                        .customer(bill.getCustomer())
+                        .total(bill.getTotal())
+                        .billStatus(bill.getBillStatus().getId())
+                        .createAt(bill.getCreateAt())
+                        .build())
+                .toList();
 
-        // Count query to get total number of records (also ensuring isDelete = 0)
-        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
+        // Count query
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(b) FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
 
-        if (StringUtils.hasLength(param.getKeyword())) {
-            countPage.append(" AND lower(b.code) like lower(:keyword)");
+        if (param.getStartDate() != null) {
+            countSql.append(" AND b.createAt >= :startDate");
         }
-        countPage.append(" AND b.billStatus.id = :statusId");
+        if (param.getEndDate() != null) {
+            countSql.append(" AND b.createAt <= :endDate");
+        }
+        countSql.append(" AND b.billStatus.id = :statusId");
 
-        TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
+        TypedQuery<Long> countQuery = entityManager.createQuery(countSql.toString(), Long.class);
 
-        if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
+        // Set parameters for count query
+        if (param.getStartDate() != null) {
+            countQuery.setParameter("startDate", param.getStartDate());
+        }
+        if (param.getEndDate() != null) {
+            countQuery.setParameter("endDate", param.getEndDate());
         }
         countQuery.setParameter("statusId", status);
 
+        // Fetch total count
         Long totalElements = countQuery.getSingleResult();
 
-        // Creating the pageable response
+        // Build pageable response
         Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<?> page = new PageImpl<>(billResponses, pageable, totalElements);
 
+        System.out.println("Query: " + sql.toString());
+        System.out.println("Parameters: startDate = " + param.getStartDate() + ", endDate = " + param.getEndDate());
+
+
         return PageableResponse.builder()
                 .pageNumber(param.getPageNo())
-                .pageNo(param.getPageNo())
                 .pageSize(param.getPageSize())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())

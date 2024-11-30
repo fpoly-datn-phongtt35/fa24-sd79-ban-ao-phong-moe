@@ -93,4 +93,13 @@ public class StatisticalServiceImpl implements StatisticalService {
     public List<Object[]> getCustomerRegistrations(StatisticalParamFilter filter) {
         return statisticalCustomizeQuery.getCustomerRegistrations(filter);
     }
+
+    /**
+     * Thống kê số lần phiếu giảm giá được sử dụng theo thời gian hoặc theo loại phiếu.
+     */
+    @Override
+    public List<Object[]> getCouponUsage(StatisticalParamFilter filter) {
+        return statisticalCustomizeQuery.getCouponUsageStatistics(filter);
+    }
+
 }

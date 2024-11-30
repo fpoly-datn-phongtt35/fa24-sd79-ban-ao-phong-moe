@@ -3,27 +3,54 @@ import { API_ROOT } from "~/utils/constants";
 import { toast } from "react-toastify";
 
 //ham lay thong tin du lieu tu bang hoa don 
-export const getBillList = async (pageNo, pageSize, keyword, status) => {
+export const getBillList = async (pageNo, pageSize, keyword, status, startDate, endDate, minTotal, maxTotal) => {
     let uri = "bill/billList?";
     let queryParams = [];
 
+    // Adding pagination parameters
     if (pageNo !== null && pageNo !== undefined) {
         queryParams.push(`pageNo=${pageNo}`);
     }
     if (pageSize !== null && pageSize !== undefined) {
         queryParams.push(`pageSize=${pageSize}`);
     }
+
+    // Adding keyword parameter
     if (keyword) {
-        queryParams.push(`keyword=${keyword}`);
+        queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
     }
+
+    // Adding status parameter
     if (status !== null && status !== undefined) {
         queryParams.push(`status=${status}`);
     }
+
+    // Adding date range parameters
+    if (startDate) {
+        queryParams.push(`startDate=${encodeURIComponent(startDate)}`);
+    }
+    if (endDate) {
+        queryParams.push(`endDate=${encodeURIComponent(endDate)}`);
+    }
+
+    // Adding total amount range parameters
+    if (minTotal !== null && minTotal !== undefined) {
+        queryParams.push(`minTotal=${minTotal}`);
+    }
+    if (maxTotal !== null && maxTotal !== undefined) {
+        queryParams.push(`maxTotal=${maxTotal}`);
+    }
+
     uri += queryParams.join("&");
 
+    // Fetching data from API
     return await authorizedAxiosInstance
         .get(`${API_ROOT}/${uri}`)
-        .then((res) => res.data);
+        .then((res) => res.data)
+        .catch((err) => {
+            console.error("Error fetching bill list:", err);
+            throw err;
+        });
 };
 
 //lay du lieu hien thi len theo id hoa don
