@@ -11,6 +11,7 @@ import { AuthContext } from "~/context/AuthContext";
 import SignUpInfo from "~/components/auth/SignUpInfo";
 import SignUpAddress from "~/components/auth/SignUpAddress";
 import SignUpAvatar from "~/components/auth/SignUpAvatar";
+import SignUpVerify from "~/components/auth/SignUpVerify";
 
 function SignUp() {
   const context = useContext(AuthContext);
@@ -66,7 +67,8 @@ function SignUp() {
           {context.step === 0 && <SignUpBase />}
           {context.step === 1 && <SignUpInfo />}
           {context.step === 2 && <SignUpAddress />}
-          {context.step === 3 && <SignUpAvatar />}
+          {context.step === 3 && <SignUpVerify />}
+          {context.step === 4 && <SignUpAvatar />}
         </Box>
       </Box>
     </Box>
