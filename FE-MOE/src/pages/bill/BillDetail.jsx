@@ -136,7 +136,7 @@ export default function BillDetail() {
     '1': 'Đã tạo hóa đơn',
     '2': 'Chờ xác nhận',
     '3': 'Đã xác nhận',
-    '4': 'Chờ giao',
+    '4': 'Đã vận chuyển',
     '5': 'Đã giao thành công',
     '6': 'Giao hàng thất bại',
     '7': 'Đã hủy',
@@ -240,14 +240,14 @@ export default function BillDetail() {
     // Lấy trạng thái hiện tại
     const currentStatus = billData[0]?.status;
 
-    // 1. Nếu đang ở trạng thái 2, chỉ cho phép chuyển sang trạng thái 5
-    if (currentStatus === 2 && Number(status) !== 5 && Number(status) !== 7) {
+    // 1. Nếu đang ở trạng thái 2, chỉ cho phép chuyển sang trạng thái 4
+    if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
       toast.error("Vui lòng giao hàng trước khi chọn trạng thái khác.");
       return;
     }
 
-    // 2. Nếu đang ở trạng thái 5, chỉ cho phép chuyển sang trạng thái 8
-    if (currentStatus === 5 && (Number(status) !== 8 || !noteRef || noteRef.trim() === "") && Number(status) !== 7) {
+    // 2. Nếu đang ở trạng thái 4, chỉ cho phép chuyển sang trạng thái 8
+    if (currentStatus === 4 && (Number(status) !== 8 || !noteRef || noteRef.trim() === "") && Number(status) !== 7) {
       toast.error("Vui lòng xác nhận thanh toán trước khi hoàn tất.");
       return;
     }
@@ -342,7 +342,7 @@ export default function BillDetail() {
   const handleNoteCloseModal = () => {
     const currentStatus = billData[0]?.status;
   
-    if (currentStatus === 2 && Number(status) !== 5 && Number(status) !== 7) {
+    if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
       toast.error("Vui lòng giao hàng trước khi xác nhận.");
       return;
     }
@@ -621,7 +621,7 @@ export default function BillDetail() {
 
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
-            {(statuses !== 5 && statuses !== 8 && statuses !== 7) && (
+            {(statuses !== 4 && statuses !== 8 && statuses !== 7) && (
               <Button variant="contained" color="error" style={{ marginRight: '8px' }} onClick={() => navigate("/bill/list")}>
                 Hủy
               </Button>
@@ -634,7 +634,7 @@ export default function BillDetail() {
                 disabled={isShippingDisabled}
                 onClick={() => setIsStatusModalOpen(true)}
               >
-                {statuses === 5 ? "Hoàn thành" : "Giao hàng"}
+                {statuses === 4 ? "Hoàn thành" : "Giao hàng"}
               </Button>
             )}
           </div>
@@ -650,7 +650,7 @@ export default function BillDetail() {
               <UndoIcon />
             </Button>
 
-            {statuses === 5 ? (
+            {statuses === 4 ? (
               <Button
                 variant="outlined"
                 color="error"
@@ -790,7 +790,7 @@ export default function BillDetail() {
                   onClick={handleOpenModal}
                   variant="outlined"
                   color="warning"
-                  disabled={!isCustomerAvailable || statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
+                  disabled={!isCustomerAvailable || statuses === 8 || statuses === 7 || statuses === 3 || statuses === 4}
                 >
                   Thay đổi thông tin
                 </Button>
@@ -1032,7 +1032,7 @@ export default function BillDetail() {
                 color="success"
                 startIcon={<UpdateIcon />}
                 onClick={handleOpenConfirm}
-                disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 5}
+                disabled={statuses === 8 || statuses === 7 || statuses === 3 || statuses === 4}
               >
                 Sửa sản phẩm
               </Button>

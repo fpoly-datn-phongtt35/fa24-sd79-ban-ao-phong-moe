@@ -61,7 +61,7 @@ export default function BillList() {
     const tabs = [
         { label: 'Chờ xác nhận', status: '2' },
         { label: 'Đang chờ', status: '1' },
-        { label: 'Đã giao', status: '5' },
+        { label: 'Đã vận chuyển', status: '4' },
         { label: 'Đã xác nhận', status: '3' },
         { label: 'Hoàn thành', status: '8' },
         { label: 'Đã hủy', status: '7' },
