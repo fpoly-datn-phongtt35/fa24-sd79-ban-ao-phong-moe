@@ -741,9 +741,9 @@ function Bill() {
                     >
                         Thêm sản phẩm
                     </Button>
-                    <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>
+                    {/* <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>
                         QR Code sản phẩm
-                    </Button>
+                    </Button> */}
                 </Box>
 
 

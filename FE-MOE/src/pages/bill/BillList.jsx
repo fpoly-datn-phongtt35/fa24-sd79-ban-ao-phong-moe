@@ -3,9 +3,10 @@ import {
     TableContainer, Table, TableCell, TableBody, TableRow,
     TableHead, Paper, Pagination, TextField,
     Box,
-    Grid
+    Grid,
+    Button
 } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { deleteBillList, getBillList } from '~/apis/billListApi';
 import { formatCurrencyVND } from '~/utils/format';
@@ -13,7 +14,8 @@ import { Edit } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/joy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { MoeAlert } from '~/components/other/MoeAlert';
-import debounce from 'lodash.debounce'; // Import debounce
+import debounce from 'lodash.debounce';
+import ClearIcon from '@mui/icons-material/Clear';
 
 export default function BillList() {
     const navigate = useNavigate();
@@ -29,8 +31,9 @@ export default function BillList() {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [minTotal, setMinTotal] = useState('');
-    const [maxTotal, setMaxTotal] = useState('');
+    const [minTotal, setMinTotal] = useState(null);
+    const [maxTotal, setMaxTotal] = useState(null);
+    const employeeId = localStorage.getItem("userId");
 
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
@@ -40,9 +43,8 @@ export default function BillList() {
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const seconds = String(date.getSeconds()).padStart(2, '0');
-    
         return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
-    };    
+    };
 
     const statusMap = {
         '1': 'Đã tạo hóa đơn',
@@ -59,7 +61,8 @@ export default function BillList() {
     const tabs = [
         { label: 'Chờ xác nhận', status: '2' },
         { label: 'Đang chờ', status: '1' },
-        { label: 'Chờ giao', status: '4' },
+        { label: 'Đã giao', status: '5' },
+        { label: 'Đã xác nhận', status: '3' },
         { label: 'Hoàn thành', status: '8' },
         { label: 'Đã hủy', status: '7' },
     ];
@@ -85,20 +88,19 @@ export default function BillList() {
                 pageSize,
                 searchKeyword,
                 status,
-                startDate ? formatDate(startDate) : '',
-                endDate ? formatDate(endDate) : '',
-                minTotal || '',
-                maxTotal || ''
+                startDate ? formatDate(startDate) : "",
+                endDate ? formatDate(endDate) : "",
+                minTotal || null,
+                maxTotal || null,
+                employeeId || ""
             );
             setBillList(res?.data?.content || []);
             setTotalPages(res?.data?.totalPages || 0);
         } catch (error) {
             console.error("Failed to fetch bills", error);
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
     };
-
 
     const handleTabChangeList = (event, newValue) => {
         setTabIndexList(newValue);
@@ -113,47 +115,40 @@ export default function BillList() {
 
     useEffect(() => {
         fetchBillList();
-    }, [status, pageNo, searchKeyword, startDate, endDate, minTotal, maxTotal]);
+    }, [status, pageNo, employeeId, searchKeyword, startDate, endDate, minTotal, maxTotal]);
 
     const handleDelete = async (id) => {
         await deleteBillList(id);
         fetchBillList();
     };
 
-    const handleDateChange = (type, value) => {
-        if (type === 'startDate') {
-            setStartDate(value);
-        } else if (type === 'endDate') {
-            setEndDate(value);
-        }
-        setBillList([]);  
-        setPageNo(1);  
-    };
-    
-    const handlePriceChange = (type, value) => {
-        if (type === 'minTotal') {
-            debouncedPriceFilter(value, maxTotal);
-        } else if (type === 'maxTotal') {
-            debouncedPriceFilter(minTotal, value);
-        }
-        setBillList([]);  
-        setPageNo(1); 
-    };    
-
-    const debouncedPriceFilter = debounce((min, max) => {
-        setMinTotal(min);
-        setMaxTotal(max);
-    }, 3000);
-
     const handleSearchChange = debounce((event) => {
         setSearchKeyword(event.target.value);
-        setPageNo(1);     
-        setBillList([]);  
+        setPageNo(1);
     }, 1000);
 
+    const handlePriceChangeMin = debounce((event) => {
+        setMinTotal(event.target.value);
+        setPageNo(1);
+    }, 1000);
+
+    const handlePriceChangeMax = debounce((event) => {
+        setMaxTotal(event.target.value);
+        setPageNo(1);
+    }, 1000);
+
+    const handleClearFilters = () => {
+        setSearchKeyword('');
+        setStartDate('');
+        setEndDate('');
+        setMinTotal('');
+        setMaxTotal('');
+        setPageNo(1);
+        fetchBillList();
+    };
 
     return (
-        <Container maxWidth="lg" className="bg-white" style={{ marginTop: "15px" }}>
+        <Container maxWidth="max-Width" className="bg-white" style={{ marginTop: "15px" }}>
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#0071bd', textAlign: 'left', mb: 3 }}>
                 QUẢN LÝ DANH SÁCH HÓA ĐƠN
             </Typography>
@@ -168,62 +163,6 @@ export default function BillList() {
                 </div>
             )}
 
-            {/* Search Bar */}
-            <Box sx={{ mb: 3 }}>
-    {/* Tìm kiếm */}
-    <TextField
-        placeholder="Tìm kiếm hóa đơn..."
-        fullWidth
-        onChange={handleSearchChange}
-        sx={{ mb: 3 }}
-    />
-
-    <Grid container spacing={2}>
-        {/* Bộ lọc ngày */}
-        <Grid item xs={12} sm={6} md={3}>
-            <TextField
-                label="Từ ngày"
-                type="date"
-                value={startDate}
-                onChange={(e) => handleDateChange('startDate', e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-            />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-            <TextField
-                label="Đến ngày"
-                type="date"
-                value={endDate}
-                onChange={(e) => handleDateChange('endDate', e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-            />
-        </Grid>
-
-        {/* Bộ lọc giá */}
-        <Grid item xs={12} sm={6} md={3}>
-            <TextField
-                label="Từ giá"
-                type="number"
-                onChange={(e) => handlePriceChange('minTotal', e.target.value)}
-                fullWidth
-                placeholder="Ví dụ: 100000"
-                InputProps={{ inputProps: { min: 0 } }}
-            />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-            <TextField
-                label="Đến giá"
-                type="number"
-                onChange={(e) => handlePriceChange('maxTotal', e.target.value)}
-                fullWidth
-                placeholder="Ví dụ: 500000"
-                InputProps={{ inputProps: { min: 0 } }}
-            />
-        </Grid>
-    </Grid>
-</Box>
             <Tabs
                 value={activeTabIndex}
                 onChange={handleTabChange}
@@ -243,6 +182,86 @@ export default function BillList() {
                     <Tab key={index} label={tab.label} sx={{ fontWeight: 'bold' }} />
                 ))}
             </Tabs>
+
+            <Box sx={{ mb: 3 }}>
+                <Grid container spacing={2} alignItems="center">
+                    {/* Ô tìm kiếm */}
+                    <Grid item xs={12} sm={9}>
+                        <TextField
+                            placeholder="Tìm kiếm hóa đơn..."
+                            fullWidth
+                            onChange={handleSearchChange}
+                            size="small"
+                        />
+                    </Grid>
+
+                    {/* Nút Clear Filters */}
+                    <Grid item xs={12} sm={3}>
+                        <Button
+                            variant="outlined"
+                            color="info"
+                            onClick={handleClearFilters}
+                            fullWidth
+                            size="large"
+                            startIcon={<ClearIcon />}
+                        >
+                            Clear Filters
+                        </Button>
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                    {/* Bộ lọc ngày */}
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            label="Từ ngày"
+                            type="date"
+                            variant="outlined"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            label="Đến ngày"
+                            type="date"
+                            variant="outlined"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+
+                    {/* Bộ lọc giá */}
+                    <Grid item xs={12} sm={6} md={3}>
+                        <TextField
+                            label="Từ giá"
+                            type="number"
+                            onChange={handlePriceChangeMin}
+                            fullWidth
+                            size="small"
+                            placeholder="Ví dụ: 100000"
+                            InputProps={{ inputProps: { min: 0 } }}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <TextField
+                            label="Đến giá"
+                            type="number"
+                            onChange={handlePriceChangeMax}
+                            fullWidth
+                            size="small"
+                            placeholder="Ví dụ: 500000"
+                            InputProps={{ inputProps: { min: 0 } }}
+                        />
+                    </Grid>
+                </Grid>
+            </Box>
 
             <TableContainer component={Paper} sx={{ borderRadius: '8px' }}>
                 <Table>
