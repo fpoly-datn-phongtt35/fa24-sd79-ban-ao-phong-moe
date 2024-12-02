@@ -59,7 +59,7 @@ export const Sidebar_Admin = (props) => {
         <img
           src={
             hovered
-              ? "https://cdn.pixabay.com/animation/2022/07/29/10/38/10-38-33-739_512.gif"
+              ? "https://cdn.pixabay.com/animation/2024/01/23/12/45/12-45-26-352_512.gif"
               : logo
           }
           alt="MOE Logo"
@@ -192,6 +192,7 @@ export const Sidebar_Admin = (props) => {
             </MenuItem>
           </SubMenu>
           <MenuItem
+            disabled={!context?.isManager}
             icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
             component={<Link to="/statistical" />}
           >

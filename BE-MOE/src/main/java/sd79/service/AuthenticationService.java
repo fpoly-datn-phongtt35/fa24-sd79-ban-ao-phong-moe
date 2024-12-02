@@ -38,6 +38,7 @@ import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
+import sd79.service.notifications.EmailService;
 import sd79.utils.CloudinaryUtils;
 import sd79.utils.RandomNumberGenerator;
 
@@ -67,6 +68,8 @@ public class AuthenticationService {
     private final CustomerAddressRepository addressRepository;
 
     private final CloudinaryUtils cloudinary;
+
+    private final EmailService emailService;
 
     private final SpringTemplateEngine templateEngine;
 
@@ -191,7 +194,7 @@ public class AuthenticationService {
         properties.put("url", host_frontend);
         context.setVariables(properties);
         String html = templateEngine.process("sent_otp.html", context);
-        SendEmailRequest bestSellingProducts = SendEmailRequest.builder()
+        SendEmailRequest sendMail = SendEmailRequest.builder()
                 .to(List.of(Recipient.builder()
                         .name("GUEST")
                         .email(email)
@@ -199,7 +202,7 @@ public class AuthenticationService {
                 .subject("MOE SHOP - XÁC THỰC TÀI KHOẢN")
                 .htmlContent(html)
                 .build();
-        kafkaTemplate.send("send-mail", bestSellingProducts);
+        emailService.sendEmailDefault(sendMail);
         return jwtService.generateOtherToken(code);
     }
 
@@ -209,7 +212,7 @@ public class AuthenticationService {
             if (!otp.getOtp().equals(extractOtp)) {
                 throw new InvalidDataException("Mã xác thực không hợp lệ");
             }
-        }catch (ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             throw new InvalidDataException("OTP không khả dụng!");
         }
     }

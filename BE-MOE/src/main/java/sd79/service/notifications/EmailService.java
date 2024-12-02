@@ -36,6 +36,7 @@ public class EmailService {
 
     @KafkaListener(topics = "send-mail")
     public void sendEmail(SendEmailRequest request) {
+        log.info("Begin send email");
         EmailRequest emailRequest = EmailRequest.builder()
                 .sender(Sender.builder()
                         .name("MOE SHOP")
@@ -47,8 +48,34 @@ public class EmailService {
                 .build();
         try {
             emailClient.sendEmail(apiKey, emailRequest);
+            log.info("Sent successfully");
         } catch (FeignException e) {
             throw new InvalidDataException("Something went wrong while sending email", e);
+        } catch (Exception e) {
+            log.error("Something went wrong while sending email {}", e, e.getCause());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendEmailDefault(SendEmailRequest request) {
+        log.info("Begin send email");
+        EmailRequest emailRequest = EmailRequest.builder()
+                .sender(Sender.builder()
+                        .name("MOE SHOP")
+                        .email("mobahoangvu2004@gmail.com")
+                        .build())
+                .to(request.getTo())
+                .subject(request.getSubject())
+                .htmlContent(request.getHtmlContent())
+                .build();
+        try {
+            emailClient.sendEmail(apiKey, emailRequest);
+            log.info("Sent successfully");
+        } catch (FeignException e) {
+            throw new InvalidDataException("Something went wrong while sending email", e);
+        } catch (Exception e) {
+            log.error("Something went wrong while sending email {}", e, e.getCause());
+            throw new RuntimeException(e);
         }
     }
 }
