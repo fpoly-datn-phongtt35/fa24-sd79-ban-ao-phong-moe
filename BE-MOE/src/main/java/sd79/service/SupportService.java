@@ -9,5 +9,5 @@ public interface SupportService {
 
     List<Support> getAllSupportRequests(); // Thêm phương thức này
 
-    Support updateSupportStatus(Long id, String newStatus);
+    Support updateSupportStatus(Long id, Integer newStatus);
 }

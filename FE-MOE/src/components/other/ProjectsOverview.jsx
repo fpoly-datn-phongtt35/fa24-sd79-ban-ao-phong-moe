@@ -2,22 +2,12 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useEffect, useState } from "react";
 import { Card, Typography, Table, Stack } from "@mui/joy";
-import { fetchBestSellingProducts } from "~/apis/client/apiClient";
+import { ImageRotator } from "../common/ImageRotator ";
+import { useNavigate } from "react-router-dom";
 
-const ProjectsOverview = () => {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetchBestSellingProducts().then((result) => {
-        console.log(result.data);
-        setData(result.data);
-      });
-    };
-    fetchData();
-  }, []);
+const ProjectsOverview = ({ data }) => {
+  const navigate = useNavigate();
   return (
     <Card
       variant="outlined"
@@ -81,7 +71,7 @@ const ProjectsOverview = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((value, index) => (
+            {data?.map((value, index) => (
               <tr
                 key={index}
                 style={{
@@ -89,29 +79,24 @@ const ProjectsOverview = () => {
                   "&:hover": { backgroundColor: "#f1f1f1" },
                   transition: "background-color 0.3s",
                 }}
-                onClick={() => console.log(project.id)}
+                onClick={() => navigate(`/product/view/${value.id}`)}
               >
                 <td style={{ padding: "12px", textAlign: "center" }}>
-                  <img
-                    src={value?.imageUrl}
-                    width={100}
-                    alt=""
-                    style={{ borderRadius: "8px", objectFit: "cover" }}
-                  />
+                  <ImageRotator imageUrl={value?.imageUrl} w={100} />
                 </td>
                 <td style={{ padding: "12px", textAlign: "start" }}>
-                  <Typography level="title-md" noWrap>
+                  <Typography level="title-md">
                     {value?.name || "Đang cập nhật"}
                   </Typography>
                 </td>
                 <td style={{ padding: "12px", textAlign: "center" }}>
-                  <Typography sx={{ color: "#00c6ff", fontWeight: "bold" }}>
-                    {value?.total_order || 0}
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {value?.totalSales || 0}
                   </Typography>
                 </td>
                 <td style={{ padding: "12px", textAlign: "center" }}>
-                  <Typography sx={{ color: "#00c6ff", fontWeight: "bold" }}>
-                    {value?.stock_quantity || 0}
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {value?.stockQuantity || 0}
                   </Typography>
                 </td>
               </tr>

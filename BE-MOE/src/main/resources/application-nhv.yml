@@ -31,9 +31,9 @@ jwt:
   key: LEADER_SD79NHV$2a$12$wvYek6dEmfHd3QOhnY2BVe8LbTGQa7bo2mda3FrHez80ToFEEh5u.
   expiryMinute: 1000
   expiryDay: 3
-  secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
-  refreshKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980
-  resetKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980s
+  secretKey: 48a5d6ea1af7eddbb926ccab5c50296c4b88f4a673f50246c8d25b0b3ea23537
+  refreshKey: bf2d8f6e53e5c1b5575e25038761f679b691912e1d2e00c7ca9ed1ea16692f50
+  otherKey: da429bf1a3a0a80bf60df05085b61cc0fd40a75bca1149fa0f90e18d27973cbe
 openapi:
   service:
     api-docs: api-moe-shop

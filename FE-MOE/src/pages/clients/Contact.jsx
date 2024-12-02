@@ -19,9 +19,55 @@ export const Contact = () => {
   const [formData, setFormData] = useState({
     hoTen: "",
     email: "",
-    sdt:"",
+    sdt: "",
     message: "",
   });
+
+  const [errors, setErrors] = useState({
+    hoTen: "",
+    email: "",
+    sdt: "",
+    message: "",
+  });
+  const validateInputs = () => {
+    let tempErrors = {};
+    if (!formData.hoTen) tempErrors.hoTen = "Họ tên là bắt buộc.";
+    if (!formData.email) tempErrors.email = "Email là bắt buộc.";
+    if (!formData.sdt) tempErrors.sdt = "Số điện thoại là bắt buộc.";
+    if (!formData.message) tempErrors.message = "Lời nhắn là bắt buộc.";
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let newErrors = { ...errors };
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    switch (name) {
+
+      case 'sdt':
+        if (!phoneRegex.test(value)) {
+          newErrors.sdt = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+        } else {
+          delete newErrors.sdt;
+        }
+        break;
+      case 'email':
+        if (!emailRegex.test(value)) {
+          newErrors.email = "Email không đúng định dạng";
+        } else {
+          delete newErrors.email;
+        }
+        break;
+
+      default:
+        break;
+    }
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setErrors(newErrors);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +79,8 @@ export const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateInputs()) return;
+
     try {
 
       const requestData = {
@@ -46,7 +94,7 @@ export const Contact = () => {
       setFormData({
         hoTen: "",
         email: "",
-        sdt:"",
+        sdt: "",
         message: "",
       });
       // toast.success("Yêu cầu hỗ trợ đã được gửi thành công!");
@@ -107,7 +155,7 @@ export const Contact = () => {
           </Typography>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={4}>
-              <FormControl required>
+              <FormControl >
                 <FormLabel>Tên của bạn</FormLabel>
                 <Input
                   placeholder="Nhập tên của bạn"
@@ -115,57 +163,97 @@ export const Contact = () => {
                   value={formData.hoTen}
                   onChange={handleInputChange}
                   sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
+                    border: `1px solid ${errors.hoTen ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                    '&:hover:not(.Mui-disabled):before': {
+                      borderColor: errors.hoTen ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: errors.hoTen ? 'red' : 'primary.main',
+                    },
                   }}
                 />
+                {errors.hoTen && (
+                  <Typography color="error" variant="body2" sx={{  color: 'red' }}>
+                    {errors.hoTen}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl required>
+              <FormControl >
                 <FormLabel>Email của bạn</FormLabel>
                 <Input
                   placeholder="Nhập email của bạn"
-                  type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
+                    border: `1px solid ${errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                    '&:hover:not(.Mui-disabled):before': {
+                      borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: errors.email ? 'red' : 'primary.main',
+                    },
                   }}
                 />
+                {errors.email && (
+                  <Typography color="error" variant="body2" sx={{  color: 'red' }}>
+                    {errors.email}
+                  </Typography>
+                )}
+
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl required>
+              <FormControl >
                 <FormLabel>Số điện thoại của bạn</FormLabel>
                 <Input
                   placeholder="Nhập số điện thoại của bạn"
                   name="sdt"
                   value={formData.sdt}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
+                    border: `1px solid ${errors.sdt ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                    '&:hover:not(.Mui-disabled):before': {
+                      borderColor: errors.sdt ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: errors.sdt ? 'red' : 'primary.main',
+                    },
                   }}
                 />
+                {errors.sdt && (
+                  <Typography color="error" variant="body2" sx={{  color: 'red' }}>
+                    {errors.sdt}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <FormControl required fullWidth>
+              <FormControl fullWidth>
                 <FormLabel>Lời nhắn của bạn</FormLabel>
                 <Textarea
                   placeholder="Nhập lời nhắn"
                   minRows={4}
                   name="message"
                   value={formData.message}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
+                    border: `1px solid ${errors.message ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
+                    '&:hover:not(.Mui-disabled):before': {
+                      borderColor: errors.message ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&.Mui-focused': {
+                      borderColor: errors.message ? 'red' : 'primary.main',
+                    },
                   }}
                 />
+                {errors.message && (
+                  <Typography color="error" variant="body2" sx={{  color: 'red' }}>
+                    {errors.message}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12}>

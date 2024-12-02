@@ -23,4 +23,20 @@ export const getAllSupport = async () => {
     throw error;
   }
 };
+export const updateStatus = async (status, id) => {
+  try {
+    const response = await authorizedAxiosInstance.put(
+      `${API_ROOT}/client/support/updateStatus/${id}`,
+      { status } // Đóng gói giá trị status vào object JSON
+    );
+    toast.success(response.data.message);
+  } catch (error) {
+    toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại");
+    throw error;
+  }
+};
+
+
+
+
 

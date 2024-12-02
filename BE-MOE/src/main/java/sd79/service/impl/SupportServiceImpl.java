@@ -2,6 +2,7 @@ package sd79.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.SupportRequest;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Support;
@@ -25,9 +26,9 @@ public class SupportServiceImpl implements SupportService {
     public List<Support> getAllSupportRequests() {
         return supportRepository.findAll(); // Lấy tất cả các yêu cầu hỗ trợ
     }
-
+    @Transactional
     @Override
-    public Support updateSupportStatus(Long id, String newStatus) {
+    public Support updateSupportStatus(Long id, Integer newStatus) {
         // Kiểm tra xem yêu cầu hỗ trợ có tồn tại hay không
         Support support = supportRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy yêu cầu hỗ trợ với ID: " + id));
@@ -42,17 +43,16 @@ public class SupportServiceImpl implements SupportService {
 
     @Override
     public Support createSupportRequest(SupportRequest request) {
-
         Support support = new Support();
         support.setHoTen(request.getHoTen());
         support.setIssueDescription(request.getIssueDescription());
         support.setEmail(request.getEmail());
         support.setSdt(request.getSdt());
-        support.setStatus("Đang chờ xử lý");
+        support.setStatus(0); // Trạng thái mặc định là 0
         support.setCreatedDate(LocalDateTime.now());
-        Support savedSupport = supportRepository.save(support);
-        return savedSupport;
+        return supportRepository.save(support);
     }
+
 
 }
 

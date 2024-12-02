@@ -11,16 +11,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.EmployeeRequest;
 import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
 import sd79.dto.response.ResponseData;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Employee;
 import sd79.repositories.PositionsRepository;
 import sd79.service.EmployeeService;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("api/${api.version}/employee")
@@ -110,11 +111,13 @@ public class EmployeeController {
         this.employeeService.updateImage(request);
         return new ResponseData<>(HttpStatus.CREATED.value(), "");
     }
+
     @PatchMapping("/change-isLocked/{id}/{isLocked}")
     public ResponseData<?> setUserLocked(@Min(1) @PathVariable("id") long id, @PathVariable("isLocked") Boolean isLocked) {
         this.employeeService.setUserLocked(id, isLocked);
         return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Thay đổi trạng thái thành công");
     }
+
     @PutMapping("/{id}/update-password")
     public ResponseData<String> updatePassword(@PathVariable long id, @RequestBody PasswordUpdateRequest request) {
         try {
@@ -129,5 +132,18 @@ public class EmployeeController {
         }
     }
 
+    @GetMapping("/me/{id}")
+    public ResponseData<?> getEmployeeDetailByUserId(@PathVariable long id) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Employee details", employeeService.detailByUserId(id));
+
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseData<?> updateEmployeeByUserId(
+            @PathVariable long id,
+            @RequestBody EmployeeRequest request) {
+        employeeService.updateByUserId(id, request);
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sửa thành công");
+    }
 
 }

@@ -4,6 +4,7 @@
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import { createContext, useEffect, useState } from "react";
 import { fetchCarts } from "~/apis/client/apiClient";
+import { getAllSupport } from "~/apis/supportApi";
 
 const CommonContext = createContext();
 
@@ -12,11 +13,13 @@ function CommonProvider({ children }) {
   const [carts, setCarts] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [isManager, setIsManager] = useState(false);
+  const [unresolvedCount, setUnresolvedCount] = useState(0);
 
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
       handleFetchCarts();
     }
+    fetchSupportRequests();
   }, []);
 
   const handleFetchCarts = async () => {
@@ -30,6 +33,23 @@ function CommonProvider({ children }) {
       });
   };
 
+  const fetchSupportRequests = async () => {
+    try {
+      const response = await getAllSupport();
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+
+        const unresolved = data.filter((support) => support.status === 0);
+        setUnresolvedCount(unresolved.length);
+      } else {
+        console.error("Dữ liệu không phải là mảng:", data);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin yêu cầu hỗ trợ:", error);
+    }
+  };
+
   const data = {
     amoutCart,
     setAmoutCart,
@@ -38,7 +58,10 @@ function CommonProvider({ children }) {
     keyword,
     setKeyword,
     setIsManager,
-    isManager
+    isManager,
+    setUnresolvedCount,
+    unresolvedCount,
+    fetchSupportRequests
   };
 
   return (
