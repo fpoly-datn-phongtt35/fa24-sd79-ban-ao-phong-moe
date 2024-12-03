@@ -35,7 +35,8 @@ payment:
     url: ${VNPAY_URL:DUMMY_VALUE}
     tmnCode: ${VNPAY_TMNCODE:DUMMY_VALUE}
     secretKey: ${VNPAY_SECRET_KEY:DUMMY_VALUE}
-    returnUrl: ${HOST_BACKEND:http://localhost:80/}
+    returnUrl: ${VNP_RETURN_URL:http://localhost:1004/}
+    timeZone: ${VNPAY_TIME_ZONE:Asia/Ho_Chi_Minh}
     version: 2.1.0
     command: pay
     orderType: OTHER

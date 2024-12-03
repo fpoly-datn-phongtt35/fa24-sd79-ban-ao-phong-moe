@@ -19,6 +19,9 @@ import sd79.model.User;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
 
+import java.time.ZoneId;
+import java.util.TimeZone;
+
 @Configuration
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -37,6 +40,8 @@ public class ApplicationInitConfig {
 
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository) {
+        log.info("System Default TimeZone: {}", TimeZone.getDefault().getID());
+        log.info("System Default ZoneId: {}", ZoneId.systemDefault());
         return args -> {
             User user = userRepository.findById(1L).orElse(null);
             assert user != null;
