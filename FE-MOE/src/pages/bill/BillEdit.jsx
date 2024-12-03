@@ -29,6 +29,7 @@ export default function BillEdit() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
     const [currentProductId, setCurrentProductId] = useState(null);
+    const [errorMessages, setErrorMessages] = useState({}); 
 
     //coupon
     const [isCouponModalOpen, setCouponModalOpen] = useState(false)
@@ -86,13 +87,19 @@ export default function BillEdit() {
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
-        const sanitizedQuantity = newQuantity === 0 || newQuantity === '' ? 1 : newQuantity;
+        let newErrorMessages = { ...errorMessages }; 
 
-        if (sanitizedQuantity === 1) {
-            setErrorMessage("");
+        if (newQuantity < 0) {
+            newErrorMessages[productId] = "Số lượng không được âm";
         } else if (newQuantity === 0 || newQuantity === '') {
-            setErrorMessage("Số lượng chưa nhập");
+            newErrorMessages[productId] = "Số lượng chưa nhập";
+        } else {
+            delete newErrorMessages[productId]; 
         }
+
+        setErrorMessages(newErrorMessages); 
+
+        const sanitizedQuantity = newQuantity <= 0 ? 1 : newQuantity;
 
         const productToUpdate = products.find(
             (product) => product.productDetail.id === productId
@@ -120,6 +127,7 @@ export default function BillEdit() {
         }, 500);
         setQuantityTimeoutId(timeoutId);
     };
+
 
     const updateProductQuantity = async (productId, newQuantity) => {
         try {
@@ -433,20 +441,19 @@ export default function BillEdit() {
                                             <Input
                                                 type="number"
                                                 value={
-                                                    products.find((p) => p.productDetail.id === detail.productDetail.id)?.quantity
+                                                    products.find((p) => p.productDetail.id === detail.productDetail.id)?.quantity || 1
                                                 }
                                                 onChange={(e) =>
-                                                    handleQuantityChange(detail.productDetail?.id, parseInt(e.target.value, 10) || '1')
+                                                    handleQuantityChange(detail.productDetail?.id, parseInt(e.target.value, 10) || 1)
                                                 }
                                                 sx={{ width: '80%', '& input': { textAlign: 'center' } }}
                                             />
-                                            {errorMessage && (
+                                            {/* {errorMessages[detail.productDetail.id] && (
                                                 <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
-                                                    {errorMessage}
+                                                    {errorMessages[detail.productDetail.id]}
                                                 </Typography>
-                                            )}
+                                            )} */}
                                         </Grid>
-
 
                                         {/* Price and Delete Button */}
                                         <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">

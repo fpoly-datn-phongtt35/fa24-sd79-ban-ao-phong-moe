@@ -65,6 +65,7 @@ function Bill() {
     const [searchParams] = useSearchParams();
     const [bankCode, setBankCode] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [errorMessages, setErrorMessages] = useState({});
 
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -205,11 +206,20 @@ function Bill() {
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
+        let errorMessage = "";
+
         if (newQuantity === null || newQuantity === '') {
-            setErrorMessage("Số lượng chưa nhập");
-        } else {
-            setErrorMessage("");
+            errorMessage = "Số lượng chưa nhập";
+        } else if (newQuantity < 0) {
+            errorMessage = "Số lượng không được âm";
         }
+
+        setErrorMessages(prevErrors => ({
+            ...prevErrors,
+            [productId]: errorMessage
+        }));
+
+        if (errorMessage) return;
 
         const productToUpdate = products.find(p => p.id === productId);
         if (!productToUpdate) return;
@@ -668,27 +678,31 @@ function Bill() {
                     </>
                 )}
 
-                {bills.length >= MAX_BILL && (
-                    <Typography color="error" sx={{ mb: 1 }}>
-                        Tối đa tạo {MAX_BILL} hóa đơn.
-                    </Typography>
-                )}
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={onSubmit}
-                    disabled={bills.length >= 5}
-                    sx={{
-                        mb: 2,
-                        fontWeight: 'bold',
-                        background: bills.length < 5 ? 'linear-gradient(90deg, #4a90e2, #007AFF)' : 'gray',
-                        '&:hover': {
-                            background: bills.length < 5 ? 'linear-gradient(90deg, #3a70d2, #0068D8)' : 'gray'
-                        }
-                    }}
-                >
-                    Tạo mới đơn hàng
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={onSubmit}
+                        disabled={bills.length >= 5}
+                        sx={{
+                            mb: 2,
+                            fontWeight: 'bold',
+                            background: bills.length < 5 ? 'linear-gradient(90deg, #4a90e2, #007AFF)' : 'gray',
+                            '&:hover': {
+                                background: bills.length < 5 ? 'linear-gradient(90deg, #3a70d2, #0068D8)' : 'gray'
+                            }
+                        }}
+                    >
+                        Tạo mới đơn hàng
+                    </Button>
+
+                    {bills.length >= MAX_BILL && (
+                        <Typography color="error" sx={{ mb: 1, marginLeft: '30px' }}>
+                            Tối đa tạo {MAX_BILL} hóa đơn.
+                        </Typography>
+                    )}
+                </Box>
+
                 <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
                     {bills.map((order, index) => (
                         <Button
@@ -732,109 +746,115 @@ function Bill() {
 
             {/* Product */}
             <div>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', mt: 3, justifyContent: 'flex-end' }}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<AddIcon />}
-                        onClick={() => openProductListModal(bills.find(order => order.id === selectedOrder))}
-                        disabled={!selectedOrder}
-                    >
-                        Thêm sản phẩm
-                    </Button>
-                    {/* <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>
-                        QR Code sản phẩm
-                    </Button> */}
-                </Box>
+                <Paper sx={{ padding: 2, marginTop: 3, borderRadius: 2, boxShadow: 1, marginBottom: 5, background: "rgb(249 242 242)" }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', justifyContent: 'space-between' }}>
+                        <Typography sx={{ fontWeight: 'bold', color: 'textSecondary', fontSize: '1.5rem' }}>
+                            Giỏ hàng
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AddIcon />}
+                            onClick={() => openProductListModal(bills.find(order => order.id === selectedOrder))}
+                            disabled={!selectedOrder}
+                        >
+                            Thêm sản phẩm
+                        </Button>
+                    </Box>
 
+                    <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="lg">
+                        <ProductListModal
+                            onAddProduct={onProduct}
+                            onClose={closeProductListModal}
+                            order={selectedOrder}
+                        />
+                    </Dialog>
 
-                <Dialog open={isProductListModalOpen} onClose={closeProductListModal} maxWidth="lg" >
-                    <ProductListModal
-                        onAddProduct={onProduct}
-                        onClose={closeProductListModal}
-                        order={selectedOrder}
-                    />
-                </Dialog>
+                    {products.length === 0 ? (
+                        <Typography variant="body1" color="black" sx={{ mt: 2, textAlign: "center", marginBottom: "20px" }}>
+                            Chưa có sản phẩm ở giỏ hàng
+                        </Typography>
+                    ) : (
+                        <List sx={{ mb: 3 }}>
+                            {products.map((product, index) => (
+                                <ListItem key={index} sx={{
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: '8px',
+                                    boxShadow: 1,
+                                    mb: 2,
+                                    transition: '0.3s',
+                                    '&:hover': {
+                                        boxShadow: 3,
+                                        backgroundColor: '#f9f9f9'
+                                    }
+                                }}>
+                                    <Grid container alignItems="center" spacing={2}>
+                                        <Grid item xs={4} sm={3} md={2}>
+                                            {product.productDetail.imageUrl && Array.isArray(product.productDetail.imageUrl) && product.productDetail.imageUrl.length > 0 ? (
+                                                <ImageRotator imageUrl={product.productDetail.imageUrl} w={100} h={110} />
+                                            ) : (
+                                                <Box sx={{ width: 90, height: 100, bgcolor: 'grey.300', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Typography variant="body2">No Image</Typography>
+                                                </Box>
+                                            )}
+                                        </Grid>
+                                        <Grid item xs={4} sm={5} md={6}>
+                                            <ListItemText
+                                                primary={<Typography variant="h6" fontWeight="bold">{product.productDetail.productName}</Typography>}
+                                            />
+                                            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                                Kích thước: {product.productDetail.size} - Màu sắc: {product.productDetail.color}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                                Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
+                                            </Typography>
+                                        </Grid>
+                                        <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
+                                            <Input
+                                                type="number"
+                                                value={product.quantity}
+                                                onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || '')}
+                                                sx={{
+                                                    width: '80%',
+                                                    '& input': {
+                                                        textAlign: 'center',
+                                                    }
+                                                }}
+                                            />
+                                            {/* {errorMessages[product.id] && (
+                                                <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
+                                                    {errorMessages[product.id]}
+                                                </Typography>
+                                            )} */}
+                                        </Grid>
 
-                <Typography variant="subtitle1" sx={{ mt: 3, fontWeight: 'bold', color: 'textSecondary' }}>Giỏ hàng</Typography>
-                <List sx={{ mb: 3 }}>
-                    {products.map((product, index) => (
-                        <ListItem key={index} sx={{
-                            backgroundColor: '#ffffff',
-                            borderRadius: '8px',
-                            boxShadow: 1,
-                            mb: 2,
-                            transition: '0.3s',
-                            '&:hover': {
-                                boxShadow: 3,
-                                backgroundColor: '#f9f9f9'
-                            }
-                        }}>
-                            <Grid container alignItems="center" spacing={2}>
-                                <Grid item xs={4} sm={3} md={2}>
-                                    {product.productDetail.imageUrl && Array.isArray(product.productDetail.imageUrl) && product.productDetail.imageUrl.length > 0 ? (
-                                        <ImageRotator imageUrl={product.productDetail.imageUrl} w={100} h={110} />
-                                    ) : (
-                                        <Box sx={{ width: 90, height: 100, bgcolor: 'grey.300', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Typography variant="body2">No Image</Typography>
-                                        </Box>
-                                    )}
-                                </Grid>
-                                <Grid item xs={4} sm={5} md={6}>
-                                    <ListItemText
-                                        primary={<Typography variant="h6" fontWeight="bold">{product.productDetail.productName}</Typography>}
-                                    />
-                                    <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                        Kích thước: {product.productDetail.size} - Màu sắc: {product.productDetail.color}
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                        Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
-                                    <Input
-                                        type="number"
-                                        value={product.quantity}
-                                        onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || '')}
-                                        sx={{
-                                            width: '80%',
-                                            '& input': {
-                                                textAlign: 'center',
-                                            }
-                                        }}
-                                    />
-                                    {errorMessage && (
-                                        <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
-                                            {errorMessage}
-                                        </Typography>
-                                    )}
-                                </Grid>
+                                        <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
+                                            <Typography variant="body2" sx={{ mr: 1 }}>
+                                                {product.discountAmount === product.productDetail.price ? (
+                                                    formatCurrencyVND(product.productDetail.price * product.quantity)
+                                                ) : (
+                                                    <>
+                                                        <span style={{ textDecoration: "line-through", color: "gray", marginRight: 8 }}>
+                                                            {formatCurrencyVND(product.productDetail.price * product.quantity)}
+                                                        </span>
+                                                        <span style={{ color: "red" }}>
+                                                            {formatCurrencyVND(product.discountAmount * product.quantity)}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </Typography>
 
-                                <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
-                                    <Typography variant="body2" sx={{ mr: 1 }}>
-                                        {product.discountAmount === product.productDetail.price ? (
-                                            formatCurrencyVND(product.productDetail.price * product.quantity)
-                                        ) : (
-                                            <>
-                                                <span style={{ textDecoration: "line-through", color: "gray", marginRight: 8 }}>
-                                                    {formatCurrencyVND(product.productDetail.price * product.quantity)}
-                                                </span>
-                                                <span style={{ color: "red" }}>
-                                                    {formatCurrencyVND(product.discountAmount * product.quantity)}
-                                                </span>
-                                            </>
-                                        )}
-                                    </Typography>
+                                            <IconButton color="error" onClick={() => handleDeleteProduct(product)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </Grid>
 
-                                    <IconButton color="error" onClick={() => handleDeleteProduct(product)}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </Grid>
-
-                            </Grid>
-                        </ListItem>
-                    ))}
-                </List>
+                                    </Grid>
+                                </ListItem>
+                            ))}
+                        </List>
+                    )}
+                </Paper>
             </div>
 
             {/* Customer */}
@@ -850,7 +870,7 @@ function Bill() {
 
             {/* Coupon and Tính toán */}
             <div>
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}>
+                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", background: "rgb(249 242 242)" }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h5" fontWeight="bold" color="textPrimary">
                             Thông tin thanh toán
@@ -1129,7 +1149,7 @@ function Bill() {
                             </Grid>
 
                             <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
-                          
+
                             <Box display="flex" justifyContent="space-between" gap={2}>
                                 <Button
                                     variant="contained"
