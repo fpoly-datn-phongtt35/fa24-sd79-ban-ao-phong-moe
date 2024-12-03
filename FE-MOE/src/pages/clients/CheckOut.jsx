@@ -26,7 +26,7 @@ import MBankIcon from "~/assert/icon/MBBank-MBB.svg";
 import VNPaySvgIcon from "~/assert/icon/Logo VNPAY-QR.svg";
 import SuccessfullyOrderIcon from "~/assert/icon/correct-success-tick-svgrepo-com.svg";
 import CloseIcon from "@mui/icons-material/Close";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CardShoppingCard from "~/components/clients/cards/CardShoppingCard";
 import { formatCurrencyVND } from "~/utils/format";
 import { ScrollToTop } from "~/utils/defaultScroll";
@@ -40,9 +40,12 @@ import {
 import VoucherModal from "~/components/clients/modals/VoucherModal";
 import { toast } from "react-toastify";
 import { MoeAlert } from "~/components/other/MoeAlert";
+import { CommonContext } from "~/context/CommonContext";
 
 function CheckOut() {
   const navigate = useNavigate();
+  const context = useContext(CommonContext);
+
   const [searchParams] = useSearchParams();
 
   const [items, setItems] = useState(null);
@@ -176,6 +179,7 @@ function CheckOut() {
 
   if (orderSuccessfully) {
     ScrollToTop();
+    context.handleFetchCarts();
     return (
       <Box
         display="flex"

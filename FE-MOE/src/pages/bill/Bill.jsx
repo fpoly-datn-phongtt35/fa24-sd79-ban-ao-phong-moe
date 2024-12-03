@@ -40,6 +40,7 @@ import SvgIconDisplay from '~/components/other/SvgIconDisplay';
 import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
 import Calculator from '~/components/bill/Calculator';
 import { addBillStatusDetail } from '~/apis/billListApi';
+import { MAX_BILL } from '~/utils/constants';
 
 function Bill() {
     const navigate = useNavigate();
@@ -361,6 +362,10 @@ function Bill() {
     const openCouponModal = () => setCouponModalOpen(true);
     const closeCouponModal = () => setCouponModalOpen(false);
 
+    const clearCoupons = () => {
+        handleRemoveCoupon();
+    };
+
     //----------------------------------------------------------Tính toán--------------------------------------//  
     const handleCustomerAmountChange = (event) => {
         const value = parseFloat(event.target.value.replace(/[^\d.-]/g, '')) || 0;
@@ -479,7 +484,6 @@ function Bill() {
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-
 
     const updateBillStatusDetail = async (status) => {
         const statusDetail = {
@@ -664,9 +668,9 @@ function Bill() {
                     </>
                 )}
 
-                {bills.length >= 5 && (
+                {bills.length >= MAX_BILL && (
                     <Typography color="error" sx={{ mb: 1 }}>
-                        Tối đa tạo 5 hóa đơn.
+                        Tối đa tạo {MAX_BILL} hóa đơn.
                     </Typography>
                 )}
                 <Button
@@ -738,9 +742,9 @@ function Bill() {
                     >
                         Thêm sản phẩm
                     </Button>
-                    <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>
+                    {/* <Button variant="contained" color="secondary" startIcon={<QrCodeIcon />}>
                         QR Code sản phẩm
-                    </Button>
+                    </Button> */}
                 </Box>
 
 
@@ -840,6 +844,7 @@ function Bill() {
                     onAddCustomer={handleAddCustomer}
                     customerId={customerId}
                     setCustomerId={setCustomerId}
+                    clearCoupons={clearCoupons}
                 />
             </div>
 
@@ -1022,7 +1027,7 @@ function Bill() {
                                 <Grid item xs={12} md={6}>
                                     <Box
                                         component="img"
-                                        src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
+                                        src="https://cdn.pixabay.com/animation/2024/01/23/12/45/12-45-26-352_512.gif"
                                         alt="No Delivery"
                                         sx={{
                                             width: '100%',
@@ -1036,7 +1041,7 @@ function Bill() {
                             <Grid item xs={12} md={6}>
                                 <Box
                                     component="img"
-                                    src="https://res.cloudinary.com/dp0odec5s/image/upload/v1729760620/c6gyppm7eef7cyo0vxzy.jpg"
+                                    src="https://cdn.pixabay.com/animation/2024/01/23/12/45/12-45-26-352_512.gif"
                                     alt="No Delivery"
                                     sx={{
                                         width: '100%',
@@ -1124,8 +1129,7 @@ function Bill() {
                             </Grid>
 
                             <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
-
-                            <Typography variant="body2" sx={{ mb: 1 }}>Chọn phương thức thanh toán:</Typography>
+                          
                             <Box display="flex" justifyContent="space-between" gap={2}>
                                 <Button
                                     variant="contained"

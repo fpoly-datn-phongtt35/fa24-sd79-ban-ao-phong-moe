@@ -12,14 +12,14 @@ spring:
   profiles:
     active: @spring.profiles.active@
   authentication:
-    username: sysadmin
-    password: sd79
+    username: ${AUTHENTICATION_USERNAME:sysadmin}
+    password: ${AUTHENTICATION_PASSWORD:sd79}
   cors:
-    url: ${CORS_POLICY:http://localhost:1004}
+    url: ${CORS_POLICY:http://localhost/}
   frontend:
-    url: http://${HOST:localhost}:1004
+    url: ${CORS_POLICY:http://localhost/}
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: ${KAFKA_HOST:localhost:9094}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -35,7 +35,8 @@ payment:
     url: ${VNPAY_URL:DUMMY_VALUE}
     tmnCode: ${VNPAY_TMNCODE:DUMMY_VALUE}
     secretKey: ${VNPAY_SECRET_KEY:DUMMY_VALUE}
-    returnUrl: http://${HOST:localhost}:1004/
+    returnUrl: ${VNP_RETURN_URL:http://localhost:1004/}
+    timeZone: ${VNPAY_TIME_ZONE:Asia/Ho_Chi_Minh}
     version: 2.1.0
     command: pay
     orderType: OTHER

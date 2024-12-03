@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.requests.authRequests.SignUpRequest;
+import sd79.dto.requests.authRequests.VerifyOtp;
 import sd79.dto.response.ResponseData;
 import sd79.dto.response.auth.TokenResponse;
 import sd79.enums.UserRole;
@@ -103,4 +104,14 @@ public class AuthenticationController {
         return new ResponseData<>(HttpStatus.OK.value(), "Data is valid");
     }
 
+    @PostMapping("/sent-otp/{email}")
+    public ResponseData<?> sentOtp(@PathVariable String email) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", authenticationService.getOtpVerifyRegister(email));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseData<?> verifyOtp(@RequestBody VerifyOtp otp) {
+        authenticationService.verifyOtp(otp);
+        return new ResponseData<>(HttpStatus.OK.value(), "Success");
+    }
 }

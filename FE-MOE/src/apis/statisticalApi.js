@@ -106,6 +106,15 @@ const statisticalAPI = {
       "Không thể lấy số lượng khách hàng đăng ký. Vui lòng thử lại."
     );
   },
+
+  // Fetch coupon usage
+  getCouponUsage: (filter) => {
+    return fetchData(
+      `${BASE_URL}/coupon-usage`,
+      filter,
+      "Không thể lấy dữ liệu sử dụng mã giảm giá. Vui lòng thử lại."
+    );
+  },
 };
 
 export default statisticalAPI;

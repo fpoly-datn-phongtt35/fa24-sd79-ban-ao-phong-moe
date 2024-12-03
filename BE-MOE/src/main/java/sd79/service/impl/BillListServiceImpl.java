@@ -8,9 +8,14 @@ import sd79.dto.response.PageableResponse;
 import sd79.dto.response.bills.BillEditResponse;
 import sd79.dto.response.clients.invoices.InvoiceResponse;
 import sd79.model.Bill;
+import sd79.model.BillStatus;
+import sd79.model.BillStatusDetail;
 import sd79.repositories.BillRepo;
+import sd79.repositories.BillStatusDetailRepo;
+import sd79.repositories.BillStatusRepo;
 import sd79.repositories.customQuery.BillCustomizeQuery;
 import sd79.service.BillListService;
+import sd79.service.BillService;
 
 import java.util.List;
 
@@ -20,13 +25,15 @@ public class BillListServiceImpl implements BillListService {
 
     private final BillCustomizeQuery billCustomizeQuery;
     private final BillRepo billRepository;
+    private final BillService billService;
+    private final BillStatusDetailRepo billStatusDetailRepo;
 
     @Override
-    public PageableResponse getAllBillList(BillListParamFilter param) {
+    public PageableResponse getAllBillList(BillListParamFilter param, Integer employeeId) {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-        return this.billCustomizeQuery.getAllBillList(param);
+        return this.billCustomizeQuery.getAllBillList(param, employeeId);
     }
 
     @Override
@@ -36,9 +43,23 @@ public class BillListServiceImpl implements BillListService {
 
     @Override
     public void deleteBill(Long billId) {
+        // Tìm hóa đơn
         Bill bill = billRepository.findById(billId)
                 .orElseThrow(() -> new RuntimeException("Bill not found with ID: " + billId));
-        bill.setIsDeleted(true);
-        billRepository.save(bill);
+
+        // Lấy trạng thái gần nhất
+        BillStatusDetail latestBillStatusDetail = billStatusDetailRepo.findTopByBillOrderByIdDesc(bill)
+                .orElseThrow(() -> new RuntimeException("No BillStatusDetail found for Bill with ID: " + billId));
+
+        BillStatus billStatus = latestBillStatusDetail.getBillStatus();
+
+        if (billStatus.getId() == 7) {
+            billService.deleteBill(billId);  // Xóa vĩnh viễn
+        } else {
+            bill.setIsDeleted(true);  // Soft delete
+            billRepository.save(bill);
+        }
     }
+
+
 }

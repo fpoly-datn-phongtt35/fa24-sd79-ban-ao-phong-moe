@@ -1,16 +1,15 @@
 package sd79.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import sd79.controller.NotificationController;
+import org.springframework.transaction.annotation.Transactional;
+import sd79.dto.requests.SupportRequest;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Customer;
 import sd79.model.Support;
-import sd79.repositories.CustomerRepository;
 import sd79.repositories.SupportRepository;
 import sd79.service.SupportService;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,51 +18,58 @@ import java.util.List;
 public class SupportServiceImpl implements SupportService {
     private final SupportRepository supportRepository;
 
-    private final CustomerRepository customerRepository;
-    private final NotificationController notificationController;
 
     @Autowired
-    public SupportServiceImpl(SupportRepository supportRepository, CustomerRepository customerRepository, NotificationController notificationController) {
+    public SupportServiceImpl(SupportRepository supportRepository) {
         this.supportRepository = supportRepository;
-        this.customerRepository = customerRepository;
-        this.notificationController = notificationController;
     }
 
-    @Override
-    public Support createSupportRequest(Long customerId, String issueDescription) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
-
-        Support support = new Support();
-        support.setCustomer(customer);
-        support.setIssueDescription(issueDescription);
-        support.setStatus("Pending");
-        support.setCreatedDate(LocalDateTime.now());
-
-        Support savedSupport = supportRepository.save(support);
-
-        // Gửi thông báo tới tất cả client về yêu cầu hỗ trợ mới
-        notificationController.sendNotification("/topic/support", "New support request created");
-
-        return savedSupport;
-    }
-
+//    @Override
+//    public Page<Support> getAllSupportRequests(Pageable pageable) {
+//        return supportRepository.findAll(pageable);
+//    }
 
 
     @Override
-    public List<Support> getSupportRequestsByStatus(String status) {
-        // Lấy danh sách yêu cầu hỗ trợ theo trạng thái
-        return supportRepository.findByStatus(status);
-    }
+    public Support updateSupportStatus(Long id, Integer newStatus) {
+        // Kiểm tra xem yêu cầu hỗ trợ có tồn tại hay không
+        Support support = supportRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy yêu cầu hỗ trợ với ID: " + id));
 
-    @Override
-    public Support resolveSupportRequest(Long supportId) {
-        // Tìm yêu cầu hỗ trợ và đánh dấu là đã hoàn thành
-        Support support = supportRepository.findById(supportId)
-                .orElseThrow(() -> new EntityNotFoundException("Support request not found"));
-        support.setStatus("Resolved");
+        // Cập nhật trạng thái
+        support.setStatus(newStatus);
         support.setResolvedDate(LocalDateTime.now());
+
         return supportRepository.save(support);
     }
+
+    @Override
+    public List<Support> getAllSupportRequests() {
+        return supportRepository.findAll(); // Lấy tất cả các yêu cầu hỗ trợ
+    }
+    @Override
+    public void deleteSupportRequest(Long id) {
+        if (!supportRepository.existsById(id)) {
+            throw new EntityNotFoundException("Không tìm thấy yêu cầu hỗ trợ với ID: " + id);
+        }
+        supportRepository.deleteById(id);
+    }
+
+
+
+    @Override
+    public Support createSupportRequest(SupportRequest request) {
+        Support support = new Support();
+        support.setHoTen(request.getHoTen());
+        support.setIssueDescription(request.getIssueDescription());
+        support.setEmail(request.getEmail());
+        support.setSdt(request.getSdt());
+        support.setStatus(0); // Trạng thái mặc định là 0
+        support.setCreatedDate(LocalDateTime.now());
+        return supportRepository.save(support);
+    }
+
+
 }
+
 

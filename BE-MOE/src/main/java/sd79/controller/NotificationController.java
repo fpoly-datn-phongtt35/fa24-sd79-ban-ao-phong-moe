@@ -14,8 +14,9 @@ public class NotificationController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void sendNotification(String destination, String message) {
+    public void sendNotificationToEmployee(String destination, String message) {
         messagingTemplate.convertAndSend(destination, message);
     }
 }
+
 

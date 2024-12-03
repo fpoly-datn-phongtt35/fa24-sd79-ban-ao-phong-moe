@@ -24,7 +24,10 @@ import sd79.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,77 +67,180 @@ public class BillCustomizeQuery {
                 .build();
     }
 
-    public PageableResponse getAllBillList(BillListParamFilter param) {
-        List<Integer> allowedStatusIds = List.of(1, 2, 4, 7, 8);
+    public PageableResponse getAllBillList(BillListParamFilter param, Integer userId) {
+        // Tìm `Employee` trực tiếp từ `userId`
+        Employee employee = entityManager.createQuery(
+                        "SELECT e FROM employees e WHERE e.user.id = :userId AND e.user.isDeleted = false", Employee.class)
+                .setParameter("userId", userId)
+                .getSingleResult();
 
-        // Constructing the SQL query for filtering bills based on status, keyword, and deletion status
-        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
-
-        if (StringUtils.hasLength(param.getKeyword())) {
-            sql.append(" AND lower(b.code) like lower(:keyword)");
+        if (employee == null || employee.getUser() == null || employee.getUser().getIsDeleted()) {
+            throw new InvalidDataException("User not found or is deleted");
         }
 
-        // Default status to 2 if none is provided
-        Integer status = param.getStatus() != null ? param.getStatus() : 2;
+        // Lấy chức vụ của `Employee`
+        Integer employeePositionId = employee.getPosition().getId();
 
-        if (allowedStatusIds.contains(status)) {
-            sql.append(" AND b.billStatus.id = :statusId");
+        List<Integer> allowedStatusIds = List.of(2, 3, 4, 7, 8);
+        Integer status = param.getStatus();
 
-            // Sorting based on status
-            if (status == 2) {
-                sql.append(" ORDER BY b.createAt ASC"); // Oldest first for status 2
-            } else if (status == 8) {
-                sql.append(" ORDER BY b.createAt DESC"); // Newest first for status 8
-            } else {
-                sql.append(" ORDER BY b.createAt DESC"); // Default sorting for other statuses (including status 1)
-            }
-        } else {
+        // Nếu không có trạng thái, mặc định là trạng thái 2
+        status = status != null ? status : 2;
+        if (!allowedStatusIds.contains(status)) {
             throw new InvalidDataException("Status ID is invalid");
+        }
+
+        // Xây dựng câu truy vấn JPQL
+        StringBuilder sql = new StringBuilder("SELECT b FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
+
+        // Phân quyền dựa vào chức vụ
+        if (employeePositionId == 2) {
+            sql.append(" AND b.createdBy.id = :userId");
+        }
+
+        // Điều kiện tìm kiếm
+        if (StringUtils.hasLength(param.getKeyword())) {
+            sql.append(" AND (");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                if (i > 0) sql.append(" AND ");
+                sql.append("(LOWER(c.firstName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(c.lastName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(b.code) LIKE :keyword").append(i).append(")");
+            }
+            sql.append(")");
+        }
+
+        if (param.getStartDate() != null) {
+            sql.append(" AND Date(b.createAt) >= :startDate");
+        }
+
+        if (param.getEndDate() != null) {
+            sql.append(" AND Date(b.createAt) <= :endDate");
+        }
+
+        if (param.getMinTotal() != null) {
+            sql.append(" AND b.total >= :minTotal");
+        }
+
+        if (param.getMaxTotal() != null) {
+            sql.append(" AND b.total <= :maxTotal");
+        }
+
+        sql.append(" AND b.billStatus.id = :statusId");
+
+        if (status == 2) {
+            sql.append(" ORDER BY b.createAt ASC");  // Thời gian lâu nhất lên đầu
+        } else if (status == 8) {
+            sql.append(" ORDER BY b.createAt DESC"); // Thời gian mới nhất lên đầu
+        } else {
+            sql.append(" ORDER BY b.createAt DESC"); // Mặc định nếu cần
         }
 
         TypedQuery<Bill> query = entityManager.createQuery(sql.toString(), Bill.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
-            query.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                query.setParameter("keyword" + i, "%" + keywords[i] + "%");
+            }
         }
+
+        if (param.getStartDate() != null) query.setParameter("startDate", param.getStartDate());
+        if (param.getEndDate() != null) query.setParameter("endDate", param.getEndDate());
+        if (param.getMinTotal() != null) query.setParameter("minTotal", param.getMinTotal());
+        if (param.getMaxTotal() != null) query.setParameter("maxTotal", param.getMaxTotal());
         query.setParameter("statusId", status);
 
+        if (employeePositionId == 2) {
+            query.setParameter("userId", userId);
+        }
+
+        // Phân trang
         query.setFirstResult((param.getPageNo() - 1) * param.getPageSize());
         query.setMaxResults(param.getPageSize());
 
-        List<BillListResponse> billResponses = query.getResultList().stream().map(bill -> BillListResponse.builder()
-                .id(bill.getId())
-                .code(bill.getCode())
-                .customer(bill.getCustomer())
-                .total(bill.getTotal())
-                .billStatus(bill.getBillStatus().getId())
-                .createAt(bill.getCreateAt())
-                .build()).toList();
+        List<BillListResponse> billResponses = query.getResultList().stream()
+                .map(bill -> BillListResponse.builder()
+                        .id(bill.getId())
+                        .code(bill.getCode())
+                        .customer(bill.getCustomer())
+                        .total(bill.getTotal())
+                        .billStatus(bill.getBillStatus().getId())
+                        .createAt(bill.getCreateAt())
+                        .build())
+                .toList();
 
-        // Count query to get total number of records (also ensuring isDelete = 0)
-        StringBuilder countPage = new StringBuilder("SELECT count(b) FROM Bill b WHERE b.isDeleted = false"); // Ensure bills are not marked as deleted
+        // Truy vấn số lượng bản ghi
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(b) FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
+
+        if (employeePositionId == 2) {
+            countSql.append(" AND b.createdBy.id = :userId");
+        }
 
         if (StringUtils.hasLength(param.getKeyword())) {
-            countPage.append(" AND lower(b.code) like lower(:keyword)");
+            countSql.append(" AND (");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                if (i > 0) countSql.append(" AND ");
+                countSql.append("(LOWER(c.firstName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(c.lastName) LIKE :keyword").append(i)
+                        .append(" OR LOWER(b.code) LIKE :keyword").append(i).append(")");
+            }
+            countSql.append(")");
         }
-        countPage.append(" AND b.billStatus.id = :statusId");
 
-        TypedQuery<Long> countQuery = entityManager.createQuery(countPage.toString(), Long.class);
+        if (param.getStartDate() != null) {
+            countSql.append(" AND Date(b.createAt) >= :startDate");
+        }
+
+        if (param.getEndDate() != null) {
+            countSql.append(" AND Date(b.createAt) <= :endDate");
+        }
+
+        if (param.getMinTotal() != null) {
+            countSql.append(" AND b.total >= :minTotal");
+        }
+
+        if (param.getMaxTotal() != null) {
+            countSql.append(" AND b.total <= :maxTotal");
+        }
+
+        countSql.append(" AND b.billStatus.id = :statusId");
+        if (status == 2) {
+            sql.append(" ORDER BY b.createAt ASC");  // Thời gian lâu nhất lên đầu cho trạng thái 2
+        } else if (status == 8) {
+            sql.append(" ORDER BY b.createAt DESC"); // Thời gian mới nhất lên đầu cho trạng thái 8
+        } else {
+            sql.append(" ORDER BY b.createAt DESC"); // Sắp xếp mặc định
+        }
+
+        TypedQuery<Long> countQuery = entityManager.createQuery(countSql.toString(), Long.class);
 
         if (StringUtils.hasLength(param.getKeyword())) {
-            countQuery.setParameter("keyword", "%" + param.getKeyword().trim().toLowerCase() + "%");
+            String[] keywords = param.getKeyword().trim().toLowerCase().split("\\s+");
+            for (int i = 0; i < keywords.length; i++) {
+                countQuery.setParameter("keyword" + i, "%" + keywords[i] + "%");
+            }
         }
+
+        if (param.getStartDate() != null) countQuery.setParameter("startDate", param.getStartDate());
+        if (param.getEndDate() != null) countQuery.setParameter("endDate", param.getEndDate());
+        if (param.getMinTotal() != null) countQuery.setParameter("minTotal", param.getMinTotal());
+        if (param.getMaxTotal() != null) countQuery.setParameter("maxTotal", param.getMaxTotal());
         countQuery.setParameter("statusId", status);
+
+        if (employeePositionId == 2) {
+            countQuery.setParameter("userId", userId);
+        }
 
         Long totalElements = countQuery.getSingleResult();
 
-        // Creating the pageable response
         Pageable pageable = PageRequest.of(param.getPageNo() - 1, param.getPageSize());
         Page<?> page = new PageImpl<>(billResponses, pageable, totalElements);
 
         return PageableResponse.builder()
                 .pageNumber(param.getPageNo())
-                .pageNo(param.getPageNo())
                 .pageSize(param.getPageSize())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
@@ -364,6 +470,5 @@ public class BillCustomizeQuery {
         // Return paginated result
         return new PageImpl<>(result, pageable, totalElements);
     }
-
 
 }

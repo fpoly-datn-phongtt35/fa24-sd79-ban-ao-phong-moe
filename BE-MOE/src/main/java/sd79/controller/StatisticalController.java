@@ -2,7 +2,9 @@ package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sd79.dto.requests.common.StatisticalParamFilter;
@@ -89,4 +91,13 @@ public class StatisticalController {
         List<Object[]> customerRegistrations = statisticalService.getCustomerRegistrations(filter);
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully customer registrations", customerRegistrations);
     }
+
+    @Operation(summary = "Get Coupon Usage Statistics",
+            description = "Retrieve coupon usage statistics within the given time period, optionally grouped by type.")
+    @GetMapping("/coupon-usage")
+    public ResponseData<List<Object[]>> getCouponUsage(StatisticalParamFilter filter){
+        List<Object[]> couponUsage = statisticalService.getCouponUsage(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully retrieved coupon usage statistics", couponUsage);
+    }
+
 }

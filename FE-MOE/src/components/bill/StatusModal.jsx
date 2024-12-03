@@ -26,7 +26,7 @@ const StatusModal = ({ open, onClose, onStatusConfirm, currentStatuses }) => {
     try {
       const status = await getAllStatuses();
       const filteredStatuses = status.data.filter((status) =>
-        [5, 7, 8, 9].includes(status.id)
+        [4, 7, 8, 9].includes(status.id)
       );
       setStatuses(filteredStatuses);
     } catch (err) {

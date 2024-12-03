@@ -1,8 +1,5 @@
-// Author: Nong Hoang Vu || JavaTech
-// Facebook:https://facebook.com/NongHoangVu04
-// Github: https://github.com/JavaTech04
-// Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 import React, { useState } from "react";
+import { postSupportRequest } from "~/apis/supportApi"; // Đường dẫn đến file service API
 import {
   Box,
   Button,
@@ -12,37 +9,81 @@ import {
   Textarea,
   Typography,
   Grid,
-  IconButton,
   Divider,
 } from "@mui/joy";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
-import { ScrollToTop } from "~/utils/defaultScroll";
+import { toast } from "react-toastify";
 
 export const Contact = () => {
-  ScrollToTop();
   const [formData, setFormData] = useState({
-    name: "",
+    hoTen: "",
     email: "",
-    phone: "",
+    sdt: "",
     message: "",
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const [errors, setErrors] = useState({
+    hoTen: "",
+    email: "",
+    sdt: "",
+    message: "",
+  });
+
+  const validateInputs = () => {
+    const tempErrors = {};
+    const phoneRegex = /^0\d{9,11}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!formData.hoTen.trim()) tempErrors.hoTen = "Họ tên là bắt buộc.";
+    if (!formData.email.trim()) tempErrors.email = "Email là bắt buộc.";
+    else if (!emailRegex.test(formData.email))
+      tempErrors.email = "Email không đúng định dạng.";
+    if (!formData.sdt.trim()) tempErrors.sdt = "Số điện thoại là bắt buộc.";
+    else if (!phoneRegex.test(formData.sdt))
+      tempErrors.sdt =
+        "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số.";
+    if (!formData.message.trim())
+      tempErrors.message = "Lời nhắn là bắt buộc.";
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data submitted:", formData);
+    if (!validateInputs()) return;
+
+    try {
+      const requestData = {
+        hoTen: formData.hoTen,
+        email: formData.email,
+        sdt: formData.sdt,
+        issueDescription: formData.message,
+      };
+
+      await postSupportRequest(requestData);
+      setFormData({
+        hoTen: "",
+        email: "",
+        sdt: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error("Lỗi khi gửi yêu cầu hỗ trợ:", error);
+      toast.error("Đã xảy ra lỗi khi gửi yêu cầu hỗ trợ.");
+    }
   };
 
   return (
     <Grid container spacing={4} sx={{ padding: 3 }}>
+      {/* Phần hiển thị thông tin liên hệ */}
       <Grid item xs={12} sm={4}>
         <Box
           sx={{
@@ -63,7 +104,10 @@ export const Contact = () => {
           <Typography level="body2">
             Chúng tôi hoạt động 24/7, 7 ngày trong tuần.
           </Typography>
-          <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
+          <Typography
+            level="body2"
+            sx={{ fontWeight: "bold", marginTop: 1 }}
+          >
             Điện thoại: +84 999 999
           </Typography>
 
@@ -79,12 +123,16 @@ export const Contact = () => {
           <Typography level="body2">
             Điền vào form và chúng tôi sẽ liên hệ lại trong vòng 24 giờ.
           </Typography>
-          <Typography level="body2" sx={{ fontWeight: "bold", marginTop: 1 }}>
+          <Typography
+            level="body2"
+            sx={{ fontWeight: "bold", marginTop: 1 }}
+          >
             Email: supportmoestore@moe.vn
           </Typography>
         </Box>
       </Grid>
 
+      {/* Form liên hệ */}
       <Grid item xs={12} sm={8}>
         <Box
           component="form"
@@ -101,74 +149,67 @@ export const Contact = () => {
             Liên hệ với chúng tôi
           </Typography>
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
-              <FormControl required>
-                <FormLabel>Tên của bạn</FormLabel>
-                <Input
-                  placeholder="Nhập tên của bạn"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
-                  }}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl required>
-                <FormLabel>Email của bạn</FormLabel>
-                <Input
-                  placeholder="Nhập email của bạn"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
-                  }}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl required>
-                <FormLabel>Số điện thoại của bạn</FormLabel>
-                <Input
-                  placeholder="Nhập số điện thoại của bạn"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
-                  }}
-                />
-              </FormControl>
-            </Grid>
+            {[
+              { label: "Tên của bạn", name: "hoTen" },
+              { label: "Email của bạn", name: "email" },
+              { label: "Số điện thoại của bạn", name: "sdt" },
+            ].map((field, idx) => (
+              <Grid item xs={12} sm={4} key={idx}>
+                <FormControl>
+                  <FormLabel>{field.label}</FormLabel>
+                  <Input
+                    placeholder={`Nhập ${field.label.toLowerCase()}`}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleChange}
+                    sx={{
+                      border: `1px solid ${
+                        errors[field.name] ? "red" : "rgba(0, 0, 0, 0.23)"
+                      }`,
+                    }}
+                  />
+                  {errors[field.name] && (
+                    <Typography
+                      color="error"
+                      variant="body2"
+                      sx={{ color: "red" }}
+                    >
+                      {errors[field.name]}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+            ))}
             <Grid item xs={12}>
-              <FormControl required fullWidth>
-                <FormLabel>Lời nhắn của bạn</FormLabel>
+              <FormControl>
+                <FormLabel>Lời nhắn</FormLabel>
                 <Textarea
-                  placeholder="Nhập lời nhắn"
                   minRows={4}
+                  placeholder="Nhập lời nhắn của bạn"
                   name="message"
                   value={formData.message}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   sx={{
-                    borderColor: "#d0d0d0",
-                    "&:hover": { borderColor: "#b0b0b0" },
+                    border: `1px solid ${
+                      errors.message ? "red" : "rgba(0, 0, 0, 0.23)"
+                    }`,
                   }}
                 />
+                {errors.message && (
+                  <Typography
+                    color="error"
+                    variant="body2"
+                    sx={{ color: "red" }}
+                  >
+                    {errors.message}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
-              <Button type="submit" color="primary" variant="solid" fullWidth>
-                Gửi lời nhắn
-              </Button>
-            </Grid>
           </Grid>
+          <Box textAlign="right" marginTop={3}>
+            <Button type="submit">Gửi yêu cầu</Button>
+          </Box>
         </Box>
       </Grid>
     </Grid>

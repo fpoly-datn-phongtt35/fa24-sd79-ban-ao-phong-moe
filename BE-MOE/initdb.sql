@@ -308,14 +308,18 @@ CREATE TABLE bill_status_detail (
 );
 
 CREATE TABLE support (
-	id BIGINT PRIMARY KEY,
-	customer_id BIGINT REFERENCES customers(id),
-	employee_id BIGINT REFERENCES employees(id),
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	hoTen VARCHAR(50),
+	email VARCHAR(50),
+	sdt VARCHAR(15),
 	issue_description TEXT,
-	status VARCHAR(20),
+	status INT,
 	created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	resolved_date TIMESTAMP
 );
+
+
+
 
 -- Employee
 ALTER TABLE employees ADD CONSTRAINT fk_employee_address_id FOREIGN KEY (address_id) REFERENCES employee_address(id);
@@ -367,6 +371,12 @@ INSERT INTO users (username, email, password, role_id, is_locked, is_enabled, cr
 VALUES
 ('...', 'admin@moe.vn', '$2a$12$ypc6KO9e7Re1GxDI3gfLf.mrSSma89BjKBm9GH96falWrIO56cxI.', 1, 0, 0, NOW(), NOW(), 0);
 
+-- Support
+INSERT INTO support (hoTen, email, sdt, issue_description, status)
+VALUES 
+('Nguyen Van A', 'nguyenvana@example.com', '0123456789', 'Vấn đề với đơn hàng', 0),
+('Tran Thi B', 'tranthib@example.com', '0987654321', 'Lỗi hệ thống khi thanh toán', 0),
+('Le Minh C', 'leminhc@example.com', '0912345678', 'Yêu cầu hỗ trợ về sản phẩm', 1);
 
 -- Insert data into employee
 INSERT INTO positions (name, created_at, updated_at)
@@ -1052,15 +1062,15 @@ VALUES
 -- Coupons
 INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, usage_count, type, start_date, end_date, description, created_by, updated_by) VALUES
 ('VNCOUP001', 'Giảm giá mùa hè', 'PERCENTAGE', 10, 2000000, 500000, 100, 0, 'PUBLIC', '2024-06-01 00:00:00', '2024-06-30 23:59:59', 'Giảm 10% cho mùa hè', 1, 1),
-('VNCOUP002', 'Ưu đãi mùa đông', 'FIXED_AMOUNT', 100000, 1000000, 300000, 50, 0, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', 'Giảm ngay 100.000 VNĐ mùa đông', 2, 2),
+('VNCOUP002', 'Ưu đãi mùa đông', 'FIXED_AMOUNT', 100000, 0, 300000, 50, 0, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', 'Giảm ngay 100.000 VNĐ mùa đông', 2, 2),
 ('VNCOUP003', 'Black Friday', 'PERCENTAGE', 25, 5000000, 1000000, 200, 0, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 23:59:59', 'Giảm 25% Black Friday', 3, 3),
-('VNCOUP004', 'Khuyến mãi Tết Nguyên Đán', 'FIXED_AMOUNT', 500000, 2000000, 0, 200, 0, 'PUBLIC', '2024-12-31 00:00:00', '2025-01-01 23:59:59', 'Giảm 500.000 VNĐ dịp Tết', 4, 4),
+('VNCOUP004', 'Khuyến mãi Tết Nguyên Đán', 'FIXED_AMOUNT', 500000, 0, 0, 200, 0, 'PUBLIC', '2024-12-31 00:00:00', '2025-01-01 23:59:59', 'Giảm 500.000 VNĐ dịp Tết', 4, 4),
 ('VNCOUP005', 'Flash Sale 24h', 'PERCENTAGE', 15, 3000000, 1000000, 500, 0, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-15 23:59:59', 'Giảm 15% trong 24 giờ', 5, 5),
-('VNCOUP006', 'Ưu đãi lễ 30/4', 'FIXED_AMOUNT', 200000, 1000000, 500000, 300, 0, 'PUBLIC', '2024-04-28 00:00:00', '2024-05-01 23:59:59', 'Giảm 200.000 VNĐ dịp lễ', 6, 6),
+('VNCOUP006', 'Ưu đãi lễ 30/4', 'FIXED_AMOUNT', 200000, 0, 500000, 300, 0, 'PUBLIC', '2024-04-28 00:00:00', '2024-05-01 23:59:59', 'Giảm 200.000 VNĐ dịp lễ', 6, 6),
 ('VNCOUP007', 'Giảm giá đặc biệt', 'PERCENTAGE', 5, 1500000, 300000, 50, 0, 'PUBLIC', '2024-11-01 00:00:00', '2024-11-05 23:59:59', 'Giảm 5% đơn hàng', 7, 7),
-('VNCOUP008', 'Ưu đãi giới hạn', 'FIXED_AMOUNT', 700000, 3000000, 1500000, 100, 0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-25 23:59:59', 'Giảm 700.000 VNĐ giới hạn', 8, 8),
+('VNCOUP008', 'Ưu đãi giới hạn', 'FIXED_AMOUNT', 700000, 0, 1500000, 100, 0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-25 23:59:59', 'Giảm 700.000 VNĐ giới hạn', 8, 8),
 ('VNCOUP009', 'Ưu đãi sinh nhật', 'PERCENTAGE', 20, 2000000, 800000, 50, 0, 'PUBLIC', '2024-11-20 00:00:00', '2024-11-22 23:59:59', 'Giảm 20% mừng sinh nhật', 9, 9),
-('VNCOUP010', 'Deal kỷ niệm', 'FIXED_AMOUNT', 300000, 1500000, 500000, 50, 0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-05 23:59:59', 'Giảm 300.000 VNĐ nhân dịp kỷ niệm', 10, 10);
+('VNCOUP010', 'Deal kỷ niệm', 'FIXED_AMOUNT', 300000, 0, 500000, 50, 0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-05 23:59:59', 'Giảm 300.000 VNĐ nhân dịp kỷ niệm', 10, 10);
     
 INSERT INTO bill_status (name, status) VALUES
 ('Đang chờ xử lý', 'PENDING'),

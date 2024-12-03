@@ -87,9 +87,8 @@ export const Coupon = () => {
   return (
     <Container
       maxWidth="max-width"
-      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}
-    >
-       <Grid
+      sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+      <Grid
         container
         spacing={2}
         alignItems="center"
@@ -145,13 +144,14 @@ export const Coupon = () => {
             <CouponPagination
               totalPages={totalPages}
               pageNo={pageNo}
-              handlePageChange={handlePageChange}
+              handlePageChange={(newPage) => setPage(newPage)}
               couponsLength={coupons.length}
               totalElements={totalElements}
               pageSize={pageSize}
-              handleSizeChange={handleSizeChange}
+              handleSizeChange={(newSize) => setSize(newSize)}
             />
           </Grid>
+
         </Grid>
       </Box>
     </Container>

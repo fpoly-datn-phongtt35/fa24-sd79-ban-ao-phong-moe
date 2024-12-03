@@ -18,4 +18,5 @@ import java.util.Optional;
 public interface BillStatusDetailRepo extends JpaRepository<BillStatusDetail, Long> {
     boolean existsByBillAndBillStatus(Bill bill, BillStatus billStatus);
     long countByBillAndBillStatus(Bill bill, BillStatus billStatus);
+    Optional<BillStatusDetail> findTopByBillOrderByIdDesc(Bill bill);
 }
