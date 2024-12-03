@@ -166,7 +166,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const handleCloseModal = () => setOpenModal(false);
 
     return (
-        <Paper elevation={2} sx={{ padding: 2, borderRadius: 2, mb: 3 }}>
+        <Paper elevation={2} sx={{ padding: 2, borderRadius: 2, mb: 3, background: "rgb(249 242 242)"}}>
             <Box display="flex" justifyContent="space-between">
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                     Thông tin khách hàng
