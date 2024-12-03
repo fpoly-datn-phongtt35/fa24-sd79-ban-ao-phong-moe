@@ -343,34 +343,34 @@ export default function BillDetail() {
 
   const handleNoteCloseModal = () => {
     const currentStatus = billData[0]?.status;
-  
+
     if (statuses === 7) {
-      toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");  
+      toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");
       return;
     }
-  
+
     if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
       toast.error("Vui lòng giao hàng trước khi xác nhận.");
-      setTempBillNote(""); 
+      setTempBillNote("");
       return;
     }
-  
+
     // Proceed only if the above conditions are not met
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
-  
+
     const newPaymentTime = billData[0]?.paymentTime || formatDate(new Date());
     setPaymentTime(newPaymentTime);
-  
+
     setIsPaymentConfirmed(true);
-  
+
     const userId = localStorage.getItem("userId");
-  
+
     updateBillStatusDetail("3", tempBillNote, userId);
     onPay(tempBillNote, "3", tempBillNote, userId, newPaymentTime);
     fetchBillEdit();
     fetchBillStatusDetails();
-  };  
+  };
 
   const handleNoteChange = (event) => {
     setTempBillNote(event.target.value);
@@ -900,20 +900,30 @@ export default function BillDetail() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {checkNote || statusDone ? (
+              {(checkNote || statusDone) ? (
                 billData
                   .filter(bill => bill.note || bill.status === 8)
-                  .map((bill, index) => (
-                    <TableRow key={bill.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
-                      <TableCell>{bill.paymentTime || ''}</TableCell>
-                      <TableCell>{bill.code}</TableCell>
-                      <TableCell>{bill.paymentMethod}</TableCell>
-                      <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
-                      <TableCell>{bill.message}</TableCell>
-                    </TableRow>
-                  ))
+                  .length > 0 ? (
+                  billData
+                    .filter(bill => bill.note || bill.status === 8)
+                    .map((bill, index) => (
+                      <TableRow key={bill.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
+                        <TableCell>{bill.paymentTime || ''}</TableCell>
+                        <TableCell>{bill.code}</TableCell>
+                        <TableCell>{bill.paymentMethod}</TableCell>
+                        <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
+                        <TableCell>{bill.message}</TableCell>
+                      </TableRow>
+                    ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      Chưa có giao dịch thỏa mãn
+                    </TableCell>
+                  </TableRow>
+                )
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
@@ -922,6 +932,7 @@ export default function BillDetail() {
                 </TableRow>
               )}
             </TableBody>
+
           </Table>
         </TableContainer>
       </div>

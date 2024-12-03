@@ -277,47 +277,54 @@ export default function BillList() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {billList.map((bill, index) => (
-                            <TableRow key={bill.id}>
-                                {/* Row Content */}
-                                <TableCell>{index + 1 + (pageNo - 1) * pageSize}</TableCell>
-                                <TableCell>{bill.code}</TableCell>
-                                <TableCell>{bill.customer ? `${bill.customer.lastName} ${bill.customer.firstName}` : 'Khách hàng lẻ'}</TableCell>
-                                <TableCell>{bill.customer?.phoneNumber || 'XXXXXXXXX'}</TableCell>
-                                <TableCell
-                                    sx={{
-                                        color: bill.total === null ? "red" : "inherit",
-                                        fontWeight: bill.total === null ? "bold" : "normal",
-                                    }}
-                                >
-                                    {bill.total === null ? "Chưa thanh toán" : formatCurrencyVND(bill.total)}
-                                </TableCell>
-
-                                <TableCell>{statusMap[bill.billStatus] || 'N/A'}</TableCell>
-                                <TableCell>{bill.createAt}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={() => navigate(`/bill/detail/${bill.id}`)} color='success'>
-                                        <Edit />
-                                    </IconButton>
-                                    <MoeAlert
-                                        title="Cảnh báo"
-                                        message={'Bạn có muốn xóa hóa đơn này không?'}
-                                        event={() => handleDelete(bill.id)}
-                                        button={
-                                            <Tooltip title="Xóa vĩnh viễn" variant="plain">
-                                                <IconButton color="danger">
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                        }
-                                    />
-
+                        {billList.length > 0 ? (
+                            billList.map((bill, index) => (
+                                <TableRow key={bill.id}>
+                                    {/* Row Content */}
+                                    <TableCell>{index + 1 + (pageNo - 1) * pageSize}</TableCell>
+                                    <TableCell>{bill.code}</TableCell>
+                                    <TableCell>{bill.customer ? `${bill.customer.lastName} ${bill.customer.firstName}` : 'Khách hàng lẻ'}</TableCell>
+                                    <TableCell>{bill.customer?.phoneNumber || 'XXXXXXXXX'}</TableCell>
+                                    <TableCell
+                                        sx={{
+                                            color: bill.total === null ? "red" : "inherit",
+                                            fontWeight: bill.total === null ? "bold" : "normal",
+                                        }}
+                                    >
+                                        {bill.total === null ? "Chưa thanh toán" : formatCurrencyVND(bill.total)}
+                                    </TableCell>
+                                    <TableCell>{statusMap[bill.billStatus] || 'N/A'}</TableCell>
+                                    <TableCell>{bill.createAt}</TableCell>
+                                    <TableCell>
+                                        <IconButton onClick={() => navigate(`/bill/detail/${bill.id}`)} color='success'>
+                                            <Edit />
+                                        </IconButton>
+                                        <MoeAlert
+                                            title="Cảnh báo"
+                                            message={'Bạn có muốn xóa hóa đơn này không?'}
+                                            event={() => handleDelete(bill.id)}
+                                            button={
+                                                <Tooltip title="Xóa vĩnh viễn" variant="plain">
+                                                    <IconButton color="danger">
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            }
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={8} sx={{ textAlign: 'center', fontStyle: 'italic', color: 'gray' }}>
+                                    Không có dữ liệu
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
+
 
             <Pagination
                 count={totalPages}
