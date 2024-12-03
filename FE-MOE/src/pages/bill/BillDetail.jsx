@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Container, Input } from '@mui/joy';
-import { addBillStatusDetail, addBillStatusDetailV2, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
+import { addBillStatusDetail, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Dialog, Grid, List, ListItem, ListItemText, Paper, Breadcrumbs, Link, Modal, TextField, StepLabel, IconButton, Step, Stepper, StepConnector, Tooltip, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
-import { addPayBillEdit, deleteProduct, fetchBill, fetchCoupon, fetchProduct, postCoupon, postProduct, putCustomer } from '~/apis/billsApi';
+import { addPayBillEdit, putCustomer } from '~/apis/billsApi';
 import CustomerEditModal from '~/components/bill/CustomerEditModal';
 import { fetchCustomerById } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';

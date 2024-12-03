@@ -13,6 +13,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 
 import { addPay, deleteCoupon, deleteProduct, fetchCoupon, fetchProduct, postCoupon, postProduct } from '~/apis/billsApi';
 import CouponModal from '~/components/bill/CouponModal';
+import { toast } from 'react-toastify';
 
 export default function BillEdit() {
     //bill edit
@@ -29,7 +30,7 @@ export default function BillEdit() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
     const [currentProductId, setCurrentProductId] = useState(null);
-    const [errorMessages, setErrorMessages] = useState({}); 
+    const [errorMessages, setErrorMessages] = useState({});
 
     //coupon
     const [isCouponModalOpen, setCouponModalOpen] = useState(false)
@@ -45,11 +46,23 @@ export default function BillEdit() {
     }, []);
 
     const fetchBillEdit = async () => {
-
         try {
             const bill = await getBillEdit(id);
+            const fetchedBill = bill.data[0];
+
             setBillData(bill.data);
-            billIdRef.current = bill.data[0].id;
+            billIdRef.current = fetchedBill.id;
+
+            // Nếu không có sản phẩm trong bill, đặt lại các giá trị tính toán
+            if (!fetchedBill.billDetails || fetchedBill.billDetails.length === 0) {
+                setOrderData((prev) => ({
+                    ...prev,
+                    subtotal: 0,
+                    discountAmount: 0,
+                    totalAfterDiscount: 0,
+                    shippingCost: 0,
+                }));
+            }
         } catch (error) {
             console.error("Error fetching bill:", error);
         }
@@ -58,7 +71,6 @@ export default function BillEdit() {
     // ---------------------- khai báo sản phẩm -------------------------------//
     let initialQuantity = {};
     const onProduct = async (pr) => {
-
         const product = {
             productDetail: pr.id,
             bill: id,
@@ -69,10 +81,13 @@ export default function BillEdit() {
         try {
             await postProduct(product);
             initialQuantity[pr.id] = 1;
+
+            // Sau khi thêm sản phẩm thành công, cập nhật lại sản phẩm và hóa đơn
+            await handleSetProduct();
+            await fetchBillEdit();
         } catch (error) {
             console.error('Failed to add product:', error);
         }
-        fetchBillEdit();
     };
 
     const handleSetProduct = async () => {
@@ -87,17 +102,17 @@ export default function BillEdit() {
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
-        let newErrorMessages = { ...errorMessages }; 
+        let newErrorMessages = { ...errorMessages };
 
         if (newQuantity < 0) {
             newErrorMessages[productId] = "Số lượng không được âm";
         } else if (newQuantity === 0 || newQuantity === '') {
             newErrorMessages[productId] = "Số lượng chưa nhập";
         } else {
-            delete newErrorMessages[productId]; 
+            delete newErrorMessages[productId];
         }
 
-        setErrorMessages(newErrorMessages); 
+        setErrorMessages(newErrorMessages);
 
         const sanitizedQuantity = newQuantity <= 0 ? 1 : newQuantity;
 
@@ -128,7 +143,6 @@ export default function BillEdit() {
         setQuantityTimeoutId(timeoutId);
     };
 
-
     const updateProductQuantity = async (productId, newQuantity) => {
         try {
             const productToUpdate = products.find(
@@ -146,10 +160,13 @@ export default function BillEdit() {
 
             await postProduct(product);
             initialQuantity[productId] = newQuantity;
+
+            // Cập nhật lại sản phẩm và hóa đơn
+            await handleSetProduct();
+            await fetchBillEdit();
         } catch (error) {
             console.error('Failed to update product quantity:', error);
         }
-        fetchBillEdit();
     };
 
     const openProductListModal = (id) => {
@@ -233,6 +250,10 @@ export default function BillEdit() {
     const calculateTotals = () => {
         if (!billData || !billData[0]) return { subtotal: 0, discountAmount: 0, totalAfterDiscount: 0, shippingCost: 0 };
 
+        if (!billData || !billData[0]?.billDetails?.length) {
+            return { subtotal: 0, discountAmount: 0, totalAfterDiscount: 0, shippingCost: 0 };
+        }
+
         const currentBill = billData[0];
         const currentDetails = currentBill.billDetails || [];
 
@@ -267,12 +288,12 @@ export default function BillEdit() {
     // ---------------------- sửa hóa đơn -------------------------------//
     const onPay = async () => {
         if (!billData || !billData[0]?.billDetails?.length) {
-            console.log("Cannot create invoice. Please select an order and add products.");
-            return;
+            toast.error("Sản phẩm không được bỏ trống");
+            return false; 
         }
-
+    
         const currentBill = billData[0];
-
+    
         const billStoreRequest = {
             billRequest: {
                 code: currentBill.code || "",
@@ -297,13 +318,15 @@ export default function BillEdit() {
                 discountAmount: billDetail.discountAmount,
             })),
         };
-
-        try {
+    
+        try {       
             await addPay(billStoreRequest);
             await fetchBillEdit();
             console.log("billStoreRequest:", billStoreRequest);
+            return true; 
         } catch (error) {
             console.error("Error processing payment:", error);
+            return false; 
         }
     };
 
@@ -589,9 +612,11 @@ export default function BillEdit() {
                         <Button
                             variant="contained"
                             color="primary"
-                            onClick={async () => {
-                                await onPay();
-                                navigate(`/bill/detail/${id}`, { state: { refresh: true } });
+                            onClick={async () => {                             
+                                const isSuccess = await onPay();
+                                if (isSuccess) {
+                                    navigate(`/bill/detail/${id}`, { state: { refresh: true } });
+                                }
                             }}
                             sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
                         >

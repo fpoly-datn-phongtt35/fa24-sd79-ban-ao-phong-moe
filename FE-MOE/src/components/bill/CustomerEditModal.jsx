@@ -29,6 +29,7 @@ export default function CustomerEditModal({
     fetchBillEdit
 }) {
     const host = 'https://provinces.open-api.vn/api/';
+
     const [localCustomerData, setLocalCustomerData] = useState({
         firstName: '',
         lastName: '',
@@ -65,7 +66,11 @@ export default function CustomerEditModal({
         try {
             const response = await fetchCustomerById(customerId);
             const data = response.data;
+            console.log(response.data)
             if (data) {
+                await handleCityChange(data.customerAddress?.cityId);
+                await handleDistrictChange(data.customerAddress?.districtId);
+                
                 setLocalCustomerData({
                     firstName: data.firstName || '',
                     lastName: data.lastName || '',
@@ -76,12 +81,8 @@ export default function CustomerEditModal({
                     ward: data.customerAddress?.ward || ''
                 });
 
-                setSelectedCity(data.customerAddress?.cityId || '');
-                await handleCityChange(data.customerAddress?.cityId);
-
-                setSelectedDistrict(data.customerAddress?.districtId || '');
-                await handleDistrictChange(data.customerAddress?.districtId);
-
+                setSelectedCity(data.customerAddress?.cityId || '');           
+                setSelectedDistrict(data.customerAddress?.districtId || '');            
                 setSelectedWard(data.customerAddress?.ward || '');
             }
         } catch (error) {
