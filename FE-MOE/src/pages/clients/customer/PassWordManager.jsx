@@ -41,23 +41,25 @@ export const UpdatePassWord = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!validateForm()) return;
-        setIsLoading(true);
-        setBackendErrors({}); 
-
         try {
             await putPassword(passwords, localStorage.getItem("userId"));
             toast.success('Đổi mật khẩu thành công');
             setPasswords(initialPasswords); 
         } catch (error) {
             if (error.response && error.response.data.message) {             
-                setBackendErrors({ currentPassword: error.response.data.message });
+                if (error.response.data.message === 'Mật khẩu cũ không chính xác') {
+                    setBackendErrors({ currentPassword: 'Mật khẩu cũ không chính xác' });
+                } else {
+                    toast.error(error.response.data.message);
+                }
             } else {
                 toast.error('Có lỗi xảy ra khi đổi mật khẩu');
             }
         } finally {
             setIsLoading(false);
         }
+        
+        
     };
 
 
@@ -87,7 +89,7 @@ export const UpdatePassWord = () => {
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
+                        <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>

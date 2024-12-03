@@ -214,11 +214,11 @@ export const AccountInfo = () => {
       <Grid container spacing={2}>
         <Grid xs={12} md={3}>
           <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("//my-account")}>Thông tin tài khoản</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-account")}>Thông tin tài khoản</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
+            <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>

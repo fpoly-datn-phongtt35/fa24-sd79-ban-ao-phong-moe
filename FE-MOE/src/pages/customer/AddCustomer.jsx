@@ -240,7 +240,7 @@ export const AddCustomer = () => {
       navigate('/customer');
     } catch (error) {      
       setIsLoading(false);
-      toast.error('Có lỗi xảy ra khi thêm khách hàng');
+      // toast.error('Có lỗi xảy ra khi thêm khách hàng');
     }
   };
   

@@ -259,9 +259,9 @@ export const Customer = () => {
                     <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
                       <EditIcon color="primary" />
                     </IconButton>
-                    <IconButton onClick={() => onDelete(customer.id)}>
+                    {/* <IconButton onClick={() => onDelete(customer.id)}>
                       <DeleteIcon color="error" />
-                    </IconButton>
+                    </IconButton> */}
                   </TableCell>
                 </TableRow>
               ))
