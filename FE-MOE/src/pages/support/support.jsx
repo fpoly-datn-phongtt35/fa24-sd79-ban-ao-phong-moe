@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { getAllSupport, updateStatus } from "~/apis/supportApi";
+import { getAllSupport, updateStatus, deleteSupportById } from "~/apis/supportApi";
 import {
   Typography,
   Paper,
@@ -13,21 +13,21 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
+  Button,
   Container,
   Grid,
   Breadcrumbs,
   Link,
-
 } from '@mui/material';
 import HomeIcon from "@mui/icons-material/Home";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from 'react-router-dom';
 import { CommonContext } from "~/context/CommonContext";
 
 const Support = () => {
   const [supports, setSupports] = useState([]);
   const context = useContext(CommonContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Hàm để cập nhật trạng thái
   const handleUpdateStatus = async (id, newStatus) => {
@@ -41,10 +41,17 @@ const Support = () => {
       context.fetchSupportRequests();
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error);
-      if (error.response) {
-        console.error("Phản hồi từ server:", error.response.data);
-      } else {
-        console.error("Lỗi kết nối hoặc lỗi không xác định.");
+    }
+  };
+
+  // Hàm để xóa thông báo
+  const handleDeleteSupport = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa thông báo này?")) {
+      try {
+        await deleteSupportById(id);
+        setSupports((prevSupports) => prevSupports.filter((support) => support.id !== id));
+      } catch (error) {
+        console.error("Lỗi khi xóa thông báo:", error);
       }
     }
   };
@@ -125,8 +132,8 @@ const Support = () => {
         <TableContainer
           component={Paper}
           sx={{
-            maxHeight: 500, // Giới hạn chiều cao
-            overflow: "auto", // Tạo cuộn nếu vượt quá
+            maxHeight: 500,
+            overflow: "auto",
             boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
           }}
         >
@@ -148,32 +155,21 @@ const Support = () => {
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
                   Trạng Thái
                 </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Hành Động
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {Array.isArray(supports) &&
                 supports.map((support) => (
                   <TableRow key={support.id}>
+                    <TableCell align="center">{support.hoTen || "(Chưa có dữ liệu)"}</TableCell>
+                    <TableCell align="center">{support.email || "(Chưa có dữ liệu)"}</TableCell>
+                    <TableCell align="center">{support.sdt || "(Chưa có dữ liệu)"}</TableCell>
+                    <TableCell align="center">{support.issueDescription || "(Chưa có dữ liệu)"}</TableCell>
                     <TableCell align="center">
-                      {support.hoTen || "(Chưa có dữ liệu)"}
-                    </TableCell>
-                    <TableCell align="center">
-                      {support.email || "(Chưa có dữ liệu)"}
-                    </TableCell>
-                    <TableCell align="center">
-                      {support.sdt || "(Chưa có dữ liệu)"}
-                    </TableCell>
-                    <TableCell align="center">
-                      {support.issueDescription || "(Chưa có dữ liệu)"}
-                    </TableCell>
-                    <TableCell align="center">
-                      <FormControl
-                        sx={{
-                          minWidth: "150px", // Chiều rộng nhỏ hơn
-                          margin: "0 auto",  // Căn giữa trong ô
-                        }}
-                        size="small" // Kích thước nhỏ hơn
-                      >
+                      <FormControl sx={{ minWidth: "150px", margin: "0 auto" }} size="small">
                         <Select
                           value={support.status || 0}
                           onChange={(e) =>
@@ -184,7 +180,17 @@ const Support = () => {
                           <MenuItem value={1}>Đã xử lý</MenuItem>
                         </Select>
                       </FormControl>
-
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDeleteSupport(support.id)}
+                      >
+                        
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -194,6 +200,6 @@ const Support = () => {
       </Box>
     </Container>
   );
-}
+};
 
 export default Support;
