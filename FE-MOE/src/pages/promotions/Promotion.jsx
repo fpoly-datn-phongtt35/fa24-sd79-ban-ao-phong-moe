@@ -9,6 +9,7 @@ import { fetchAllDiscounts, deleteDiscount, searchDiscounts } from "~/apis/disco
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Pagination, IconButton, TextField, TableRow, TableCell } from "@mui/material";
+import { remove as removeDiacritics } from "diacritics"; // Import thư viện loại bỏ dấu tiếng Việt
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -20,12 +21,10 @@ export const Promotion = () => {
   const itemsPerPage = 5;
   const navigate = useNavigate();
 
-  // Lấy dữ liệu ban đầu
   useEffect(() => {
     handleSetDiscounts(1);
   }, []);
 
-  // Giám sát thay đổi của điều kiện tìm kiếm
   useEffect(() => {
     setCurrentPage(1); // Reset trang khi điều kiện tìm kiếm thay đổi
     handleSearch(1);   // Tìm kiếm dữ liệu với trang đầu tiên
@@ -42,15 +41,17 @@ export const Promotion = () => {
     }
   };
 
-  // // Hàm reload lại danh sách từ trang đầu
-  // const reloadPromotions = async () => {
-  //   setCurrentPage(1);
-  //   await handleSetDiscounts(1); // Gọi lại API với trang đầu tiên
-  // };
-
   const handleSearch = async (page = 1) => {
     try {
-      const results = await searchDiscounts(searchTerm, searchStartDate, searchEndDate, page - 1, itemsPerPage);
+      // Chuẩn hóa chuỗi tìm kiếm: loại bỏ dấu tiếng Việt
+      const normalizedSearchTerm = removeDiacritics(searchTerm);
+      const results = await searchDiscounts(
+        normalizedSearchTerm,
+        searchStartDate,
+        searchEndDate,
+        page - 1,
+        itemsPerPage
+      );
       setDiscounts(results.data.content || []);
       setTotalPages(results.data.totalPages || 1);
     } catch (error) {
@@ -98,27 +99,25 @@ export const Promotion = () => {
     }
   };
 
-  // Helper function to format date to "DD/MM/YYYY"
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
-  // Helper function to check if the discount is active, expired, or upcoming
   const getDiscountStatus = (startDate, endDate) => {
     const currentDate = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     if (currentDate < start) {
-      return "Chưa bắt đầu";  // Upcoming
+      return "Chưa bắt đầu";
     } else if (currentDate > end) {
-      return "Đã hết hạn";  // Expired
+      return "Kết thúc";
     } else {
-      return "Đang hoạt động";  // Active
+      return "Đang hoạt động";
     }
   };
 
@@ -172,7 +171,17 @@ export const Promotion = () => {
 
         <Box>
           <Button variant="soft" size="small" startDecorator={<RefreshIcon />} onClick={handleResetFilters} sx={{ marginRight: 1 }}>Làm mới</Button>
-          <Button size="small" startDecorator={<AddIcon />} onClick={() => navigate("/promotions/add")}>Thêm mới</Button>
+          <Button
+            size="small"
+            startDecorator={<AddIcon />}
+            onClick={() => {
+              navigate("/promotions/add");
+              setCurrentPage(1); // Đặt lại trang hiện tại về trang đầu
+              handleSetDiscounts(1); // Tải dữ liệu của trang đầu tiên
+            }}
+          >
+            Thêm mới
+          </Button>
         </Box>
       </Box>
 
@@ -186,7 +195,7 @@ export const Promotion = () => {
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
-              <th>Trạng thái</th>  {/* New column for status */}
+              <th>Trạng thái</th>
               <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
@@ -215,7 +224,7 @@ export const Promotion = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="9">Không có đợt giảm giá nào.</td> {/* Adjusted colspan */}
+                <td colSpan="9">Không có đợt giảm giá nào.</td>
               </tr>
             )}
           </tbody>
