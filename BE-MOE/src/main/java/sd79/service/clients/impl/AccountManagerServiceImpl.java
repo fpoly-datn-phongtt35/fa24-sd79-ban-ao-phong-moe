@@ -10,8 +10,10 @@ import sd79.dto.requests.clients.accountInfo.AccountImageReq;
 import sd79.dto.requests.productRequests.AddressAccountRequest;
 import sd79.dto.requests.productRequests.CustomerRequest;
 import sd79.dto.requests.productRequests.PassWordRequest;
+import sd79.dto.requests.productRequests.ProductRequest;
 import sd79.dto.response.clients.customer.UserAccountInfoRes;
 import sd79.dto.response.clients.customer.UserAddressInfoRes;
+import sd79.exception.CustomerException;
 import sd79.exception.EntityNotFoundException;
 import sd79.model.Customer;
 import sd79.model.CustomerAddress;
@@ -126,6 +128,7 @@ public class AccountManagerServiceImpl implements AccountManagerService {
             throw new EntityExistsException("Mật khẩu cũ không chính xác");
         }
 
+
         user.setPassword(passwordEncoder.encode(passWordRequest.getNewPassword()));
         userRepository.save(user);
 
@@ -145,6 +148,11 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         customer.setImage(uploadResult.get("url"));
         customer.setPublicId(uploadResult.get("publicId"));
         customerRepository.save(customer);
+    }
+
+    @Override
+    public long createFavouriteProduct(ProductRequest productRequest) {
+        return 0;
     }
 
     private void populateCustomerData(Customer customer, CustomerRequest customerRequest) {
