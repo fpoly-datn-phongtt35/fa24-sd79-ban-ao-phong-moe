@@ -3,54 +3,37 @@ import { API_ROOT } from "~/utils/constants";
 import { toast } from "react-toastify";
 
 //ham lay thong tin du lieu tu bang hoa don 
-export const getBillList = async (pageNo, pageSize, keyword, status, startDate, endDate, minTotal, maxTotal) => {
+export const getBillList = async (
+    pageNo,
+    pageSize,
+    keyword,
+    status,
+    startDate,
+    endDate,
+    minTotal,
+    maxTotal,
+    employeeId
+) => {
     let uri = "bill/billList?";
-    let queryParams = [];
+    const queryParams = new URLSearchParams();
 
-    // Adding pagination parameters
-    if (pageNo !== null && pageNo !== undefined) {
-        queryParams.push(`pageNo=${pageNo}`);
-    }
-    if (pageSize !== null && pageSize !== undefined) {
-        queryParams.push(`pageSize=${pageSize}`);
-    }
+    if (pageNo) queryParams.append("pageNo", pageNo);
+    if (pageSize) queryParams.append("pageSize", pageSize);
+    if (keyword) queryParams.append("keyword", keyword);
+    if (status) queryParams.append("status", status);
+    if (startDate) queryParams.append("startDate", startDate);
+    if (endDate) queryParams.append("endDate", endDate);
+    if (minTotal) queryParams.append("minTotal", minTotal);
+    if (maxTotal) queryParams.append("maxTotal", maxTotal);
+    if (employeeId) queryParams.append("employeeId", employeeId);
 
-    // Adding keyword parameter
-    if (keyword) {
-        queryParams.push(`keyword=${encodeURIComponent(keyword)}`);
+    try {
+        const response = await authorizedAxiosInstance.get(`${API_ROOT}/${uri}${queryParams}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching bill list:", error);
+        throw error;
     }
-
-    // Adding status parameter
-    if (status !== null && status !== undefined) {
-        queryParams.push(`status=${status}`);
-    }
-
-    // Adding date range parameters
-    if (startDate) {
-        queryParams.push(`startDate=${encodeURIComponent(startDate)}`);
-    }
-    if (endDate) {
-        queryParams.push(`endDate=${encodeURIComponent(endDate)}`);
-    }
-
-    // Adding total amount range parameters
-    if (minTotal !== null && minTotal !== undefined) {
-        queryParams.push(`minTotal=${minTotal}`);
-    }
-    if (maxTotal !== null && maxTotal !== undefined) {
-        queryParams.push(`maxTotal=${maxTotal}`);
-    }
-
-    uri += queryParams.join("&");
-
-    // Fetching data from API
-    return await authorizedAxiosInstance
-        .get(`${API_ROOT}/${uri}`)
-        .then((res) => res.data)
-        .catch((err) => {
-            console.error("Error fetching bill list:", err);
-            throw err;
-        });
 };
 
 //lay du lieu hien thi len theo id hoa don
