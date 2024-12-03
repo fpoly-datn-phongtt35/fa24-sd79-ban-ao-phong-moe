@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";  // Import useLocation here
 import { postDiscount } from "~/apis/discountApi";
 import Swal from "sweetalert2";
 import { ProductList } from '~/components/promotion/ProductList';
@@ -8,13 +8,15 @@ import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel,
 import HomeIcon from "@mui/icons-material/Home";
 import AddIcon from '@mui/icons-material/Add';
 import DoDisturbOnIcon from '@mui/icons-material/DoDisturbOn';
+import CircularProgress from "@mui/material/CircularProgress";
 
 export const AddPromotion = () => {
     const { register, handleSubmit, formState: { errors }, watch } = useForm();
     const navigate = useNavigate();
+    const location = useLocation();
     const [selectedProducts, setSelectedProducts] = useState([]);
+    const [loading, setLoading] = useState(false); // Trạng thái loading
 
-    // Hàm định dạng ngày tháng, giờ, phút, giây
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -27,19 +29,19 @@ export const AddPromotion = () => {
     };
 
     const onSubmit = async (data) => {
-        // Kiểm tra nếu ngày kết thúc không hợp lệ
         if (isEndDateInvalid) {
             Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
             return;
         }
 
+        setLoading(true); // Bật trạng thái loading
         try {
             const response = await postDiscount({
                 name: data.name,
                 code: data.code,
                 percent: data.percent,
-                startDate: formatDate(data.startDate), // Gửi đúng định dạng ngày giờ
-                endDate: formatDate(data.endDate),   // Gửi đúng định dạng ngày giờ
+                startDate: formatDate(data.startDate),
+                endDate: formatDate(data.endDate),
                 note: data.note,
                 userId: localStorage.getItem("userId"),
                 productIds: selectedProducts,
@@ -55,14 +57,13 @@ export const AddPromotion = () => {
         } catch (error) {
             console.error("Error adding discount:", error);
             Swal.fire("Lỗi", "Có lỗi xảy ra khi thêm đợt giảm giá", "error");
+        } finally {
+            setLoading(false); // Tắt trạng thái loading
         }
     };
 
-    // Theo dõi ngày bắt đầu và ngày kết thúc
     const startDate = watch("startDate");
     const endDate = watch("endDate");
-
-    // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
     const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
 
     return (
@@ -110,14 +111,14 @@ export const AddPromotion = () => {
                             <Grid md={6}>
                                 <FormControl error={!!errors?.startDate}>
                                     <FormLabel>Ngày bắt đầu</FormLabel>
-                                    <Input type="datetime-local" {...register("startDate", { required: true })} />
+                                    <Input type="date" {...register("startDate", { required: true })} />
                                     {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
                             </Grid>
                             <Grid xs={6}>
                                 <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                                     <FormLabel>Ngày kết thúc</FormLabel>
-                                    <Input type="datetime-local" {...register("endDate", { required: true })} />
+                                    <Input type="date" {...register("endDate", { required: true })} />
                                     {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
                                     {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
@@ -131,8 +132,14 @@ export const AddPromotion = () => {
                             <Grid xs={12}>
                                 <Grid spacing={2}>
                                     <Grid size={6}>
-                                        <Button startDecorator={<AddIcon />} type="submit">Thêm mới</Button>
-                                        <IconButton onClick={() => navigate("/promotions")}>
+                                        <Button
+                                            startDecorator={!loading && <AddIcon />}
+                                            type="submit"
+                                            disabled={loading} // Vô hiệu hóa nút khi đang xử lý
+                                        >
+                                            {loading ? <CircularProgress size={20} /> : "Thêm mới"}
+                                        </Button>
+                                        <IconButton onClick={() => navigate("/promotions")} disabled={loading}>
                                             <DoDisturbOnIcon /> Hủy
                                         </IconButton>
                                     </Grid>

@@ -7,6 +7,7 @@ import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel,
 import HomeIcon from "@mui/icons-material/Home";
 import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import EditIcon from "@mui/icons-material/Edit";
+import CircularProgress from "@mui/material/CircularProgress"; // Import biểu tượng xoay tròn
 import { ProductUpdate } from "~/components/promotion/ProductUpdate";
 
 export const UpdatePromotion = () => {
@@ -14,11 +15,7 @@ export const UpdatePromotion = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [selectedProducts, setSelectedProducts] = useState([]);
-
-  const startDate = watch("startDate");
-  const endDate = watch("endDate");
-
-  const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
+  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
 
   const formatDate = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -28,10 +25,13 @@ export const UpdatePromotion = () => {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-
     return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
-};
+  };
 
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
 
   const fetchPromotionDetail = async () => {
     try {
@@ -41,8 +41,17 @@ export const UpdatePromotion = () => {
         setValue("name", promotionData.name);
         setValue("code", promotionData.code);
         setValue("percent", promotionData.percent);
-        setValue("startDate", promotionData.startDate.slice(0, 16));
-        setValue("endDate", promotionData.endDate.slice(0, 16));
+
+        // Chuyển đổi ngày theo định dạng DD/MM/YYYY thành YYYY-MM-DD
+        const startDate = new Date(promotionData.startDate);
+        const endDate = new Date(promotionData.endDate);
+
+        const startDateString = startDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
+        const endDateString = endDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+        setValue("startDate", startDateString); // YYYY-MM-DD
+        setValue("endDate", endDateString); // YYYY-MM-DD
+
         setValue("note", promotionData.note);
         setSelectedProducts(promotionData.listIdProduct || []);
       } else {
@@ -64,6 +73,7 @@ export const UpdatePromotion = () => {
       return;
     }
 
+    setLoading(true); // Bật trạng thái loading
     try {
       const response = await putDiscount(id, {
         name: data.name,
@@ -83,8 +93,10 @@ export const UpdatePromotion = () => {
         Swal.fire("Lỗi", "Không thể cập nhật đợt giảm giá", "error");
       }
     } catch (error) {
-      console.error("Error updating discount:", error);
+      console.error("Error updating discount:", error.response?.data || error.message);
       Swal.fire("Lỗi", "Có lỗi xảy ra khi cập nhật đợt giảm giá", "error");
+    } finally {
+      setLoading(false); // Tắt trạng thái loading
     }
   };
 
@@ -127,14 +139,14 @@ export const UpdatePromotion = () => {
               <Grid item xs={6}>
                 <FormControl error={!!errors?.startDate}>
                   <FormLabel>Ngày bắt đầu</FormLabel>
-                  <Input type="datetime-local" {...register("startDate", { required: true })} />
+                  <Input type="date" {...register("startDate", { required: true })} />
                   {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
               </Grid>
               <Grid item xs={6}>
                 <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                   <FormLabel>Ngày kết thúc</FormLabel>
-                  <Input type="datetime-local" {...register("endDate", { required: true })} />
+                  <Input type="date" {...register("endDate", { required: true })} />
                   {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
                   {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
@@ -146,8 +158,10 @@ export const UpdatePromotion = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <Button startDecorator={<EditIcon />} type="submit">Cập nhật</Button>
-                <IconButton onClick={() => navigate("/promotions")}>
+                <Button startDecorator={!loading && <EditIcon />} type="submit" disabled={loading}>
+                  {loading ? <CircularProgress size={20} /> : "Cập nhật"}
+                </Button>
+                <IconButton onClick={() => navigate("/promotions")} disabled={loading}>
                   <DoDisturbOnIcon /> Hủy
                 </IconButton>
               </Grid>
