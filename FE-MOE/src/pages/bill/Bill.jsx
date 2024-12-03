@@ -41,6 +41,7 @@ import VanChuyenNhanh from "~/assert/icon/van-chuyen-nhanh.svg";
 import Calculator from '~/components/bill/Calculator';
 import { addBillStatusDetail } from '~/apis/billListApi';
 import { MAX_BILL } from '~/utils/constants';
+import { MoeAlert } from '~/components/other/MoeAlert';
 
 function Bill() {
     const navigate = useNavigate();
@@ -267,9 +268,7 @@ function Bill() {
 
     const handleSetProduct = async (orderId) => {
         const response = await fetchProduct(orderId);
-        if (response?.data) {
-            setProducts(response.data);
-        }
+        setProducts(response.data);
     };
 
     const openProductListModal = (order) => {
@@ -291,10 +290,8 @@ function Bill() {
             console.error('Invalid product or product ID');
             return;
         }
-
         await deleteProduct(product.id);
         handleSetProduct(selectedOrder);
-
     };
 
     const closeProductListModal = () => setProductListModalOpen(false);
@@ -402,10 +399,15 @@ function Bill() {
         return 0;
     })();
 
+    if (discountAmount === 0 && currentOrder && currentOrder.coupon) {
+        handleRemoveCoupon();
+    }    
+
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
 
     const shippingCost = isDeliveryEnabled && subtotal < 100000 ? 24000 : 0;
+
 
     //----------------------------------------------------------Them lan cuoi----------------------------------//
     const PaymentMethod = {
@@ -724,7 +726,7 @@ function Bill() {
                         >
                             {order.code}
                             <span
-                                onClick={(e) => { e.stopPropagation(); deleteOrder(order.id); }}
+
                                 style={{
                                     color: 'red',
                                     marginLeft: 8,
@@ -737,7 +739,12 @@ function Bill() {
                                     transition: 'background-color 0.3s ease'
                                 }}
                             >
-                                <DeleteIcon fontSize="small" />
+                                <MoeAlert
+                                    title="Cảnh báo"
+                                    message="Bạn có muốn xóa phiếu giảm giá này?"
+                                    event={() => deleteOrder(order.id)}
+                                    button={<span role="button" aria-label="delete" style={{ cursor: 'pointer' }}><DeleteIcon /></span>}
+                                />
                             </span>
                         </Button>
                     ))}
