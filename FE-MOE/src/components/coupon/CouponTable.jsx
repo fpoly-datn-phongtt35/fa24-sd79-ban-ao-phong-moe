@@ -24,7 +24,7 @@ const CouponTable = ({ coupons, sortBy, sort, handleRequestSort, onDelete, pageN
   const navigate = useNavigate();
 
   const cellStyle = {
-    maxWidth: "150px", 
+    maxWidth: "150px",
     overflow: "hidden",
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
@@ -34,63 +34,73 @@ const CouponTable = ({ coupons, sortBy, sort, handleRequestSort, onDelete, pageN
     <TableContainer component={Paper} sx={{ backgroundColor: "white", borderRadius: "8px" }}>
       <Table size="medium">
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#0071bd" }}>
-            <TableCell sx={{ color: "white", fontWeight: "bold" }}>STT</TableCell>
-            <TableCell>
+          <TableRow sx={{ backgroundColor: "rgb(70 168 234)", borderBottom: "1px solid #ddd" }}>
+            <TableCell sx={{ color: "#000", fontWeight: "bold", paddingLeft: "16px", height: "56px"}}>STT</TableCell>
+
+            <TableCell sx={{ height: "56px"}}>
               <TableSortLabel
                 active={sortBy === "name"}
                 direction={sortBy === "name" ? sort : "asc"}
                 onClick={() => handleRequestSort("name")}
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "#333", fontWeight: "bold", textTransform: "capitalize" }}
               >
                 Tên PGG
               </TableSortLabel>
             </TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Mã</TableCell>
-            <TableCell>
+
+            <TableCell align="left" sx={{ color: "#333", fontWeight: "bold", height: "56px"}}>Mã</TableCell>
+
+            <TableCell sx={{ height: "56px"}}>
               <TableSortLabel
                 active={sortBy === "quantity"}
                 direction={sortBy === "quantity" ? sort : "asc"}
                 onClick={() => handleRequestSort("quantity")}
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "#333", fontWeight: "bold" }}
               >
                 Số lượng
               </TableSortLabel>
             </TableCell>
-            <TableCell>
+
+            <TableCell sx={{ height: "56px"}}>
               <TableSortLabel
                 active={sortBy === "usageCount"}
                 direction={sortBy === "usageCount" ? sort : "asc"}
                 onClick={() => handleRequestSort("usageCount")}
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "#333", fontWeight: "bold" }}
               >
                 Sử dụng
               </TableSortLabel>
             </TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Loại</TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Kiểu</TableCell>
-            <TableCell align="left" sx={{ color: "white", fontWeight: "bold" }}>Trạng thái</TableCell>
-            <TableCell>
+
+            <TableCell align="left" sx={{ color: "#333", fontWeight: "bold", height: "56px"}}>Loại</TableCell>
+
+            <TableCell align="left" sx={{ color: "#333", fontWeight: "bold", height: "56px"}}>Kiểu</TableCell>
+
+            <TableCell align="left" sx={{ color: "#333", fontWeight: "bold", height: "56px"}}>Trạng thái</TableCell>
+
+            <TableCell sx={{ height: "56px"}}>
               <TableSortLabel
                 active={sortBy === "startDate"}
                 direction={sortBy === "startDate" ? sort : "asc"}
                 onClick={() => handleRequestSort("startDate")}
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "#333", fontWeight: "bold" }}
               >
                 Bắt đầu
               </TableSortLabel>
             </TableCell>
-            <TableCell>
+
+            <TableCell sx={{ height: "56px"}}>
               <TableSortLabel
                 active={sortBy === "endDate"}
                 direction={sortBy === "endDate" ? sort : "asc"}
                 onClick={() => handleRequestSort("endDate")}
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "#333", fontWeight: "bold" }}
               >
                 Kết thúc
               </TableSortLabel>
             </TableCell>
-            <TableCell align="right" sx={{ color: "white", fontWeight: "bold" }}>Hành động</TableCell>
+
+            <TableCell align="right" sx={{ color: "#333", fontWeight: "bold", paddingRight: "16px", height: "56px"}}>Hành động</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

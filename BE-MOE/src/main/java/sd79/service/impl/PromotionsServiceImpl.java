@@ -41,7 +41,6 @@ public class PromotionsServiceImpl implements PromotionService {
         return !input.matches(regex);
     }
 
-
     @Override
     public List<PromotionResponse> getAllPromotion() {
         return this.promotionRepository.findAll().stream().map(item ->

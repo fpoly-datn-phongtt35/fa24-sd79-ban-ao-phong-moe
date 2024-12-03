@@ -82,6 +82,7 @@ export default function BillDetail() {
   const [tempPaymentAmount, setTempPaymentAmount] = useState("");
   const [tempPaymentMethod, setTempPaymentMethod] = useState("");
   const [tempPaymentTime, setTempPaymentTime] = useState("");
+  const [tempMessage, setTempMessage] = useState("");
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
 
   const checkNote = billData && billData.some(bill => bill.note);
@@ -124,6 +125,7 @@ export default function BillDetail() {
       if (bill.data?.[0]) {
         setTempPaymentMethod(bill.data[0].paymentMethod || "");
         setTempPaymentTime(bill.data[0].paymentTime || "");
+        setTempMessage(bill.data[0].message || "")
         statusRef.current = bill.data[0].status;
         checkNoteRef.current = bill.data[0].note;
       }
@@ -342,20 +344,21 @@ export default function BillDetail() {
   const handleNoteCloseModal = () => {
     const currentStatus = billData[0]?.status;
   
+    if (statuses === 7) {
+      toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");  
+      return;
+    }
+  
     if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
       toast.error("Vui lòng giao hàng trước khi xác nhận.");
+      setTempBillNote(""); 
       return;
     }
   
-    if (statuses === 7) {
-      toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");
-      return;
-    }
-  
+    // Proceed only if the above conditions are not met
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
   
-    // Use existing paymentTime if available, otherwise set a new one
     const newPaymentTime = billData[0]?.paymentTime || formatDate(new Date());
     setPaymentTime(newPaymentTime);
   
@@ -378,12 +381,12 @@ export default function BillDetail() {
       console.log("Cannot create invoice. Please select an order and add products.");
       return;
     }
-  
+
     const updatedBillData = billData[0];
-  
+
     // Use existing paymentTime if already set, otherwise use the passed paymentTime
     const finalPaymentTime = updatedBillData.paymentTime || paymentTime;
-  
+
     const billStoreRequest = {
       billRequest: {
         code: updatedBillData.code || "",
@@ -408,7 +411,7 @@ export default function BillDetail() {
         discountAmount: billDetail.discountAmount,
       })),
     };
-  
+
     try {
       await addPayBillEdit(billStoreRequest);
       console.log("billStoreRequest:", billStoreRequest);
@@ -416,7 +419,7 @@ export default function BillDetail() {
       console.error("Error processing payment:", error);
     }
     fetchBillEdit();
-  };  
+  };
 
   const handleOpenConfirm = () => {
     setOpenConfirm(true);
@@ -951,7 +954,8 @@ export default function BillDetail() {
                 marginBottom: 2,
               }}
             >
-              Vui lòng nhập ghi chú trước khi xác nhận
+              Vui lòng nhập ghi chú trước khi xác nhận <br></br>
+              (chú ý bom hàng)
             </Typography>
 
             <TextField
@@ -981,6 +985,7 @@ export default function BillDetail() {
               <Typography variant="body2">Số tiền: <b>{tempPaymentAmount.toLocaleString()} đ</b></Typography>
               <Typography variant="body2">Loại thanh toán: <b>{tempPaymentMethod}</b></Typography>
               <Typography variant="body2">Ngày thanh toán: <b>{tempPaymentTime}</b></Typography>
+              <Typography variant="body2">Ghi chú: <b>{tempMessage}</b></Typography>
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
