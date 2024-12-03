@@ -81,7 +81,7 @@ public class BillCustomizeQuery {
         // Lấy chức vụ của `Employee`
         Integer employeePositionId = employee.getPosition().getId();
 
-        List<Integer> allowedStatusIds = List.of(1, 2, 3, 4, 7, 8);
+        List<Integer> allowedStatusIds = List.of(2, 3, 4, 7, 8);
         Integer status = param.getStatus();
 
         // Nếu không có trạng thái, mặc định là trạng thái 2
@@ -470,6 +470,5 @@ public class BillCustomizeQuery {
         // Return paginated result
         return new PageImpl<>(result, pageable, totalElements);
     }
-
 
 }

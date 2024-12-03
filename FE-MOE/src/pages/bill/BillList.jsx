@@ -60,7 +60,6 @@ export default function BillList() {
 
     const tabs = [
         { label: 'Chờ xác nhận', status: '2' },
-        { label: 'Đang chờ', status: '1' },
         { label: 'Đã vận chuyển', status: '4' },
         { label: 'Đã xác nhận', status: '3' },
         { label: 'Hoàn thành', status: '8' },
@@ -302,11 +301,7 @@ export default function BillList() {
                                     </IconButton>
                                     <MoeAlert
                                         title="Cảnh báo"
-                                        message={
-                                            bill.billStatus === Number(7)
-                                                ? 'Hóa đơn ở trạng thái hủy sẽ xóa vĩnh viễn. Bạn có muốn xóa không?'
-                                                : 'Xóa hóa đơn này không?'
-                                        }
+                                        message={'Bạn có muốn xóa hóa đơn này không?'}
                                         event={() => handleDelete(bill.id)}
                                         button={
                                             <Tooltip title="Xóa vĩnh viễn" variant="plain">
