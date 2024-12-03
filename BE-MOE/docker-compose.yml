@@ -33,7 +33,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: moe-shop-api:0.0.1
+    image: moe-shop-api:0.1.1
     env_file:
       - .env
     ports:
