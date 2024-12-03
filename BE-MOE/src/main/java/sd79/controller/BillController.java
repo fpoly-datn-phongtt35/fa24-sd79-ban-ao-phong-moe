@@ -182,8 +182,8 @@ public class BillController {
     //---------------------------------------------------------------------BILL LIST-------------------------------------------------------------------------//
     @Operation(summary = "Dách sách bảng bill chi tiết", description = "Dách sách bảng bill chi tiết")
     @GetMapping("/billList")
-    public ResponseData<?> getAllBillList(BillListParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param));
+    public ResponseData<?> getAllBillList(BillListParamFilter param, @RequestParam Integer employeeId) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param, employeeId));
     }
 
     @Operation(summary = "Dách sách bill chi tiết theo id hóa đơn", description = "Dách sách bill chi tiết theo id hóa đơn")

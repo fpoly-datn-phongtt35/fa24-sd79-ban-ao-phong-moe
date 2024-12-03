@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static sd79.enums.TokenType.ACCESS_TOKEN;
-import static sd79.enums.TokenType.REFRESH_TOKEN;
+import static sd79.enums.TokenType.*;
 
 
 @Service
@@ -45,6 +44,9 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.refreshKey}")
     private String refreshKey;
 
+    @Value("${jwt.otherKey}")
+    private String otherKey;
+
     @Value("${jwt.key}")
     private String key;
 
@@ -56,6 +58,11 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateRefreshToken(UserDetails user) {
         return generateRefreshToken(new HashMap<>(), user);
+    }
+
+    @Override
+    public String generateOtherToken(String data) {
+        return generateOtherToken(new HashMap<>(), data);
     }
 
     @Override
@@ -89,6 +96,16 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
+    private String generateOtherToken(Map<String, Object> claims, String data) {
+        return key + Jwts.builder()
+                .setClaims(claims)
+                .setSubject(data)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 3)) // 3 minute
+                .signWith(getKey(OTHER_TOKEN), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Key getKey(TokenType type) {
         switch (type) {
             case ACCESS_TOKEN -> {
@@ -96,6 +113,9 @@ public class JwtServiceImpl implements JwtService {
             }
             case REFRESH_TOKEN -> {
                 return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.refreshKey));
+            }
+            case OTHER_TOKEN -> {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.otherKey));
             }
             default -> throw new InvalidDataException("Invalid token type");
         }

@@ -26,4 +26,5 @@ public class BillListParamFilter {
     private BigDecimal minTotal ;
 
     private BigDecimal maxTotal ;
+
 }

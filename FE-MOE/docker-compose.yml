@@ -7,6 +7,6 @@ services:
     image: moe-shop-fontend:0.0.1
     container_name: moe-shop-fontend-container
     ports:
-      - "1004:1004"
+      - "80:80"
     env_file:
       - .env

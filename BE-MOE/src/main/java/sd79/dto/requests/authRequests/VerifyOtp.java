@@ -4,11 +4,16 @@
  * Github: https://github.com/JavaTech04
  * Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
  */
-package sd79.enums;
+package sd79.dto.requests.authRequests;
 
-public enum TokenType {
-    ACCESS_TOKEN,
-    REFRESH_TOKEN,
-    RESET_TOKEN,
-    OTHER_TOKEN,
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class VerifyOtp {
+
+    private String otp;
+
+    private String token;
 }

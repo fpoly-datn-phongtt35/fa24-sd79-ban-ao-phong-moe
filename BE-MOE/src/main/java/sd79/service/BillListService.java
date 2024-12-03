@@ -8,7 +8,7 @@ import sd79.dto.response.bills.BillEditResponse;
 import java.util.List;
 
 public interface BillListService {
-    PageableResponse getAllBillList(BillListParamFilter param);
+    PageableResponse getAllBillList(BillListParamFilter param, Integer employeeId);
     List<BillEditResponse> getAllBillEdit(Long billId);
     void deleteBill(Long billId);
 }

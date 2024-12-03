@@ -29,11 +29,11 @@ public class BillListServiceImpl implements BillListService {
     private final BillStatusDetailRepo billStatusDetailRepo;
 
     @Override
-    public PageableResponse getAllBillList(BillListParamFilter param) {
+    public PageableResponse getAllBillList(BillListParamFilter param, Integer employeeId) {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-        return this.billCustomizeQuery.getAllBillList(param);
+        return this.billCustomizeQuery.getAllBillList(param, employeeId);
     }
 
     @Override

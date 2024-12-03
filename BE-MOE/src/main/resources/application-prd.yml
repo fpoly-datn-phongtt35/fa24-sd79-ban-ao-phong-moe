@@ -1,17 +1,17 @@
 # Author: Nong Hoang Vu || JavaTech
 # Facebook:https://facebook.com/NongHoangVu04
 # Github: https://github.com/JavaTech04
-# Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1 13.230.106.99
+# Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
 server:
   port: 2004
 api:
   version: v2
 spring:
   datasource:
-    url: ${DATASOURCE_URL:jdbc:mysql://localhost:3307/sd79_db_moe}
+    url: ${DATASOURCE_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DATASOURCE_USERNAME:root}
-    password: ${DATASOURCE_PASSWORD:123}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
   jpa:
     show-sql: true
     hibernate:
@@ -20,28 +20,28 @@ spring:
       ddl-auto: none
   data:
     redis:
-      host: ${HOST:localhost}
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   config:
     activate:
       on-profile: prd
 jwt:
-  key: PRODUCT_SD79NHV$2a$12$wvYek6dEmfHd3QOhnY2BVe8LbTGQa7bo2mda3FrHez80ToFEEh5u.
-  expiryMinute: 1000
-  expiryDay: 3
-  secretKey: b0238cff00a72de79bebabb5b5d6a777ff4b5f0401e6518ea03d48262f4bd818
-  refreshKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980
-  resetKey: 9106746cb1d349b31174dda29c2729d3448d9b8a57418cc1833c8478f0763980s
+  key: ${JWT_KEY}
+  expiryMinute: ${JWT_EXPIRY_MINUTE}
+  expiryDay: ${JWT_EXPIRY_DAY}
+  secretKey: ${JWT_SECRET_KEY}
+  refreshKey: ${JWT_REFRESH_KEY}
+  otherKey: ${JWT_OTHER_KEY}
 openapi:
   service:
-    api-docs: api-moe-shop
-    title: ${API_TITLE:DUMMY_VALUE_API}
+    api-docs: ${API_DOCUMENT:DUMMY_DOCS}
+    title: ${API_DOCUMENT_TITLE:DUMMY_VALUE_API}
     version: ${api.version}
-    description: description
-    server: http://${HOST:localhost}:2004
-    serverName: JavaTech
+    description: ${API_DOCUMENT_DESCRIPTION:DUMMY_DESCRIPTION}
+    server: ${API_DOCUMENT_SERVER:http://localhost:${server.port}}
+    serverName: ${API_DOCUMENT_SERVERNAME:DUMMY_SERVER_NAME}
     license: Apache 2.0
-    license-url: https://facebook.com/NongHoangVu04
+    license-url: ${API_DOCUMENT_LICENSE_URL:NOT_FOUNT}
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:DUMMY_VALUE}
   api-secret: ${CLOUDINARY_API_SECRET:DUMMY_VALUE}
