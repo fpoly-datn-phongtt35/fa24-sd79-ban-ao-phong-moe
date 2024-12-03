@@ -36,6 +36,15 @@ export const updateStatus = async (status, id) => {
   }
 };
 
+export const deleteSupportById = async (id) => {
+  try {
+    const response = await authorizedAxiosInstance.delete(`${API_ROOT}/client/support/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    toast.error("Xóa thông báo thất bại, vui lòng thử lại");
+    throw error;
+  }
+};
 
 
 

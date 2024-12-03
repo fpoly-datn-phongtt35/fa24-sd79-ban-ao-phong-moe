@@ -1,226 +1,210 @@
-import React, { useState } from "react";
-import { Container, Sheet, Typography, Input, Button, Grid, Select, Option, FormControl, FormLabel, Breadcrumbs, Link, Box, Radio, RadioGroup, Avatar } from "@mui/joy";
-
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
-import { toast } from "react-toastify";
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Sheet,
+  Typography,
+  Input,
+  Button,
+  Grid,
+  FormControl,
+  FormLabel,
+  Breadcrumbs,
+  Link,
+  Box,
+  RadioGroup,
+  Radio,
+  Avatar,
+} from "@mui/joy";
 import HomeIcon from "@mui/icons-material/Home";
+import { getEmployeeDetail, updateEmployeeDetail } from "~/apis/employeeApi";
+import { useNavigate } from 'react-router-dom';
 
 export const EmployeeMe = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const [employeeData, setEmployeeData] = useState({
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    email: "",
+    gender: "",
+  });
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    console.log("User ID:", userId); // Ensure the user ID is valid
+    if (!userId) {
+      console.error("User ID không hợp lệ:", userId);
+      return;
+    }
+
+    setIsLoading(true);
+    getEmployeeDetail(userId)
+      .then((response) => {
+        if (!response || !response.data) {
+          console.error("Dữ liệu API không hợp lệ:", response);
+          return;
+        }
+
+        const data = response.data; // Assuming response.data contains the employee info
+        console.log("Dữ liệu API:", data);
+
+        // Ensure the data contains the expected fields
+        if (
+          !data.first_name ||
+          !data.last_name ||
+          !data.full_name ||
+          !data.phone_number ||
+          !data.email ||
+          !data.gender
+        ) {
+          console.error("Một số trường dữ liệu không hợp lệ:", data);
+          return;
+        }
+
+        const gender = data.gender === "Nam" ? "MALE" : data.gender === "Nữ" ? "FEMALE" : "OTHER";
+
+        setEmployeeData({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          full_name: data.full_name || "",
+          phone_number: data.phone_number || "",
+          email: data.email || "",
+          gender: gender, // Ensure gender is correctly mapped to 'MALE', 'FEMALE', or 'OTHER'
+        });
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy thông tin nhân viên:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
 
-    return (
-        <Container maxWidth="lg" sx={{ py: 2 }}>
-          <Grid sx={{ mb: 2 }}>
-            <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', borderRadius: 'md' }}>
-              <Breadcrumbs aria-label="breadcrumb" sx={{ ml: "5px" }}>
-                <Link underline="hover" color="inherit" onClick={() => navigate("/")}>
-                  <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-                  Trang chủ
-                </Link>
-                <Link underline="hover" color="inherit" onClick={() => navigate("/EmployeeMe")}>
-                  Thông Tin Tài Khoản
-                </Link>
-              </Breadcrumbs>
-            </Sheet>
-          </Grid>
-    
-          <Grid container spacing={2}>    
-            <Grid xs={12} md={9}>
-              <Box p={0}>
-                {/* <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off"> */}
-                <Box component="form" noValidate autoComplete="off">
-                  <Sheet variant="outlined" sx={{ p: 3, borderRadius: 'md' }}>
-                    <Typography level="h5" fontWeight="lg" gutterBottom>THÔNG TIN TÀI KHOẢN</Typography>
-    
-                    <Grid container spacing={2}>
-                      <Grid xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 5 }}>
-                        <Box display="flex" flexDirection="column" alignItems="center">
-                          <Avatar
-                            // src={imagePreview || '/placeholder-image.png'}
-                            // alt="User Image"
-                            // sx={{ width: 150, height: 150 }}
-                            // variant="solid"
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEmployeeData((prev) => ({ ...prev, [name]: value }));
+  };
+
+
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 2 }}>
+      <Grid sx={{ mb: 2 }}>
+        <Sheet variant="outlined" sx={{ display: "flex", flexDirection: "column", borderRadius: "md" }}>
+          <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+            <Link
+              disabled={isLoading}
+              underline="hover"
+              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+              color="inherit"
+              onClick={() => navigate("/")}
+            >
+              <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+              Trang chủ
+            </Link>
+            <Link
+              disabled={isLoading}
+              underline="hover"
+              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+              color="inherit"
+              onClick={() => navigate("/employeeMe")}
+            >
+              Thông tin tài khoản
+            </Link>
+          </Breadcrumbs>
+        </Sheet>
+      </Grid>
+
+      <Grid container spacing={2}>
+        <Grid xs={12} md={9}>
+          <Box p={0}>
+            <Box component="form" noValidate autoComplete="off">
+              <Sheet variant="outlined" sx={{ p: 3, borderRadius: "md" }}>
+                <Typography level="h5" fontWeight="lg" gutterBottom>
+                  THÔNG TIN TÀI KHOẢN
+                </Typography>
+
+                <Grid container spacing={2}>
+                  <Grid xs={12} sm={4} sx={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 5 }}>
+                    <Box display="flex" flexDirection="column" alignItems="center">
+                      <Button>Chọn Ảnh</Button>
+                    </Box>
+                  </Grid>
+
+                  <Grid xs={12} sm={8}>
+                    <Grid spacing={2}>
+                      <Grid xs={12} mb={2}>
+                        <FormControl>
+                          <FormLabel required>Họ</FormLabel>
+                          <Input
+                            name="last_name"
+                            value={employeeData.last_name}
+                            onChange={handleInputChange}
                           />
-                          {/* <Button disabled={isLoading} variant="outlined" component="label" sx={{ mt: 2 }}> */}
-                            Chọn Ảnh
-                            {/* <input type="file" accept="image/*" hidden onChange={handleImageChange} /> */}
-                          {/* </Button> */}
-                        </Box>
+                        </FormControl>
                       </Grid>
-    
-                      <Grid xs={12} sm={8}>
-                        <Grid spacing={2}>
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel required>Họ</FormLabel>
-                              {/* <Input
-                                value={accountData.lastName}
-                                name="lastName"
-                                onChange={handleChange}
-                                placeholder="Nhập họ"
-                                sx={{
-                                  border: `1px solid ${errors.lastName ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
-                                  '&:hover:not(.Mui-disabled):before': { borderColor: errors.lastName ? 'red' : 'rgba(0, 0, 0, 0.23)' },
-                                  '&.Mui-focused': { borderColor: errors.lastName ? 'red' : 'primary.main' },
-                                }}
-                              />
-                              {errors.lastName && (
-                                <Typography color="danger" variant="body2">{errors.lastName}</Typography>
-                              )} */}
-                            </FormControl>
-                          </Grid>
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel required>Tên</FormLabel>
-                              {/* <Input
-                                placeholder="Nhập tên"
-                                value={accountData.firstName}
-                                name="firstName"
-                                onChange={handleChange}
-                                sx={{
-                                  border: `1px solid ${errors.firstName ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
-                                  '&:hover:not(.Mui-disabled):before': { borderColor: errors.firstName ? 'red' : 'rgba(0, 0, 0, 0.23)' },
-                                  '&.Mui-focused': { borderColor: errors.firstName ? 'red' : 'primary.main' },
-                                }}
-                              />
-                              {errors.firstName && (
-                                <Typography color="danger" variant="body2">{errors.firstName}</Typography>
-                              )} */}
-                            </FormControl>
-                          </Grid>
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel required>Điện thoại</FormLabel>
-                              {/* <Input
-                                placeholder="Nhập điện thoại"
-                                value={accountData.phoneNumber}
-                                name="phoneNumber"
-                                onChange={handleChange}
-                                sx={{
-                                  border: `1px solid ${errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
-                                  '&:hover:not(.Mui-disabled):before': { borderColor: errors.phoneNumber ? 'red' : 'rgba(0, 0, 0, 0.23)' },
-                                  '&.Mui-focused': { borderColor: errors.phoneNumber ? 'red' : 'primary.main' },
-                                }}
-                              />
-                              {errors.phoneNumber && (
-                                <Typography color="danger" variant="body2">{errors.phoneNumber}</Typography>
-                              )} */}
-                            </FormControl>
-                          </Grid>
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel required>Email</FormLabel>
-                              {/* <Input
-                                placeholder="Nhập email"
-                                value={accountData.email}
-                                name="email"
-                                onChange={handleChange}
-                                sx={{
-                                  border: `1px solid ${errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
-                                  '&:hover:not(.Mui-disabled):before': { borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)' },
-                                  '&.Mui-focused': { borderColor: errors.email ? 'red' : 'primary.main' },
-                                }}
-                              />
-                              {errors.email && (
-                                <Typography color="danger" variant="body2">{errors.email}</Typography>
-                              )} */}
-                            </FormControl>
-                          </Grid>
-    
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel>Giới tính</FormLabel>
-                              {/* <RadioGroup>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                  <Radio
-                                    label="Nam"
-                                    checked={accountData.gender === 'MALE'}
-                                    onChange={handleChange}
-                                    value="MALE"
-                                    name="gender"
-                                    sx={{
-                                      color: errors.gender ? 'red' : 'default',
-                                      '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
-                                    }}
-                                  />
-                                  <Radio
-                                    label="Nữ"
-                                    checked={accountData.gender === 'FEMALE'}
-                                    onChange={handleChange}
-                                    value="FEMALE"
-                                    name="gender"
-                                    sx={{
-                                      color: errors.gender ? 'red' : 'default',
-                                      '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
-                                    }}
-                                  />
-                                  <Radio
-                                    label="Khác"
-                                    checked={accountData.gender === 'OTHER'}
-                                    onChange={handleChange}
-                                    value="OTHER"
-                                    name="gender"
-                                    sx={{
-                                      color: errors.gender ? 'red' : 'default',
-                                      '&.Mui-checked': { color: errors.gender ? 'red' : 'primary.main' },
-                                    }}
-                                  />
-                                </Box>
-                                {errors.gender && (
-                                  <Typography color="danger" variant="body2">{errors.gender}</Typography>
-                                )}
-                              </RadioGroup> */}
-                            </FormControl>
-                          </Grid>
-    
-                          <Grid xs={12} mb={2}>
-                            <FormControl>
-                              <FormLabel required>Ngày sinh</FormLabel>
-                              {/* <Input
-                                name="dateOfBirth"
-                                value={accountData.dateOfBirth}
-                                onChange={handleChange}
-                                placeholder='Ngày sinh'
-                                type='date'
-                                sx={{
-                                  border: `1px solid ${errors.dateOfBirth ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
-                                  '&:hover:not(.Mui-disabled):before': {
-                                    borderColor: errors.dateOfBirth ? 'red' : 'rgba(0, 0, 0, 0.23)',
-                                  },
-                                  '&.Mui-focused': {
-                                    borderColor: errors.dateOfBirth ? 'red' : 'primary.main',
-                                  },
-                                }}
-                              />
-                              {errors.dateOfBirth && (
-                                <Typography color="danger" variant="body2">{errors.dateOfBirth}</Typography>
-                              )} */}
-                            </FormControl>
-                          </Grid>
-    
-                          <Grid xs={6} sx={{ marginTop: 1 }}>
-                            {/* <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
-                              Cập Nhật Người Dùng
-                            </Button> */}
-                            <Button>
-                            Cập Nhật Người Dùng
-                            </Button>
-                            {/* <Button variant="soft" color="danger" onClick={() => navigate("/")}>
-                              Hủy
-                            </Button> */}
-                          </Grid>
-                        </Grid>
+                      <Grid xs={12} mb={2}>
+                        <FormControl>
+                          <FormLabel required>Tên</FormLabel>
+                          <Input
+                            name="first_name"
+                            value={employeeData.first_name}
+                            onChange={handleInputChange}
+                          />
+                        </FormControl>
+                      </Grid>
+                      <Grid xs={12} mb={2}>
+                        <FormControl>
+                          <FormLabel required>Điện thoại</FormLabel>
+                          <Input
+                            name="phone_number"
+                            value={employeeData.phone_number}
+                            onChange={handleInputChange}
+                          />
+                        </FormControl>
+                      </Grid>
+                      <Grid xs={12} mb={2}>
+                        <FormControl>
+                          <FormLabel required>Email</FormLabel>
+                          <Input
+                            name="email"
+                            value={employeeData.email}
+                            onChange={handleInputChange}
+                          />
+                        </FormControl>
+                      </Grid>
+
+                      <Grid xs={12} mb={2}>
+                        <FormControl>
+                          <FormLabel required>Giới tính</FormLabel>
+                          <RadioGroup value={employeeData.gender} onChange={handleInputChange} name="gender">
+                            <Box sx={{ display: "flex", gap: 2 }}>
+                              <Radio label="Nam" value="MALE" />
+                              <Radio label="Nữ" value="FEMALE" />
+                              <Radio label="Khác" value="OTHER" />
+                            </Box>
+                          </RadioGroup>
+                        </FormControl>
+                      </Grid>
+
+                      <Grid xs={6} sx={{ marginTop: 1 }}>
+                        <Button disabled={isLoading}>
+                          {isLoading ? "Đang cập nhật..." : "Cập Nhật Người Dùng"}
+                        </Button>
                       </Grid>
                     </Grid>
-                  </Sheet>
-                </Box>
-              </Box>
-            </Grid>
-          </Grid>
-        </Container>
-      );
-    
+                  </Grid>
+                </Grid>
+              </Sheet>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </Container>
+  );
 };
-export default EmployeeMe;
 
+export default EmployeeMe;

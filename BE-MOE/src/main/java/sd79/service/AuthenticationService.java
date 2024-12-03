@@ -73,8 +73,6 @@ public class AuthenticationService {
 
     private final SpringTemplateEngine templateEngine;
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-
     @Value("${spring.frontend.url}")
     private String host_frontend;
 

@@ -1,6 +1,8 @@
 package sd79.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.SupportRequest;
@@ -22,11 +24,12 @@ public class SupportServiceImpl implements SupportService {
         this.supportRepository = supportRepository;
     }
 
-    @Override
-    public List<Support> getAllSupportRequests() {
-        return supportRepository.findAll(); // Lấy tất cả các yêu cầu hỗ trợ
-    }
-    @Transactional
+//    @Override
+//    public Page<Support> getAllSupportRequests(Pageable pageable) {
+//        return supportRepository.findAll(pageable);
+//    }
+
+
     @Override
     public Support updateSupportStatus(Long id, Integer newStatus) {
         // Kiểm tra xem yêu cầu hỗ trợ có tồn tại hay không
@@ -39,6 +42,19 @@ public class SupportServiceImpl implements SupportService {
 
         return supportRepository.save(support);
     }
+
+    @Override
+    public List<Support> getAllSupportRequests() {
+        return supportRepository.findAll(); // Lấy tất cả các yêu cầu hỗ trợ
+    }
+    @Override
+    public void deleteSupportRequest(Long id) {
+        if (!supportRepository.existsById(id)) {
+            throw new EntityNotFoundException("Không tìm thấy yêu cầu hỗ trợ với ID: " + id);
+        }
+        supportRepository.deleteById(id);
+    }
+
 
 
     @Override
