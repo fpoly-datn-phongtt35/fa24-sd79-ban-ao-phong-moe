@@ -201,13 +201,15 @@ public class AuthenticationService {
                 .htmlContent(html)
                 .build();
         kafkaTemplate.send("send-mail", sendMail);
-        return jwtService.generateOtherToken(RandomNumberGenerator.generateEightDigitRandomNumber());
+        return jwtService.generateOtherToken(passwordEncoder.encode(code));
     }
 
     public void verifyOtp(VerifyOtp otp) {
         try {
             String extractOtp = jwtService.extractUsername(otp.getToken(), OTHER_TOKEN);
-            if (!otp.getOtp().equals(extractOtp)) {
+            log.info(extractOtp);
+            log.info("Result {}", passwordEncoder.matches(otp.getOtp(), extractOtp) );
+            if (!passwordEncoder.matches(otp.getOtp(), extractOtp)) {
                 throw new InvalidDataException("Mã xác thực không hợp lệ");
             }
         } catch (ExpiredJwtException e) {
@@ -236,7 +238,7 @@ public class AuthenticationService {
                 .htmlContent(html)
                 .build();
         kafkaTemplate.send("send-mail", sendMail);
-        return jwtService.generateOtherToken(RandomNumberGenerator.generateEightDigitRandomNumber());
+        return jwtService.generateOtherToken(passwordEncoder.encode(code));
     }
 
     public void changePassword(ChangePassword req){
