@@ -207,8 +207,6 @@ public class AuthenticationService {
     public void verifyOtp(VerifyOtp otp) {
         try {
             String extractOtp = jwtService.extractUsername(otp.getToken(), OTHER_TOKEN);
-            log.info(extractOtp);
-            log.info("Result {}", passwordEncoder.matches(otp.getOtp(), extractOtp) );
             if (!passwordEncoder.matches(otp.getOtp(), extractOtp)) {
                 throw new InvalidDataException("Mã xác thực không hợp lệ");
             }
