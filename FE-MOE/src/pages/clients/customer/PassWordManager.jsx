@@ -27,30 +27,50 @@ export const UpdatePassWord = () => {
 
     const validateForm = () => {
         const errors = {};
-        if (!passwords.currentPassword) errors.currentPassword = 'Vui lòng nhập mật khẩu cũ';
-        if (!passwords.newPassword) errors.newPassword = 'Vui lòng nhập mật khẩu mới';
-        else if (!passwordRegex.test(passwords.newPassword)) {
-            errors.newPassword = 'Mật khẩu mới phải có phải từ 6 đến 50 kí tự!';
+    
+        if (!passwords.currentPassword) {
+            errors.currentPassword = 'Vui lòng nhập mật khẩu cũ';
         }
-        if (passwords.newPassword !== passwords.confirmPassword)
+    
+        if (!passwords.newPassword) {
+            errors.newPassword = 'Vui lòng nhập mật khẩu mới';
+        } else if (!passwordRegex.test(passwords.newPassword)) {
+            errors.newPassword = 'Mật khẩu mới phải có từ 6 đến 50 kí tự!';
+        } else if (passwords.newPassword === passwords.currentPassword) {
+            errors.newPassword = 'Mật khẩu mới không được trùng với mật khẩu cũ';
+        }
+    
+        if (passwords.newPassword !== passwords.confirmPassword) {
             errors.confirmPassword = 'Mật khẩu mới và xác nhận mật khẩu không khớp';
+        }
+    
         setErrors(errors);
+        setBackendErrors({}); 
         return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
+        const isValid = validateForm(); 
+        if (!isValid) return; 
+    
+        setIsLoading(true);
+        setBackendErrors({}); 
+    
         try {
             await putPassword(passwords, localStorage.getItem("userId"));
             toast.success('Đổi mật khẩu thành công');
-            setPasswords(initialPasswords); 
+            setPasswords(initialPasswords);
         } catch (error) {
-            if (error.response && error.response.data.message) {             
-                if (error.response.data.message === 'Mật khẩu cũ không chính xác') {
+            if (error.response && error.response.data.message) {
+                const errorMessage = error.response.data.message;   
+                if (errorMessage === 'Mật khẩu cũ không chính xác') {
                     setBackendErrors({ currentPassword: 'Mật khẩu cũ không chính xác' });
+                } else if (errorMessage === 'Mật khẩu mới không được trùng với mật khẩu cũ') {
+                    setBackendErrors({ newPassword: 'Mật khẩu mới không được trùng với mật khẩu cũ' });
                 } else {
-                    toast.error(error.response.data.message);
+                    toast.error(errorMessage);
                 }
             } else {
                 toast.error('Có lỗi xảy ra khi đổi mật khẩu');
@@ -58,8 +78,6 @@ export const UpdatePassWord = () => {
         } finally {
             setIsLoading(false);
         }
-        
-        
     };
 
 
