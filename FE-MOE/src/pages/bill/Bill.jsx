@@ -207,42 +207,33 @@ function Bill() {
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
+        const maxQuantity = products.find(p => p.id === productId)?.productDetail.quantity + 1 || 0;
         let errorMessage = "";
 
-        if (newQuantity === null || newQuantity === '') {
+        if (newQuantity === '') {
             errorMessage = "Số lượng chưa nhập";
-        } else if (newQuantity < 0) {
-            errorMessage = "Số lượng không được âm";
+        } else if (newQuantity < 1) {
+            errorMessage = "Số lượng phải lớn hơn hoặc bằng 1";
+        } else if (newQuantity > maxQuantity) {
+            newQuantity = maxQuantity; // Giới hạn số lượng về tối đa
+            errorMessage = `Số lượng không được vượt quá ${maxQuantity}`;
         }
 
-        setErrorMessages(prevErrors => ({
-            ...prevErrors,
+        setErrorMessages(prev => ({
+            ...prev,
             [productId]: errorMessage
         }));
 
         if (errorMessage) return;
 
-        const productToUpdate = products.find(p => p.id === productId);
-        if (!productToUpdate) return;
-
-        const maxQuantity = productToUpdate.productDetail.quantity + 1;
-        const updatedQuantity = newQuantity > maxQuantity ? maxQuantity : newQuantity;
-
-        if (quantityTimeoutId) {
-            clearTimeout(quantityTimeoutId);
-        }
-
-        if (initialQuantity[productId] === undefined) {
-            initialQuantity[productId] = maxQuantity;
-        }
-
         setProducts(prevProducts =>
             prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: updatedQuantity } : product
+                product.id === productId ? { ...product, quantity: newQuantity } : product
             )
         );
 
-        const timeoutId = setTimeout(() => updateProductQuantity(productId, updatedQuantity), 1000);
+        if (quantityTimeoutId) clearTimeout(quantityTimeoutId);
+        const timeoutId = setTimeout(() => updateProductQuantity(productId, newQuantity), 1000);
         setQuantityTimeoutId(timeoutId);
     };
 
@@ -399,9 +390,9 @@ function Bill() {
         return 0;
     })();
 
-    if (discountAmount === 0 && currentOrder && currentOrder.coupon) {
+    if (discountAmount === 0 && currentOrder && currentOrder.coupon && typeof handleRemoveCoupon === 'function') {
         handleRemoveCoupon();
-    }    
+    }
 
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
@@ -448,8 +439,8 @@ function Bill() {
         }
 
         const paymentMethodName = "CASH";
-        const paymentTime = !isDeliveryEnabled ? formatDate(new Date().toISOString()) : ""; // Ngày thanh toán nếu không giao hàng
-        const note = !isDeliveryEnabled ? "đã thanh toán" : null; // Thêm ghi chú nếu không giao hàng
+        const paymentTime = !isDeliveryEnabled ? formatDate(new Date().toISOString()) : ""; 
+        const note = !isDeliveryEnabled ? "đã thanh toán" : null; 
 
         const billStoreRequest = {
             billRequest: {
@@ -464,8 +455,8 @@ function Bill() {
                 total: totalAfterDiscount,
                 paymentMethod: paymentMethodName,
                 message: null,
-                note: note, // Thêm note khi `isDeliveryEnabled` tắt
-                paymentTime: paymentTime, // Ghi lại thời gian thanh toán nếu không giao hàng
+                note: note, 
+                paymentTime: paymentTime,
                 userId: localStorage.getItem("userId"),
             },
             billDetails: products.map((product) => ({
@@ -478,14 +469,13 @@ function Bill() {
 
         try {
             await addPay(billStoreRequest);
-
-            // Xử lý trạng thái hóa đơn dựa trên `isDeliveryEnabled`
             if (isDeliveryEnabled) {
-                await updateBillStatusDetail(1); // Chuyển trạng thái sang 1
-                await updateBillStatusDetail(2); // Chuyển trạng thái sang 2
+                await updateBillStatusDetail(1); 
+                await updateBillStatusDetail(2);
+                // await updateBillStatusDetail(4); 
             } else {
-                await updateBillStatusDetail(1); // Chuyển trạng thái sang 1
-                await updateBillStatusDetail(8); // Chuyển trạng thái sang 8
+                await updateBillStatusDetail(1); 
+                await updateBillStatusDetail(8); 
             }
 
             toast.success("Hóa đơn đã được tạo thành công!");
@@ -816,23 +806,42 @@ function Bill() {
                                                 Xuất xứ: {product.productDetail.origin} - Vật liệu: {product.productDetail.material}
                                             </Typography>
                                         </Grid>
-                                        <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
+                                        <Grid
+                                            item
+                                            xs={4}
+                                            sm={2}
+                                            md={2}
+                                            display="flex"
+                                            justifyContent="center"
+                                            flexDirection="column"
+                                            alignItems="center"
+                                        >
                                             <Input
                                                 type="number"
                                                 value={product.quantity}
-                                                onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10) || '')}
+                                                onChange={(e) => {
+                                                    let inputQuantity = parseInt(e.target.value, 10) || '';
+                                                    const maxQuantity = product.productDetail.quantity + 1;
+
+                                                    if (inputQuantity > maxQuantity) {
+                                                        inputQuantity = maxQuantity;
+                                                    }
+
+                                                    handleQuantityChange(product.id, inputQuantity);
+                                                }}
                                                 sx={{
                                                     width: '80%',
                                                     '& input': {
                                                         textAlign: 'center',
                                                     }
                                                 }}
+                                                slotProps={{
+                                                    input: {
+                                                        min: 1,
+                                                        max: product.productDetail.quantity + 1,
+                                                    }
+                                                }}
                                             />
-                                            {/* {errorMessages[product.id] && (
-                                                <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
-                                                    {errorMessages[product.id]}
-                                                </Typography>
-                                            )} */}
                                         </Grid>
 
                                         <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
@@ -1172,15 +1181,22 @@ function Bill() {
                                 </Button>
                             </Box>
 
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={onPay}
-                                sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
-                                disabled={selectedPaymentMethod !== PaymentMethod.CASH}
-                            >
-                                Tạo hóa đơn
-                            </Button>
+                            <MoeAlert
+                                title="Chú ý"
+                                message="Bạn có muốn thanh toán hóa đơn này không?"
+                                event={() => onPay()}
+                                button={
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
+                                        disabled={selectedPaymentMethod !== PaymentMethod.CASH}
+                                    >
+                                        Thanh toán
+                                    </Button>
+
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </Paper>
