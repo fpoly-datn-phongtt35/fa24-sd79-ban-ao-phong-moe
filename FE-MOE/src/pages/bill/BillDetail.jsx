@@ -73,7 +73,7 @@ export default function BillDetail() {
   const [isShippingDisabled, setIsShippingDisabled] = useState(false);
   const [prevStatus, setPrevStatus] = useState(null);
   const [isRestoreModalOpen, setRestoreModalOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   //bill
   const [isModalOpenNote, setIsModalOpenNote] = useState(false);
   const [billNote, setBillNote] = useState("");
@@ -151,7 +151,7 @@ export default function BillDetail() {
     '1': '#007bff',
     '2': '#FF9800',
     '3': '#4CAF50',
-    '4': '#1E88E5',
+    '4': '#1E88E9',
     '5': '#43A047',
     '6': '#E53935',
     '7': '#F44336',
@@ -214,6 +214,7 @@ export default function BillDetail() {
     try {
       const statusData = await getBillStatusDetailsByBillId(id);
       setStatusDetails(statusData.data);
+      console.log(statusData)
 
     } catch (error) {
       console.error("Error fetching bill status details:", error);
@@ -255,7 +256,7 @@ export default function BillDetail() {
     }
 
     // 3. Nếu đang ở trạng thái 3, chỉ cho phép chuyển sang trạng thái 8 hoặc 7
-    if (currentStatus === 3 && Number(status) !== 8 && Number(status) !== 7) {
+    if (currentStatus === 3 && Number(status) !== 8) {
       toast.error("Vui lòng hoàn tất thanh toán hoặc hủy đơn hàng.");
       return;
     }
@@ -330,6 +331,15 @@ export default function BillDetail() {
 
   const handleRestorePreviousStatus = () => {
     setRestoreModalOpen(true);
+  };
+
+  const handleButtonClick = async () => {
+    await fetchBillStatusDetails();
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   //----------------------------------------------Bill-------------------------------------//
@@ -621,7 +631,6 @@ export default function BillDetail() {
           </Box>
         </Box>
 
-
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
             {(statuses !== 4 && statuses !== 8 && statuses !== 7) && (
@@ -675,14 +684,73 @@ export default function BillDetail() {
               )
             )}
 
-            <Button variant="outlined" color="info" style={{ marginRight: '8px' }}            >
+            <Button
+              variant="outlined"
+              color="info"
+              style={{ marginRight: '8px' }}
+              onClick={handleButtonClick}
+            >
               <BookIcon />
             </Button>
           </div>
         </Box>
-
         {errorMessage && <Typography color="error">{errorMessage}</Typography>}
       </div>
+
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Trạng thái hóa đơn</DialogTitle>
+        <DialogContent>
+          {errorMessage ? (
+            <Typography color="error" variant="body2">
+              {errorMessage}
+            </Typography>
+          ) : statusDetails.length > 0 ? (
+            <List>
+              {statusDetails.map((status, index) => {
+                const statusCode = status.billStatus;
+                const statusColor = statusColors[statusCode] || '#a6a6a6'; // Default color
+
+                return (
+                  <ListItem key={index}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="h6" component="span" sx={{ color: statusColor }}>
+                          {statusMap[statusCode]}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <Typography variant="body2" color="textSecondary" component="span">
+                            {`Thời gian: ${status.createAt}`}
+                          </Typography>
+                        </>
+                      }
+                      sx={{
+                        padding: '10px',
+                        borderLeft: `5px solid ${statusColor}`, // Border color changes with status
+                      }}
+                    />
+                    {/* Optionally, you can also apply status color to the status icon */}
+                    <Box sx={{ color: statusColor }}>
+                      {statusIcons[statusCode]}
+                    </Box>
+                  </ListItem>
+                );
+              })}
+            </List>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Loading details...
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
       <div>
         <StatusModal
