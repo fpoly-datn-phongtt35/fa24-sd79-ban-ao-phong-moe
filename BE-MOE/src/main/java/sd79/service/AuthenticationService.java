@@ -201,7 +201,7 @@ public class AuthenticationService {
                 .htmlContent(html)
                 .build();
         kafkaTemplate.send("send-mail", sendMail);
-        return jwtService.generateOtherToken(code);
+        return jwtService.generateOtherToken(RandomNumberGenerator.generateEightDigitRandomNumber());
     }
 
     public void verifyOtp(VerifyOtp otp) {
@@ -236,7 +236,7 @@ public class AuthenticationService {
                 .htmlContent(html)
                 .build();
         kafkaTemplate.send("send-mail", sendMail);
-        return jwtService.generateOtherToken(code);
+        return jwtService.generateOtherToken(RandomNumberGenerator.generateEightDigitRandomNumber());
     }
 
     public void changePassword(ChangePassword req){
