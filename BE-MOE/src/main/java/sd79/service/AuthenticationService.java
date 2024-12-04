@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import sd79.dto.requests.authRequests.ChangePassword;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.requests.authRequests.SignUpRequest;
 import sd79.dto.requests.authRequests.VerifyOtp;
@@ -38,7 +39,6 @@ import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
-import sd79.service.notifications.EmailService;
 import sd79.utils.CloudinaryUtils;
 import sd79.utils.RandomNumberGenerator;
 
@@ -69,7 +69,7 @@ public class AuthenticationService {
 
     private final CloudinaryUtils cloudinary;
 
-    private final EmailService emailService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private final SpringTemplateEngine templateEngine;
 
@@ -200,7 +200,7 @@ public class AuthenticationService {
                 .subject("MOE SHOP - XÁC THỰC TÀI KHOẢN")
                 .htmlContent(html)
                 .build();
-        emailService.sendEmailDefault(sendMail);
+        kafkaTemplate.send("send-mail", sendMail);
         return jwtService.generateOtherToken(code);
     }
 
@@ -211,7 +211,37 @@ public class AuthenticationService {
                 throw new InvalidDataException("Mã xác thực không hợp lệ");
             }
         } catch (ExpiredJwtException e) {
-            throw new InvalidDataException("OTP không khả dụng!");
+            throw new InvalidDataException("Mã không khả dụng!");
         }
+    }
+
+    public String requestForgotPassword(String email) {
+        if (StringUtils.isBlank(email)) {
+            throw new InvalidDataException("Email is blank!");
+        }
+        String code = RandomNumberGenerator.generateEightDigitRandomNumber();
+        this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email không tồn tại"));
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("otp", code);
+        properties.put("url", host_frontend);
+        context.setVariables(properties);
+        String html = templateEngine.process("sent_otp.html", context);
+        SendEmailRequest sendMail = SendEmailRequest.builder()
+                .to(List.of(Recipient.builder()
+                        .name("GUEST")
+                        .email(email)
+                        .build()))
+                .subject("MOE SHOP - QUÊN MẬT KHẨU")
+                .htmlContent(html)
+                .build();
+        kafkaTemplate.send("send-mail", sendMail);
+        return jwtService.generateOtherToken(code);
+    }
+
+    public void changePassword(ChangePassword req){
+        User user = this.userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException("Email không tồn tại"));
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        this.userRepository.save(user);
     }
 }

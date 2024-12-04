@@ -108,7 +108,7 @@ export const Sidebar_Admin = (props) => {
             component={<Link to="/bill" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
-              Bán tại quầy
+              Bán hàng
             </Typography>
           </MenuItem>
 

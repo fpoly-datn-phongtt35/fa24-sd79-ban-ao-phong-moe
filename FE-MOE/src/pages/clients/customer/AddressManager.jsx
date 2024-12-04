@@ -19,6 +19,13 @@ export const AddressInfo = () => {
         ward: '',
         streetName: '',
     });
+    const capitalizeFirstLetter = (str) => {
+        if (!str) return '';
+        return str
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+      };
 
     const [cities, setCities] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -62,6 +69,7 @@ export const AddressInfo = () => {
         setSelectedCity(cityId);
         setSelectedDistrict("");
         setSelectedWard("");
+        setAddressData({ ...addressData, streetName: '' }); // Reset streetName
         if (cityId) {
             const response = await axios.get(`${host}p/${cityId}?depth=2`);
             setDistricts(response.data.districts);
@@ -70,11 +78,12 @@ export const AddressInfo = () => {
             setWards([]);
         }
     };
-
+    
     const handleDistrictChange = async (e) => {
         const districtId = e;
         setSelectedDistrict(districtId);
         setSelectedWard("");
+        setAddressData({ ...addressData, streetName: '' }); // Reset streetName
         if (districtId) {
             const response = await axios.get(`${host}d/${districtId}?depth=2`);
             setWards(response.data.wards);
@@ -82,10 +91,12 @@ export const AddressInfo = () => {
             setWards([]);
         }
     };
-
+    
     const handleWardChange = (e) => {
         setSelectedWard(e);
+        setAddressData({ ...addressData, streetName: '' }); // Reset streetName
     };
+    
 
 
     useEffect(() => {
@@ -98,9 +109,9 @@ export const AddressInfo = () => {
                 await handleCityChange(addressData.city_id);
                 await handleDistrictChange(addressData.district_id);
                 setAddressData({
-                    firstName: addressData.firstName,
-                    lastName: addressData.lastName,
-                    fullName: addressData.fullName,
+                    firstName: capitalizeFirstLetter(addressData.firstName),
+                    lastName: capitalizeFirstLetter(addressData.lastName),
+                    fullName: capitalizeFirstLetter(addressData.fullName),
                     city: addressData.city,
                     district: addressData.district,
                     ward: addressData.ward,
@@ -120,7 +131,9 @@ export const AddressInfo = () => {
 
     const handleChange = async (e) => {
         const { name, value } = e.target;
-        setAddressData({ ...addressData, [name]: value });
+        setAddressData({ ...addressData, [name]: ['firstName', 'lastName'].includes(name)
+            ? capitalizeFirstLetter(value)
+            : value, });
     }
 
     const handleSubmit = async (e) => {
@@ -143,8 +156,7 @@ export const AddressInfo = () => {
 
         await putAddressInfo(updatedAddress, localStorage.getItem("userId")).then(async (res) => {
             toast.success('Sửa thành công');
-            setIsLoading(false);
-            // navigate('/my-address');
+            setIsLoading(false);           
             return;
 
         });
@@ -177,7 +189,7 @@ export const AddressInfo = () => {
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} >Tích lũy điểm</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Quản lý đơn hàng</Typography>
+                        <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>

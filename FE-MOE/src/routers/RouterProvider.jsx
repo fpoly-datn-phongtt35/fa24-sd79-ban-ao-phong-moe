@@ -54,6 +54,7 @@ import { UpdatePassWord } from "~/pages/clients/customer/PassWordManager";
 import BillEdit from "~/pages/bill/BillEdit";
 import Statistical from "~/pages/other/Statistical";
 import EmployeeMe from "~/pages/employee/EmployeeMe";
+import ForgotPassword from "~/pages/auth/ForgotPassword";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -186,6 +187,7 @@ function RouterProvider() {
       <Route element={<UnauthorizedRoutes />}>
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       <Route element={<PublicRoutes />}>

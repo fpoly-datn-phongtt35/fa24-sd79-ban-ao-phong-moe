@@ -15,7 +15,7 @@ const CouponSearchFilter = ({
       <Grid item xs={12} sm={3}>
         <TextField
           label="Tìm phiếu giảm giá"
-          variant="standard"
+          variant="outlined"
           fullWidth
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
@@ -26,7 +26,7 @@ const CouponSearchFilter = ({
         <TextField
           label="Từ ngày"
           type="date"
-          variant="standard"
+          variant="outlined"
           InputLabelProps={{ shrink: true }}
           fullWidth
           value={startDate}
@@ -38,7 +38,7 @@ const CouponSearchFilter = ({
         <TextField
           label="Đến ngày"
           type="date"
-          variant="standard"
+          variant="outlined"
           InputLabelProps={{ shrink: true }}
           fullWidth
           value={endDate}
@@ -48,7 +48,7 @@ const CouponSearchFilter = ({
       </Grid>
       <Grid item xs={12} sm={3}>
         <Button
-          variant="solid"
+          variant="outlined"
           color="primary"
           onClick={() => navigate("/coupon/create")}
           fullWidth
@@ -101,8 +101,8 @@ const CouponSearchFilter = ({
       </Grid>
       <Grid item xs={12} sm={3}>
         <Button
-          variant="soft"
-          sx={{ backgroundColor: 'purple', color: 'white' }}
+          variant="outlined"
+          color='danger'
           fullWidth
           onClick={handleClear}
           size="lg"

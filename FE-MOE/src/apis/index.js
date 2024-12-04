@@ -85,3 +85,18 @@ export const verifyOtp = async (data) => {
       toast.error(err?.response?.data?.message);
     });
 };
+
+export const requestForgotPassword = async (email) => {
+  return await axios
+    .get(`${API_ROOT}/auth/forgot-password/${encodeURIComponent(email)}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+export const changePassword = async (data) => {
+  return await axios
+    .post(`${API_ROOT}/auth/change-password`, data)
+    .then((res) => {
+      return res.data;
+    });
+};

@@ -398,6 +398,11 @@ public class ClientServiceImpl implements ClientService {
             this.productDetailRepository.save(productDetail);
         });
         this.billRepository.save(bill);
+
+        this.billStatusDetailRepo.save(BillStatusDetail.builder()
+                .bill(bill)
+                .billStatus(this.billStatusRepository.findById(7).orElse(null))
+                .build());
     }
 
     @Override

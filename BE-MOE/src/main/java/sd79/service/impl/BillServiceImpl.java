@@ -13,6 +13,7 @@ import sd79.dto.response.bills.BillDetailResponse;
 import sd79.dto.response.bills.BillResponse;
 import sd79.dto.response.productResponse.ProductDetailResponse2;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.InvalidDataException;
 import sd79.model.*;
 import sd79.repositories.*;
 import sd79.repositories.auth.UserRepository;
@@ -457,8 +458,10 @@ public class BillServiceImpl implements BillService {
         int quantity = detailRequest.getQuantity();
         ProductDetail productDetail = billDetail.getProductDetail();
 
-        if (quantity > productDetail.getQuantity()) {
-            throw new IllegalArgumentException("Not enough product quantity available. Available: " + productDetail.getQuantity());
+        int totalQuantity =  productDetail.getQuantity() + quantity;
+
+        if(totalQuantity < quantity) {
+            throw new InvalidDataException("Không đủ số lượng sản phẩm: " + productDetail.getQuantity());
         }
 
         billDetail.setQuantity(quantity);
