@@ -594,7 +594,7 @@ export const AddCustomer = () => {
                   </Grid>
                   <Grid item xs={6} sx={{ marginTop: 1 }}>
                     <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
-                      Thêm Người Dùng
+                      Thêm khách hàng
                     </Button>
                     <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy

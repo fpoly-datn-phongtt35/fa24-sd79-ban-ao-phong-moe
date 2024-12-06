@@ -570,7 +570,7 @@ export const CustomerDetailPage = () => {
                   </Grid>
                   <Grid item xs={6} sx={{ marginTop: 1 }}>
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
-                      Cập Nhật Người Dùng
+                      Cập Nhật
                     </Button>
                     <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy

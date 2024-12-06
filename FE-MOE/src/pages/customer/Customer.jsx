@@ -146,9 +146,10 @@ export const Customer = () => {
         ...prevStates,
         [id]: updatedLockedState,
       }));
-
+      toast.success(`Khách hàng ${id} đã được ${updatedLockedState ? 'khóa' : 'mở khóa'} thành công.`);
       console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
     } catch (error) {
+      toast.error(`Cập nhật trạng thái khóa cho khách hàng ${id} thất bại.`);
       console.error("Failed to update lock status:", error);
     }
   };
@@ -247,9 +248,16 @@ export const Customer = () => {
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
                   <TableCell>
-                    <Switch size="lg"
+                    <Switch
+                      size="lg"
                       checked={lockedStates[customer.id] ?? customer.isLocked}
-                      onClick={() => onSetLocked(customer.id, lockedStates[customer.id] ?? customer.isLocked)}
+                      onClick={() => {
+                        const currentState = lockedStates[customer.id] ?? customer.isLocked;
+                        const action = currentState ? 'Mở khóa' : 'Khóa';
+                        if (window.confirm(`Bạn có muốn ${action} tài khoản này không?`)) {
+                          onSetLocked(customer.id, currentState);
+                        }
+                      }}
                     />
                   </TableCell>
                   <TableCell>
