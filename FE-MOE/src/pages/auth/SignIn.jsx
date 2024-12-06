@@ -233,7 +233,11 @@ function SignIn() {
               >
                 Đăng nhập
               </Button>
-              <Link href="#" underline="hover" color="neutral">
+              <Link
+                onClick={() => navigate("/forgot-password")}
+                underline="hover"
+                color="neutral"
+              >
                 Quên mật khẩu
               </Link>
             </Box>
