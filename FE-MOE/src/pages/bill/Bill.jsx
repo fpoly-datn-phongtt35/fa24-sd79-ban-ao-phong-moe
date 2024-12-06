@@ -472,7 +472,7 @@ function Bill() {
             if (isDeliveryEnabled) {
                 await updateBillStatusDetail(1); 
                 await updateBillStatusDetail(2);
-                // await updateBillStatusDetail(4); 
+                await updateBillStatusDetail(4); 
             } else {
                 await updateBillStatusDetail(1); 
                 await updateBillStatusDetail(8); 

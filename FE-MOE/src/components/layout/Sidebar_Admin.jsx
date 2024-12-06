@@ -191,15 +191,22 @@ export const Sidebar_Admin = (props) => {
               </Typography>
             </MenuItem>
           </SubMenu>
-          <MenuItem
+          <SubMenu
             disabled={!context?.isManager}
-            icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/statistical" />}
+            label="Thống kê"
+            icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >
-            <Typography sx={{ color: "#32383e" }} level="body-md">
-              Thống kê
-            </Typography>
-          </MenuItem>
+            <MenuItem component={<Link to="/statistical/bill" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Thống kê hóa đơn
+              </Typography>
+            </MenuItem>
+            {/* <MenuItem component={<Link to="/promotions" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Đợt giảm giá
+              </Typography>
+            </MenuItem> */}
+          </SubMenu>
         </Menu>
         <Menu
           rootStyles={{
