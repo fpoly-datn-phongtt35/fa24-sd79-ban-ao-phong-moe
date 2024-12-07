@@ -102,15 +102,18 @@ const UpdateCoupon = () => {
 
     const onSubmit = async (data) => {
         let isValid = true;
-    
+
         // Validate images
-        if (couponType === 'PERSONAL' && (!images || images.length === 0) && storedImageUrl === null) {
-            setImagesError('Chưa chọn ảnh.');
+        const hasNewImages = images && images.length > 0;
+        const hasStoredImages = storedImageUrl && storedImageUrl.length > 0;
+
+        if (couponType === 'PERSONAL' && !hasNewImages && !hasStoredImages) {
+            setImagesError('Chưa chọn ảnh. Vui lòng chọn ít nhất một ảnh.');
             isValid = false;
         } else {
             setImagesError('');
         }
-    
+
         // Validate customers
         if (couponType === 'PERSONAL' && (!selectedCustomers || selectedCustomers.length === 0)) {
             setSelectedCustomersError('Phải chọn ít nhất một khách hàng cho phiếu giảm giá cá nhân.');
@@ -118,13 +121,13 @@ const UpdateCoupon = () => {
         } else {
             setSelectedCustomersError('');
         }
-    
+
         if (!isValid) {
             return;
         }
-    
+
         const incrementedUsageCount = data.usageCount;
-    
+
         const coupon = {
             code: data.code,
             name: data.name,
@@ -141,18 +144,18 @@ const UpdateCoupon = () => {
             userId: localStorage.getItem("userId"),
             customerIds: selectedCustomers,
         };
-    
+
         try {
             setLoading(true);
             const response = await updateCoupon(id, coupon);
-    
+
             if (couponType === 'PERSONAL') {
                 let formData = new FormData();
                 formData.append("couponID", response);
-    
+
                 const hasNewImages = images && images.length > 0;
                 const hasStoredImages = storedImageUrl && storedImageUrl.length > 0;
-    
+
                 if (!hasStoredImages && (!images || images.length === 0)) {
                     // Case 1: No existing images and no new images
                     console.log("Không có ảnh. Vui lòng thêm ảnh.");
@@ -175,7 +178,7 @@ const UpdateCoupon = () => {
                     const isImageChanged =
                         images.length !== storedImageUrl.length ||
                         images.some((image, index) => image.name !== storedImageUrl[index]?.name);
-    
+
                     if (isImageChanged) {
                         console.log("Replacing old images with new ones.");
                         await deleteCouponImage(response);
@@ -186,7 +189,7 @@ const UpdateCoupon = () => {
                     }
                 }
             }
-    
+
             navigate("/coupon");
         } catch (error) {
             console.error("Error creating coupon or uploading images:", error);
@@ -194,7 +197,7 @@ const UpdateCoupon = () => {
             setLoading(false);
         }
     };
-    
+
 
     const fetchCouponDetail = async () => {
         try {

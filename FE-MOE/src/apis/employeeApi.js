@@ -97,3 +97,27 @@ export const putPassword = async (data, id) => {
       toast.success(res.data.message);
     });
 };
+export const getEmployeeDetail = async (id) => {
+  return await authorizedAxiosInstance
+    .get(`${API_ROOT}/employee/me/${id}`)
+    .then((res) => {
+      toast.success(res.data.message);
+      return res.data.data; // Trả về dữ liệu chi tiết nhân viên
+    })
+    .catch((err) => {
+      toast.error(err.response?.data?.message || "Lấy thông tin nhân viên thất bại!");
+      throw err;
+    });
+};
+export const updateEmployeeDetail = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/employee/update/${id}`, data)
+    .then((res) => {
+      toast.success(res.data.message);
+    })
+    .catch((err) => {
+      toast.error(err.response?.data?.message || "Cập nhật thông tin nhân viên thất bại!");
+      throw err;
+    });
+};
+

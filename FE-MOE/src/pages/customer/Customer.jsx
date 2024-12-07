@@ -32,6 +32,13 @@ export const Customer = () => {
 
   const navigate = useNavigate()
 
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -235,7 +242,7 @@ export const Customer = () => {
                 <TableRow key={customer.id}>
                   <TableCell><Avatar src={customer?.image} variant="solid" /></TableCell>
                   <TableCell>{customer.username}</TableCell>
-                  <TableCell>{customer.fullName}</TableCell>
+                  <TableCell>{capitalizeFirstLetter(customer.fullName)}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
                   <TableCell>{formatDate(customer.dateOfBirth)}</TableCell>
@@ -252,9 +259,9 @@ export const Customer = () => {
                     <IconButton onClick={() => navigate(`/customer/${customer.id}`)} >
                       <EditIcon color="primary" />
                     </IconButton>
-                    <IconButton onClick={() => onDelete(customer.id)}>
+                    {/* <IconButton onClick={() => onDelete(customer.id)}>
                       <DeleteIcon color="error" />
-                    </IconButton>
+                    </IconButton> */}
                   </TableCell>
                 </TableRow>
               ))

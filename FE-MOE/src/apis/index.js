@@ -5,6 +5,7 @@
 import axios from "axios";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { API_ROOT } from "~/utils/constants";
+import { toast } from "react-toastify";
 
 export const handleLogoutAPI = async () => {
   await axios.post(
@@ -64,4 +65,38 @@ export const validInfo = async (email, username) => {
 
 export const register = async (data) => {
   return await axios.post(`${API_ROOT}/auth/register`, data);
+};
+
+export const sentOtp = async (email) => {
+  return await axios
+    .post(`${API_ROOT}/auth/sent-otp/${encodeURIComponent(email)}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+
+export const verifyOtp = async (data) => {
+  return await axios
+    .post(`${API_ROOT}/auth/verify-otp`, data)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      toast.error(err?.response?.data?.message);
+    });
+};
+
+export const requestForgotPassword = async (email) => {
+  return await axios
+    .get(`${API_ROOT}/auth/forgot-password/${encodeURIComponent(email)}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+export const changePassword = async (data) => {
+  return await axios
+    .post(`${API_ROOT}/auth/change-password`, data)
+    .then((res) => {
+      return res.data;
+    });
 };

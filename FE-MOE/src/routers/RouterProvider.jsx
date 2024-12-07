@@ -49,8 +49,12 @@ import BillDetail from "~/pages/bill/BillDetail";
 import SignIn from "~/pages/auth/SignIn";
 import SignUp from "~/pages/auth/SignUp";
 import { AuthProvider } from "~/context/AuthContext";
+import  Support  from "~/pages/support/support";
+import { UpdatePassWord } from "~/pages/clients/customer/PassWordManager";
 import BillEdit from "~/pages/bill/BillEdit";
-import Statistical from "~/pages/other/Statistical";
+import EmployeeMe from "~/pages/employee/EmployeeMe";
+import StatisticalBill from "~/pages/statistical/StatisticalBill";
+import ForgotPassword from "~/pages/auth/ForgotPassword";
 function RouterProvider() {
   const ProtectedRoutes_ADMIN = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -183,6 +187,7 @@ function RouterProvider() {
       <Route element={<UnauthorizedRoutes />}>
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       <Route element={<PublicRoutes />}>
@@ -200,6 +205,7 @@ function RouterProvider() {
         <Route path="/my-account" element={<AccountInfo />} />
         <Route path="/my-order" element={<MyOrder />} />
         <Route path="/my-address" element={<AddressInfo />} />
+        <Route path="/my-passWord" element={<UpdatePassWord />} />
       </Route>
 
       <Route element={<ProtectedRoutes_ADMIN />}>
@@ -228,9 +234,11 @@ function RouterProvider() {
         <Route path="/promotions/update/:id" element={<UpdatePromotion />} />
         <Route path="/bill" element={<Bill />} />
         <Route path="/bill/list" element={<BillList />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/bill/detail/:id" element={<BillDetail />} />   
         <Route path="/bill/edit/:id" element={<BillEdit />} />   
-        <Route path="/statistical" element={<Statistical />} />   
+        <Route path="/statistical/bill" element={<StatisticalBill />} />   
+        <Route path="/employeeMe" element={<EmployeeMe />} />   
       </Route>
     </Routes>
   );

@@ -30,6 +30,7 @@ import {
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { CommonContext } from "~/context/CommonContext";
+
 const managementOptions = [
   { title: "Bán tại quầy", path: "/bill" },
   { title: "Quản lý sản phẩm", path: "/product" },
@@ -49,12 +50,11 @@ const managementOptions = [
   { title: "Quản lý đợt giảm giá", path: "/promotions" },
   { title: "Tạo đợt giảm giá", path: "/promotions/add" },
 ];
-export const Header_Admin = ({...props }) => {
+export const Header_Admin = ({ ...props }) => {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
   const context = useContext(CommonContext);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     handleAccessData();
@@ -103,16 +103,15 @@ export const Header_Admin = ({...props }) => {
             }}
           />
         </Box>
-        <Box
-          sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}
-        >
+        <Box sx={{ marginRight: "10px", display: "flex", alignItems: "center" }}>
           <Tooltip title="Thông báo" variant="plain">
             <Button
               size="sm"
               variant="soft"
               sx={{ backgroundColor: "#fffbf2", color: "#ffc86e" }}
+              onClick={() => navigate('/support')}
             >
-              <Badge color="danger" size="sm">
+              <Badge color="danger" size="sm" badgeContent={context.unresolvedCount}>
                 <NotificationsNoneOutlinedIcon />
               </Badge>
             </Button>
@@ -186,7 +185,7 @@ export const Header_Admin = ({...props }) => {
                 <List>
                   <ListDivider />
                   <ListItem>
-                    <ListItemButton onClick={() => alert("Comming soon!")}>
+                    <ListItemButton onClick={() => navigate("/employeeMe")}>
                       <ListItemDecorator>
                         <PermIdentityOutlinedIcon />
                       </ListItemDecorator>

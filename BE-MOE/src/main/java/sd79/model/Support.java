@@ -1,9 +1,11 @@
 package sd79.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -15,25 +17,29 @@ import java.time.LocalDateTime;
 public class Support {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @Column(name = "hoTen")
+    private String hoTen;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+    @Column(name = "email")
+    private String email;
 
-    @JoinColumn(name = "issue_description")
+    @Column(name = "sdt")
+    private String sdt;
+
+    @Lob
+    @Column(name = "issue_description")
     private String issueDescription;
 
-    @JoinColumn(name = "status")
-    private String status;
+    @Column(name = "status", length = 20)
+    private Integer  status;
 
-    @JoinColumn(name = "created_date")
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @JoinColumn(name = "resolved_date")
+    @Column(name = "resolved_date")
     private LocalDateTime resolvedDate;
 }

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import sd79.dto.requests.common.BillCouponFilter;
 import sd79.dto.requests.common.CouponParamFilter;
 import sd79.dto.response.CouponCustomerResponse;
 import sd79.dto.response.ResponseData;
+import sd79.exception.InvalidDataException;
 import sd79.model.Coupon;
 import sd79.model.Customer;
 import sd79.service.CouponService;
@@ -47,8 +49,8 @@ public class CouponController {
             description = "Lấy tất cả phiếu giảm giá theo khách hàng từ cơ sở dữ liệu"
     )
     @GetMapping("/getAllCouponCustomers/{customerId}")
-    public ResponseData<?> getAllCouponCustomer (@PathVariable Long customerId, BillCouponFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm theo khách hàng thành công", this.couponService.getAllCouponCustomer(customerId,param));
+    public ResponseData<?> getAllCouponCustomer(@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm theo khách hàng thành công", this.couponService.getAllCouponCustomer(customerId, param));
     }
 
     @Operation(
@@ -56,8 +58,8 @@ public class CouponController {
             description = "Lấy tất cả phiếu giảm giá tốt nhất từ cơ sở dữ liệu"
     )
     @GetMapping("/getAllCouponCustomerGood/{customerId}")
-    public ResponseData<?> getAllCouponCustomerGood (@PathVariable Long customerId, BillCouponFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm tốt nhất thành công", this.couponService.getAllCouponCustomerGood(customerId,param));
+    public ResponseData<?> getAllCouponCustomerGood(@PathVariable Long customerId, BillCouponFilter param) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Lấy danh sách phiếu giảm tốt nhất thành công", this.couponService.getAllCouponCustomerGood(customerId, param));
     }
 
     // Lấy thông tin phiếu giảm giá theo ID
@@ -99,8 +101,12 @@ public class CouponController {
     )
     @DeleteMapping("/delete/{id}")
     public ResponseData<?> deleteCoupon(@PathVariable Long id) {
-        couponService.deleteCoupon(id);
-        return new ResponseData<>(HttpStatus.OK.value(), "Xóa phiếu giảm giá thành công");
+        try{
+            couponService.deleteCoupon(id);
+            return new ResponseData<>(HttpStatus.OK.value(), "Xóa phiếu giảm giá thành công!");
+        }catch (DataIntegrityViolationException e){
+            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Phiếu giảm giá này không được xóa!");
+        }
     }
 
     // Tải hình ảnh phiếu giảm giá lên

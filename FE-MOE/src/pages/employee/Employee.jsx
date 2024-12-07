@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Grid, TextField, Typography, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Pagination, IconButton,Switch
+    Pagination, IconButton,Switch,Container 
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { getAllEmployee, deleteEmployee, searchNameAndPhone, setLocked } from "~/apis/employeeApi";
@@ -130,29 +130,30 @@ export const Employee = () => {
     };
 
     return (
-        <div>
-            <Grid
-                container
-                spacing={2}
-                alignItems="center"
-                marginBottom={2}
-                height={"50px"}
+        <Container maxWidth="max-width"
+        sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          marginBottom={2}
+          height={"50px"}
+        >
+          <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+            <Link
+              underline="hover"
+              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+              color="inherit"
+              onClick={() => navigate("/")}
             >
-                <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
-                    <Link
-                        underline="hover"
-                        sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-                        color="inherit"
-                        onClick={() => navigate("/")}
-                    >
-                        <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-                        Trang chủ
-                    </Link>
-                    <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-                        Quản lý nhân viên
-                    </Typography>
-                </Breadcrumbs>
-            </Grid>
+              <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+              Trang chủ
+            </Link>
+            <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+              Quản lý nhân viên
+            </Typography>
+          </Breadcrumbs>
+        </Grid>
 
             <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
@@ -262,18 +263,7 @@ export const Employee = () => {
                                         )}
 
                                     </TableCell>
-                                    {/* <TableCell>
-                                        {emp.employee_address && typeof emp.employee_address === 'object' ? (
-                                            <div>
-                                                <div>{emp.employee_address.province || 'N/A'}</div>
-                                                <div>{emp.employee_address.district || 'N/A'}</div>
-                                                <div>{emp.employee_address.ward || 'N/A'}</div>
-                                                <div>{emp.employee_address.streetName || 'N/A'}</div>
-                                            </div>
-                                        ) : (
-                                            'N/A'
-                                        )}
-                                    </TableCell> */}
+
                                     <TableCell>
                                         <Switch size="lg"
                                             checked={lockedStates[emp.id] ?? emp.isLocked}
@@ -313,7 +303,7 @@ export const Employee = () => {
                     color="primary"
                 />
             </div>
-        </div>
+            </Container>
     );
 };
 

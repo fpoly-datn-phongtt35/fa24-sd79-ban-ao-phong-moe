@@ -19,7 +19,7 @@ import { fetchAllCustomer, fetchCustomerById, searchKeywordAndDate } from '~/api
 import { deleteCustomer, fetchBill, fetchCustomer } from '~/apis/billsApi';
 import AddCustomerModal from './AddCustomerModal';
 
-export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId }) {
+export default function CustomerList({ selectedOrder, onAddCustomer, customerId, setCustomerId, clearCoupons}) {
     const [customer, setCustomer] = useState(null);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -101,6 +101,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
         setShowDropdown(false);
         onAddCustomer(selectedCustomer);
         setCustomerId(selectedCustomer.id);
+        clearCoupons();
     };
 
     const handleDeleteCustomer = async () => {
@@ -165,7 +166,7 @@ export default function CustomerList({ selectedOrder, onAddCustomer, customerId,
     const handleCloseModal = () => setOpenModal(false);
 
     return (
-        <Paper elevation={2} sx={{ padding: 2, borderRadius: 2, mb: 3 }}>
+        <Paper elevation={2} sx={{ padding: 2, borderRadius: 2, mb: 3, background: "rgb(249 242 242)"}}>
             <Box display="flex" justifyContent="space-between">
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
                     Thông tin khách hàng

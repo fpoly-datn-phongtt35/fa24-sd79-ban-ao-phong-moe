@@ -33,15 +33,15 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: moe-shop-api:0.0.1
+    image: moe-shop-api:0.1.1
     env_file:
       - .env
     ports:
       - '2004:2004'
-  kafka_moe_container:
+  kafka:
     image: 'bitnami/kafka:3.7.0'
     container_name: kafka_moe_container
-    hostname: kafka.
+    hostname: kafka
     ports:
       - '9094:9094'
     environment:

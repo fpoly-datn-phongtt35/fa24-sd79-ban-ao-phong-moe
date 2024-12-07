@@ -6,19 +6,28 @@
  */
 package sd79.service;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import sd79.dto.requests.authRequests.ChangePassword;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.requests.authRequests.SignUpRequest;
+import sd79.dto.requests.authRequests.VerifyOtp;
+import sd79.dto.requests.notifications.Recipient;
+import sd79.dto.requests.notifications.SendEmailRequest;
 import sd79.dto.response.auth.TokenResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
@@ -31,15 +40,12 @@ import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
 import sd79.utils.CloudinaryUtils;
+import sd79.utils.RandomNumberGenerator;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static sd79.enums.TokenType.ACCESS_TOKEN;
-import static sd79.enums.TokenType.REFRESH_TOKEN;
+import static sd79.enums.TokenType.*;
 
 @Slf4j
 @Service
@@ -62,6 +68,13 @@ public class AuthenticationService {
     private final CustomerAddressRepository addressRepository;
 
     private final CloudinaryUtils cloudinary;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    private final SpringTemplateEngine templateEngine;
+
+    @Value("${spring.frontend.url}")
+    private String host_frontend;
 
     public TokenResponse authenticate(SignInRequest signInRequest) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
@@ -169,5 +182,66 @@ public class AuthenticationService {
                 .build();
         this.customerRepository.save(customer);
         return userSave.getId();
+    }
+
+    public String getOtpVerifyRegister(String email) {
+        String code = RandomNumberGenerator.generateEightDigitRandomNumber();
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("otp", code);
+        properties.put("url", host_frontend);
+        context.setVariables(properties);
+        String html = templateEngine.process("sent_otp.html", context);
+        SendEmailRequest sendMail = SendEmailRequest.builder()
+                .to(List.of(Recipient.builder()
+                        .name("GUEST")
+                        .email(email)
+                        .build()))
+                .subject("MOE SHOP - XÁC THỰC TÀI KHOẢN")
+                .htmlContent(html)
+                .build();
+        kafkaTemplate.send("send-mail", sendMail);
+        return jwtService.generateOtherToken(passwordEncoder.encode(code));
+    }
+
+    public void verifyOtp(VerifyOtp otp) {
+        try {
+            String extractOtp = jwtService.extractUsername(otp.getToken(), OTHER_TOKEN);
+            if (!passwordEncoder.matches(otp.getOtp(), extractOtp)) {
+                throw new InvalidDataException("Mã xác thực không hợp lệ");
+            }
+        } catch (ExpiredJwtException e) {
+            throw new InvalidDataException("Mã không khả dụng!");
+        }
+    }
+
+    public String requestForgotPassword(String email) {
+        if (StringUtils.isBlank(email)) {
+            throw new InvalidDataException("Email is blank!");
+        }
+        String code = RandomNumberGenerator.generateEightDigitRandomNumber();
+        this.userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Email không tồn tại"));
+        Context context = new Context();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("otp", code);
+        properties.put("url", host_frontend);
+        context.setVariables(properties);
+        String html = templateEngine.process("sent_otp.html", context);
+        SendEmailRequest sendMail = SendEmailRequest.builder()
+                .to(List.of(Recipient.builder()
+                        .name("GUEST")
+                        .email(email)
+                        .build()))
+                .subject("MOE SHOP - QUÊN MẬT KHẨU")
+                .htmlContent(html)
+                .build();
+        kafkaTemplate.send("send-mail", sendMail);
+        return jwtService.generateOtherToken(passwordEncoder.encode(code));
+    }
+
+    public void changePassword(ChangePassword req){
+        User user = this.userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException("Email không tồn tại"));
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        this.userRepository.save(user);
     }
 }

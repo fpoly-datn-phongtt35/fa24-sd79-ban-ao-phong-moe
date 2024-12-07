@@ -10,15 +10,12 @@ import sd79.dto.requests.BillStatusDetailRequest;
 import sd79.dto.response.bills.BillStatusDetailResponse;
 import sd79.exception.EntityNotFoundException;
 import sd79.exception.InvalidDataException;
-import sd79.model.Bill;
-import sd79.model.BillStatus;
-import sd79.model.BillStatusDetail;
-import sd79.model.User;
-import sd79.repositories.BillRepo;
-import sd79.repositories.BillStatusDetailRepo;
-import sd79.repositories.BillStatusRepo;
+import sd79.model.*;
+import sd79.repositories.*;
 import sd79.repositories.auth.UserRepository;
 import sd79.repositories.customQuery.BillCustomizeQuery;
+import sd79.repositories.products.ProductDetailRepository;
+import sd79.repositories.products.ProductRepository;
 import sd79.service.BillStatusDetailService;
 
 import java.util.ArrayList;
@@ -34,6 +31,8 @@ public class BillStatusDetailServiceImpl implements BillStatusDetailService {
     private final BillStatusDetailRepo billStatusDetailRepo;
     private final UserRepository userRepository;
     private final BillCustomizeQuery billCustomizeQuery;
+    private final ProductDetailRepository productDetailRepository;
+    private final BillDetailRepo billDetailRepository;
 
     @Override
     public List<BillStatusDetailResponse> getBillStatusDetailsByBillId(Long billId) {
@@ -63,13 +62,21 @@ public class BillStatusDetailServiceImpl implements BillStatusDetailService {
         billStatusDetail.setCreatedBy(getUserById(request.getUserId()));
         billStatusDetail.setUpdatedBy(getUserById(request.getUserId()));
 
+        if(billStatus.getId() == 7){
+            List<BillDetail> billDetails = billDetailRepository.findByBill(bill);
+            for (BillDetail billDetail : billDetails) {
+                ProductDetail productDetail = billDetail.getProductDetail();
+                productDetail.setQuantity(productDetail.getQuantity() + billDetail.getQuantity());
+                productDetailRepository.save(productDetail);
+            }
+        }
+
         // Save the new BillStatusDetail
         this.billStatusDetailRepo.save(billStatusDetail);
 
         // Return the ID of the newly created BillStatusDetail
         return billStatusDetail.getId();
     }
-
 
     @Override
     public long addBillStatusDetailV2(BillStatusDetailRequest request) {

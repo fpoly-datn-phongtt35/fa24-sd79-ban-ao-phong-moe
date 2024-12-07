@@ -59,7 +59,7 @@ export const Sidebar_Admin = (props) => {
         <img
           src={
             hovered
-              ? "https://cdn.pixabay.com/animation/2022/07/29/10/38/10-38-33-739_512.gif"
+              ? "https://cdn.pixabay.com/animation/2024/01/23/12/45/12-45-26-352_512.gif"
               : logo
           }
           alt="MOE Logo"
@@ -108,7 +108,7 @@ export const Sidebar_Admin = (props) => {
             component={<Link to="/bill" />}
           >
             <Typography sx={{ color: "#32383e" }} level="body-md">
-              Bán tại quầy
+              Bán hàng
             </Typography>
           </MenuItem>
 
@@ -191,14 +191,22 @@ export const Sidebar_Admin = (props) => {
               </Typography>
             </MenuItem>
           </SubMenu>
-          <MenuItem
-            icon={<BarChartOutlinedIcon style={{ color: "#0071bd" }} />}
-            component={<Link to="/statistical" />}
+          <SubMenu
+            disabled={!context?.isManager}
+            label="Thống kê"
+            icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
           >
-            <Typography sx={{ color: "#32383e" }} level="body-md">
-              Thống kê
-            </Typography>
-          </MenuItem>
+            <MenuItem component={<Link to="/statistical/bill" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Thống kê hóa đơn
+              </Typography>
+            </MenuItem>
+            {/* <MenuItem component={<Link to="/promotions" />}>
+              <Typography sx={{ color: "#32383e" }} level="body-md">
+                Đợt giảm giá
+              </Typography>
+            </MenuItem> */}
+          </SubMenu>
         </Menu>
         <Menu
           rootStyles={{

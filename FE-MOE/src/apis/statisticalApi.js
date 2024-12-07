@@ -2,110 +2,127 @@ import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { API_ROOT } from "~/utils/constants";
 import { toast } from "react-toastify";
 
-const BASE_URL = `${API_ROOT}/statistical`;
-
-// Helper function for handling API requests
-const fetchData = async (endpoint, params, errorMessage) => {
-  try {
-    const response = await authorizedAxiosInstance.get(endpoint, { params });
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error);
-    toast.error(errorMessage || "Đã xảy ra lỗi. Vui lòng thử lại.");
-    throw error.response?.data || error.message || "Unknown error";
-  }
+export const getBillsWithFilters = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/bills`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching bills");
+        throw error; 
+    }
 };
 
-const statisticalAPI = {
-  // Fetch total revenue
-  getTotalRevenue: (filter) => {
-    return fetchData(
-      `${BASE_URL}/revenue`,
-      filter,
-      "Không thể lấy tổng doanh thu. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch total number of bills
-  getTotalBills: (filter) => {
-    return fetchData(
-      `${BASE_URL}/bills`,
-      filter,
-      "Không thể lấy số lượng hóa đơn. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch total shipping cost
-  getTotalShippingCost: (filter) => {
-    return fetchData(
-      `${BASE_URL}/shipping-cost`,
-      filter,
-      "Không thể lấy tổng phí vận chuyển. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch total number of products sold
-  getTotalProductsSold: (filter) => {
-    return fetchData(
-      `${BASE_URL}/products-sold`,
-      filter,
-      "Không thể lấy tổng số sản phẩm đã bán. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch total discount amount
-  getTotalDiscountAmount: (filter) => {
-    return fetchData(
-      `${BASE_URL}/discount-amount`,
-      filter,
-      "Không thể lấy tổng số tiền giảm giá. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch total product amount
-  getTotalProductAmount: (filter) => {
-    return fetchData(
-      `${BASE_URL}/product-amount`,
-      filter,
-      "Không thể lấy tổng số tiền sản phẩm. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch summary statistics
-  getSummaryStatistics: (filter) => {
-    return fetchData(
-      `${BASE_URL}/summary`,
-      filter,
-      "Không thể lấy dữ liệu thống kê tổng hợp. Vui lòng thử lại."
-    );
-  },
-
-  // Fetch top-selling products
-  getTopSellingProducts: (filter, limit) => {
-    const params = { ...filter, limit };
-    return fetchData(
-      `${BASE_URL}/top-selling-products`,
-      params,
-      "Không thể lấy danh sách sản phẩm bán chạy. Vui lòng thử lại."
-    );
-  },
-
-  getCustomerRegistrations: (filter) => {
-    return fetchData(
-      `${BASE_URL}/total-bill-status`,
-      filter,
-      "Không thể lấy trạng thái hóa đơn. Vui lòng thử lại"
-    );
-  },
-
-  // Fetch customer registrations
-  getCustomerRegistrations: (filter) => {
-    return fetchData(
-      `${BASE_URL}/customer-registrations`,
-      filter,
-      "Không thể lấy số lượng khách hàng đăng ký. Vui lòng thử lại."
-    );
-  },
+export const getTotalRevenue = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/revenue`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching total revenue");
+        throw error; 
+    }
 };
 
-export default statisticalAPI;
+export const getMinInvoice = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/min-invoice`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching minimum invoice");
+        throw error; 
+    }
+};
+
+export const getMaxInvoice = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/max-invoice`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching maximum invoice");
+        throw error; 
+    }
+};
+
+export const getAvgInvoice = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/avg-invoice`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching average invoice");
+        throw error; 
+    }
+};
+
+export const getTotalBills = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/total-bills`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching total number of bills");
+        throw error; 
+    }
+};
+
+export const getSuccessfulBills = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/successful-bills`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching successful bills");
+        throw error; 
+    }
+};
+
+// Fetch total failed bills
+export const getFailedBills = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/failed-bills`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching failed bills");
+        throw error; 
+    }
+};
+
+// Fetch total unpaid bills
+export const getUnpaidBills = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/unpaid-bills`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching unpaid bills");
+        throw error; 
+    }
+};
+
+// Fetch top selling products
+export const getTopSellingProducts = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/top-selling-products`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching top selling products");
+        throw error; 
+    }
+};
+
+// Fetch top customers
+export const getTopCustomers = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/top-customers`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching top customers");
+        throw error; 
+    }
+};
+
+// Fetch top coupons
+export const getTopCoupons = async (filter) => {
+    try {
+        const response = await authorizedAxiosInstance.post(`${API_ROOT}/statisticalV2/top-coupons`, filter);
+        return response.data; 
+    } catch (error) {
+        toast.error("Error fetching top coupons");
+        throw error; 
+    }
+};

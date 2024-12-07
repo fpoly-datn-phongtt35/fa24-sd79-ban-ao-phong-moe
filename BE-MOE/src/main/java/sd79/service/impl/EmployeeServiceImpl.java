@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sd79.dto.requests.EmployeeReq;
+import sd79.dto.requests.EmployeeRequest;
 import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
@@ -165,7 +166,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
-
     @Override
     public List<EmployeeResponse> findByNameAndPhone(String keyword, String phone_number) {
         try {
@@ -195,6 +195,58 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmployeeResponse detailByUserId(long userId) {
+        // Tìm thông tin người dùng dựa trên userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng với userId: " + userId));
+
+        // Tìm thông tin nhân viên liên kết với user
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin nhân viên với userId: " + userId));
+
+        // Chuyển đổi đối tượng Employee sang EmployeeResponse
+        return convertEmployeeResponse(employee);
+    }
+
+    @Override
+    public EmployeeResponse updateByUserId(long userId, EmployeeRequest request) {
+
+        // Tìm thông tin người dùng dựa trên userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng với userId: " + userId));
+        user.setEmail(request.getEmail());
+        // Tìm thông tin nhân viên liên kết với user
+        Employee employee = employeeRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin nhân viên với userId: " + userId));
+
+        EmployeeAddress address = employee.getEmployee_address();
+        if (address == null) {
+            address = new EmployeeAddress();
+        }
+        address.setCity(request.getCity());
+        address.setCityId(request.getCity_id());
+        address.setDistrict(request.getDistrict());
+        address.setDistrictId(request.getDistrict_id());
+        address.setWard(request.getWard());
+        address.setStreetName(request.getStreetName());
+        address = addressRepository.save(address);
+        // Cập nhật thông tin nhân viên
+        employee.setFirst_name(request.getFirst_name());
+        employee.setLast_name(request.getLast_name());
+        employee.setPhone_number(request.getPhone_number());
+        employee.setGender(request.getGender());
+        employee.setDate_of_birth(request.getDate_of_birth());
+        employee.setEmployee_address(address);
+        // Lưu thông tin
+        employeeRepository.save(employee);
+        userRepository.save(user);
+
+        // Trả về thông tin đã cập nhật
+        return convertEmployeeResponse(employee);
+    }
+
+
+    @Override
     public void updatePassword(PasswordUpdateRequest request, long userId) {
         // Tìm người dùng dựa vào userId
         User user = userRepository.findById(userId)
@@ -217,6 +269,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Lưu thông tin người dùng đã cập nhật
         userRepository.save(user);
     }
+
     Positions getPositionById(int id) {
         return this.positionsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Position not found!"));
     }

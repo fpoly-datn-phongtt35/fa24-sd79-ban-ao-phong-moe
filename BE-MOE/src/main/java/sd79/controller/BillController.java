@@ -169,7 +169,7 @@ public class BillController {
         logger.info("Received request to add pay: {}", billStoreRequest);
 //        try {
             long billId = billService.storePay(billRequest, billDetails);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Thanh toán hóa đơn thành công", billId);
 //        } catch (IllegalArgumentException e) {
 ////            logger.error("Error adding pay: {}", e.getMessage());
 //            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
@@ -182,8 +182,8 @@ public class BillController {
     //---------------------------------------------------------------------BILL LIST-------------------------------------------------------------------------//
     @Operation(summary = "Dách sách bảng bill chi tiết", description = "Dách sách bảng bill chi tiết")
     @GetMapping("/billList")
-    public ResponseData<?> getAllBillList(BillListParamFilter param) {
-        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param));
+    public ResponseData<?> getAllBillList(BillListParamFilter param, @RequestParam Integer employeeId) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Get order Successfully", this.billListService.getAllBillList(param, employeeId));
     }
 
     @Operation(summary = "Dách sách bill chi tiết theo id hóa đơn", description = "Dách sách bill chi tiết theo id hóa đơn")

@@ -1,12 +1,12 @@
 version: '3.1'
 services:
-  moe-shop-fontend:
+  moe-shop-frontend:
     build: 
       context: ./
       dockerfile: Dockerfile
-    image: moe-shop-fontend:0.0.1
-    container_name: moe-shop-fontend-container
+    image: moe-shop-frontend:0.0.1
+    container_name: moe-shop-frontend-container
     ports:
-      - "1004:1004"
+      - "80:80"
     env_file:
       - .env

@@ -188,6 +188,7 @@ public class StatisticalCustomizeQuery {
         summary.put("totalProductAmount", getTotalProductAmount(filter));
         summary.put("customerRegistrations", getCustomerRegistrations(filter));
         summary.put("totalBillsByStatus", getTotalBillsByStatus(filter));
+        summary.put("couponUsageStatistics", getCouponUsageStatistics(filter));
         return summary;
     }
 
@@ -249,6 +250,30 @@ public class StatisticalCustomizeQuery {
                         "ORDER BY period ASC",
                 dateFormat
         );
+        return executeQuery(sql, filter);
+    }
+
+    //------------------------------------------ THỐNG KÊ PHIẾU GIẢM GIÁ ------------------------------------------//
+    /**
+     * Thống kê số lần phiếu giảm giá được sử dụng theo thời gian hoặc theo loại phiếu.
+     */
+    public List<Object[]> getCouponUsageStatistics(StatisticalParamFilter filter) {
+        String dateFormat = resolveDateFormat(filter.getGranularity(), "b.payment_time");
+
+        // Define SQL query to summarize coupon usage for public and personal coupons
+        String sql = String.format(
+                "SELECT %s AS period, " +
+                        "SUM(CASE WHEN c.type = 'PUBLIC' THEN 1 ELSE 0 END) AS public_usage, " +
+                        "SUM(CASE WHEN c.type = 'PERSONAL' THEN 1 ELSE 0 END) AS personal_usage " +
+                        "FROM bill b " +
+                        "LEFT JOIN coupons c ON b.coupon_id = c.id " +
+                        "WHERE b.payment_time BETWEEN :startDate AND :endDate " +
+                        "GROUP BY period " +
+                        "ORDER BY period ASC",
+                dateFormat
+        );
+
+        // Execute query and return results
         return executeQuery(sql, filter);
     }
 
