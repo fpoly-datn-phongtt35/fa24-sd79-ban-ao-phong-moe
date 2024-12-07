@@ -59,4 +59,19 @@ public class StatisticalServiceImplV2 implements StatisticalServiceV2 {
     public Long getUnpaidBills(StatisticalParamFilter filter) {
         return statisticalCustomizeQueryV2.getUnpaidBills(filter);
     }
+
+    @Override
+    public List<Object[]> getTopSellingProducts(StatisticalParamFilter filter) {
+        return statisticalCustomizeQueryV2.getTopSellingProducts(filter);
+    }
+
+    @Override
+    public List<Object[]> getTopCustomers(StatisticalParamFilter filter) {
+        return statisticalCustomizeQueryV2.getTopCustomers(filter);
+    }
+
+    @Override
+    public List<Object[]> getTopCoupons(StatisticalParamFilter filter) {
+        return statisticalCustomizeQueryV2.getTopCoupons(filter);
+    }
 }

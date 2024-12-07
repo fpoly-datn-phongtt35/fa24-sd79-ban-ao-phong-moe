@@ -15,4 +15,7 @@ public interface StatisticalServiceV2 {
     Long getSuccessfulBills(StatisticalParamFilter filter);
     Long getFailedBills(StatisticalParamFilter filter);
     Long getUnpaidBills(StatisticalParamFilter filter);
+    List<Object[]> getTopSellingProducts(StatisticalParamFilter filter);
+    List<Object[]> getTopCustomers(StatisticalParamFilter filter);
+    List<Object[]> getTopCoupons(StatisticalParamFilter filter);
 }

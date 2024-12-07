@@ -6,6 +6,11 @@ import {
   Input,
   Button,
   Select,
+  List,
+  ListItem,
+  Avatar,
+  Card,
+  CardContent,
 } from "@mui/joy";
 import { Line } from "react-chartjs-2";
 import {
@@ -18,6 +23,7 @@ import {
   LinearScale,
   PointElement,
   Filler,
+  ArcElement,
 } from "chart.js";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -31,13 +37,17 @@ import {
   getSuccessfulBills,
   getFailedBills,
   getUnpaidBills,
+  getTopSellingProducts,
+  getTopCustomers,
+  getTopCoupons,
 } from "~/apis/statisticalApi";
 import { formatCurrencyVND } from "~/utils/format";
-import { MenuItem, TextField } from "@mui/material";
-import { AttachMoney, TrendingUp, TrendingDown, Calculate, AccountBalance, CheckCircle, Cancel, Payment, Visibility, GetApp } from '@mui/icons-material';
+import { ListItemAvatar, ListItemText, MenuItem, TextField } from "@mui/material";
+import { AttachMoney, TrendingUp, TrendingDown, Calculate, Visibility, ShoppingCart, Person, Discount } from '@mui/icons-material';
 import { FaFileExcel } from 'react-icons/fa';
 import * as XLSX from "xlsx";
-ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, Filler);
+import { Pie } from "react-chartjs-2";
+ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, Filler, ArcElement);
 
 export default function StatisticalBill() {
   const [billsData, setBillsData] = useState([]);
@@ -49,6 +59,10 @@ export default function StatisticalBill() {
   const [successfulBills, setSuccessfulBills] = useState(0);
   const [failedBills, setFailedBills] = useState(0);
   const [unpaidBills, setUnpaidBills] = useState(0);
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [topCustomers, setTopCustomers] = useState([]);
+  const [topCoupons, setTopCoupons] = useState([]);
+
 
   const [filter, setFilter] = useState({
     startDate: dayjs().subtract(30, "day").format("YYYY-MM-DDTHH:mm"),
@@ -135,6 +149,9 @@ export default function StatisticalBill() {
       setSuccessfulBills((await getSuccessfulBills(formattedFilter)).data || 0);
       setFailedBills((await getFailedBills(formattedFilter)).data || 0);
       setUnpaidBills((await getUnpaidBills(formattedFilter)).data || 0);
+      setTopSellingProducts((await getTopSellingProducts(formattedFilter)).data || []);
+      setTopCustomers((await getTopCustomers(formattedFilter)).data || []);
+      setTopCoupons((await getTopCoupons(formattedFilter)).data || []);
     } catch (error) {
       toast.error("Error fetching statistical data");
       console.error("Fetch Data Error:", error.response || error.message || error);
@@ -174,7 +191,7 @@ export default function StatisticalBill() {
       </Box>
 
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: "500", color: "#333" }}>
+        <Typography variant="h6" sx={{ fontWeight: "500", color: "#333", width: "200px" }}>
           {title}
         </Typography>
         <Typography variant="body1" sx={{ color: "#00796b", fontWeight: "600" }}>
@@ -184,47 +201,60 @@ export default function StatisticalBill() {
     </Box>
   );
 
+  const pieChartData = {
+    labels: ["Hóa đơn thành công", "Hóa đơn thất bại", "Hóa đơn chưa thanh toán"],
+    datasets: [
+      {
+        label: "Số lượng hóa đơn",
+        data: [successfulBills, failedBills, unpaidBills],
+        backgroundColor: ["#4caf50", "#f44336", "#ffc107"],
+        hoverOffset: 4,
+      },
+    ],
+  };
+
   const exportToExcel = () => {
-    // Dữ liệu chính
     const dataForExport = [
       ["Danh mục", "Tổng Doanh Thu", "Hóa Đơn Thấp Nhất", "Hóa Đơn Cao Nhất", "Hóa Đơn Trung Bình", "Tổng Số Hóa Đơn", "Hóa Đơn Thành Công", "Hóa Đơn Thất Bại", "Hóa Đơn C.Thanh Toán"],
-      ["Doanh thu", 
-        formatCurrencyVND(totalRevenue), 
-        formatCurrencyVND(minInvoice), 
-        formatCurrencyVND(maxInvoice), 
-        formatCurrencyVND(avgInvoice), 
-        totalBills, 
-        successfulBills, 
-        failedBills, 
+      ["Doanh thu",
+        formatCurrencyVND(totalRevenue),
+        formatCurrencyVND(minInvoice),
+        formatCurrencyVND(maxInvoice),
+        formatCurrencyVND(avgInvoice),
+        totalBills,
+        successfulBills,
+        failedBills,
         unpaidBills
       ],
-      [], // Dòng trống
+      [],
       ["Thời gian", ...billsData.map((bill) => bill[0] || "N/A")],
       ["Doanh thu", ...billsData.map((bill) => formatCurrencyVND(bill[1]) || "0")],
     ];
-  
-    // Tạo sheet từ dữ liệu
+
     const ws = XLSX.utils.aoa_to_sheet(dataForExport);
-  
-    // Kẻ bảng (cấu hình phạm vi)
+
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let R = range.s.r; R <= range.e.r; R++) {
       for (let C = range.s.c; C <= range.e.c; C++) {
         const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-        if (!ws[cellAddress]) ws[cellAddress] = { t: "s", v: "" }; // Thêm ô trống nếu thiếu
+        if (!ws[cellAddress]) ws[cellAddress] = { t: "s", v: "" };
         ws[cellAddress].s = { border: { top: "thin", bottom: "thin", left: "thin", right: "thin" } };
       }
     }
-  
-    // Tạo workbook và thêm sheet
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Statistics");
-  
-    // Lưu file
+
     const fileName = "ThongKe.xlsx";
     XLSX.writeFile(wb, fileName);
   };
-  
+
+  const [showLineChart, setShowLineChart] = useState(true);
+
+  const toggleLineChart = () => {
+    setShowLineChart((prevState) => !prevState);
+  };
+
   return (
     <Box sx={{ padding: 3, minHeight: "100vh" }}>
       <Typography level="h3" sx={{ marginBottom: 3, color: "#333" }}>
@@ -295,100 +325,251 @@ export default function StatisticalBill() {
           <Visibility sx={{ fontSize: 20 }} />Hiển thị dữ liệu
         </Button>
 
-        <Button onClick={exportToExcel} color="success" sx={{display: 'flex', alignItems: 'center'}} variant="outlined"  >
+        <Button onClick={exportToExcel} color="success" sx={{ display: 'flex', alignItems: 'center' }} variant="outlined"  >
           <FaFileExcel style={{ fontSize: '2.0rem' }} />
         </Button>
 
       </Box>
 
       <Grid container spacing={2}>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Tổng Doanh Thu"
-            value={formatCurrencyVND(totalRevenue)}
-            icon={<AttachMoney />}
-          />
+        <Grid xs={12} sm={6} xl={6}>
+          <Grid container spacing={2}>
+            {[
+              {
+                title: "Tổng Doanh Thu",
+                value: formatCurrencyVND(totalRevenue),
+                icon: <AttachMoney />,
+              },
+              {
+                title: "Hóa Đơn Thấp Nhất",
+                value: formatCurrencyVND(minInvoice),
+                icon: <TrendingDown />,
+              },
+              {
+                title: "Hóa Đơn Cao Nhất",
+                value: formatCurrencyVND(maxInvoice),
+                icon: <TrendingUp />,
+              },
+              {
+                title: "Hóa Đơn Trung Bình",
+                value: formatCurrencyVND(avgInvoice),
+                icon: <Calculate />,
+              },
+            ].map((card, index) => (
+              <Grid xs={12} sm={6} key={index}>
+                <DashboardMoneyCard
+                  title={card.title}
+                  value={card.value}
+                  icon={card.icon}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn Thấp Nhất"
-            value={formatCurrencyVND(minInvoice)}
-            icon={<TrendingDown />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn Cao Nhất"
-            value={formatCurrencyVND(maxInvoice)}
-            icon={<TrendingUp />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn Trung Bình"
-            value={formatCurrencyVND(avgInvoice)}
-            icon={<Calculate />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Tổng Số Hóa Đơn"
-            value={totalBills}
-            icon={<AccountBalance />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn Thành Công"
-            value={successfulBills}
-            icon={<CheckCircle />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn Thất Bại"
-            value={failedBills}
-            icon={<Cancel />}
-          />
-        </Grid>
-        <Grid xs={12} sm={6} xl={3}>
-          <DashboardMoneyCard
-            title="Hóa Đơn C.Thanh Toán"
-            value={unpaidBills}
-            icon={<Payment />}
-          />
+
+        <Grid xs={12} sm={6} xl={6}>
+          <Box
+            sx={{
+              marginTop: -10,
+              width: "100%",
+              height: 300,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+              marginBottom: -5,
+            }}
+          >
+            <Pie
+              data={pieChartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "right",
+                    labels: {
+                      color: "#000",
+                      font: {
+                        size: 10,
+                      },
+                    },
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function (tooltipItem) {
+                        const dataset = tooltipItem.dataset.data;
+                        const total = dataset.reduce((acc, value) => acc + value, 0);
+                        const value = dataset[tooltipItem.dataIndex];
+                        const percentage = ((value / total) * 100).toFixed(2);
+                        return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+            <Typography level="h5" sx={{ marginTop: -8, marginRight: 15 }}>Số lượng hóa đơn: {totalBills}</Typography>
+          </Box>
         </Grid>
       </Grid>
 
-      <Box mt={3}>
-        <Typography level="h5">Sơ đồ tổng doanh thu</Typography>
-        <Line
-          data={{
-            labels: billsData.map((bill) => bill[0] || "N/A"),
-            datasets: [
-              {
-                label: "Doanh thu",
-                data: billsData.map((bill) => bill[1] || 0),
-                borderColor: "#4BC0C0",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                fill: true,
-                tension: 0.4,
-              },
-            ],
-          }}
-          options={{
-            responsive: true,
-            plugins: {
-              title: { display: true, text: "Sơ đồ tổng doanh thu" },
-              tooltip: {
-                callbacks: {
-                  label: (tooltipItem) => `Tổng tiền: ${formatCurrencyVND(tooltipItem.raw)}`,
+      <div>
+        <Button
+          onClick={toggleLineChart}
+          variant="outlined"
+          sx={{ display: "flex", alignItems: "center", gap: 1, marginTop: 3 }}
+        >
+          {showLineChart ? "Ẩn biểu đồ" : "Hiển thị biểu đồ"}
+        </Button>
+
+        {showLineChart && (
+          <Box mt={3}>
+            <Line
+              data={{
+                labels: billsData.map((bill) => bill[0] || "N/A"),
+                datasets: [
+                  {
+                    label: "Doanh thu",
+                    data: billsData.map((bill) => bill[1] || 0),
+                    borderColor: "#4BC0C0",
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    fill: true,
+                    tension: 0.4,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  title: { display: true, text: "Sơ đồ tổng doanh thu" },
+                  tooltip: {
+                    callbacks: {
+                      label: (tooltipItem) =>
+                        `Tổng tiền: ${formatCurrencyVND(tooltipItem.raw)}`,
+                    },
+                  },
                 },
-              },
-            },
-          }}
-        />
-      </Box>
-    </Box >
+              }}
+            />
+          </Box>
+        )}
+      </div>
+
+      <Grid container spacing={4} mt={3}>
+        {/* Top Selling Products */}
+        <Grid xs={12} sm={4}>
+          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                <ShoppingCart sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  Top Selling Products
+                </Typography>
+              </Box>
+              <List>
+                {topSellingProducts.map((product, index) => (
+                  <ListItem key={index} sx={{ display: 'flex', alignItems: 'center', padding: 1 }}>
+                    <Avatar
+                      src={product[3]}
+                      alt={product[1]}
+                      sx={{
+                        width: 64,
+                        height: 64,
+                        marginRight: 2,
+                      }}
+                    />
+                    <Box>
+                      <Typography sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        {product[1]}
+                      </Typography>
+                      <Typography>Số lượng mua: {product[2]}</Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Top Customers */}
+        <Grid xs={12} sm={4}>
+          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                <Person sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  Top Customers
+                </Typography>
+              </Box>
+              <List>
+                {Object.values(
+                  topCustomers.reduce((acc, customer) => {
+                    const key = `${customer[1]}_${customer[2]}`; // Key based on customer name and phone number
+                    if (!acc[key]) {
+                      acc[key] = {
+                        customerId: customer[0],
+                        customerName: customer[1],
+                        phoneNumber: customer[2],
+                        totalSpent: 0, // Initialize totalSpent
+                        periods: [], // Store the periods (monthly data)
+                      };
+                    }
+                    acc[key].totalSpent += customer[4]; // Accumulate the totalSpent
+                    acc[key].periods.push({
+                      period: customer[5], // Add period (e.g., "2024-12")
+                      amount: customer[4], // Amount spent in this period
+                    });
+                    return acc;
+                  }, {})
+                ).map((customerData, index) => (
+                  <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                      {customerData.customerName} ({customerData.phoneNumber})
+                    </Typography>
+                    <Typography sx={{ fontWeight: 'bold', color: '#333' }}>
+                      Tổng chi tiêu: {customerData.totalSpent.toLocaleString()} VND
+                    </Typography>
+                    <List>
+                      {customerData.periods.map((periodData, periodIndex) => (
+                        <ListItem key={periodIndex} sx={{ padding: 0 }}>
+                          <Typography variant="body2" sx={{ color: '#555' }}>
+                            {periodData.period}: {periodData.amount.toLocaleString()} VND
+                          </Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Top Coupons */}
+        <Grid xs={12} sm={4}>
+          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                <Discount sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  Top Coupons
+                </Typography>
+              </Box>
+              <List>
+                {topCoupons.map((coupon, index) => (
+                  <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                      {coupon[1]} - {coupon[2]}
+                    </Typography>
+                    <Typography variant="body2">Discount: {coupon[3]} VND</Typography>                  
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+    </Box>
   );
 }

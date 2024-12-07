@@ -84,4 +84,25 @@ public class StatisticalControllerV2 {
         Long unpaidBills = statisticalServiceV2.getUnpaidBills(filter);
         return new ResponseData<>(HttpStatus.OK.value(), "Successfully fetched unpaid bills count", unpaidBills);
     }
+
+    @Operation(summary = "Get top selling products", description = "Retrieve top selling products based on provided criteria")
+    @PostMapping("/top-selling-products")
+    public ResponseData<List<Object[]>> getTopSellingProducts(@RequestBody StatisticalParamFilter filter) {
+        List<Object[]> result = statisticalServiceV2.getTopSellingProducts(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully fetched top selling products", result);
+    }
+
+    @Operation(summary = "Get top customers", description = "Retrieve top customers based on provided criteria")
+    @PostMapping("/top-customers")
+    public ResponseData<List<Object[]>> getTopCustomers(@RequestBody StatisticalParamFilter filter) {
+        List<Object[]> result = statisticalServiceV2.getTopCustomers(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully fetched top customers", result);
+    }
+
+    @Operation(summary = "Get top coupons", description = "Retrieve top coupons based on provided criteria")
+    @PostMapping("/top-coupons")
+    public ResponseData<List<Object[]>> getTopCoupons(@RequestBody StatisticalParamFilter filter) {
+        List<Object[]> result = statisticalServiceV2.getTopCoupons(filter);
+        return new ResponseData<>(HttpStatus.OK.value(), "Successfully fetched top coupons", result);
+    }
 }
