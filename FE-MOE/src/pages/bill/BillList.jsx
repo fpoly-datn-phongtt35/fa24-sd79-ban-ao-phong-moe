@@ -4,7 +4,8 @@ import {
     TableHead, Paper, Pagination, TextField,
     Box,
     Grid,
-    Button
+    Button,
+    Slider
 } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -31,8 +32,8 @@ export default function BillList() {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [minTotal, setMinTotal] = useState(null);
-    const [maxTotal, setMaxTotal] = useState(null);
+    const [minTotal, setMinTotal] = useState(0);
+    const [maxTotal, setMaxTotal] = useState(999999999999);
     const employeeId = localStorage.getItem("userId");
 
     const formatDate = (dateTimeString) => {
@@ -126,25 +127,49 @@ export default function BillList() {
         setPageNo(1);
     }, 1000);
 
-    const handlePriceChangeMin = debounce((event) => {
-        setMinTotal(event.target.value);
-        setPageNo(1);
-    }, 1000);
+    const debouncedSetMinTotal = useCallback(
+        debounce((newValue) => {
+            setMinTotal(newValue);
+        }, 2000),
+        []
+    );
 
-    const handlePriceChangeMax = debounce((event) => {
-        setMaxTotal(event.target.value);
-        setPageNo(1);
-    }, 1000);
+    const debouncedSetMaxTotal = useCallback(
+        debounce((newValue) => {
+            setMaxTotal(newValue);
+        }, 2000),
+        []
+    );
 
-    const handleClearFilters = () => {
+    // Input Handlers
+    const handleInputChangeMin = (e) => {
+        let value = Number(e.target.value.replace(/[^0-9]/g, ""));
+        if (isNaN(value)) value = 0;
+        if (value < 0) value = 0;
+        if (value > 999999999999) value = 999999999999;
+        debouncedSetMinTotal(value);
+    };
+
+    const handleInputChangeMax = (e) => {
+        let value = Number(e.target.value.replace(/[^0-9]/g, ""));
+        if (isNaN(value)) value = 0;
+        if (value < 0) value = 0;
+        if (value > 999999999999) value = 999999999999;
+        debouncedSetMaxTotal(value);
+    };
+
+    // Clear Filters
+    const handleClearFilters = useCallback(() => {
         setSearchKeyword('');
         setStartDate('');
         setEndDate('');
-        setMinTotal('');
-        setMaxTotal('');
+        setMinTotal(0);
+        setMaxTotal(999999999999);
+        debouncedSetMinTotal.cancel();
+        debouncedSetMaxTotal.cancel();
         setPageNo(1);
         fetchBillList();
-    };
+    }, [fetchBillList, setSearchKeyword, setStartDate, setEndDate, setMinTotal, setMaxTotal, setPageNo]);
 
     return (
         <Container maxWidth="max-Width" className="bg-white" style={{ marginTop: "15px" }}>
@@ -209,56 +234,77 @@ export default function BillList() {
                     </Grid>
                 </Grid>
 
-                <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid container spacing={3} sx={{ mt: 2 }}>
                     {/* Bộ lọc ngày */}
-                    <Grid item xs={12} sm={3}>
-                        <TextField
-                            label="Từ ngày"
-                            type="date"
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                            fullWidth
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField
-                            label="Đến ngày"
-                            type="date"
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                            fullWidth
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            size="small"
-                        />
+                    <Grid item xs={12}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Từ ngày"
+                                    type="date"
+                                    variant="outlined"
+                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Đến ngày"
+                                    type="date"
+                                    variant="outlined"
+                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    size="small"
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
 
                     {/* Bộ lọc giá */}
-                    <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                            label="Từ giá"
-                            type="number"
-                            onChange={handlePriceChangeMin}
-                            fullWidth
-                            size="small"
-                            placeholder="Ví dụ: 100000"
-                            InputProps={{ inputProps: { min: 0 } }}
-                        />
+                    <Grid item xs={12}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                    Từ giá:
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    defaultValue={minTotal.toLocaleString()}
+                                    onChange={handleInputChangeMin}
+                                    variant="outlined"
+                                    size="small"
+                                    inputProps={{
+                                        type: "text", // Allows formatting
+                                        inputMode: "numeric", // Opens numeric keypad on mobile
+                                    }}
+                                    sx={{ mb: 2 }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ mb: 1 }}>
+                                    Đến giá:
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    defaultValue={maxTotal.toLocaleString()}
+                                    onChange={handleInputChangeMax}
+                                    variant="outlined"
+                                    size="small"
+                                    inputProps={{
+                                        type: "text",
+                                        inputMode: "numeric",
+                                    }}
+                                    sx={{ mb: 2 }}
+                                />
+                            </Grid>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                            label="Đến giá"
-                            type="number"
-                            onChange={handlePriceChangeMax}
-                            fullWidth
-                            size="small"
-                            placeholder="Ví dụ: 500000"
-                            InputProps={{ inputProps: { min: 0 } }}
-                        />
-                    </Grid>
+
                 </Grid>
             </Box>
 

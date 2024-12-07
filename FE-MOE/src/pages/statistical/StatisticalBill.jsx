@@ -463,7 +463,7 @@ export default function StatisticalBill() {
               <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <ShoppingCart sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
-                  Top Selling Products
+                  Sản phẩm bán chạy nhất
                 </Typography>
               </Box>
               <List>
@@ -498,7 +498,7 @@ export default function StatisticalBill() {
               <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <Person sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
-                  Top Customers
+                  Khách hàng mua nhiều nhất
                 </Typography>
               </Box>
               <List>
@@ -552,7 +552,7 @@ export default function StatisticalBill() {
               <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <Discount sx={{ fontSize: 32, color: '#1976d2', marginRight: 2 }} />
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
-                  Top Coupons
+                  Phiếu giảm giá dùng nhiều nhất
                 </Typography>
               </Box>
               <List>
@@ -561,7 +561,7 @@ export default function StatisticalBill() {
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
                       {coupon[1]} - {coupon[2]}
                     </Typography>
-                    <Typography variant="body2">Discount: {coupon[3]} VND</Typography>                  
+                    <Typography variant="body2">Discount: {coupon[3]} VND</Typography>
                   </ListItem>
                 ))}
               </List>

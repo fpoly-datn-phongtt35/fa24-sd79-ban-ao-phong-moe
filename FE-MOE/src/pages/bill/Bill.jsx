@@ -478,7 +478,7 @@ function Bill() {
                 await updateBillStatusDetail(8); 
             }
 
-            toast.success("Hóa đơn đã được tạo thành công!");
+            toast.success("Thanh toán hóa đơn thành công!");
             clearData();
             await handleSetBill();
         } catch (error) {
