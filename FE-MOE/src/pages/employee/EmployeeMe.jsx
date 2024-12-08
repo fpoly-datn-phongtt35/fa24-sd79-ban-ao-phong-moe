@@ -21,58 +21,72 @@ import { useNavigate } from 'react-router-dom';
 
 export const EmployeeMe = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);  // Trạng thái khi đang cập nhật
   const navigate = useNavigate();
 
   const [employeeData, setEmployeeData] = useState({
-    first_name: "",
-    last_name: "",
-    phone_number: "",
-    email: "",
-    gender: "",
-  });
+    last_name: '',
+    first_name: '',
+    email: '',
+    phone_number: '',
+    salary: '',
+    position: '',
+    gender: '',
+    date_of_birth: '',
+    city: '',
+    district: '',
+    ward: '',
+    streetName: '',
+});
+  const formatDate = (dateString, time = "00:00:00") => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year} | ${time}`;
+  };
 
+  const formatDate2 = (dateTimeString) => {
+    const [datePart] = dateTimeString.split(' ');
+    const [year, month, day] = datePart.split('-');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Lấy thông tin nhân viên khi component được mount
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-    console.log("User ID:", userId); // Ensure the user ID is valid
     if (!userId) {
-      console.error("User ID không hợp lệ:", userId);
+      console.error("User ID không hợp lệ");
       return;
     }
 
     setIsLoading(true);
     getEmployeeDetail(userId)
       .then((response) => {
+        console.log("Dữ liệu nhận được từ API:", response);
         if (!response || !response.data) {
-          console.error("Dữ liệu API không hợp lệ:", response);
+          console.error("Dữ liệu API không hợp lệ");
           return;
         }
 
-        const data = response.data; // Assuming response.data contains the employee info
-        console.log("Dữ liệu API:", data);
-
-        // Ensure the data contains the expected fields
-        if (
-          !data.first_name ||
-          !data.last_name ||
-          !data.full_name ||
-          !data.phone_number ||
-          !data.email ||
-          !data.gender
-        ) {
-          console.error("Một số trường dữ liệu không hợp lệ:", data);
-          return;
-        }
-
-        const gender = data.gender === "Nam" ? "MALE" : data.gender === "Nữ" ? "FEMALE" : "OTHER";
-
+        const data = response.data;
         setEmployeeData({
-          first_name: data.first_name || "",
-          last_name: data.last_name || "",
-          full_name: data.full_name || "",
-          phone_number: data.phone_number || "",
-          email: data.email || "",
-          gender: gender, // Ensure gender is correctly mapped to 'MALE', 'FEMALE', or 'OTHER'
-        });
+          first_name: employeeData.first_name,
+          last_name: employeeData.last_name,
+          phone_number: employeeData.phone_number,
+          gender: employeeData.gender === "Nam" ? "MALE" : employeeData.gender === "Nữ" ? "FEMALE" : "OTHER",
+          date_of_birth: formatDate2(employeeData.date_of_birth),
+          salary: employeeData.salaries,
+          position: employeeData.position.id,
+          avatar: employeeData.avatar,
+          email: employeeData.email,
+          city: employeeData.employee_address.city,
+          district: employeeData.employee_address.district,
+          ward: employeeData.employee_address.ward,
+          streetName: employeeData.employee_address.streetName,
+      });
+        
+
       })
       .catch((error) => {
         console.error("Lỗi khi lấy thông tin nhân viên:", error);
@@ -83,12 +97,36 @@ export const EmployeeMe = () => {
   }, []);
 
 
+  // Xử lý thay đổi thông tin nhân viên
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEmployeeData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Xử lý cập nhật thông tin nhân viên
+  const handleUpdate = () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      console.error("User ID không hợp lệ");
+      return;
+    }
 
+    setIsUpdating(true);
+    updateEmployeeDetail(userId, employeeData)
+      .then((response) => {
+        console.log("Cập nhật thành công:", response);
+        // Thêm thông báo cho người dùng khi cập nhật thành công, ví dụ:
+        alert("Cập nhật thông tin thành công!");
+      })
+      .catch((error) => {
+        console.error("Lỗi khi cập nhật thông tin nhân viên:", error);
+        // Thêm thông báo cho người dùng khi có lỗi
+        alert("Đã có lỗi xảy ra khi cập nhật thông tin!");
+      })
+      .finally(() => {
+        setIsUpdating(false);
+      });
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
@@ -191,8 +229,8 @@ export const EmployeeMe = () => {
                       </Grid>
 
                       <Grid xs={6} sx={{ marginTop: 1 }}>
-                        <Button disabled={isLoading}>
-                          {isLoading ? "Đang cập nhật..." : "Cập Nhật Người Dùng"}
+                        <Button disabled={isUpdating} onClick={handleUpdate}>
+                          {isUpdating ? "Đang cập nhật..." : "Cập Nhật Người Dùng"}
                         </Button>
                       </Grid>
                     </Grid>

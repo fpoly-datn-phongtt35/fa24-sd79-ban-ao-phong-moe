@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Grid, TextField, Typography, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Pagination, IconButton,Switch,Container 
+    Pagination, IconButton, Switch, Container
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { getAllEmployee, deleteEmployee, searchNameAndPhone, setLocked } from "~/apis/employeeApi";
@@ -131,29 +131,29 @@ export const Employee = () => {
 
     return (
         <Container maxWidth="max-width"
-        sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
-        <Grid
-          container
-          spacing={2}
-          alignItems="center"
-          marginBottom={2}
-          height={"50px"}
-        >
-          <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
-            <Link
-              underline="hover"
-              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-              color="inherit"
-              onClick={() => navigate("/")}
+            sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
+            <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                marginBottom={2}
+                height={"50px"}
             >
-              <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-              Trang chủ
-            </Link>
-            <Typography sx={{ color: "text.white", cursor: "pointer" }}>
-              Quản lý nhân viên
-            </Typography>
-          </Breadcrumbs>
-        </Grid>
+                <Breadcrumbs aria-label="breadcrumb" sx={{ marginLeft: "5px" }}>
+                    <Link
+                        underline="hover"
+                        sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                        color="inherit"
+                        onClick={() => navigate("/")}
+                    >
+                        <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                        Trang chủ
+                    </Link>
+                    <Typography sx={{ color: "text.white", cursor: "pointer" }}>
+                        Quản lý nhân viên
+                    </Typography>
+                </Breadcrumbs>
+            </Grid>
 
             <Grid container spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={4}>
@@ -265,11 +265,21 @@ export const Employee = () => {
                                     </TableCell>
 
                                     <TableCell>
-                                        <Switch size="lg"
+                                        <Switch
+                                            size="lg"
                                             checked={lockedStates[emp.id] ?? emp.isLocked}
-                                            onClick={() => onSetLocked(emp.id, lockedStates[emp.id] ?? emp.isLocked)}
+                                            onClick={() => {
+                                                const currentState = lockedStates[emp.id] ?? emp.isLocked;
+                                                const confirmChange = window.confirm(
+                                                    `Bạn có chắc chắn muốn ${currentState ? 'mở khóa' : 'khóa'} tài khoản này không?`
+                                                );
+                                                if (confirmChange) {
+                                                    onSetLocked(emp.id, currentState);
+                                                }
+                                            }}
                                         />
                                     </TableCell>
+
                                     <TableCell>
                                         {typeof emp.position === 'object' ? (emp.position.name || 'N/A') : (emp.position || 'N/A')}
                                     </TableCell>
@@ -303,7 +313,7 @@ export const Employee = () => {
                     color="primary"
                 />
             </div>
-            </Container>
+        </Container>
     );
 };
 

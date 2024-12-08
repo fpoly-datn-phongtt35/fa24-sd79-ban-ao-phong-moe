@@ -141,9 +141,9 @@ public class EmployeeController {
     @PutMapping("/update/{id}")
     public ResponseData<?> updateEmployeeByUserId(
             @PathVariable long id,
-            @RequestBody EmployeeRequest request) {
-        employeeService.updateByUserId(id, request);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "Sửa thành công");
+            @Valid @RequestBody EmployeeRequest request) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Sửa thông tin thành công", employeeService.updateByUserId(id, request));
     }
+
 
 }

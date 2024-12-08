@@ -8,8 +8,6 @@ import sd79.dto.requests.EmployeeRequest;
 import sd79.dto.requests.employees.EmployeeImageReq;
 import sd79.dto.requests.employees.PasswordUpdateRequest;
 import sd79.dto.response.EmployeeResponse;
-import sd79.model.Employee;
-
 
 
 import java.util.List;
