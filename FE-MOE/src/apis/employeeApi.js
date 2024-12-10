@@ -101,7 +101,7 @@ export const getEmployeeDetail = async (id) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/employee/me/${id}`)
     .then((res) => {
-      toast.success(res.data.message); // Hiển thị thông báo thành công
+      toast.success(res.data); // Hiển thị thông báo thành công
       return res.data.data; // Trả về dữ liệu chi tiết nhân viên
     })
     .catch((err) => {

@@ -3,6 +3,7 @@ package sd79.service.impl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import sd79.dto.response.PageableResponse;
 import sd79.enums.TodoDiscountType;
 import sd79.enums.TodoType;
 import sd79.exception.EntityNotFoundException;
+import sd79.exception.InvalidDataException;
 import sd79.model.*;
 import sd79.repositories.CouponImageRepo;
 import sd79.repositories.CouponRepo;
@@ -63,11 +65,11 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public PageableResponse getAllCouponCustomer(Long customerId,BillCouponFilter param) {
+    public PageableResponse getAllCouponCustomer(Long customerId, BillCouponFilter param) {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-        return this.couponCustomizeQuery.getAllCouponCustomer(customerId,param);
+        return this.couponCustomizeQuery.getAllCouponCustomer(customerId, param);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class CouponServiceImpl implements CouponService {
         if (param.getPageNo() < 1) {
             param.setPageNo(1);
         }
-        return this.couponCustomizeQuery.getAllCouponCustomerGood(customerId,param);
+        return this.couponCustomizeQuery.getAllCouponCustomerGood(customerId, param);
     }
 
     @Override
@@ -313,8 +315,9 @@ public class CouponServiceImpl implements CouponService {
 
     @Transactional
     @Override
-    public void deleteCoupon(Long id) {//xoa phieu giam gia
-        Coupon coupon = couponRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+    public void deleteCoupon(Long id) {
+        Coupon coupon = couponRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
         couponRepo.delete(coupon);
     }
 
@@ -371,6 +374,7 @@ public class CouponServiceImpl implements CouponService {
     private String convertToUrl(CouponImage image) {
         return (image != null) ? image.getImageUrl() : null;
     }
+
     //-----------------------------------------------------------------------------------------------
     private CouponCustomerResponse convertToCouponCustomerResponse(Coupon coupon) {
         return CouponCustomerResponse.builder()

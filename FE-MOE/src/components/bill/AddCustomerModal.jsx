@@ -18,289 +18,289 @@ const AddCustomerModal = ({ open, setOpenModal }) => {
     const [selectedCity, setSelectedCity] = useState("");
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedWard, setSelectedWard] = useState("");
-  
+
     const [errors, setErrors] = useState({
-      lastName: '',
-      firstName: '',
-      phoneNumber: '',
-      gender: '',
-      dateOfBirth: '',
-      email: '',
-      password: '',
-      username: '',
-    });
-  
-    const validateForm = () => {
-  
-      const newErrors = {
-        lastName: customerData.lastName ? '' : 'Họ không được để trống',
-        firstName: customerData.firstName ? '' : 'Tên không được để trống',
-        phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
-        gender: customerData.gender ? '' : 'Phải chọn giới tính',
-        dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
-        email: customerData.email ? '': 'Email không được để trống',
-        password: customerData.password ? '' : 'Mật khẩu không được để trống',
-        username: customerData.username ? '' : 'Tên tài khoản không được để trống',
-      };
-  
-      
-  
-      setErrors(newErrors);
-  
-      return Object.values(newErrors).every((error) => error === '');
-    };
-  
-    useEffect(() => {
-      const fetchCities = async () => {
-        const response = await axios.get(`${host}?depth=1`);
-        setCities(response.data);
-      };
-      fetchCities();
-    }, []);
-  
-    const handleCityChange = async (e) => {
-      const cityId = e;
-      setSelectedCity(cityId);
-      setSelectedDistrict("");
-      setSelectedWard("");
-      if (cityId) {
-        const response = await axios.get(`${host}p/${cityId}?depth=2`);
-        setDistricts(response.data.districts);
-      } else {
-        setDistricts([]);
-      }
-    };
-  
-    const handleDistrictChange = async (e) => {
-      const districtId = e;
-      setSelectedDistrict(districtId);
-      setSelectedWard(""); 
-      if (districtId) {
-        const response = await axios.get(`${host}d/${districtId}?depth=2`);
-        setWards(response.data.wards);
-      } else {
-        setWards([]);
-      }
-    };
-  
-    const handleWardChange = (e) => {
-      setSelectedWard(e);
-    };
-  
-    const formatDate = (dateString, time = "00:00:00") => {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year} | ${time}`;
-    };
-  
-    const [customerData, setCustomerData] = useState({
-      firstName: '',
-      lastName: '',
-      phoneNumber: '',
-      gender: '',
-      dateOfBirth: '',
-      customerAddress: '',
-      image: 'null',
-      address: [{
-        city: '',
-        district: '',
-        ward: '',
-        streetName: ''
-      }],
-      user: [{
+        lastName: '',
+        firstName: '',
+        phoneNumber: '',
+        gender: '',
+        dateOfBirth: '',
         email: '',
         password: '',
-        username: ''
-      }],
-      createdAt: new Date(),
-      updatedAt: new Date()
+        username: '',
     });
-  
+
+    const validateForm = () => {
+
+        const newErrors = {
+            lastName: customerData.lastName ? '' : 'Họ không được để trống',
+            firstName: customerData.firstName ? '' : 'Tên không được để trống',
+            phoneNumber: customerData.phoneNumber ? '' : 'Số điện thoại không được để trống',
+            gender: customerData.gender ? '' : 'Phải chọn giới tính',
+            dateOfBirth: customerData.dateOfBirth ? '' : 'Phải chọn ngày sinh',
+            email: customerData.email ? '' : 'Email không được để trống',
+            password: customerData.password ? '' : 'Mật khẩu không được để trống',
+            username: customerData.username ? '' : 'Tên tài khoản không được để trống',
+        };
+
+
+
+        setErrors(newErrors);
+
+        return Object.values(newErrors).every((error) => error === '');
+    };
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            const response = await axios.get(`${host}?depth=1`);
+            setCities(response.data);
+        };
+        fetchCities();
+    }, []);
+
+    const handleCityChange = async (e) => {
+        const cityId = e;
+        setSelectedCity(cityId);
+        setSelectedDistrict("");
+        setSelectedWard("");
+        if (cityId) {
+            const response = await axios.get(`${host}p/${cityId}?depth=2`);
+            setDistricts(response.data.districts);
+        } else {
+            setDistricts([]);
+        }
+    };
+
+    const handleDistrictChange = async (e) => {
+        const districtId = e;
+        setSelectedDistrict(districtId);
+        setSelectedWard("");
+        if (districtId) {
+            const response = await axios.get(`${host}d/${districtId}?depth=2`);
+            setWards(response.data.wards);
+        } else {
+            setWards([]);
+        }
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e);
+    };
+
+    const formatDate = (dateString, time = "00:00:00") => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year} | ${time}`;
+    };
+
+    const [customerData, setCustomerData] = useState({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        gender: '',
+        dateOfBirth: '',
+        customerAddress: '',
+        image: 'null',
+        address: [{
+            city: '',
+            district: '',
+            ward: '',
+            streetName: ''
+        }],
+        user: [{
+            email: '',
+            password: '',
+            username: ''
+        }],
+        createdAt: new Date(),
+        updatedAt: new Date()
+    });
+
     const navigate = useNavigate();
-  
+
     const handleChange = (e) => {
-      const { name, value } = e.target;
-      let newErrors = { ...errors };
-      const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g; 
-      const phoneRegex = /^0\d{9,11}$/;
-      const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
-      const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      const minAge = 16;
-  
-      const calculateAge = (dob) => {
-        const birthDate = new Date(dob);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
-        }
-        return age;
-      };
-  
-      if (name === 'lastName') {
-        if (value.length > 20) {
-          newErrors.lastName = "Họ không được vượt quá 20 ký tự";
-          setIsLoading(true);
-        } else if (specialCharRegex.test(value)) {
-          newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
-          setIsLoading(true);
-        } else {
-          delete newErrors.lastName; 
-          setIsLoading(false);
-        }
-      }
-  
-      
-      if (name === 'firstName') {
-        if (value.length > 50) {
-          newErrors.firstName = "Tên không được vượt quá 50 ký tự";
-          setIsLoading(true);
-        } else if (specialCharRegex.test(value)) {
-          newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
-          setIsLoading(true);
-        } else {
-          delete newErrors.firstName; 
-          setIsLoading(false);
-        }
-      }
-  
-      if (name === 'phoneNumber') {
-        if (!phoneRegex.test(value)) {
-          newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
-          setIsLoading(true);
-        } else {
-          delete newErrors.phoneNumber;
-          setIsLoading(false);
-        }
-      }
-      
-  
-  
-      if (name === 'gender') {
-        if (!value) {
-          newErrors.gender = "Phải chọn giới tính";
-          setIsLoading(true);
-        } else {
-          delete newErrors.gender;
-          setIsLoading(false);
-        }
-        setCustomerData({ ...customerData, gender: value });
-      } else {
-        setCustomerData({ ...customerData, [name]: value });
-      }
-  
-      if (name === 'dateOfBirth') {
-        const age = calculateAge(value);
-        if (age < minAge) {
-          newErrors.dateOfBirth = "Phải trên 16 tuổi";
-          setIsLoading(true);
-        } else {
-          delete newErrors.dateOfBirth;
-          setIsLoading(false);
-        }
-        setCustomerData({ ...customerData, dateOfBirth: value });
-      } else {
-        setCustomerData({ ...customerData, [name]: value });
-      }
-  
-      if (name === 'username') {
-        if (!usernameRegex.test(value)) {
-            newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
-            setIsLoading(true);
-        } else {
-            delete newErrors.username;
-            setIsLoading(false);
-        }
-    }
-  
-    if (name === 'password') {
-        if (!passwordRegex.test(value)) {
-            newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
-            setIsLoading(true);
-        } else {
-            delete newErrors.password;
-            setIsLoading(false);
-        }
-    }
-    if (name === 'email') {
-      if (!emailRegex.test(value)) {
-        newErrors.email = "Email không đúng định dạng";
-        setIsLoading(true);
-      } else {
-        delete newErrors.email;
-        setIsLoading(false);
-      }
-    }
-  
-    setCustomerData((prevData) => ({ ...prevData, [name]: value }));
-  
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [name]: value ? '' : prevErrors[name],
-      }));
-      console.log('Username:', customerData.username);
-      console.log('Password:', customerData.password);
-  
-      setErrors(newErrors);
-    };
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!validateForm()) return;
-      const currentDate = new Date().toISOString();
-  
-  
-      const cityName = cities.find((city) => city.code == selectedCity)?.name;
-      const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
-      const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
-  
-  
-  
-      const customerWithTimestamps = {
-        ...customerData,
-        city: cityName,
-        city_id: selectedCity,
-        district: districtName,
-        district_id: selectedDistrict,
-        ward: wardName,
-        dateOfBirth: formatDate(customerData.dateOfBirth),
-        createdAt: currentDate,
-        updatedAt: currentDate,
-      };
-      try {
-        setIsLoading(true);
-        await postCustomer(customerWithTimestamps)
-          .then(async (res) => {
-            if (imageObject === null) {
-              setIsLoading(false);
-              navigate('/bill');
-              return;
+        const { name, value } = e.target;
+        let newErrors = { ...errors };
+        const specialCharRegex = /[!@#$%^&*(),.?":\\||{}|<>0-9]/g;
+        const phoneRegex = /^0\d{9,11}$/;
+        const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,20}$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const minAge = 16;
+
+        const calculateAge = (dob) => {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
             }
-            const formData = new FormData();
-            formData.append("images", imageObject)
-            formData.append("productId", res)
-            await postcustomerImage(formData).then(() => {
-              toast.success('Thêm thành công');
-              setIsLoading(false);
-              navigate('/bill');
-            })
-          });
-      } catch (error) {
-        setIsLoading(false);
-        toast.error('Thêm thất bại!');
-      }
-      toast.success('Thêm thành công');
+            return age;
+        };
+
+        if (name === 'lastName') {
+            if (value.length > 20) {
+                newErrors.lastName = "Họ không được vượt quá 20 ký tự";
+                setIsLoading(true);
+            } else if (specialCharRegex.test(value)) {
+                newErrors.lastName = "Họ không được chứa ký tự đặc biệt và số";
+                setIsLoading(true);
+            } else {
+                delete newErrors.lastName;
+                setIsLoading(false);
+            }
+        }
+
+
+        if (name === 'firstName') {
+            if (value.length > 50) {
+                newErrors.firstName = "Tên không được vượt quá 50 ký tự";
+                setIsLoading(true);
+            } else if (specialCharRegex.test(value)) {
+                newErrors.firstName = "Tên không được chứa ký tự đặc biệt và số";
+                setIsLoading(true);
+            } else {
+                delete newErrors.firstName;
+                setIsLoading(false);
+            }
+        }
+
+        if (name === 'phoneNumber') {
+            if (!phoneRegex.test(value)) {
+                newErrors.phoneNumber = "Số điện thoại phải bắt đầu bằng 0 và có từ 10-12 chữ số, không chứa ký tự đặc biệt";
+                setIsLoading(true);
+            } else {
+                delete newErrors.phoneNumber;
+                setIsLoading(false);
+            }
+        }
+
+
+
+        if (name === 'gender') {
+            if (!value) {
+                newErrors.gender = "Phải chọn giới tính";
+                setIsLoading(true);
+            } else {
+                delete newErrors.gender;
+                setIsLoading(false);
+            }
+            setCustomerData({ ...customerData, gender: value });
+        } else {
+            setCustomerData({ ...customerData, [name]: value });
+        }
+
+        if (name === 'dateOfBirth') {
+            const age = calculateAge(value);
+            if (age < minAge) {
+                newErrors.dateOfBirth = "Phải trên 16 tuổi";
+                setIsLoading(true);
+            } else {
+                delete newErrors.dateOfBirth;
+                setIsLoading(false);
+            }
+            setCustomerData({ ...customerData, dateOfBirth: value });
+        } else {
+            setCustomerData({ ...customerData, [name]: value });
+        }
+
+        if (name === 'username') {
+            if (!usernameRegex.test(value)) {
+                newErrors.username = "Tên tài khoản phải từ 3 đến 20 ký tự và không chứa ký tự đặc biệt";
+                setIsLoading(true);
+            } else {
+                delete newErrors.username;
+                setIsLoading(false);
+            }
+        }
+
+        if (name === 'password') {
+            if (!passwordRegex.test(value)) {
+                newErrors.password = "Mật khẩu phải từ 6 đến 20 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt";
+                setIsLoading(true);
+            } else {
+                delete newErrors.password;
+                setIsLoading(false);
+            }
+        }
+        if (name === 'email') {
+            if (!emailRegex.test(value)) {
+                newErrors.email = "Email không đúng định dạng";
+                setIsLoading(true);
+            } else {
+                delete newErrors.email;
+                setIsLoading(false);
+            }
+        }
+
+        setCustomerData((prevData) => ({ ...prevData, [name]: value }));
+
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: value ? '' : prevErrors[name],
+        }));
+        console.log('Username:', customerData.username);
+        console.log('Password:', customerData.password);
+
+        setErrors(newErrors);
     };
-  
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+        const currentDate = new Date().toISOString();
+
+
+        const cityName = cities.find((city) => city.code == selectedCity)?.name;
+        const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
+        const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+
+
+
+        const customerWithTimestamps = {
+            ...customerData,
+            city: cityName,
+            city_id: selectedCity,
+            district: districtName,
+            district_id: selectedDistrict,
+            ward: wardName,
+            dateOfBirth: formatDate(customerData.dateOfBirth),
+            createdAt: currentDate,
+            updatedAt: currentDate,
+        };
+        try {
+            setIsLoading(true);
+            await postCustomer(customerWithTimestamps)
+                .then(async (res) => {
+                    if (imageObject === null) {
+                        setIsLoading(false);
+                        navigate('/bill');
+                        return;
+                    }
+                    const formData = new FormData();
+                    formData.append("images", imageObject)
+                    formData.append("productId", res)
+                    await postcustomerImage(formData).then(() => {
+                        toast.success('Thêm thành công');
+                        setIsLoading(false);
+                        navigate('/bill');
+                    })
+                });
+        } catch (error) {
+            setIsLoading(false);
+            toast.error('Thêm thất bại!');
+        }
+        toast.success('Thêm thành công');
+    };
+
     const handleImageChange = (event) => {
-      var file = event.target.files[0];
-      var url = URL.createObjectURL(file)
-      setImagePreview(url)
-      setImageObject(file)
+        var file = event.target.files[0];
+        var url = URL.createObjectURL(file)
+        setImagePreview(url)
+        setImageObject(file)
     }
 
     return (
@@ -615,7 +615,10 @@ const AddCustomerModal = ({ open, setOpenModal }) => {
                             <Grid item xs={6} sx={{ marginTop: 1 }}>
                                 <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                                     Thêm Người Dùng
-                                </Button>                             
+                                </Button>
+                                <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
+                                    Hủy
+                                </Button>
                             </Grid>
                         </Grid>
                     </Grid>

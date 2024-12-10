@@ -472,13 +472,13 @@ function Bill() {
             if (isDeliveryEnabled) {
                 await updateBillStatusDetail(1); 
                 await updateBillStatusDetail(2);
-                // await updateBillStatusDetail(4); 
+                await updateBillStatusDetail(4); 
             } else {
                 await updateBillStatusDetail(1); 
                 await updateBillStatusDetail(8); 
             }
 
-            toast.success("Hóa đơn đã được tạo thành công!");
+            toast.success("Thanh toán hóa đơn thành công!");
             clearData();
             await handleSetBill();
         } catch (error) {

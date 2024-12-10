@@ -33,6 +33,6 @@ public interface EmployeeService {
 
     EmployeeResponse detailByUserId(long userId);
 
-    EmployeeResponse updateByUserId(long userId, EmployeeRequest request);
+    void updateByUserId(long userId, EmployeeReq req);
 
 }
