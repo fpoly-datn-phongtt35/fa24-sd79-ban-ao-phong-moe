@@ -209,7 +209,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponse updateByUserId(long userId, EmployeeRequest request) {
+    public void updateByUserId(long userId, EmployeeReq request) {
 
         // Tìm thông tin người dùng dựa trên userId
         User user = userRepository.findById(userId)
@@ -238,11 +238,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDate_of_birth(request.getDate_of_birth());
         employee.setEmployee_address(address);
         // Lưu thông tin
-        employeeRepository.save(employee);
+        this.employeeRepository.save(employee);
         userRepository.save(user);
 
         // Trả về thông tin đã cập nhật
-        return convertEmployeeResponse(employee);
+
     }
 
 

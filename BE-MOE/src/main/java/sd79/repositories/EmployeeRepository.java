@@ -23,10 +23,22 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("from employees where id = :id")
     Optional<Employee> findByIdEmp(Long id);
 
-    @Query("FROM employees e WHERE (CONCAT(e.first_name, ' ', e.last_name) LIKE %:keyword%) " +
-            "OR (e.phone_number LIKE :phone_number)")
+//    @Query("FROM employees e WHERE (CONCAT(e.first_name, ' ', e.last_name) LIKE %:keyword%) " +
+//            "OR (e.phone_number LIKE :phone_number)")
+//    List<Employee> findByKeywordAndPhone(@Param("keyword") String keyword,
+//                                            @Param("phone_number") String phoneNumber);
+
+    @Query("SELECT e FROM employees e " +
+            "JOIN e.user u " +
+            "WHERE (:keyword IS NULL OR " +
+            "      e.first_name LIKE %:keyword% " +
+            "      OR e.last_name LIKE %:keyword% " +
+            "      OR CONCAT(e.first_name, ' ', e.last_name) LIKE %:keyword% " + // Handle "firstName lastName"
+            "      OR CONCAT(e.last_name, ' ', e.first_name) LIKE %:keyword%) " + // Handle "lastName firstName"
+            "AND (:phoneNumber IS NULL OR e.phone_number LIKE %:phoneNumber%)")
     List<Employee> findByKeywordAndPhone(@Param("keyword") String keyword,
-                                            @Param("phone_number") String phoneNumber);
+                                         @Param("phoneNumber") String phoneNumber);
+
 
     @Query("SELECT COUNT(*) > 0 FROM User u WHERE u.username = :username")
     boolean existsByUsername(String username);
