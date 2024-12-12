@@ -197,7 +197,20 @@ export const AddCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!validateForm()) return;
+  
+    const confirm = await swal({
+      title: 'Xác nhận thêm khách hàng',
+      text: 'Bạn có chắc chắn muốn thêm khách hàng này?',
+      icon: 'warning',
+      buttons: true,
+      dangerMode: true,
+    });
+  
+    if (!confirm) {
+      return; // Nếu người dùng chọn "Hủy", không thực hiện hành động.
+    }
   
     const currentDate = new Date().toISOString();
   
@@ -238,11 +251,12 @@ export const AddCustomer = () => {
       toast.success('Thêm thành công');
       setIsLoading(false);
       navigate('/customer');
-    } catch (error) {      
+    } catch (error) {
       setIsLoading(false);
-      // toast.error('Có lỗi xảy ra khi thêm khách hàng');
+      toast.error('Có lỗi xảy ra khi thêm khách hàng');
     }
   };
+  
   
 
   const handleImageChange = (event) => {
