@@ -50,6 +50,18 @@ export default function CustomerEditModal({
         fetchCities();
     }, []);
 
+    useEffect(() => {
+        if (selectedCity) {
+            handleCityChange(selectedCity);
+        }
+    }, [selectedCity]);
+
+    useEffect(() => {
+        if (selectedDistrict) {
+            handleDistrictChange(selectedDistrict);
+        }
+    }, [selectedDistrict]);
+
     const fetchCities = async () => {
         try {
             const response = await axios.get(`${host}?depth=1`);
@@ -66,24 +78,23 @@ export default function CustomerEditModal({
         try {
             const response = await fetchCustomerById(customerId);
             const data = response.data;
-            console.log(response.data)
             if (data) {
-                await handleCityChange(data.customerAddress?.cityId);
-                await handleDistrictChange(data.customerAddress?.districtId);
-                
+                await handleCityChange(data.cityId);
+                await handleDistrictChange(data.districtId);
+
                 setLocalCustomerData({
                     firstName: data.firstName || '',
                     lastName: data.lastName || '',
                     phoneNumber: data.phoneNumber || '',
                     streetName: data.streetName || '',
-                    cityId: data.cityId || '',
-                    districtId: data.districtId || '',
-                    ward: data.customerAddress?.ward || ''
+                    cityId: data.city_id || '',
+                    districtId: data.district_id || '',
+                    ward: data.ward || ''
                 });
 
-                setSelectedCity(data.customerAddress?.cityId || '');           
-                setSelectedDistrict(data.customerAddress?.districtId || '');            
-                setSelectedWard(data.customerAddress?.ward || '');
+                setSelectedCity(data.city_id || '');
+                setSelectedDistrict(data.district_id || '');
+                setSelectedWard(data.ward || '');
             }
         } catch (error) {
             console.error('Error loading customer data:', error);
@@ -95,13 +106,13 @@ export default function CustomerEditModal({
             setSelectedCity(cityId || '');
             setSelectedDistrict('');
             setSelectedWard('');
+            setDistricts([]);
+
             if (cityId) {
                 const response = await axios.get(`${host}p/${cityId}?depth=2`);
                 if (response.data?.districts) {
                     setDistricts(response.data.districts);
                 }
-            } else {
-                setDistricts([]);
             }
         } catch (error) {
             console.error('Error fetching districts:', error);
@@ -113,13 +124,13 @@ export default function CustomerEditModal({
         try {
             setSelectedDistrict(districtId || '');
             setSelectedWard('');
+            setWards([]);
+
             if (districtId) {
                 const response = await axios.get(`${host}d/${districtId}?depth=2`);
                 if (response.data?.wards) {
                     setWards(response.data.wards);
                 }
-            } else {
-                setWards([]);
             }
         } catch (error) {
             console.error('Error fetching wards:', error);
@@ -273,8 +284,7 @@ export default function CustomerEditModal({
                                     onChange={(e, v) => {
                                         const selectedDistrictValue = v;
                                         console.log('Selected District:', selectedDistrictValue);
-                                        handleDistrictChange(selectedDistrictValue);  // Xử lý thay đổi quận/huyện
-                                        setSelectedDistrict(selectedDistrictValue);  // Cập nhật state cho selectedDistrict
+                                        handleDistrictChange(selectedDistrictValue);
                                     }}
                                     placeholder="Chọn quận huyện"
                                 >
@@ -298,8 +308,8 @@ export default function CustomerEditModal({
                                     onChange={(e, v) => {
                                         const selectedWardValue = v;
                                         console.log('Selected Ward:', selectedWardValue);
-                                        handleWardChange(selectedWardValue);  // Xử lý thay đổi xã/phường
-                                        setSelectedWard(selectedWardValue);  // Cập nhật state cho selectedWard
+                                        handleWardChange(selectedWardValue);
+                                        setSelectedWard(selectedWardValue);
                                     }}
                                     placeholder="Chọn phường xã"
                                 >

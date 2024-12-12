@@ -413,48 +413,6 @@ export default function StatisticalBill() {
         </Grid>
       </Grid>
 
-      <div>
-        <Button
-          onClick={toggleLineChart}
-          variant="outlined"
-          sx={{ display: "flex", alignItems: "center", gap: 1, marginTop: 3 }}
-        >
-          {showLineChart ? "Ẩn biểu đồ" : "Hiển thị biểu đồ"}
-        </Button>
-
-        {showLineChart && (
-          <Box mt={3}>
-            <Line
-              data={{
-                labels: billsData.map((bill) => bill[0] || "N/A"),
-                datasets: [
-                  {
-                    label: "Doanh thu",
-                    data: billsData.map((bill) => bill[1] || 0),
-                    borderColor: "#4BC0C0",
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    fill: true,
-                    tension: 0.4,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  title: { display: true, text: "Sơ đồ tổng doanh thu" },
-                  tooltip: {
-                    callbacks: {
-                      label: (tooltipItem) =>
-                        `Tổng tiền: ${formatCurrencyVND(tooltipItem.raw)}`,
-                    },
-                  },
-                },
-              }}
-            />
-          </Box>
-        )}
-      </div>
-
       <Grid container spacing={4} mt={3}>
         {/* Top Selling Products */}
         <Grid xs={12} sm={4}>
@@ -569,6 +527,50 @@ export default function StatisticalBill() {
           </Card>
         </Grid>
       </Grid>
+
+      <div>
+        <Button
+          onClick={toggleLineChart}
+          variant="outlined"
+          sx={{ display: "flex", alignItems: "center", gap: 1, marginTop: 3 }}
+        >
+          {showLineChart ? "Ẩn biểu đồ" : "Hiển thị biểu đồ"}
+        </Button>
+
+        {showLineChart && (
+          <Box mt={3}>
+            <Line
+              data={{
+                labels: billsData.map((bill) => bill[0] || "N/A"),
+                datasets: [
+                  {
+                    label: "Doanh thu",
+                    data: billsData.map((bill) => bill[1] || 0),
+                    borderColor: "#4BC0C0",
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    fill: true,
+                    tension: 0.4,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  title: { display: true, text: "Sơ đồ tổng doanh thu" },
+                  tooltip: {
+                    callbacks: {
+                      label: (tooltipItem) =>
+                        `Tổng tiền: ${formatCurrencyVND(tooltipItem.raw)}`,
+                    },
+                  },
+                },
+              }}
+            />
+          </Box>
+        )}
+      </div>
+
+
 
     </Box>
   );

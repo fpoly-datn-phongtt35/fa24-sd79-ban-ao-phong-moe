@@ -448,7 +448,7 @@ function Bill() {
                 bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: isDeliveryEnabled ? 2 : 8,
+                billStatus: isDeliveryEnabled ? 4 : 8,
                 shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,

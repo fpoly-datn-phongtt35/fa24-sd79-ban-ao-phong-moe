@@ -60,7 +60,9 @@ export default function BillDetail() {
     phoneNumber: "",
     email: "",
     city: "",
+    city_id: "",
     district: "",
+    district_id: "",
     ward: "",
     streetName: "",
   });
@@ -176,26 +178,39 @@ export default function BillDetail() {
   const handleOpenModal = () => {
     if (billData && billData.length > 0) {
       const bd = billData[0];
-      const customerId = bd?.customer?.id;
-
-      if (customerId) {
+      const customer = bd?.customer;
+  
+      if (customer && customer.id) {
         setCustomerData({
-          firstName: bd?.customer?.firstName || "",
-          lastName: bd?.customer?.lastName || "",
-          phone: bd?.customer?.phoneNumber || "",
-          email: bd?.customer?.user?.email || "",
-          city: bd?.customer?.customerAddress?.city || "",
-          district: bd?.customer?.customerAddress?.district || "",
-          ward: bd?.customer?.customerAddress?.ward || "",
-          streetName: bd?.customer?.customerAddress?.streetName || "",
+          id: customer.id || '',
+          firstName: customer.firstName || '',
+          lastName: customer.lastName || '',
+          fullName: customer.fullName || `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+          phone: customer.phoneNumber || '',
+          city: customer.customerAddress?.city || '',
+          city_id: customer.customerAddress?.cityId || '',
+          district: customer.customerAddress?.district || '',
+          district_id: customer.customerAddress?.districtId || '',
+          ward: customer.customerAddress?.ward || '',
+          streetName: customer.customerAddress?.streetName || '',
         });
+  
+        // Kiểm tra giá trị trước khi mở modal
+        const cityId = customer.customerAddress?.cityId || '';
+        const districtId = customer.customerAddress?.districtId || '';
+        const ward = customer.customerAddress?.ward || '';
+  
+        setSelectedCity(cityId);
+        setSelectedDistrict(districtId);
+        setSelectedWard(ward);
+  
         setIsModalOpen(true);
-        console.log(customerData);
       } else {
-        console.error("Không tìm thấy thông tin khách hàng");
+        console.error('Không tìm thấy thông tin khách hàng');
       }
     }
   };
+  
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -214,7 +229,6 @@ export default function BillDetail() {
     try {
       const statusData = await getBillStatusDetailsByBillId(id);
       setStatusDetails(statusData.data);
-      console.log(statusData)
 
     } catch (error) {
       console.error("Error fetching bill status details:", error);
@@ -919,9 +933,9 @@ export default function BillDetail() {
           cities={cities}
           districts={districts}
           wards={wards}
-          selectedCity={selectedCity}
-          selectedDistrict={selectedDistrict}
-          selectedWard={selectedWard}
+          selectedCity={selectedCity || ""}
+          selectedDistrict={selectedDistrict || ""}
+          selectedWard={selectedWard || ""}
           setCities={setCities}
           setDistricts={setDistricts}
           setWards={setWards}
@@ -934,7 +948,6 @@ export default function BillDetail() {
           fetchBillEdit={fetchBillEdit}
         />
       </div>
-
       {/* ------------------Lịch sử thanh toán------------------ */}
 
       <div>
