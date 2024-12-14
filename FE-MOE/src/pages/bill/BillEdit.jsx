@@ -13,6 +13,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 
 import { addPay, deleteCoupon, deleteProduct, fetchCoupon, fetchProduct, postCoupon, postProduct } from '~/apis/billsApi';
 import CouponModal from '~/components/bill/CouponModal';
+import { toast } from 'react-toastify';
 
 export default function BillEdit() {
     //bill edit
@@ -29,6 +30,7 @@ export default function BillEdit() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [quantityTimeoutId, setQuantityTimeoutId] = useState(null);
     const [currentProductId, setCurrentProductId] = useState(null);
+    const [errorMessages, setErrorMessages] = useState({});
 
     //coupon
     const [isCouponModalOpen, setCouponModalOpen] = useState(false)
@@ -44,11 +46,23 @@ export default function BillEdit() {
     }, []);
 
     const fetchBillEdit = async () => {
-
         try {
             const bill = await getBillEdit(id);
+            const fetchedBill = bill.data[0];
+
             setBillData(bill.data);
-            billIdRef.current = bill.data[0].id;
+            billIdRef.current = fetchedBill.id;
+
+            // Nếu không có sản phẩm trong bill, đặt lại các giá trị tính toán
+            if (!fetchedBill.billDetails || fetchedBill.billDetails.length === 0) {
+                setOrderData((prev) => ({
+                    ...prev,
+                    subtotal: 0,
+                    discountAmount: 0,
+                    totalAfterDiscount: 0,
+                    shippingCost: 0,
+                }));
+            }
         } catch (error) {
             console.error("Error fetching bill:", error);
         }
@@ -57,7 +71,6 @@ export default function BillEdit() {
     // ---------------------- khai báo sản phẩm -------------------------------//
     let initialQuantity = {};
     const onProduct = async (pr) => {
-
         const product = {
             productDetail: pr.id,
             bill: id,
@@ -68,64 +81,55 @@ export default function BillEdit() {
         try {
             await postProduct(product);
             initialQuantity[pr.id] = 1;
+
+            // Sau khi thêm sản phẩm thành công, cập nhật lại sản phẩm và hóa đơn
+            await handleSetProduct();
+            await fetchBillEdit();
         } catch (error) {
             console.error('Failed to add product:', error);
         }
-        fetchBillEdit();
     };
 
     const handleSetProduct = async () => {
-        try {
-            const response = await fetchProduct(id);
-            if (response?.data) {
-                setProducts(response.data);
-            }
-        } catch (error) {
-            console.error("Error fetching products:", error);
-        }
+        const response = await fetchProduct(id);
+        setProducts(response.data);
+        console.log(response)
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
-        const sanitizedQuantity = newQuantity === 0 || newQuantity === '' ? 1 : newQuantity;
+        const maxQuantity = products.find(p => p.id === productId)?.productDetail.quantity + 1 || 0;
+        let errorMessage = "";
 
-        if (sanitizedQuantity === 1) {
-            setErrorMessage("");
-        } else if (newQuantity === 0 || newQuantity === '') {
-            setErrorMessage("Số lượng chưa nhập");
+        if (newQuantity === '') {
+            errorMessage = "Số lượng chưa nhập";
+        } else if (newQuantity < 1) {
+            errorMessage = "Số lượng phải lớn hơn hoặc bằng 1";
+        } else if (newQuantity > maxQuantity) {
+            newQuantity = maxQuantity;
+            errorMessage = `Số lượng không được vượt quá ${maxQuantity}`;
         }
 
-        const productToUpdate = products.find(
-            (product) => product.productDetail.id === productId
-        );
+        setErrorMessages(prev => ({
+            ...prev,
+            [productId]: errorMessage
+        }));
 
-        if (!productToUpdate) return;
+        if (errorMessage) return;
 
-        const maxQuantity = productToUpdate.productDetail.quantity + 1;
-        const updatedQuantity = sanitizedQuantity > maxQuantity ? maxQuantity : sanitizedQuantity;
-
-        if (quantityTimeoutId) {
-            clearTimeout(quantityTimeoutId);
-        }
-
-        setProducts((prevProducts) =>
-            prevProducts.map((product) =>
-                product.productDetail.id === productId
-                    ? { ...product, quantity: updatedQuantity }
-                    : product
+        setProducts(prevProducts =>
+            prevProducts.map(product =>
+                product.id === productId ? { ...product, quantity: newQuantity } : product
             )
         );
 
-        const timeoutId = setTimeout(async () => {
-            await updateProductQuantity(productId, updatedQuantity);
-        }, 500);
+        if (quantityTimeoutId) clearTimeout(quantityTimeoutId);
+        const timeoutId = setTimeout(() => updateProductQuantity(productId, newQuantity), 1000);
         setQuantityTimeoutId(timeoutId);
     };
 
     const updateProductQuantity = async (productId, newQuantity) => {
         try {
-            const productToUpdate = products.find(
-                (product) => product.productDetail.id === productId
-            );
+            const productToUpdate = products.find(p => p.id === productId);
             if (!productToUpdate) return;
 
             const product = {
@@ -138,10 +142,10 @@ export default function BillEdit() {
 
             await postProduct(product);
             initialQuantity[productId] = newQuantity;
+            await fetchBillEdit();
         } catch (error) {
             console.error('Failed to update product quantity:', error);
         }
-        fetchBillEdit();
     };
 
     const openProductListModal = (id) => {
@@ -225,6 +229,10 @@ export default function BillEdit() {
     const calculateTotals = () => {
         if (!billData || !billData[0]) return { subtotal: 0, discountAmount: 0, totalAfterDiscount: 0, shippingCost: 0 };
 
+        if (!billData || !billData[0]?.billDetails?.length) {
+            return { subtotal: 0, discountAmount: 0, totalAfterDiscount: 0, shippingCost: 0 };
+        }
+
         const currentBill = billData[0];
         const currentDetails = currentBill.billDetails || [];
 
@@ -259,8 +267,8 @@ export default function BillEdit() {
     // ---------------------- sửa hóa đơn -------------------------------//
     const onPay = async () => {
         if (!billData || !billData[0]?.billDetails?.length) {
-            console.log("Cannot create invoice. Please select an order and add products.");
-            return;
+            toast.error("Sản phẩm không được bỏ trống");
+            return false;
         }
 
         const currentBill = billData[0];
@@ -294,8 +302,10 @@ export default function BillEdit() {
             await addPay(billStoreRequest);
             await fetchBillEdit();
             console.log("billStoreRequest:", billStoreRequest);
+            return true;
         } catch (error) {
             console.error("Error processing payment:", error);
+            return false;
         }
     };
 
@@ -420,33 +430,45 @@ export default function BillEdit() {
                                         </Grid>
 
                                         {/* Quantity Input */}
-                                        <Grid
-                                            item
-                                            xs={4}
-                                            sm={2}
-                                            md={2}
-                                            display="flex"
-                                            justifyContent="center"
-                                            flexDirection="column"
-                                            alignItems="center"
-                                        >
-                                            <Input
-                                                type="number"
-                                                value={
-                                                    products.find((p) => p.productDetail.id === detail.productDetail.id)?.quantity
-                                                }
-                                                onChange={(e) =>
-                                                    handleQuantityChange(detail.productDetail?.id, parseInt(e.target.value, 10) || '1')
-                                                }
-                                                sx={{ width: '80%', '& input': { textAlign: 'center' } }}
-                                            />
-                                            {errorMessage && (
-                                                <Typography color="error" sx={{ marginTop: 1, fontSize: '0.875rem' }}>
-                                                    {errorMessage}
-                                                </Typography>
-                                            )}
-                                        </Grid>
+                                        {products.map((product, index) => (
+                                            <Grid
+                                                item
+                                                xs={4}
+                                                sm={2}
+                                                md={2}
+                                                display="flex"
+                                                justifyContent="center"
+                                                flexDirection="column"
+                                                alignItems="center"
+                                            >
+                                                <Input
+                                                    type="number"
+                                                    value={product.quantity}
+                                                    onChange={(e) => {
+                                                        let inputQuantity = parseInt(e.target.value, 10) || '';
+                                                        const maxQuantity = product.productDetail.quantity + 1;
 
+                                                        if (inputQuantity > maxQuantity) {
+                                                            inputQuantity = maxQuantity;
+                                                        }
+
+                                                        handleQuantityChange(product.id, inputQuantity);
+                                                    }}
+                                                    sx={{
+                                                        width: '80%',
+                                                        '& input': {
+                                                            textAlign: 'center',
+                                                        }
+                                                    }}
+                                                    slotProps={{
+                                                        input: {
+                                                            min: 1,
+                                                            max: product.productDetail.quantity + 1,
+                                                        }
+                                                    }}
+                                                />
+                                            </Grid>
+                                        ))}
 
                                         {/* Price and Delete Button */}
                                         <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
@@ -583,8 +605,10 @@ export default function BillEdit() {
                             variant="contained"
                             color="primary"
                             onClick={async () => {
-                                await onPay();
-                                navigate(`/bill/detail/${id}`, { state: { refresh: true } });
+                                const isSuccess = await onPay();
+                                if (isSuccess) {
+                                    navigate(`/bill/detail/${id}`, { state: { refresh: true } });
+                                }
                             }}
                             sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
                         >

@@ -2,19 +2,27 @@
 // Facebook:https://facebook.com/NongHoangVu04
 // Github: https://github.com/JavaTech04
 // Youtube: https://www.youtube.com/@javatech04/?sub_confirmation=1
-import React, { useContext } from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/joy";
 import SideImage from "~/assert/images/signUp.svg";
 
-import SignUpBase from "~/components/auth/SignUpBase";
-import { AuthContext } from "~/context/AuthContext";
-import SignUpInfo from "~/components/auth/SignUpInfo";
-import SignUpAddress from "~/components/auth/SignUpAddress";
-import SignUpAvatar from "~/components/auth/SignUpAvatar";
-import SignUpVerify from "~/components/auth/SignUpVerify";
+import RequestForgotPassword from "~/components/auth/RequestForgotPassword";
+import ForgotPasswordVerify from "~/components/auth/ForgotPasswordVerify";
+import ChangePasswordForm from "~/components/auth/ChangePasswordForm";
 
-function SignUp() {
-  const context = useContext(AuthContext);
+function ForgotPassword() {
+  const [step, setStep] = useState(0);
+  const [email, setEmail] = useState(null);
+  const [token, setToken] = useState(null);
+
+  const commonMethods = {
+    step,
+    setStep,
+    email,
+    setEmail,
+    token,
+    setToken,
+  };
 
   return (
     <Box
@@ -64,15 +72,13 @@ function SignUp() {
             borderRadius: "0 8px 8px 0",
           }}
         >
-          {context.step === 0 && <SignUpBase />}
-          {context.step === 1 && <SignUpInfo />}
-          {context.step === 2 && <SignUpAddress />}
-          {context.step === 3 && <SignUpVerify />}
-          {context.step === 4 && <SignUpAvatar />}
+          {step === 0 && <RequestForgotPassword method={commonMethods} />}
+          {step === 1 && <ForgotPasswordVerify method={commonMethods} />}
+          {step === 2 && <ChangePasswordForm method={commonMethods}/>}
         </Box>
       </Box>
     </Box>
   );
 }
 
-export default SignUp;
+export default ForgotPassword;

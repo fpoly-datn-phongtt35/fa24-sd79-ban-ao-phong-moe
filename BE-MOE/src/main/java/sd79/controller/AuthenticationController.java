@@ -7,6 +7,10 @@
 package sd79.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -16,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import sd79.dto.requests.authRequests.ChangePassword;
 import sd79.dto.requests.authRequests.SignInRequest;
 import sd79.dto.requests.authRequests.SignUpRequest;
 import sd79.dto.requests.authRequests.VerifyOtp;
@@ -96,7 +101,22 @@ public class AuthenticationController {
 
     @Operation(
             summary = "Validate User Information",
-            description = "Check if the provided email and username are valid and not taken."
+            description = "Check if the provided email and username are valid and not taken.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Validation successful",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseData.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid input parameters",
+                            content = @Content
+                    )
+            }
     )
     @GetMapping("/valid-info/{email}/{username}")
     public ResponseData<?> validInfo(@PathVariable String email, @PathVariable String username) {
@@ -104,14 +124,102 @@ public class AuthenticationController {
         return new ResponseData<>(HttpStatus.OK.value(), "Data is valid");
     }
 
+    @Operation(
+            summary = "Send OTP",
+            description = "Send a one-time password to the specified email for verification purposes.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OTP sent successfully",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseData.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid email format",
+                            content = @Content
+                    )
+            }
+    )
     @PostMapping("/sent-otp/{email}")
-    public ResponseData<?> sentOtp(@PathVariable String email) {
+    public ResponseData<?> sentOtp(
+            @Parameter(description = "Email to send OTP", required = true) @PathVariable String email) {
         return new ResponseData<>(HttpStatus.OK.value(), "Success", authenticationService.getOtpVerifyRegister(email));
     }
 
+    @Operation(
+            summary = "Verify OTP",
+            description = "Verify the provided one-time password.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OTP verified successfully",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseData.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid OTP",
+                            content = @Content
+                    )
+            }
+    )
     @PostMapping("/verify-otp")
     public ResponseData<?> verifyOtp(@RequestBody VerifyOtp otp) {
         authenticationService.verifyOtp(otp);
+        return new ResponseData<>(HttpStatus.OK.value(), "Success");
+    }
+
+    @Operation(
+            summary = "Forgot Password",
+            description = "Request a password reset for the specified email. An email with reset instructions will be sent.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Password reset request successful",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseData.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid email format or user not found",
+                            content = @Content
+                    )
+            }
+    )
+    @GetMapping("/forgot-password/{email}")
+    public ResponseData<?> forgotPassword(@PathVariable String email) {
+        return new ResponseData<>(HttpStatus.OK.value(), "Success", authenticationService.requestForgotPassword(email));
+    }
+
+    @Operation(
+            summary = "Change Password",
+            description = "Update the user's password. Requires a valid reset token or current password for verification.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Password changed successfully",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseData.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid token, password mismatch, or weak password",
+                            content = @Content
+                    )
+            }
+    )
+    @PostMapping("/change-password")
+    public ResponseData<?> changePassword(@RequestBody ChangePassword req) {
+        this.authenticationService.changePassword(req);
         return new ResponseData<>(HttpStatus.OK.value(), "Success");
     }
 }

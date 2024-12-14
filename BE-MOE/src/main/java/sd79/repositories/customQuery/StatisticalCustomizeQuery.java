@@ -277,6 +277,4 @@ public class StatisticalCustomizeQuery {
         return executeQuery(sql, filter);
     }
 
-
-
 }

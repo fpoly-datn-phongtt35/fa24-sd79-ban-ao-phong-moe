@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { putPassword } from '~/apis/employeeApi';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
 
 const ChangePasswordForm = () => {
   const [oldPassword, setOldPassword] = useState('');
@@ -33,7 +34,6 @@ const ChangePasswordForm = () => {
       });
     }
   };
-
 
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
@@ -73,16 +73,19 @@ const ChangePasswordForm = () => {
     e.preventDefault();
     if (!validateInputs()) return;
     if (newPassword !== confirmPassword) {
-      alert('Mật khẩu mới và mật khẩu nhắc lại không khớp.');
+       toast.error('Mật khẩu mới và mật khẩu nhắc lại không khớp.');
       return;
     }
     const data = { oldPassword, newPassword, confirmPassword };
 
-    await putPassword(data, userId);
-
-    navigate('/'); // Chuyển hướng sau khi đổi mật khẩu thành công
-    console.log("thanhf cong");
-
+    await putPassword(data, userId).then((res)=>{
+      if(res?.data.status==200){
+        toast.success(res?.data.message);
+        navigate('/'); // Chuyển hướng sau khi đổi mật khẩu thành công
+      }else{
+        toast.error(res?.data.message);
+      }
+    })
   };
 
   return (

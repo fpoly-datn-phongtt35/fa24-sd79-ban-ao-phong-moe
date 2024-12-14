@@ -9,20 +9,18 @@ import { Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function CustomerEditModal({
-    customerData,
-    setCustomerData,
     cities,
     districts,
     wards,
-    selectedCity = '',
-    selectedDistrict = '',
-    selectedWard = '',
     setCities,
     setDistricts,
     setWards,
     setSelectedCity,
     setSelectedDistrict,
     setSelectedWard,
+    selectedCity,
+    selectedDistrict,
+    selectedWard,
     open,
     onClose,
     customerId,
@@ -32,7 +30,6 @@ export default function CustomerEditModal({
 }) {
     const host = 'https://provinces.open-api.vn/api/';
 
-    // Local customer state to manage form inputs
     const [localCustomerData, setLocalCustomerData] = useState({
         firstName: '',
         lastName: '',
@@ -44,70 +41,105 @@ export default function CustomerEditModal({
     });
 
     useEffect(() => {
-        loadCustomerData();
+        if (customerId) {
+            loadCustomerData();
+        }
     }, [customerId]);
 
-    const loadCustomerData = async () => {
-        if (customerId) {
-            const response = await fetchCustomerById(customerId);
-            const data = response.data;
-            setLocalCustomerData({
-                firstName: data.firstName || '',
-                lastName: data.lastName || '',
-                phoneNumber: data.phoneNumber || '',
-                streetName: data.streetName || '',
-                cityId: data.cityId || '',
-                districtId: data.districtId || '',
-                ward: data.customerAddress?.ward || ''
-            });
-
-            // Set initial selected values for the dropdowns
-            setSelectedCity(data.customerAddress?.cityId || '');
-            await handleCityChange(null, data.customerAddress?.cityId);
-
-            setSelectedDistrict(data.customerAddress?.districtId || '');
-            await handleDistrictChange(null, data.customerAddress?.districtId);
-
-            setSelectedWard(data.customerAddress?.ward || '');
-        }
-    };
-
-    // Fetch cities if not already loaded
     useEffect(() => {
-        const fetchCities = async () => {
-            const response = await axios.get(`${host}?depth=1`);
-            setCities(response.data);
-        };
         fetchCities();
     }, []);
 
-    const handleCityChange = async (e, v) => {
-        const provinceId = v || selectedCity;
-        setSelectedCity(provinceId);
-        setSelectedDistrict("");
-        setSelectedWard("");
-        if (provinceId) {
-            const response = await axios.get(`${host}p/${provinceId}?depth=2`);
-            setDistricts(response.data.districts);
-        } else {
+    useEffect(() => {
+        if (selectedCity) {
+            handleCityChange(selectedCity);
+        }
+    }, [selectedCity]);
+
+    useEffect(() => {
+        if (selectedDistrict) {
+            handleDistrictChange(selectedDistrict);
+        }
+    }, [selectedDistrict]);
+
+    const fetchCities = async () => {
+        try {
+            const response = await axios.get(`${host}?depth=1`);
+            if (response.data) {
+                setCities(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+            toast.error('Không thể tải danh sách tỉnh/thành.');
+        }
+    };
+
+    const loadCustomerData = async () => {
+        try {
+            const response = await fetchCustomerById(customerId);
+            const data = response.data;
+            if (data) {
+                await handleCityChange(data.cityId);
+                await handleDistrictChange(data.districtId);
+
+                setLocalCustomerData({
+                    firstName: data.firstName || '',
+                    lastName: data.lastName || '',
+                    phoneNumber: data.phoneNumber || '',
+                    streetName: data.streetName || '',
+                    cityId: data.city_id || '',
+                    districtId: data.district_id || '',
+                    ward: data.ward || ''
+                });
+
+                setSelectedCity(data.city_id || '');
+                setSelectedDistrict(data.district_id || '');
+                setSelectedWard(data.ward || '');
+            }
+        } catch (error) {
+            console.error('Error loading customer data:', error);
+        }
+    };
+
+    const handleCityChange = async (cityId) => {
+        try {
+            setSelectedCity(cityId || '');
+            setSelectedDistrict('');
+            setSelectedWard('');
             setDistricts([]);
+
+            if (cityId) {
+                const response = await axios.get(`${host}p/${cityId}?depth=2`);
+                if (response.data?.districts) {
+                    setDistricts(response.data.districts);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+            toast.error('Không thể tải danh sách quận/huyện.');
         }
     };
 
-    const handleDistrictChange = async (e, v) => {
-        const districtId = v || selectedDistrict;
-        setSelectedDistrict(districtId);
-        setSelectedWard("");
-        if (districtId) {
-            const response = await axios.get(`${host}d/${districtId}?depth=2`);
-            setWards(response.data.wards);
-        } else {
+    const handleDistrictChange = async (districtId) => {
+        try {
+            setSelectedDistrict(districtId || '');
+            setSelectedWard('');
             setWards([]);
+
+            if (districtId) {
+                const response = await axios.get(`${host}d/${districtId}?depth=2`);
+                if (response.data?.wards) {
+                    setWards(response.data.wards);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching wards:', error);
+            toast.error('Không thể tải danh sách xã/phường.');
         }
     };
 
-    const handleWardChange = (e, v) => {
-        setSelectedWard(v);
+    const handleWardChange = (ward) => {
+        setSelectedWard(ward || '');
     };
 
     const updateCustomer = async () => {
@@ -252,8 +284,7 @@ export default function CustomerEditModal({
                                     onChange={(e, v) => {
                                         const selectedDistrictValue = v;
                                         console.log('Selected District:', selectedDistrictValue);
-                                        handleDistrictChange(selectedDistrictValue);  // Xử lý thay đổi quận/huyện
-                                        setSelectedDistrict(selectedDistrictValue);  // Cập nhật state cho selectedDistrict
+                                        handleDistrictChange(selectedDistrictValue);
                                     }}
                                     placeholder="Chọn quận huyện"
                                 >
@@ -277,8 +308,8 @@ export default function CustomerEditModal({
                                     onChange={(e, v) => {
                                         const selectedWardValue = v;
                                         console.log('Selected Ward:', selectedWardValue);
-                                        handleWardChange(selectedWardValue);  // Xử lý thay đổi xã/phường
-                                        setSelectedWard(selectedWardValue);  // Cập nhật state cho selectedWard
+                                        handleWardChange(selectedWardValue);
+                                        setSelectedWard(selectedWardValue);
                                     }}
                                     placeholder="Chọn phường xã"
                                 >

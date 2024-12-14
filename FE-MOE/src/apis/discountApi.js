@@ -4,11 +4,19 @@ import { API_ROOT } from "~/utils/constants";
 
 // const API_URL = "http://localhost:2004/api/v2/promotion"; // Change to your backend URL
 
-export const fetchAllDiscounts = async (page = 0, size = 5) => {
+export const fetchAllDiscounts = async (page = 0, size = 5, sortBy = 'id', sortDir = 'desc') => {
   return await authorizedAxiosInstance
-  .get(`${API_ROOT}/promotion`, {params:{page, size}})
-  .then((res) => res.data); 
+    .get(`${API_ROOT}/promotion`, { 
+      params: { 
+        page, 
+        size, 
+        sortBy, 
+        sortDir
+      }
+    })
+    .then((res) => res.data);
 };
+
 
 
 export const postDiscount = async (promotionData) => {

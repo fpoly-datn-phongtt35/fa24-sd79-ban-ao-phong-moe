@@ -1061,15 +1061,15 @@ VALUES
 
 -- Coupons
 INSERT INTO coupons (code, name, discount_type, discount_value, max_value, conditions, quantity, usage_count, type, start_date, end_date, description, created_by, updated_by) VALUES
-('VNCOUP001', 'Giảm giá mùa hè', 'PERCENTAGE', 10, 2000000, 500000, 100, 0, 'PUBLIC', '2024-06-01 00:00:00', '2024-06-30 23:59:59', 'Giảm 10% cho mùa hè', 1, 1),
+('VNCOUP001', 'Giảm giá mùa hè', 'PERCENTAGE', 10, 2000000, 500000, 100, 0, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', 'Giảm 10% cho mùa hè', 1, 1),
 ('VNCOUP002', 'Ưu đãi mùa đông', 'FIXED_AMOUNT', 100000, 0, 300000, 50, 0, 'PUBLIC', '2024-12-01 00:00:00', '2024-12-31 23:59:59', 'Giảm ngay 100.000 VNĐ mùa đông', 2, 2),
-('VNCOUP003', 'Black Friday', 'PERCENTAGE', 25, 5000000, 1000000, 200, 0, 'PUBLIC', '2024-11-25 00:00:00', '2024-11-30 23:59:59', 'Giảm 25% Black Friday', 3, 3),
+('VNCOUP003', 'Black Friday', 'PERCENTAGE', 25, 5000000, 1000000, 200, 0, 'PUBLIC', '2024-12-25 00:00:00', '2024-12-31 23:59:59', 'Giảm 25% Black Friday', 3, 3),
 ('VNCOUP004', 'Khuyến mãi Tết Nguyên Đán', 'FIXED_AMOUNT', 500000, 0, 0, 200, 0, 'PUBLIC', '2024-12-31 00:00:00', '2025-01-01 23:59:59', 'Giảm 500.000 VNĐ dịp Tết', 4, 4),
-('VNCOUP005', 'Flash Sale 24h', 'PERCENTAGE', 15, 3000000, 1000000, 500, 0, 'PUBLIC', '2024-10-15 00:00:00', '2024-10-15 23:59:59', 'Giảm 15% trong 24 giờ', 5, 5),
+('VNCOUP005', 'Flash Sale 24h', 'PERCENTAGE', 15, 3000000, 1000000, 500, 0, 'PUBLIC', '2024-11-01 00:00:00', '2024-12-31 23:59:59', 'Giảm 15% trong 24 giờ', 5, 5),
 ('VNCOUP006', 'Ưu đãi lễ 30/4', 'FIXED_AMOUNT', 200000, 0, 500000, 300, 0, 'PUBLIC', '2024-04-28 00:00:00', '2024-05-01 23:59:59', 'Giảm 200.000 VNĐ dịp lễ', 6, 6),
 ('VNCOUP007', 'Giảm giá đặc biệt', 'PERCENTAGE', 5, 1500000, 300000, 50, 0, 'PUBLIC', '2024-11-01 00:00:00', '2024-11-05 23:59:59', 'Giảm 5% đơn hàng', 7, 7),
 ('VNCOUP008', 'Ưu đãi giới hạn', 'FIXED_AMOUNT', 700000, 0, 1500000, 100, 0, 'PUBLIC', '2024-10-20 00:00:00', '2024-10-25 23:59:59', 'Giảm 700.000 VNĐ giới hạn', 8, 8),
-('VNCOUP009', 'Ưu đãi sinh nhật', 'PERCENTAGE', 20, 2000000, 800000, 50, 0, 'PUBLIC', '2024-11-20 00:00:00', '2024-11-22 23:59:59', 'Giảm 20% mừng sinh nhật', 9, 9),
+('VNCOUP009', 'Ưu đãi sinh nhật', 'PERCENTAGE', 20, 2000000, 800000, 50, 0, 'PUBLIC', '2024-11-01 00:00:00', '2024-12-31 23:59:59', 'Giảm 20% mừng sinh nhật', 9, 9),
 ('VNCOUP010', 'Deal kỷ niệm', 'FIXED_AMOUNT', 300000, 0, 500000, 50, 0, 'PUBLIC', '2024-10-01 00:00:00', '2024-10-05 23:59:59', 'Giảm 300.000 VNĐ nhân dịp kỷ niệm', 10, 10);
     
 INSERT INTO bill_status (name, status) VALUES

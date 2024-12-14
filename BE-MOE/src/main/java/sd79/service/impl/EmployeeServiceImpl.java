@@ -209,7 +209,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponse updateByUserId(long userId, EmployeeRequest request) {
+    public void updateByUserId(long userId, EmployeeReq request) {
 
         // Tìm thông tin người dùng dựa trên userId
         User user = userRepository.findById(userId)
@@ -238,35 +238,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDate_of_birth(request.getDate_of_birth());
         employee.setEmployee_address(address);
         // Lưu thông tin
-        employeeRepository.save(employee);
+        this.employeeRepository.save(employee);
         userRepository.save(user);
-
-        // Trả về thông tin đã cập nhật
-        return convertEmployeeResponse(employee);
     }
-
 
     @Override
     public void updatePassword(PasswordUpdateRequest request, long userId) {
-        // Tìm người dùng dựa vào userId
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin người dùng"));
-
-        // Kiểm tra mật khẩu cũ có đúng không
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Mật khẩu cũ không đúng");
         }
-
-        // Kiểm tra mật khẩu mới và mật khẩu nhắc lại có giống nhau không
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Mật khẩu mới và mật khẩu nhắc lại không giống nhau");
-        }
-
-        // Mã hóa và cập nhật mật khẩu mới
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(new Date());
-
-        // Lưu thông tin người dùng đã cập nhật
         userRepository.save(user);
     }
 

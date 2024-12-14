@@ -9,6 +9,7 @@ import { fetchAllDiscounts, deleteDiscount, searchDiscounts } from "~/apis/disco
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Pagination, IconButton, TextField, TableRow, TableCell } from "@mui/material";
+import { remove as removeDiacritics } from "diacritics"; // Import thư viện loại bỏ dấu tiếng Việt
 
 export const Promotion = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -19,13 +20,11 @@ export const Promotion = () => {
   const [searchEndDate, setSearchEndDate] = useState("");
   const itemsPerPage = 5;
   const navigate = useNavigate();
-  
-  // Lấy dữ liệu ban đầu
+
   useEffect(() => {
-    handleSetDiscounts();
+    handleSetDiscounts(1);
   }, []);
 
-  // Giám sát thay đổi của điều kiện tìm kiếm
   useEffect(() => {
     setCurrentPage(1); // Reset trang khi điều kiện tìm kiếm thay đổi
     handleSearch(1);   // Tìm kiếm dữ liệu với trang đầu tiên
@@ -33,7 +32,7 @@ export const Promotion = () => {
 
   const handleSetDiscounts = async (page = currentPage) => {
     try {
-      const res = await fetchAllDiscounts(page - 1, itemsPerPage);
+      const res = await fetchAllDiscounts(page - 1, 5, "id", "desc");
       setDiscounts(res.data.content || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (error) {
@@ -44,7 +43,15 @@ export const Promotion = () => {
 
   const handleSearch = async (page = 1) => {
     try {
-      const results = await searchDiscounts(searchTerm, searchStartDate, searchEndDate, page - 1, itemsPerPage);
+      // Chuẩn hóa chuỗi tìm kiếm: loại bỏ dấu tiếng Việt
+      const normalizedSearchTerm = removeDiacritics(searchTerm);
+      const results = await searchDiscounts(
+        normalizedSearchTerm,
+        searchStartDate,
+        searchEndDate,
+        page - 1,
+        itemsPerPage
+      );
       setDiscounts(results.data.content || []);
       setTotalPages(results.data.totalPages || 1);
     } catch (error) {
@@ -89,6 +96,28 @@ export const Promotion = () => {
       handleSearch(newPage); // Gọi tìm kiếm nếu có điều kiện
     } else {
       handleSetDiscounts(newPage); // Lấy lại dữ liệu theo trang nếu không tìm kiếm
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getDiscountStatus = (startDate, endDate) => {
+    const currentDate = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (currentDate < start) {
+      return "Chưa bắt đầu";
+    } else if (currentDate > end) {
+      return "Kết thúc";
+    } else {
+      return "Đang hoạt động";
     }
   };
 
@@ -142,7 +171,17 @@ export const Promotion = () => {
 
         <Box>
           <Button variant="soft" size="small" startDecorator={<RefreshIcon />} onClick={handleResetFilters} sx={{ marginRight: 1 }}>Làm mới</Button>
-          <Button size="small" startDecorator={<AddIcon />} onClick={() => navigate("/promotions/add")}>Thêm mới</Button>
+          <Button
+            size="small"
+            startDecorator={<AddIcon />}
+            onClick={() => {
+              navigate("/promotions/add");
+              setCurrentPage(1); // Đặt lại trang hiện tại về trang đầu
+              handleSetDiscounts(1); // Tải dữ liệu của trang đầu tiên
+            }}
+          >
+            Thêm mới
+          </Button>
         </Box>
       </Box>
 
@@ -156,6 +195,7 @@ export const Promotion = () => {
               <th>Tỷ lệ giảm</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
+              <th>Trạng thái</th>
               <th>Mô tả</th>
               <th>Hành động</th>
             </tr>
@@ -168,32 +208,9 @@ export const Promotion = () => {
                   <TableCell>{discount.name}</TableCell>
                   <TableCell>{discount.code}</TableCell>
                   <TableCell>{discount.percent}%</TableCell>
-                  <TableCell align="left">
-                    {discount.startDate
-                      ? `${new Date(discount.startDate).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })} ${new Date(discount.startDate).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}`
-                      : ""}
-                  </TableCell>
-                  <TableCell align="left">
-                    {discount.endDate
-                      ? `${new Date(discount.endDate).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })} ${new Date(discount.endDate).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })}`
-                      : ""}
-                  </TableCell>
+                  <TableCell align="left">{formatDate(discount.startDate)}</TableCell>
+                  <TableCell align="left">{formatDate(discount.endDate)}</TableCell>
+                  <TableCell>{getDiscountStatus(discount.startDate, discount.endDate)}</TableCell>
                   <TableCell>{discount.note}</TableCell>
                   <TableCell>
                     <IconButton color="warning" onClick={() => navigate(`/promotions/update/${discount.id}`)}>
@@ -207,11 +224,10 @@ export const Promotion = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8">Không có đợt giảm giá nào.</td>
+                <td colSpan="9">Không có đợt giảm giá nào.</td>
               </tr>
             )}
           </tbody>
-
         </Table>
       </Sheet>
 

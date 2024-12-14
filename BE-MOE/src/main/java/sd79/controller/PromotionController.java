@@ -37,9 +37,9 @@ public class PromotionController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "5") int size,
         @RequestParam(defaultValue = "id") String sortBy,  // Sorting criteria
-        @RequestParam(defaultValue = "asc") String sortDir) {
+        @RequestParam(defaultValue = "desc") String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, size, sort);;
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<PromotionResponse> promotionPage = promotionService.getPromotion(pageable);
         return new ResponseData<>(HttpStatus.OK.value(), "List promotion", promotionPage);
     }

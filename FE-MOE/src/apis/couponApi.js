@@ -1,4 +1,4 @@
-  import { API_ROOT } from "~/utils/constants";
+import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 import { toast } from "react-toastify";
 
@@ -88,11 +88,8 @@ export const updateCoupon = async (id, data) => {
 };
 
 export const deleteCoupon = async (id) => {
-  return await authorizedAxiosInstance
-    .delete(`${API_ROOT}/coupon/delete/${id}`)
-    .then((res) => {
-      toast.success(res.data.message);
-    })
+  const res = await authorizedAxiosInstance.delete(`${API_ROOT}/coupon/delete/${id}`);
+  toast.success(res.data.message);
 };
 
 export const deleteCouponImage = async (id) => {

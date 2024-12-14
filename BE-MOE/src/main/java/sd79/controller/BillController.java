@@ -169,7 +169,7 @@ public class BillController {
         logger.info("Received request to add pay: {}", billStoreRequest);
 //        try {
             long billId = billService.storePay(billRequest, billDetails);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "Thêm mới hóa đơn thành công", billId);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "Thanh toán hóa đơn thành công", billId);
 //        } catch (IllegalArgumentException e) {
 ////            logger.error("Error adding pay: {}", e.getMessage());
 //            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
