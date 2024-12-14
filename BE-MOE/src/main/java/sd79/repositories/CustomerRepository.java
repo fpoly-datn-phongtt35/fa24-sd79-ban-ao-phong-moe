@@ -34,6 +34,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
                                    @Param("dateOfBirth") Date dateOfBirth,
                                    Pageable pageable);
 
+
     @Query("SELECT COUNT(*) > 0 FROM User u WHERE u.username = :username")
     boolean existsByUsername(String username);
 

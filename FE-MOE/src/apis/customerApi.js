@@ -19,7 +19,6 @@ export const fetchCustomerById = async (id) => {
     .then((res) => res.data);
 };
 
-
 export const postCustomer = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/customer/store`, data)

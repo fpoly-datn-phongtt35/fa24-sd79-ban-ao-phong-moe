@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Container, Input } from '@mui/joy';
-import { addBillStatusDetail, addBillStatusDetailV2, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
+import { addBillStatusDetail, getBillEdit, getBillStatusDetailsByBillId, getPreviousBillStatusId } from '~/apis/billListApi';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Dialog, Grid, List, ListItem, ListItemText, Paper, Breadcrumbs, Link, Modal, TextField, StepLabel, IconButton, Step, Stepper, StepConnector, Tooltip, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { formatCurrencyVND } from '~/utils/format';
-import { addPayBillEdit, deleteProduct, fetchBill, fetchCoupon, fetchProduct, postCoupon, postProduct, putCustomer } from '~/apis/billsApi';
+import { addPayBillEdit, putCustomer } from '~/apis/billsApi';
 import CustomerEditModal from '~/components/bill/CustomerEditModal';
 import { fetchCustomerById } from '~/apis/customerApi';
 import { useNavigate } from 'react-router-dom';
@@ -60,7 +60,9 @@ export default function BillDetail() {
     phoneNumber: "",
     email: "",
     city: "",
+    city_id: "",
     district: "",
+    district_id: "",
     ward: "",
     streetName: "",
   });
@@ -73,7 +75,7 @@ export default function BillDetail() {
   const [isShippingDisabled, setIsShippingDisabled] = useState(false);
   const [prevStatus, setPrevStatus] = useState(null);
   const [isRestoreModalOpen, setRestoreModalOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   //bill
   const [isModalOpenNote, setIsModalOpenNote] = useState(false);
   const [billNote, setBillNote] = useState("");
@@ -82,6 +84,7 @@ export default function BillDetail() {
   const [tempPaymentAmount, setTempPaymentAmount] = useState("");
   const [tempPaymentMethod, setTempPaymentMethod] = useState("");
   const [tempPaymentTime, setTempPaymentTime] = useState("");
+  const [tempMessage, setTempMessage] = useState("");
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
 
   const checkNote = billData && billData.some(bill => bill.note);
@@ -124,6 +127,7 @@ export default function BillDetail() {
       if (bill.data?.[0]) {
         setTempPaymentMethod(bill.data[0].paymentMethod || "");
         setTempPaymentTime(bill.data[0].paymentTime || "");
+        setTempMessage(bill.data[0].message || "")
         statusRef.current = bill.data[0].status;
         checkNoteRef.current = bill.data[0].note;
       }
@@ -149,7 +153,7 @@ export default function BillDetail() {
     '1': '#007bff',
     '2': '#FF9800',
     '3': '#4CAF50',
-    '4': '#1E88E5',
+    '4': '#1E88E9',
     '5': '#43A047',
     '6': '#E53935',
     '7': '#F44336',
@@ -174,26 +178,39 @@ export default function BillDetail() {
   const handleOpenModal = () => {
     if (billData && billData.length > 0) {
       const bd = billData[0];
-      const customerId = bd?.customer?.id;
-
-      if (customerId) {
+      const customer = bd?.customer;
+  
+      if (customer && customer.id) {
         setCustomerData({
-          firstName: bd?.customer?.firstName || "",
-          lastName: bd?.customer?.lastName || "",
-          phone: bd?.customer?.phoneNumber || "",
-          email: bd?.customer?.user?.email || "",
-          city: bd?.customer?.customerAddress?.city || "",
-          district: bd?.customer?.customerAddress?.district || "",
-          ward: bd?.customer?.customerAddress?.ward || "",
-          streetName: bd?.customer?.customerAddress?.streetName || "",
+          id: customer.id || '',
+          firstName: customer.firstName || '',
+          lastName: customer.lastName || '',
+          fullName: customer.fullName || `${customer.firstName || ''} ${customer.lastName || ''}`.trim(),
+          phone: customer.phoneNumber || '',
+          city: customer.customerAddress?.city || '',
+          city_id: customer.customerAddress?.cityId || '',
+          district: customer.customerAddress?.district || '',
+          district_id: customer.customerAddress?.districtId || '',
+          ward: customer.customerAddress?.ward || '',
+          streetName: customer.customerAddress?.streetName || '',
         });
+  
+        // Kiểm tra giá trị trước khi mở modal
+        const cityId = customer.customerAddress?.cityId || '';
+        const districtId = customer.customerAddress?.districtId || '';
+        const ward = customer.customerAddress?.ward || '';
+  
+        setSelectedCity(cityId);
+        setSelectedDistrict(districtId);
+        setSelectedWard(ward);
+  
         setIsModalOpen(true);
-        console.log(customerData);
       } else {
-        console.error("Không tìm thấy thông tin khách hàng");
+        console.error('Không tìm thấy thông tin khách hàng');
       }
     }
   };
+  
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -253,7 +270,7 @@ export default function BillDetail() {
     }
 
     // 3. Nếu đang ở trạng thái 3, chỉ cho phép chuyển sang trạng thái 8 hoặc 7
-    if (currentStatus === 3 && Number(status) !== 8 && Number(status) !== 7) {
+    if (currentStatus === 3 && Number(status) !== 8) {
       toast.error("Vui lòng hoàn tất thanh toán hoặc hủy đơn hàng.");
       return;
     }
@@ -330,6 +347,15 @@ export default function BillDetail() {
     setRestoreModalOpen(true);
   };
 
+  const handleButtonClick = async () => {
+    await fetchBillStatusDetails();
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   //----------------------------------------------Bill-------------------------------------//
   const openNoteModal = () => {
     fetchBillEdit(id);
@@ -341,33 +367,34 @@ export default function BillDetail() {
 
   const handleNoteCloseModal = () => {
     const currentStatus = billData[0]?.status;
-  
-    if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
-      toast.error("Vui lòng giao hàng trước khi xác nhận.");
-      return;
-    }
-  
+
     if (statuses === 7) {
       toast.error("Hóa đơn đã bị hủy. Không thể xác nhận thanh toán.");
       return;
     }
-  
+
+    if (currentStatus === 2 && Number(status) !== 4 && Number(status) !== 7) {
+      toast.error("Vui lòng giao hàng trước khi xác nhận.");
+      setTempBillNote("");
+      return;
+    }
+
+    // Proceed only if the above conditions are not met
     setIsModalOpenNote(false);
     setBillNote(tempBillNote);
-  
-    // Use existing paymentTime if available, otherwise set a new one
+
     const newPaymentTime = billData[0]?.paymentTime || formatDate(new Date());
     setPaymentTime(newPaymentTime);
-  
+
     setIsPaymentConfirmed(true);
-  
+
     const userId = localStorage.getItem("userId");
-  
+
     updateBillStatusDetail("3", tempBillNote, userId);
     onPay(tempBillNote, "3", tempBillNote, userId, newPaymentTime);
     fetchBillEdit();
     fetchBillStatusDetails();
-  };  
+  };
 
   const handleNoteChange = (event) => {
     setTempBillNote(event.target.value);
@@ -378,12 +405,12 @@ export default function BillDetail() {
       console.log("Cannot create invoice. Please select an order and add products.");
       return;
     }
-  
+
     const updatedBillData = billData[0];
-  
+
     // Use existing paymentTime if already set, otherwise use the passed paymentTime
     const finalPaymentTime = updatedBillData.paymentTime || paymentTime;
-  
+
     const billStoreRequest = {
       billRequest: {
         code: updatedBillData.code || "",
@@ -408,7 +435,7 @@ export default function BillDetail() {
         discountAmount: billDetail.discountAmount,
       })),
     };
-  
+
     try {
       await addPayBillEdit(billStoreRequest);
       console.log("billStoreRequest:", billStoreRequest);
@@ -416,7 +443,7 @@ export default function BillDetail() {
       console.error("Error processing payment:", error);
     }
     fetchBillEdit();
-  };  
+  };
 
   const handleOpenConfirm = () => {
     setOpenConfirm(true);
@@ -618,7 +645,6 @@ export default function BillDetail() {
           </Box>
         </Box>
 
-
         <Box display="flex" justifyContent="space-between" gap={2} marginTop="20px">
           <div>
             {(statuses !== 4 && statuses !== 8 && statuses !== 7) && (
@@ -672,14 +698,73 @@ export default function BillDetail() {
               )
             )}
 
-            <Button variant="outlined" color="info" style={{ marginRight: '8px' }}            >
+            <Button
+              variant="outlined"
+              color="info"
+              style={{ marginRight: '8px' }}
+              onClick={handleButtonClick}
+            >
               <BookIcon />
             </Button>
           </div>
         </Box>
-
         {errorMessage && <Typography color="error">{errorMessage}</Typography>}
       </div>
+
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Trạng thái hóa đơn</DialogTitle>
+        <DialogContent>
+          {errorMessage ? (
+            <Typography color="error" variant="body2">
+              {errorMessage}
+            </Typography>
+          ) : statusDetails.length > 0 ? (
+            <List>
+              {statusDetails.map((status, index) => {
+                const statusCode = status.billStatus;
+                const statusColor = statusColors[statusCode] || '#a6a6a6'; // Default color
+
+                return (
+                  <ListItem key={index}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="h6" component="span" sx={{ color: statusColor }}>
+                          {statusMap[statusCode]}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <Typography variant="body2" color="textSecondary" component="span">
+                            {`Thời gian: ${status.createAt}`}
+                          </Typography>
+                        </>
+                      }
+                      sx={{
+                        padding: '10px',
+                        borderLeft: `5px solid ${statusColor}`, // Border color changes with status
+                      }}
+                    />
+                    {/* Optionally, you can also apply status color to the status icon */}
+                    <Box sx={{ color: statusColor }}>
+                      {statusIcons[statusCode]}
+                    </Box>
+                  </ListItem>
+                );
+              })}
+            </List>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Loading details...
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
       <div>
         <StatusModal
@@ -848,9 +933,9 @@ export default function BillDetail() {
           cities={cities}
           districts={districts}
           wards={wards}
-          selectedCity={selectedCity}
-          selectedDistrict={selectedDistrict}
-          selectedWard={selectedWard}
+          selectedCity={selectedCity || ""}
+          selectedDistrict={selectedDistrict || ""}
+          selectedWard={selectedWard || ""}
           setCities={setCities}
           setDistricts={setDistricts}
           setWards={setWards}
@@ -863,7 +948,6 @@ export default function BillDetail() {
           fetchBillEdit={fetchBillEdit}
         />
       </div>
-
       {/* ------------------Lịch sử thanh toán------------------ */}
 
       <div>
@@ -897,20 +981,30 @@ export default function BillDetail() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {checkNote || statusDone ? (
+              {(checkNote || statusDone) ? (
                 billData
                   .filter(bill => bill.note || bill.status === 8)
-                  .map((bill, index) => (
-                    <TableRow key={bill.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
-                      <TableCell>{bill.paymentTime || ''}</TableCell>
-                      <TableCell>{bill.code}</TableCell>
-                      <TableCell>{bill.paymentMethod}</TableCell>
-                      <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
-                      <TableCell>{bill.message}</TableCell>
-                    </TableRow>
-                  ))
+                  .length > 0 ? (
+                  billData
+                    .filter(bill => bill.note || bill.status === 8)
+                    .map((bill, index) => (
+                      <TableRow key={bill.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{formatCurrencyVND(bill.total)}</TableCell>
+                        <TableCell>{bill.paymentTime || ''}</TableCell>
+                        <TableCell>{bill.code}</TableCell>
+                        <TableCell>{bill.paymentMethod}</TableCell>
+                        <TableCell>{`${bill?.employee?.last_name || ''} ${bill?.employee?.first_name || ''}`}</TableCell>
+                        <TableCell>{bill.message}</TableCell>
+                      </TableRow>
+                    ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      Chưa có giao dịch thỏa mãn
+                    </TableCell>
+                  </TableRow>
+                )
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
@@ -919,6 +1013,7 @@ export default function BillDetail() {
                 </TableRow>
               )}
             </TableBody>
+
           </Table>
         </TableContainer>
       </div>
@@ -951,7 +1046,8 @@ export default function BillDetail() {
                 marginBottom: 2,
               }}
             >
-              Vui lòng nhập ghi chú trước khi xác nhận
+              Vui lòng nhập ghi chú trước khi xác nhận <br></br>
+              (chú ý bom hàng)
             </Typography>
 
             <TextField
@@ -981,6 +1077,7 @@ export default function BillDetail() {
               <Typography variant="body2">Số tiền: <b>{tempPaymentAmount.toLocaleString()} đ</b></Typography>
               <Typography variant="body2">Loại thanh toán: <b>{tempPaymentMethod}</b></Typography>
               <Typography variant="body2">Ngày thanh toán: <b>{tempPaymentTime}</b></Typography>
+              <Typography variant="body2">Ghi chú: <b>{tempMessage}</b></Typography>
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>

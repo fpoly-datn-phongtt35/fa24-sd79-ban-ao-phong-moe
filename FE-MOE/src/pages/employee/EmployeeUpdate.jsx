@@ -272,7 +272,10 @@ export const EmployeeUpdate = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateInputs()) {
 
+            return;
+        }
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
         const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
