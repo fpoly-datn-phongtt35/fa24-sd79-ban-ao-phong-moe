@@ -90,13 +90,13 @@ export const setLocked = async (id, isLocked) => {
     `${API_ROOT}/employee/change-isLocked/${id}/${isLocked}`
   );
 };
+
 export const putPassword = async (data, id) => {
   return await authorizedAxiosInstance
-    .put(`${API_ROOT}/employee/${id}/update-password`, data)
-    .then((res) => {
-      toast.success(res.data.message);
-    });
+    .put(`${API_ROOT}/employee/${id}/update-password`, data);
+    
 };
+
 export const getEmployeeDetail = async (id) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/employee/me/${id}`)
@@ -109,6 +109,7 @@ export const getEmployeeDetail = async (id) => {
       throw err;
     });
 };
+
 export const updateEmployeeDetail = async (data, id) => {
   return await authorizedAxiosInstance
     .put(`${API_ROOT}/employee/update/${id}`, data)

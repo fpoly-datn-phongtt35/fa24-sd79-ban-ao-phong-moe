@@ -272,12 +272,6 @@ const Header_Client = () => {
               }}
             />
           </Box>
-
-          <IconButton>
-            <Badge badgeContent={2} color="primary">
-              <FavoriteBorderOutlinedIcon />
-            </Badge>
-          </IconButton>
           <Tooltip variant="plain" title="Giỏ hàng">
             <IconButton onClick={() => navigate("/cart")}>
               <Badge badgeContent={context.amoutCart} color="primary">

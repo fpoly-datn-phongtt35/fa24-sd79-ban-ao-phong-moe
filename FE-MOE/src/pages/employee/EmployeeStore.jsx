@@ -109,8 +109,11 @@ export const EmployeeStore = () => {
         email: '',
         password: '',
         username: '',
-        // streetName: '',
-    });
+        ward: '',
+        district: '',
+        city: '',
+        streetName: '',
+      });
 
     const validateInputs = () => {
         let tempErrors = {};
@@ -123,12 +126,10 @@ export const EmployeeStore = () => {
         if (!employeeData.phone_number) tempErrors.phone_number = "Số điện thoại là bắt buộc.";
         if (!employeeData.date_of_birth) tempErrors.date_of_birth = "Ngày sinh là bắt buộc.";
         if (!employeeData.salary) tempErrors.salary = "Lương là bắt buộc.";
-        // if (!employeeData.position) tempErrors.position = "Vui lòng chọn chức vụ.";
-        // if (!employeeData.city) tempErrors.city = "Thành phố là bắt buộc.";
-        // if (!employeeData.district) tempErrors.district = "Quận/huyện là bắt buộc.";
-        // if (!employeeData.ward) tempErrors.ward = "Phường/xã là bắt buộc.";
-        // if (!employeeData.streetName) tempErrors.streetName = "Tên đường là bắt buộc.";
-        // console.log('Validation Result:', tempErrors);
+        if (!employeeData.district) tempErrors.salary = "quận huyện  là bắt buộc.";
+        if (!employeeData.city) tempErrors.salary = "thành phố là bắt buộc.";
+        if (!employeeData.ward) tempErrors.salary = "xã phường là bắt buộc.";
+        if (!employeeData.streetName) tempErrors.salary = "Tên đường là bắt buộc.";
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     }
@@ -402,12 +403,12 @@ export const EmployeeStore = () => {
                                                     sx={{
                                                         border: `1px solid ${errors.username ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
                                                         '&:hover:not(.Mui-disabled):before': {
-                                                          borderColor: errors.username ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                            borderColor: errors.username ? 'red' : 'rgba(0, 0, 0, 0.23)',
                                                         },
                                                         '&.Mui-focused': {
-                                                          borderColor: errors.username ? 'red' : 'primary.main',
+                                                            borderColor: errors.username ? 'red' : 'primary.main',
                                                         },
-                                                      }}
+                                                    }}
                                                 />
                                                 {errors.username && (
                                                     <Typography color="error" variant="body2">{errors.username}</Typography>
@@ -441,12 +442,12 @@ export const EmployeeStore = () => {
                                                     sx={{
                                                         border: `1px solid ${errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
                                                         '&:hover:not(.Mui-disabled):before': {
-                                                          borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                            borderColor: errors.email ? 'red' : 'rgba(0, 0, 0, 0.23)',
                                                         },
                                                         '&.Mui-focused': {
-                                                          borderColor: errors.email ? 'red' : 'primary.main',
+                                                            borderColor: errors.email ? 'red' : 'primary.main',
                                                         },
-                                                      }}
+                                                    }}
                                                 />
                                                 {errors.email && (
                                                     <Typography color="error" variant="body2">{errors.email}</Typography>
@@ -464,12 +465,12 @@ export const EmployeeStore = () => {
                                                     sx={{
                                                         border: `1px solid ${errors.phone_number ? 'red' : 'rgba(0, 0, 0, 0.23)'}`,
                                                         '&:hover:not(.Mui-disabled):before': {
-                                                          borderColor: errors.phone_number ? 'red' : 'rgba(0, 0, 0, 0.23)',
+                                                            borderColor: errors.phone_number ? 'red' : 'rgba(0, 0, 0, 0.23)',
                                                         },
                                                         '&.Mui-focused': {
-                                                          borderColor: errors.phone_number ? 'red' : 'primary.main',
+                                                            borderColor: errors.phone_number ? 'red' : 'primary.main',
                                                         },
-                                                      }}
+                                                    }}
                                                 />
                                                 {errors.phone_number && (
                                                     <Typography color="error" variant="body2">{errors.phone_number}</Typography>
@@ -543,7 +544,6 @@ export const EmployeeStore = () => {
                                         <Grid item xs={12} sm={6}>
                                             <FormControl>
                                                 <FormLabel required>Ngày sinh</FormLabel>
-                                                {/* {console.log("Giá trị của employeeData.date_of_birth:", employeeData.date_of_birth)} */}
                                                 <Input
                                                     name="date_of_birth"
                                                     value={employeeData.date_of_birth}
@@ -619,6 +619,8 @@ export const EmployeeStore = () => {
                                                     placeholder='Tên đường'
                                                     onChange={handleChange}
                                                 />
+                                                {errors.streetName && <span style={{ color: 'red' }}>{errors.streetName}</span>}
+
                                             </FormControl>
                                         </Grid>
                                     </Grid>
