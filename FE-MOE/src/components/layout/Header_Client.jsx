@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -38,6 +37,8 @@ const Header_Client = () => {
   const [options, setOptions] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [isOrder, setIsOrder] = useState(false);
 
   const context = useContext(CommonContext);
   const navigate = useNavigate();
@@ -66,6 +67,13 @@ const Header_Client = () => {
       handleSearch(inputValue);
     }
   }, [inputValue, handleSearch]);
+
+  useEffect(() => {
+    setIsOrder(
+      JSON.parse(localStorage.getItem("orderItems")) !== null &&
+        location.pathname !== "/checkout"
+    );
+  }, [JSON.parse(localStorage.getItem("orderItems"))]);
 
   const handleSelectOption = (event, option) => {
     if (option) {
@@ -183,6 +191,24 @@ const Header_Client = () => {
           >
             Giới thiệu
           </Button>
+          {isOrder && (
+            <Button
+              onClick={() => navigate("/checkout")}
+              sx={{
+                color:
+                  location.pathname === "/checkout" ? "primary.main" : "#000",
+                textTransform: "none",
+                fontWeight: 600,
+                transition: "all 0.3s ease",
+                ":hover": {
+                  color: "primary.main",
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              Tiếp tục thanh toán
+            </Button>
+          )}
           {!localStorage.getItem("accessToken") &&
             (location.pathname.includes("sign-up") ? (
               <Button
