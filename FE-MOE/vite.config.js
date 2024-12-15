@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     host: true,
     strictPort: true,
-    port: 1004,
+    port: 80,
   },
   resolve: {
     alias: [{ find: "~", replacement: "/src" }],
