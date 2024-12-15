@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { detailDiscount, putDiscount } from "~/apis/discountApi";
+import { detailDiscount, putDiscount, fetchAllDiscounts } from "~/apis/discountApi";
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel, Grid, Input, Link, Textarea, Typography } from "@mui/joy";
@@ -10,18 +10,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import CircularProgress from "@mui/material/CircularProgress";
 import { ProductUpdate } from "~/components/promotion/ProductUpdate";
 
-// Hàm chuyển đổi datetime-local format
+// Chuyển đổi datetime-local format
 const formatDateForBackend = (dateTimeString) => {
-  const date = new Date(dateTimeString); // Chuyển chuỗi ngày giờ thành đối tượng Date
+  const date = new Date(dateTimeString);
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`; // Trả về định dạng DD/MM/YYYY | HH:mm:ss
+  return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
 };
-
 
 export const UpdatePromotion = () => {
   const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
@@ -32,7 +31,6 @@ export const UpdatePromotion = () => {
 
   const startDate = watch("startDate");
   const endDate = watch("endDate");
-
   const isEndDateInvalid = endDate && startDate && new Date(endDate) < new Date(startDate);
 
   const fetchPromotionDetail = async () => {
@@ -40,17 +38,16 @@ export const UpdatePromotion = () => {
       const response = await detailDiscount(id);
       if (response && response.status === 200) {
         const promotionData = response.data;
-
         setValue("name", promotionData.name);
         setValue("code", promotionData.code);
         setValue("percent", promotionData.percent);
 
         // Chuyển đổi ngày giờ từ UTC sang datetime-local
         const toLocalDateTime = (dateString) => {
-          const date = new Date(dateString); // Chuyển đổi từ chuỗi thành đối tượng Date
-          const offset = date.getTimezoneOffset() * 60000; // Lấy độ chênh lệch múi giờ (ms)
-          const localDate = new Date(date.getTime() - offset); // Chuyển về local timezone
-          return localDate.toISOString().slice(0, 16); // Cắt bỏ giây và 'Z' để phù hợp với datetime-local
+          const date = new Date(dateString);
+          const offset = date.getTimezoneOffset() * 60000;
+          const localDate = new Date(date.getTime() - offset);
+          return localDate.toISOString().slice(0, 16);
         };
 
         setValue("startDate", toLocalDateTime(promotionData.startDate));
@@ -67,32 +64,65 @@ export const UpdatePromotion = () => {
     }
   };
 
-
   useEffect(() => {
     fetchPromotionDetail();
-  }, [id, setValue]);
+  }, []);
 
   const onSubmit = async (data) => {
-    if (isEndDateInvalid) {
+    // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
+    if (new Date(data.endDate) < new Date(data.startDate)) {
       Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
       return;
     }
-
+  
     setLoading(true);
+  
     try {
+      const allDiscountsResponse = await fetchAllDiscounts();
+      const allDiscounts = allDiscountsResponse.data.content || [];
+  
+      // Đếm số đợt giảm giá đang hoạt động
+      const activeDiscounts = allDiscounts.filter((discount) => {
+        const now = new Date();
+        return new Date(discount.startDate) <= now && new Date(discount.endDate) >= now;
+      });
+  
+      const isDuplicate = allDiscounts.some((discount) => {
+        if (discount.id === parseInt(id)) return false;
+  
+        const discountStartDate = new Date(discount.startDate);
+        const discountEndDate = new Date(discount.endDate);
+        const newStartDate = new Date(data.startDate);
+        const newEndDate = new Date(data.endDate);
+  
+        return (
+          (newStartDate >= discountStartDate && newStartDate <= discountEndDate) ||
+          (newEndDate >= discountStartDate && newEndDate <= discountEndDate) ||
+          (newStartDate <= discountStartDate && newEndDate >= discountEndDate)
+        );
+      });
+  
+      // Nếu đợt này là duy nhất đang hoạt động
+      const isOnlyActive = activeDiscounts.length === 1 && activeDiscounts[0].id === parseInt(id);
+  
+      if (isDuplicate && !isOnlyActive) {
+        Swal.fire("Lỗi", "Ngày bắt đầu hoặc ngày kết thúc trùng với đợt giảm giá khác!", "error");
+        return;
+      }
+  
       const payload = {
         name: data.name,
         code: data.code,
         percent: data.percent,
-        startDate: formatDateForBackend(data.startDate), // Định dạng lại ngày giờ
-        endDate: formatDateForBackend(data.endDate),     // Định dạng lại ngày giờ
+        startDate: formatDateForBackend(data.startDate),
+        endDate: formatDateForBackend(data.endDate),
         note: data.note,
         userId: localStorage.getItem("userId"),
         productIds: selectedProducts,
       };
-
+  
       const response = await putDiscount(id, payload);
-
+  
       if (response && response.status === 200) {
         Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
         navigate("/promotions");
@@ -100,14 +130,12 @@ export const UpdatePromotion = () => {
         Swal.fire("Lỗi", "Không thể cập nhật đợt giảm giá", "error");
       }
     } catch (error) {
-      console.error("Error updating discount:", error.response?.data || error.message);
+      console.error("Error updating discount:", error);
       Swal.fire("Lỗi", "Có lỗi xảy ra khi cập nhật đợt giảm giá", "error");
     } finally {
       setLoading(false);
     }
-  };
-
-
+  };  
 
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>

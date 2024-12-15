@@ -133,6 +133,33 @@ public class PromotionsServiceImpl implements PromotionService {
             throw new InvalidDataException("Mã đợt giảm giá \"" + req.getCode() + "\" đã tồn tại.");
         }
 
+        // Kiểm tra ngày trùng lặp với các đợt giảm giá khác (trừ chính nó)
+        boolean isDuplicate = promotionRepository.findAll().stream()
+                .filter(other -> !other.getId().equals(id)) // Bỏ qua chính nó
+                .anyMatch(other -> {
+                    // Kiểm tra nếu ngày bắt đầu hoặc kết thúc bị trùng
+                    boolean isOverlapping =
+                            (req.getStartDate().before(other.getEndDate()) && req.getStartDate().after(other.getStartDate())) || // Start trong khoảng
+                                    (req.getEndDate().after(other.getStartDate()) && req.getEndDate().before(other.getEndDate())) || // End trong khoảng
+                                    (req.getStartDate().before(other.getStartDate()) && req.getEndDate().after(other.getEndDate())); // Bao phủ khoảng
+                    return isOverlapping;
+                });
+
+// Kiểm tra nếu chỉ có đợt giảm giá này đang hoạt động
+        long activePromotions = promotionRepository.findAll().stream()
+                .filter(p -> p.getStartDate().before(new Date()) && p.getEndDate().after(new Date()))
+                .count();
+
+// Nếu chỉ có đợt giảm giá này hoạt động, bỏ qua kiểm tra isDuplicate
+        if (activePromotions == 1 && promotion.getStartDate().before(new Date()) && promotion.getEndDate().after(new Date())) {
+            isDuplicate = false;
+        }
+
+        if (isDuplicate) {
+            throw new InvalidDataException("Thời gian bắt đầu hoặc kết thúc của đợt giảm giá này trùng với đợt giảm giá khác.");
+        }
+
+
         // Cập nhật thông tin khuyến mãi
         promotion.setName(req.getName());
         promotion.setPercent(req.getPercent());
@@ -145,6 +172,13 @@ public class PromotionsServiceImpl implements PromotionService {
         // Lưu lại thông tin đã cập nhật
         this.promotionRepository.save(promotion);
 
+        // Xử lý chi tiết khuyến mãi
+        updatePromotionDetails(req, promotion);
+
+        return promotion.getId();
+    }
+
+    private void updatePromotionDetails(PromotionRequest req, Promotion promotion) {
         List<Long> existingProductIds = promotion.getPromotionDetails().stream()
                 .map(detail -> detail.getProduct().getId())
                 .collect(Collectors.toList());
@@ -168,9 +202,7 @@ public class PromotionsServiceImpl implements PromotionService {
                 promotion.getPromotionDetails().add(promotionDetail);
             }
         }
-        return promotion.getId();
     }
-
 
     @Override
     public void deleteByPromotionId(Integer id) {
@@ -264,5 +296,5 @@ public class PromotionsServiceImpl implements PromotionService {
 
     private User getUser(Long id){
         return this.userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User không tồn tại!"));
-    }
+    }   
 }
