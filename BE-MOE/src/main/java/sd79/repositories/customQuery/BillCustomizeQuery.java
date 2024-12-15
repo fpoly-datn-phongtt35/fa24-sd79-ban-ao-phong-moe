@@ -94,8 +94,8 @@ public class BillCustomizeQuery {
         StringBuilder sql = new StringBuilder("SELECT b FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
 
         // Phân quyền dựa vào chức vụ
-        if (employeePositionId == 2) {
-            sql.append(" AND b.createdBy.id = :userId");
+        if (employeePositionId == 2) { // Nhân viên
+            sql.append(" AND (b.createdBy.id = :userId OR b.createdBy IS NULL)");
         }
 
         // Điều kiện tìm kiếm
@@ -174,8 +174,8 @@ public class BillCustomizeQuery {
         // Truy vấn số lượng bản ghi
         StringBuilder countSql = new StringBuilder("SELECT COUNT(b) FROM Bill b LEFT JOIN b.customer c WHERE b.isDeleted = false");
 
-        if (employeePositionId == 2) {
-            countSql.append(" AND b.createdBy.id = :userId");
+        if (employeePositionId == 2) { // Nhân viên
+            countSql.append(" AND (b.createdBy.id = :userId OR b.createdBy IS NULL)");
         }
 
         if (StringUtils.hasLength(param.getKeyword())) {
@@ -207,13 +207,6 @@ public class BillCustomizeQuery {
         }
 
         countSql.append(" AND b.billStatus.id = :statusId");
-        if (status == 2) {
-            sql.append(" ORDER BY b.createAt ASC");  // Thời gian lâu nhất lên đầu cho trạng thái 2
-        } else if (status == 8) {
-            sql.append(" ORDER BY b.createAt DESC"); // Thời gian mới nhất lên đầu cho trạng thái 8
-        } else {
-            sql.append(" ORDER BY b.createAt DESC"); // Sắp xếp mặc định
-        }
 
         TypedQuery<Long> countQuery = entityManager.createQuery(countSql.toString(), Long.class);
 

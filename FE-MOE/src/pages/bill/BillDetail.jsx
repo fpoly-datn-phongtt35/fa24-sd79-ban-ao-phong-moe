@@ -271,7 +271,7 @@ export default function BillDetail() {
 
     // 3. Nếu đang ở trạng thái 3, chỉ cho phép chuyển sang trạng thái 8 hoặc 7
     if (currentStatus === 3 && Number(status) !== 8) {
-      toast.error("Vui lòng hoàn tất thanh toán hoặc hủy đơn hàng.");
+      toast.error("Vui lòng hoàn tất thanh toán.");
       return;
     }
 
