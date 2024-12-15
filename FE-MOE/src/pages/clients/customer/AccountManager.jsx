@@ -165,32 +165,54 @@ export const AccountInfo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      console.log("Form không hợp lệ, dừng xử lý.");
-      return;
-    }
-    const updatedCustomer = {
-      ...accountData,
-      dateOfBirth: formatDate(accountData.dateOfBirth),
-      updatedAt: new Date().toISOString(),
-    };
-    setIsLoading(true);
-    await putAccountInfo(updatedCustomer, localStorage.getItem("userId")).then(async (res) => {
-      if (imageObject === null) {
-        toast.success('Sửa thành công');
-        setIsLoading(false);
-        return;
-      }
-      const formData = new FormData();
-      formData.append("images", imageObject)
-      formData.append("UserId", id)
-      await postcustomerImage(formData).then(() => {
-        toast.success('Sửa thành công');
-        setIsLoading(false);
-      })
-
+    const confirm = await swal({
+        title: 'Xác nhận sửa thông tin tài khoản',
+        text: 'Bạn có chắc chắn muốn sửa thông tin tài khoản này?',
+        icon: 'warning',
+        buttons: true,
+        dangerMode: true,
     });
-  };
+
+    if (!confirm) {
+        return;
+    }
+
+    if (!validateForm()) {
+        console.log("Form không hợp lệ, dừng xử lý.");
+        return;
+    }
+
+    const updatedCustomer = {
+        ...accountData,
+        dateOfBirth: formatDate(accountData.dateOfBirth),
+        updatedAt: new Date().toISOString(),
+    };
+
+    setIsLoading(true);
+
+    try {
+        await putAccountInfo(updatedCustomer, localStorage.getItem("userId"));
+
+        if (imageObject === null) {
+            toast.success('Sửa thành công');
+            setIsLoading(false);
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("images", imageObject);
+        formData.append("UserId", id);
+
+        await postcustomerImage(formData);
+
+        toast.success('Sửa thành công');
+    } catch (error) {
+        toast.error('Có lỗi xảy ra khi sửa thông tin tài khoản');
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
@@ -215,12 +237,8 @@ export const AccountInfo = () => {
         <Grid xs={12} md={3}>
           <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-account")}>Thông tin tài khoản</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
-            <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
             <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
           </Sheet>
         </Grid>

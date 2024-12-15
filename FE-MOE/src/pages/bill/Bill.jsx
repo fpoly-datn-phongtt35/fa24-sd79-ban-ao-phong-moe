@@ -200,6 +200,7 @@ function Bill() {
         try {
             await postProduct(product);
             handleSetProduct(selectedOrder);
+            toast.success("Thêm sản phẩm vào giỏ hàng thành công")
             initialQuantity[pr.id] = 1;
         } catch (error) {
             console.error('Failed to add product:', error);
@@ -439,8 +440,8 @@ function Bill() {
         }
 
         const paymentMethodName = "CASH";
-        const paymentTime = !isDeliveryEnabled ? formatDate(new Date().toISOString()) : ""; 
-        const note = !isDeliveryEnabled ? "đã thanh toán" : null; 
+        const paymentTime = !isDeliveryEnabled ? formatDate(new Date().toISOString()) : "";
+        const note = !isDeliveryEnabled ? "đã thanh toán" : null;
 
         const billStoreRequest = {
             billRequest: {
@@ -448,14 +449,14 @@ function Bill() {
                 bankCode: bankCode,
                 customer: currentOrder.customerId || null,
                 coupon: currentOrder.coupon ? currentOrder.coupon.id : null,
-                billStatus: isDeliveryEnabled ? 2 : 8,
+                billStatus: isDeliveryEnabled && currentOrder.customerId !== null ? 4 : 8,
                 shipping: shippingCost,
                 subtotal: subtotal,
                 sellerDiscount: discountAmount,
                 total: totalAfterDiscount,
                 paymentMethod: paymentMethodName,
                 message: null,
-                note: note, 
+                note: note,
                 paymentTime: paymentTime,
                 userId: localStorage.getItem("userId"),
             },
@@ -466,16 +467,16 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-
+      
         try {
             await addPay(billStoreRequest);
-            if (isDeliveryEnabled) {
-                await updateBillStatusDetail(1); 
+            if (isDeliveryEnabled && currentOrder.customerId !== null) {
+                await updateBillStatusDetail(1);
                 await updateBillStatusDetail(2);
-                await updateBillStatusDetail(4); 
+                await updateBillStatusDetail(4);
             } else {
-                await updateBillStatusDetail(1); 
-                await updateBillStatusDetail(8); 
+                await updateBillStatusDetail(1);
+                await updateBillStatusDetail(8);
             }
 
             toast.success("Thanh toán hóa đơn thành công!");
@@ -743,7 +744,7 @@ function Bill() {
 
             {/* Product */}
             <div>
-                <Paper sx={{ padding: 2, marginTop: 3, borderRadius: 2, boxShadow: 1, marginBottom: 5, background: "rgb(249 242 242)" }}>
+                <Paper sx={{ padding: 2, marginTop: 3, borderRadius: 2, boxShadow: 1, marginBottom: 5}}>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', justifyContent: 'space-between' }}>
                         <Typography sx={{ fontWeight: 'bold', color: 'textSecondary', fontSize: '1.5rem' }}>
                             Giỏ hàng
@@ -886,16 +887,18 @@ function Bill() {
 
             {/* Coupon and Tính toán */}
             <div>
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", background: "rgb(249 242 242)" }}>
+                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"}}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h5" fontWeight="bold" color="textPrimary">
                             Thông tin thanh toán
                         </Typography>
 
-                        <Box display="flex" alignItems="center">
-                            <Switch checked={isDeliveryEnabled} onChange={handleToggleDelivery} />
-                            <Typography variant="body1">Giao hàng</Typography>
-                        </Box>
+                        {customerId ? (
+                            <Box display="flex" alignItems="center">
+                                <Switch checked={isDeliveryEnabled} onChange={handleToggleDelivery} />
+                                <Typography variant="body1">Giao hàng</Typography>
+                            </Box>
+                        ) : null}
 
                         <Box display="flex" alignItems="center" gap={1}>
                             <LocationOnIcon color="success" />

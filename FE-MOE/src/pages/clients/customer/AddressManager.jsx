@@ -137,11 +137,24 @@ export const AddressInfo = () => {
     }
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
+    
+        const confirm = await swal({
+            title: 'Xác nhận sửa thông tin địa chỉ',
+            text: 'Bạn có chắc chắn muốn sửa thông tin địa chỉ này?',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        });
+    
+        if (!confirm) {
+            return;
+        }
+    
         const cityName = cities.find((city) => city.code == selectedCity)?.name;
         const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
         const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
+    
         const updatedAddress = {
             ...addressData,
             city: cityName,
@@ -152,15 +165,19 @@ export const AddressInfo = () => {
             dateOfBirth: formatDate(addressData.dateOfBirth),
             updatedAt: new Date().toISOString(),
         };
+    
         setIsLoading(true);
-
-        await putAddressInfo(updatedAddress, localStorage.getItem("userId")).then(async (res) => {
+    
+        try {
+            await putAddressInfo(updatedAddress, localStorage.getItem("userId"));
             toast.success('Sửa thành công');
-            setIsLoading(false);           
-            return;
-
-        });
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi sửa thông tin địa chỉ');
+        } finally {
+            setIsLoading(false);
+        }
     };
+    
 
 
     return (
@@ -186,12 +203,8 @@ export const AddressInfo = () => {
                 <Grid xs={12} md={3}>
                     <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-account")}>Thông tin tài khoản</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }} >Tích lũy điểm</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
                     </Sheet>
                 </Grid>

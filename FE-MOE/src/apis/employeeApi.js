@@ -90,34 +90,34 @@ export const setLocked = async (id, isLocked) => {
     `${API_ROOT}/employee/change-isLocked/${id}/${isLocked}`
   );
 };
+
 export const putPassword = async (data, id) => {
   return await authorizedAxiosInstance
-    .put(`${API_ROOT}/employee/${id}/update-password`, data)
-    .then((res) => {
-      toast.success(res.data.message);
-    });
+    .put(`${API_ROOT}/employee/${id}/update-password`, data);
+    
 };
+
 export const getEmployeeDetail = async (id) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/employee/me/${id}`)
     .then((res) => {
-      toast.success(res.data.message);
+      toast.success(res.data); // Hiển thị thông báo thành công
       return res.data.data; // Trả về dữ liệu chi tiết nhân viên
     })
     .catch((err) => {
-      toast.error(err.response?.data?.message || "Lấy thông tin nhân viên thất bại!");
-      throw err;
-    });
-};
-export const updateEmployeeDetail = async (data, id) => {
-  return await authorizedAxiosInstance
-    .put(`${API_ROOT}/employee/update/${id}`, data)
-    .then((res) => {
-      toast.success(res.data.message);
-    })
-    .catch((err) => {
-      toast.error(err.response?.data?.message || "Cập nhật thông tin nhân viên thất bại!");
+      toast.error(err.response?.data?.message || 'Lấy thông tin nhân viên thất bại!');
       throw err;
     });
 };
 
+export const updateEmployeeDetail = async (data, id) => {
+  return await authorizedAxiosInstance
+    .put(`${API_ROOT}/employee/update/${id}`, data)
+    .then((res) => {
+      toast.success(res.data.message); // Hiển thị thông báo thành công
+    })
+    .catch((err) => {
+      toast.error(err.response?.data?.message || 'Cập nhật thông tin nhân viên thất bại!');
+      throw err;
+    });
+};

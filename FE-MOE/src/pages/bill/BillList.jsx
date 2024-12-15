@@ -234,77 +234,62 @@ export default function BillList() {
                     </Grid>
                 </Grid>
 
-                <Grid container spacing={3} sx={{ mt: 2 }}>
+                <Grid container spacing={2} alignItems="center" mt={2}>               
                     {/* Bộ lọc ngày */}
-                    <Grid item xs={12}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Từ ngày"
-                                    type="date"
-                                    variant="outlined"
-                                    InputLabelProps={{ shrink: true }}
-                                    fullWidth
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    size="small"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    label="Đến ngày"
-                                    type="date"
-                                    variant="outlined"
-                                    InputLabelProps={{ shrink: true }}
-                                    fullWidth
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    size="small"
-                                />
-                            </Grid>
-                        </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            label="Từ ngày"
+                            type="date"
+                            variant="outlined"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            label="Đến ngày"
+                            type="date"
+                            variant="outlined"
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            size="small"
+                        />
                     </Grid>
 
                     {/* Bộ lọc giá */}
-                    <Grid item xs={12}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ mb: 1 }}>
-                                    Từ giá:
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    defaultValue={minTotal.toLocaleString()}
-                                    onChange={handleInputChangeMin}
-                                    variant="outlined"
-                                    size="small"
-                                    inputProps={{
-                                        type: "text", // Allows formatting
-                                        inputMode: "numeric", // Opens numeric keypad on mobile
-                                    }}
-                                    sx={{ mb: 2 }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ mb: 1 }}>
-                                    Đến giá:
-                                </Typography>
-                                <TextField
-                                    fullWidth
-                                    defaultValue={maxTotal.toLocaleString()}
-                                    onChange={handleInputChangeMax}
-                                    variant="outlined"
-                                    size="small"
-                                    inputProps={{
-                                        type: "text",
-                                        inputMode: "numeric",
-                                    }}
-                                    sx={{ mb: 2 }}
-                                />
-                            </Grid>
-                        </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <TextField
+                            placeholder="Từ giá"
+                            fullWidth
+                            defaultValue={minTotal.toLocaleString()}
+                            onChange={handleInputChangeMin}
+                            variant="outlined"
+                            size="small"
+                            inputProps={{
+                                type: "text",
+                                inputMode: "numeric",
+                            }}
+                        />
                     </Grid>
-
+                    <Grid item xs={12} sm={2}>
+                        <TextField
+                            placeholder="Đến giá"
+                            fullWidth
+                            defaultValue={maxTotal.toLocaleString()}
+                            onChange={handleInputChangeMax}
+                            variant="outlined"
+                            size="small"
+                            inputProps={{
+                                type: "text",
+                                inputMode: "numeric",
+                            }}
+                        />
+                    </Grid>
                 </Grid>
             </Box>
 

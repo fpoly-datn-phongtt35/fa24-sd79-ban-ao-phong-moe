@@ -18,6 +18,7 @@ import { MoeAlert } from "../other/MoeAlert";
 import { useContext, useState } from "react";
 import { playAudio } from "~/utils/speak";
 import { CommonContext } from "~/context/CommonContext";
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 export const Sidebar_Admin = (props) => {
   const navigate = useNavigate();
@@ -194,7 +195,7 @@ export const Sidebar_Admin = (props) => {
           <SubMenu
             disabled={!context?.isManager}
             label="Thống kê"
-            icon={<ReceiptIcon style={{ color: "#0071bd" }} />}
+            icon={<BarChartIcon style={{ color: "#0071bd" }} />}
           >
             <MenuItem component={<Link to="/statistical/bill" />}>
               <Typography sx={{ color: "#32383e" }} level="body-md">

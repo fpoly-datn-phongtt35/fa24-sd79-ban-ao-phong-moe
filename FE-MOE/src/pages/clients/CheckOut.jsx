@@ -95,6 +95,9 @@ function CheckOut() {
   }, [items]);
 
   const init = () => {
+    context.handleFetchCarts();
+
+
     setOrderSuccessfully(false);
     ScrollToTop();
     fetchUsers();
@@ -179,7 +182,6 @@ function CheckOut() {
 
   if (orderSuccessfully) {
     ScrollToTop();
-    context.handleFetchCarts();
     return (
       <Box
         display="flex"

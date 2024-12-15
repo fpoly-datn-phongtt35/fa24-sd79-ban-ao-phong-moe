@@ -80,6 +80,7 @@ export default function BillEdit() {
         };
         try {
             await postProduct(product);
+            toast.success("Thêm sản phẩm vào giỏ hàng thành công")
             initialQuantity[pr.id] = 1;
 
             // Sau khi thêm sản phẩm thành công, cập nhật lại sản phẩm và hóa đơn
@@ -372,131 +373,153 @@ export default function BillEdit() {
                     {billData?.map((bd) =>
                         [...bd.billDetails]
                             .sort((a, b) => a.productDetail.id - b.productDetail.id)
-                            .map((detail) => (
-                                <ListItem
-                                    key={detail.productDetail.id}
-                                    sx={{
-                                        backgroundColor: '#ffffff',
-                                        borderRadius: '8px',
-                                        boxShadow: 1,
-                                        mb: 2,
-                                        transition: '0.3s',
-                                        '&:hover': {
-                                            boxShadow: 3,
-                                            backgroundColor: '#f9f9f9',
-                                        },
-                                    }}
-                                >
-                                    <Grid container alignItems="center" spacing={2}>
-                                        {/* Image Section */}
-                                        <Grid item xs={4} sm={3} md={2}>
-                                            {detail.productDetail?.imageUrl?.length > 0 ? (
-                                                <ImageRotator
-                                                    imageUrl={detail.productDetail.imageUrl}
-                                                    w={100}
-                                                    h={110}
+                            .map((detail) => {
+                                const matchingProduct = products.find(
+                                    (product) => product.productDetail.id === detail.productDetail.id
+                                );
+
+                                return (
+                                    <ListItem
+                                        key={`${bd.id}-${detail.productDetail.id}`}
+                                        sx={{
+                                            backgroundColor: '#ffffff',
+                                            borderRadius: '8px',
+                                            boxShadow: 1,
+                                            mb: 2,
+                                            transition: '0.3s',
+                                            '&:hover': {
+                                                boxShadow: 3,
+                                                backgroundColor: '#f9f9f9',
+                                            },
+                                        }}
+                                    >
+                                        <Grid container alignItems="center" spacing={2}>
+                                            {/* Image Section */}
+                                            <Grid item xs={4} sm={3} md={2}>
+                                                {detail.productDetail?.imageUrl?.length > 0 ? (
+                                                    <ImageRotator
+                                                        imageUrl={detail.productDetail.imageUrl}
+                                                        w={100}
+                                                        h={110}
+                                                    />
+                                                ) : (
+                                                    <Box
+                                                        sx={{
+                                                            width: 90,
+                                                            height: 100,
+                                                            bgcolor: 'grey.300',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                        }}
+                                                    >
+                                                        <Typography variant="body2">No Image</Typography>
+                                                    </Box>
+                                                )}
+                                            </Grid>
+
+                                            {/* Product Details */}
+                                            <Grid item xs={4} sm={5} md={6}>
+                                                <ListItemText
+                                                    primary={
+                                                        <Typography variant="h6" fontWeight="bold">
+                                                            {detail.productDetail?.productName}
+                                                        </Typography>
+                                                    }
                                                 />
-                                            ) : (
-                                                <Box
-                                                    sx={{
-                                                        width: 90,
-                                                        height: 100,
-                                                        bgcolor: 'grey.300',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}
+                                                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                                    Kích thước: {detail.productDetail?.size} - Màu sắc: {detail.productDetail?.color}
+                                                </Typography>
+                                                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                                    Xuất xứ: {detail.productDetail?.origin} - Vật liệu: {detail.productDetail?.material}
+                                                </Typography>
+                                            </Grid>
+
+                                            {/* Quantity Input */}
+                                            {matchingProduct && (
+                                                <Grid
+                                                    item
+                                                    xs={4}
+                                                    sm={2}
+                                                    md={2}
+                                                    display="flex"
+                                                    justifyContent="center"
+                                                    flexDirection="column"
+                                                    alignItems="center"
                                                 >
-                                                    <Typography variant="body2">No Image</Typography>
-                                                </Box>
+                                                    <Input
+                                                        type="number"
+                                                        value={matchingProduct.quantity}
+                                                        onChange={(e) => {
+                                                            let inputQuantity = parseInt(e.target.value, 10) || '';
+                                                            const maxQuantity = matchingProduct.productDetail.quantity + 1;
+
+                                                            if (inputQuantity > maxQuantity) {
+                                                                inputQuantity = maxQuantity;
+                                                            }
+
+                                                            handleQuantityChange(matchingProduct.id, inputQuantity);
+                                                        }}
+                                                        sx={{
+                                                            width: '80%',
+                                                            '& input': {
+                                                                textAlign: 'center',
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            input: {
+                                                                min: 1,
+                                                                max: matchingProduct.productDetail.quantity + 1,
+                                                            },
+                                                        }}
+                                                    />
+                                                </Grid>
                                             )}
-                                        </Grid>
 
-                                        {/* Product Details */}
-                                        <Grid item xs={4} sm={5} md={6}>
-                                            <ListItemText
-                                                primary={
-                                                    <Typography variant="h6" fontWeight="bold">
-                                                        {detail.productDetail?.productName}
-                                                    </Typography>
-                                                }
-                                            />
-                                            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                                Kích thước: {detail.productDetail?.size} - Màu sắc: {detail.productDetail?.color}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                                                Xuất xứ: {detail.productDetail?.origin} - Vật liệu: {detail.productDetail?.material}
-                                            </Typography>
-                                        </Grid>
-
-                                        {/* Quantity Input */}
-                                        {products.map((product, index) => (
+                                            {/* Price and Delete Button */}
                                             <Grid
                                                 item
                                                 xs={4}
                                                 sm={2}
                                                 md={2}
                                                 display="flex"
-                                                justifyContent="center"
-                                                flexDirection="column"
+                                                justifyContent="flex-end"
                                                 alignItems="center"
                                             >
-                                                <Input
-                                                    type="number"
-                                                    value={product.quantity}
-                                                    onChange={(e) => {
-                                                        let inputQuantity = parseInt(e.target.value, 10) || '';
-                                                        const maxQuantity = product.productDetail.quantity + 1;
-
-                                                        if (inputQuantity > maxQuantity) {
-                                                            inputQuantity = maxQuantity;
-                                                        }
-
-                                                        handleQuantityChange(product.id, inputQuantity);
-                                                    }}
-                                                    sx={{
-                                                        width: '80%',
-                                                        '& input': {
-                                                            textAlign: 'center',
-                                                        }
-                                                    }}
-                                                    slotProps={{
-                                                        input: {
-                                                            min: 1,
-                                                            max: product.productDetail.quantity + 1,
-                                                        }
-                                                    }}
-                                                />
+                                                <Typography variant="body2" sx={{ mr: 1 }}>
+                                                    {detail.discountAmount === detail.productDetail?.price ? (
+                                                        formatCurrencyVND(detail.productDetail?.price * detail.quantity)
+                                                    ) : (
+                                                        <>
+                                                            <span
+                                                                style={{
+                                                                    textDecoration: 'line-through',
+                                                                    color: 'gray',
+                                                                    marginRight: 8,
+                                                                }}
+                                                            >
+                                                                {formatCurrencyVND(detail.productDetail?.price * detail.quantity)}
+                                                            </span>
+                                                            <span style={{ color: 'red' }}>
+                                                                {formatCurrencyVND(detail.discountAmount * detail.quantity)}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </Typography>
+                                                <IconButton
+                                                    color="error"
+                                                    onClick={() => handleDeleteProduct(detail.productDetail.id)}
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
                                             </Grid>
-                                        ))}
-
-                                        {/* Price and Delete Button */}
-                                        <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
-                                            <Typography variant="body2" sx={{ mr: 1 }}>
-                                                {detail.discountAmount === detail.productDetail?.price ? (
-                                                    formatCurrencyVND(detail.productDetail?.price * detail.quantity)
-                                                ) : (
-                                                    <>
-                                                        <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: 8 }}>
-                                                            {formatCurrencyVND(detail.productDetail?.price * detail.quantity)}
-                                                        </span>
-                                                        <span style={{ color: 'red' }}>
-                                                            {formatCurrencyVND(detail.discountAmount * detail.quantity)}
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </Typography>
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleDeleteProduct(detail.productDetail.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
                                         </Grid>
-                                    </Grid>
-                                </ListItem>
-                            ))
+                                    </ListItem>
+                                );
+                            })
                     )}
-                </List>
+                </List>;
+
 
             </div>
 

@@ -77,7 +77,7 @@ export const postProduct = async (data) => {
   return await authorizedAxiosInstance
     .post(`${API_ROOT}/bill/storeProduct`, data)
     .then((res) => {
-      toast.success(res.data.message);
+      // toast.success(res.data.message);
       return res.data.data;
     })
 };

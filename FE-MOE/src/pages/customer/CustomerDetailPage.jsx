@@ -229,17 +229,28 @@ export const CustomerDetailPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-
+  
+    if (!validateForm()) return;
+  
+    const confirm = await swal({
+      title: 'Xác nhận sửa thông tin',
+      text: 'Bạn có chắc chắn muốn sửa thông tin khách hàng này?',
+      icon: 'warning',
+      buttons: true,
+      dangerMode: true,
+    });
+  
+    if (!confirm) {
       return;
     }
-
+  
+    const currentDate = new Date().toISOString();
+  
     const cityName = cities.find((city) => city.code == selectedCity)?.name;
     const districtName = districts.find((district) => district.code == selectedDistrict)?.name;
     const wardName = wards.find((ward) => ward.name == selectedWard)?.name;
-
-    const updatedCustomer = {
+  
+    const customerWithTimestamps = {
       ...customerData,
       city: cityName,
       city_id: selectedCity,
@@ -247,29 +258,35 @@ export const CustomerDetailPage = () => {
       district_id: selectedDistrict,
       ward: wardName,
       dateOfBirth: formatDate(customerData.dateOfBirth),
-      updatedAt: new Date().toISOString(),
+      updatedAt: currentDate,
     };
-    setIsLoading(true);
-    await putCustomer(updatedCustomer, id).then(async (res) => {
+  
+    try {
+      setIsLoading(true);
+  
+      const res = await putCustomer(customerWithTimestamps, id);
+  
       if (imageObject === null) {
         toast.success('Sửa thành công');
         setIsLoading(false);
         navigate('/customer');
         return;
       }
-
       const formData = new FormData();
-      formData.append("images", imageObject)
-      formData.append("productId", id)
-      await postcustomerImage(formData).then(() => {
-        toast.success('Sửa thành công');
-        setIsLoading(false);
-        navigate('/customer');
-      })
-
-    });
-
+      formData.append("images", imageObject);
+      formData.append("productId", id);
+  
+      await postcustomerImage(formData);
+  
+      toast.success('Sửa thành công');
+      setIsLoading(false);
+      navigate('/customer');
+    } catch (error) {
+      setIsLoading(false);
+      toast.error('Có lỗi xảy ra khi sửa thông tin khách hàng');
+    }
   };
+  
 
   const handleImageChange = (event) => {
     var file = event.target.files[0];
@@ -570,7 +587,7 @@ export const CustomerDetailPage = () => {
                   </Grid>
                   <Grid item xs={6} sx={{ marginTop: 1 }}>
                     <Button loading={isLoading} variant="soft" type="submit" color='primary' sx={{ marginRight: 1 }}>
-                      Cập Nhật Người Dùng
+                      Cập Nhật
                     </Button>
                     <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy

@@ -27,26 +27,63 @@ export const UpdatePassWord = () => {
 
     const validateForm = () => {
         const errors = {};
-        if (!passwords.currentPassword) errors.currentPassword = 'Vui lòng nhập mật khẩu cũ';
-        if (!passwords.newPassword) errors.newPassword = 'Vui lòng nhập mật khẩu mới';
-        else if (!passwordRegex.test(passwords.newPassword)) {
-            errors.newPassword = 'Mật khẩu mới phải có phải từ 6 đến 50 kí tự!';
+        if (!passwords.currentPassword) {
+            errors.currentPassword = 'Vui lòng nhập mật khẩu cũ';
+            setErrors(errors);
+            return false;
         }
-        if (passwords.newPassword !== passwords.confirmPassword)
+        if (!passwords.newPassword) {
+            errors.newPassword = 'Vui lòng nhập mật khẩu mới';
+            setErrors(errors);
+            return false;
+        }
+        if (!passwords.confirmPassword) {
+            errors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới';
+            setErrors(errors);
+            return false;
+        }
+
+        if (!passwordRegex.test(passwords.newPassword)) {
+            errors.newPassword = 'Mật khẩu mới phải có phải từ 6 đến 50 kí tự!';
+            setErrors(errors);
+            return false;
+        }
+
+        if (passwords.newPassword !== passwords.confirmPassword) {
             errors.confirmPassword = 'Mật khẩu mới và xác nhận mật khẩu không khớp';
-        setErrors(errors);
-        return Object.keys(errors).length === 0;
+            setErrors(errors);
+            return false;
+        }
+
+        setErrors({});
+        return true;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!validateForm()) {
+            setBackendErrors({});
+            return;
+        }
+
+        const confirm = await swal({
+            title: 'Xác nhận thay đổi mật khẩu',
+            text: 'Bạn có chắc chắn muốn thay đổi mật khẩu?',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        });
+        if (!confirm) {
+            return;
+        }
+
         try {
             await putPassword(passwords, localStorage.getItem("userId"));
             toast.success('Đổi mật khẩu thành công');
-            setPasswords(initialPasswords); 
+            setPasswords(initialPasswords);
         } catch (error) {
-            if (error.response && error.response.data.message) {             
+            if (error.response && error.response.data.message) {
                 if (error.response.data.message === 'Mật khẩu cũ không chính xác') {
                     setBackendErrors({ currentPassword: 'Mật khẩu cũ không chính xác' });
                 } else {
@@ -58,9 +95,9 @@ export const UpdatePassWord = () => {
         } finally {
             setIsLoading(false);
         }
-        
-        
     };
+
+
 
 
     return (
@@ -86,12 +123,8 @@ export const UpdatePassWord = () => {
                 <Grid xs={12} md={3}>
                     <Sheet variant="outlined" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, borderRadius: 'md' }}>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-account")}>Thông tin tài khoản</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Tích lũy điểm</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Chia sẻ</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Đổi quà</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-order")}>Quản lý đơn hàng</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-address")}>Sổ địa chỉ</Typography>
-                        <Typography variant="body1" sx={{ cursor: 'pointer' }}>Sản phẩm bạn đã xem</Typography>
                         <Typography variant="body1" sx={{ cursor: 'pointer' }} onClick={() => navigate("/my-passWord")}>Đổi mật khẩu</Typography>
                     </Sheet>
                 </Grid>

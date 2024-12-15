@@ -135,23 +135,37 @@ export const Customer = () => {
     handleSetCustomer();
   };
   const onSetLocked = async (id, currentLockedState) => {
+    const actionText = currentLockedState ? 'mở khóa' : 'khóa';
+    const confirm = await swal({
+        title: `Xác nhận ${actionText}`,
+        text: `Bạn có chắc chắn muốn ${actionText} khách hàng này?`,
+        icon: 'warning',
+        buttons: true,
+        dangerMode: true,
+    });
+
+    if (!confirm) {
+        return;
+    }
+
     const updatedLockedState = !currentLockedState;
 
     try {
+        await setLocked(id, updatedLockedState);
 
-      await setLocked(id, updatedLockedState);
+        setLockedStates((prevStates) => ({
+            ...prevStates,
+            [id]: updatedLockedState,
+        }));
 
-
-      setLockedStates((prevStates) => ({
-        ...prevStates,
-        [id]: updatedLockedState,
-      }));
-
-      console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
+        toast.success(`Tài khoản khách hàng đã được ${actionText}`);
+        console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
     } catch (error) {
-      console.error("Failed to update lock status:", error);
+        console.error("Failed to update lock status:", error);
+        toast.error(`Không thể ${actionText} khách hàng`);
     }
-  };
+};
+
 
   const onDetailsClick = (customer) => {
     setSelectedCustomer(customer);

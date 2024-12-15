@@ -197,7 +197,20 @@ export const AddCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!validateForm()) return;
+  
+    const confirm = await swal({
+      title: 'Xác nhận thêm khách hàng',
+      text: 'Bạn có chắc chắn muốn thêm khách hàng này?',
+      icon: 'warning',
+      buttons: true,
+      dangerMode: true,
+    });
+  
+    if (!confirm) {
+      return; // Nếu người dùng chọn "Hủy", không thực hiện hành động.
+    }
   
     const currentDate = new Date().toISOString();
   
@@ -238,11 +251,12 @@ export const AddCustomer = () => {
       toast.success('Thêm thành công');
       setIsLoading(false);
       navigate('/customer');
-    } catch (error) {      
+    } catch (error) {
       setIsLoading(false);
-      // toast.error('Có lỗi xảy ra khi thêm khách hàng');
+      toast.error('Có lỗi xảy ra khi thêm khách hàng');
     }
   };
+  
   
 
   const handleImageChange = (event) => {
@@ -594,7 +608,7 @@ export const AddCustomer = () => {
                   </Grid>
                   <Grid item xs={6} sx={{ marginTop: 1 }}>
                     <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
-                      Thêm Người Dùng
+                      Thêm khách hàng
                     </Button>
                     <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
                       Hủy
