@@ -1,8 +1,6 @@
 import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizedAxios";
 
-
-
 export const fetchAccountInfoById = async (id) => {
   return await authorizedAxiosInstance
     .get(`${API_ROOT}/accountManager/detailAccount/${id}`)

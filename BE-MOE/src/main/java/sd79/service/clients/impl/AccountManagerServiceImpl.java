@@ -4,6 +4,7 @@ import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sd79.dto.requests.clients.accountInfo.AccountImageReq;
@@ -13,21 +14,28 @@ import sd79.dto.requests.productRequests.PassWordRequest;
 import sd79.dto.requests.productRequests.ProductRequest;
 import sd79.dto.response.clients.customer.UserAccountInfoRes;
 import sd79.dto.response.clients.customer.UserAddressInfoRes;
+import sd79.dto.response.clients.product.ProductResponse;
 import sd79.exception.CustomerException;
 import sd79.exception.EntityNotFoundException;
-import sd79.model.Customer;
-import sd79.model.CustomerAddress;
-import sd79.model.User;
+import sd79.model.*;
+import sd79.repositories.BillDetailRepo;
+import sd79.repositories.BillStatusDetailRepo;
 import sd79.repositories.CustomerAddressRepository;
 import sd79.repositories.CustomerRepository;
 import sd79.repositories.auth.RoleRepository;
 import sd79.repositories.auth.UserRepository;
+import sd79.repositories.products.ProductDetailRepository;
+import sd79.repositories.products.ProductRepository;
+import sd79.repositories.promotions.PromotionDetailRepository;
 import sd79.service.clients.AccountManagerService;
 import sd79.service.impl.CustomerServiceImpl;
 import sd79.utils.CloudinaryUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +44,6 @@ public class AccountManagerServiceImpl implements AccountManagerService {
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final CloudinaryUtils cloudinary;
@@ -150,10 +157,6 @@ public class AccountManagerServiceImpl implements AccountManagerService {
         customerRepository.save(customer);
     }
 
-    @Override
-    public long createFavouriteProduct(ProductRequest productRequest) {
-        return 0;
-    }
 
     private void populateCustomerData(Customer customer, CustomerRequest customerRequest) {
         customer.setFirstName(customerRequest.getFirstName());
