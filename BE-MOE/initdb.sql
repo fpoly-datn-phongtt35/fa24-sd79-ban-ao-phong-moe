@@ -373,7 +373,7 @@ VALUES
 
 -- Support
 INSERT INTO support (hoTen, email, sdt, issue_description, status)
-VALUES 
+VALUES
 ('Nguyen Van A', 'nguyenvana@example.com', '0123456789', 'Vấn đề với đơn hàng', 0),
 ('Tran Thi B', 'tranthib@example.com', '0987654321', 'Lỗi hệ thống khi thanh toán', 0),
 ('Le Minh C', 'leminhc@example.com', '0912345678', 'Yêu cầu hỗ trợ về sản phẩm', 1);

@@ -2,12 +2,11 @@ package sd79.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import sd79.dto.requests.PromotionDetailRequest;
-import sd79.dto.requests.PromotionRequest;
+import sd79.dto.requests.promotion.PromotionRequest;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
-import sd79.model.PromotionDetail;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -34,4 +33,5 @@ public interface PromotionService {
 
     Page<PromotionResponse> findByKeywordAndDate(String keyword, Date startDate, Date endDate, String status, Pageable pageable);
 
+//    boolean checkForOverlappingDiscount(Date startDate, Date endDate, Integer promotionId);
 }

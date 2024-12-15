@@ -1,12 +1,11 @@
 package sd79.service.impl;
 
-import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sd79.dto.requests.PromotionRequest;
+import sd79.dto.requests.promotion.PromotionRequest;
 import sd79.dto.response.PromotionDetailResponse;
 import sd79.dto.response.PromotionResponse;
 import sd79.exception.EntityNotFoundException;

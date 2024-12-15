@@ -3,30 +3,32 @@ import { useNavigate, useParams } from "react-router-dom";
 import { detailDiscount, putDiscount } from "~/apis/discountApi";
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
-import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel, Grid, IconButton, Input, Link, Textarea, Typography } from "@mui/joy";
+import { Breadcrumbs, Button, Container, FormControl, FormHelperText, FormLabel, Grid, Input, Link, Textarea, Typography } from "@mui/joy";
 import HomeIcon from "@mui/icons-material/Home";
 import DoDisturbOnIcon from "@mui/icons-material/DoDisturbOn";
 import EditIcon from "@mui/icons-material/Edit";
-import CircularProgress from "@mui/material/CircularProgress"; // Import biểu tượng xoay tròn
+import CircularProgress from "@mui/material/CircularProgress";
 import { ProductUpdate } from "~/components/promotion/ProductUpdate";
+
+// Hàm chuyển đổi datetime-local format
+const formatDateForBackend = (dateTimeString) => {
+  const date = new Date(dateTimeString); // Chuyển chuỗi ngày giờ thành đối tượng Date
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`; // Trả về định dạng DD/MM/YYYY | HH:mm:ss
+};
+
 
 export const UpdatePromotion = () => {
   const { register, handleSubmit, setValue, formState: { errors }, watch } = useForm();
   const navigate = useNavigate();
   const { id } = useParams();
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [loading, setLoading] = useState(false); // Thêm trạng thái loading
-
-  const formatDate = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year} | ${hours}:${minutes}:${seconds}`;
-  };
+  const [loading, setLoading] = useState(false);
 
   const startDate = watch("startDate");
   const endDate = watch("endDate");
@@ -38,19 +40,21 @@ export const UpdatePromotion = () => {
       const response = await detailDiscount(id);
       if (response && response.status === 200) {
         const promotionData = response.data;
+
         setValue("name", promotionData.name);
         setValue("code", promotionData.code);
         setValue("percent", promotionData.percent);
 
-        // Chuyển đổi ngày theo định dạng DD/MM/YYYY thành YYYY-MM-DD
-        const startDate = new Date(promotionData.startDate);
-        const endDate = new Date(promotionData.endDate);
+        // Chuyển đổi ngày giờ từ UTC sang datetime-local
+        const toLocalDateTime = (dateString) => {
+          const date = new Date(dateString); // Chuyển đổi từ chuỗi thành đối tượng Date
+          const offset = date.getTimezoneOffset() * 60000; // Lấy độ chênh lệch múi giờ (ms)
+          const localDate = new Date(date.getTime() - offset); // Chuyển về local timezone
+          return localDate.toISOString().slice(0, 16); // Cắt bỏ giây và 'Z' để phù hợp với datetime-local
+        };
 
-        const startDateString = startDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
-        const endDateString = endDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
-
-        setValue("startDate", startDateString); // YYYY-MM-DD
-        setValue("endDate", endDateString); // YYYY-MM-DD
+        setValue("startDate", toLocalDateTime(promotionData.startDate));
+        setValue("endDate", toLocalDateTime(promotionData.endDate));
 
         setValue("note", promotionData.note);
         setSelectedProducts(promotionData.listIdProduct || []);
@@ -63,6 +67,7 @@ export const UpdatePromotion = () => {
     }
   };
 
+
   useEffect(() => {
     fetchPromotionDetail();
   }, [id, setValue]);
@@ -73,18 +78,20 @@ export const UpdatePromotion = () => {
       return;
     }
 
-    setLoading(true); // Bật trạng thái loading
+    setLoading(true);
     try {
-      const response = await putDiscount(id, {
+      const payload = {
         name: data.name,
         code: data.code,
         percent: data.percent,
-        startDate: formatDate(data.startDate),
-        endDate: formatDate(data.endDate),
+        startDate: formatDateForBackend(data.startDate), // Định dạng lại ngày giờ
+        endDate: formatDateForBackend(data.endDate),     // Định dạng lại ngày giờ
         note: data.note,
         userId: localStorage.getItem("userId"),
         productIds: selectedProducts,
-      });
+      };
+
+      const response = await putDiscount(id, payload);
 
       if (response && response.status === 200) {
         Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
@@ -96,9 +103,11 @@ export const UpdatePromotion = () => {
       console.error("Error updating discount:", error.response?.data || error.message);
       Swal.fire("Lỗi", "Có lỗi xảy ra khi cập nhật đợt giảm giá", "error");
     } finally {
-      setLoading(false); // Tắt trạng thái loading
+      setLoading(false);
     }
   };
+
+
 
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>
@@ -115,6 +124,7 @@ export const UpdatePromotion = () => {
           </Breadcrumbs>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={3}>
+              {/* Tên và mã đợt giảm giá */}
               <Grid item xs={4}>
                 <FormControl error={!!errors?.name}>
                   <FormLabel required>Tên đợt giảm giá</FormLabel>
@@ -136,38 +146,48 @@ export const UpdatePromotion = () => {
                   {errors.percent && <FormHelperText>Tỷ lệ giảm phải từ 1% đến 100%!</FormHelperText>}
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+
+              {/* Ngày và giờ bắt đầu */}
+              <Grid item md={6}>
                 <FormControl error={!!errors?.startDate}>
                   <FormLabel>Ngày bắt đầu</FormLabel>
-                  <Input type="date" {...register("startDate", { required: true })} />
+                  <Input type="datetime-local" {...register("startDate", { required: true })} />
                   {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+
+              {/* Ngày và giờ kết thúc */}
+              <Grid item md={6}>
                 <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                   <FormLabel>Ngày kết thúc</FormLabel>
-                  <Input type="date" {...register("endDate", { required: true })} />
+                  <Input type="datetime-local" {...register("endDate", { required: true })} />
                   {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
                   {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                 </FormControl>
               </Grid>
+
+              {/* Mô tả */}
               <Grid item xs={12}>
                 <FormControl>
                   <FormLabel>Mô tả</FormLabel>
                   <Textarea {...register("note")} />
                 </FormControl>
               </Grid>
+
+              {/* Nút hành động */}
               <Grid item xs={12}>
                 <Button startDecorator={!loading && <EditIcon />} type="submit" disabled={loading}>
-                  {loading ? <CircularProgress size={20} /> : "Cập nhật"}
+                  {loading ? <CircularProgress size="sm" /> : "Cập nhật"}
                 </Button>
-                <IconButton onClick={() => navigate("/promotions")} disabled={loading}>
-                  <DoDisturbOnIcon /> Hủy
-                </IconButton>
+                <Button startDecorator={<DoDisturbOnIcon />} color="danger" onClick={() => navigate("/promotions")} sx={{ marginLeft: "10px" }}>
+                  Hủy
+                </Button>
               </Grid>
             </Grid>
           </form>
         </Grid>
+
+        {/* Phần sản phẩm */}
         <Grid item xs={5}>
           <ProductUpdate selectedProducts={selectedProducts} setSelectedProducts={setSelectedProducts} />
         </Grid>
