@@ -200,6 +200,7 @@ function Bill() {
         try {
             await postProduct(product);
             handleSetProduct(selectedOrder);
+            toast.success("Thêm sản phẩm vào giỏ hàng thành công")
             initialQuantity[pr.id] = 1;
         } catch (error) {
             console.error('Failed to add product:', error);
