@@ -199,7 +199,7 @@ export const Customer = () => {
       </Grid>
       <Box>
         <Grid container spacing={2}>
-          <Grid item xs={9}>
+          <Grid item xs={12}>
             <FormControl>
               <FormLabel>Tìm kiếm</FormLabel>
               <Input
@@ -210,7 +210,7 @@ export const Customer = () => {
               />
             </FormControl>
           </Grid>
-          <Grid item xs={3}>
+          {/* <Grid item xs={3}>
             <FormControl>
               <FormLabel>Giới tính</FormLabel>
               <Select value={gender} onChange={(event, value) => setGender(value)}>
@@ -220,7 +220,7 @@ export const Customer = () => {
                 <Option value="OTHER">Khác</Option>
               </Select>
             </FormControl>
-          </Grid>
+          </Grid> */}
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12} marginTop={2} justifyContent='end' display='flex'>
