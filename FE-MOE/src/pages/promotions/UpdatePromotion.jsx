@@ -10,7 +10,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import CircularProgress from "@mui/material/CircularProgress";
 import { ProductUpdate } from "~/components/promotion/ProductUpdate";
 
-// Chuyển đổi datetime-local format
 const formatDateForBackend = (dateTimeString) => {
   const date = new Date(dateTimeString);
   const day = String(date.getDate()).padStart(2, '0');
@@ -74,42 +73,42 @@ export const UpdatePromotion = () => {
       Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const allDiscountsResponse = await fetchAllDiscounts();
       const allDiscounts = allDiscountsResponse.data.content || [];
-  
+
       // Đếm số đợt giảm giá đang hoạt động
       const activeDiscounts = allDiscounts.filter((discount) => {
         const now = new Date();
         return new Date(discount.startDate) <= now && new Date(discount.endDate) >= now;
       });
-  
+
       const isDuplicate = allDiscounts.some((discount) => {
         if (discount.id === parseInt(id)) return false;
-  
+
         const discountStartDate = new Date(discount.startDate);
         const discountEndDate = new Date(discount.endDate);
         const newStartDate = new Date(data.startDate);
         const newEndDate = new Date(data.endDate);
-  
+
         return (
           (newStartDate >= discountStartDate && newStartDate <= discountEndDate) ||
           (newEndDate >= discountStartDate && newEndDate <= discountEndDate) ||
           (newStartDate <= discountStartDate && newEndDate >= discountEndDate)
         );
       });
-  
+
       // Nếu đợt này là duy nhất đang hoạt động
       const isOnlyActive = activeDiscounts.length === 1 && activeDiscounts[0].id === parseInt(id);
-  
+
       if (isDuplicate && !isOnlyActive) {
         Swal.fire("Lỗi", "Ngày bắt đầu hoặc ngày kết thúc trùng với đợt giảm giá khác!", "error");
         return;
       }
-  
+
       const payload = {
         name: data.name,
         code: data.code,
@@ -120,9 +119,9 @@ export const UpdatePromotion = () => {
         userId: localStorage.getItem("userId"),
         productIds: selectedProducts,
       };
-  
+
       const response = await putDiscount(id, payload);
-  
+
       if (response && response.status === 200) {
         Swal.fire("Thành công", "Đợt giảm giá đã được cập nhật!", "success");
         navigate("/promotions");
@@ -135,7 +134,7 @@ export const UpdatePromotion = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   return (
     <Container maxWidth="max-width" sx={{ height: "100vh", marginTop: "15px", backgroundColor: "#fff" }}>

@@ -190,7 +190,6 @@ public class PromotionsServiceImpl implements PromotionService {
                 promotion.getPromotionDetails().remove(detail);
             }
         }
-
         // Thêm mới các PromotionDetail cho các productIds chưa có trong existingProductIds
         for (Long productId : req.getProductIds()) {
             if (!existingProductIds.contains(productId)) {

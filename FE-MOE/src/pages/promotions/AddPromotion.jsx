@@ -15,7 +15,7 @@ export const AddPromotion = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [loading, setLoading] = useState(false); // Trạng thái loading
+    const [loading, setLoading] = useState(false); 
 
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
