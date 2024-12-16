@@ -54,3 +54,16 @@ export const searchDiscounts = async (keyword, startDate, endDate) => {
     .then((res) => res.data);
 };
 
+export const checkDiscountCodeExists = async (code, id) => {
+  try {
+    // Gửi yêu cầu tới backend để kiểm tra xem mã giảm giá đã tồn tại chưa
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/promotion/check-code`, {
+      params: { code, excludeId: id }, // Giới thiệu `excludeId` để loại trừ ID hiện tại khi cập nhật
+    });
+    
+    return response.data.exists; // Giả sử backend trả về { exists: true } nếu mã đã tồn tại
+  } catch (error) {
+    console.error("Error checking discount code:", error);
+    throw error;
+  }
+};

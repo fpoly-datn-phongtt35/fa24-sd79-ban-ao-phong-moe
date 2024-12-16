@@ -1,9 +1,7 @@
-package sd79.dto.requests;
+package sd79.dto.requests.promotion;
 
 import lombok.Builder;
 import lombok.Getter;
-
-import java.math.BigDecimal;
 
 @Getter
 @Builder

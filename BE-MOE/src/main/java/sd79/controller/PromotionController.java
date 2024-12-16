@@ -11,12 +11,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import sd79.dto.requests.PromotionRequest;
-import sd79.dto.response.PromotionDetailResponse;
+
+import sd79.dto.requests.promotion.PromotionRequest;
 import sd79.dto.response.PromotionResponse;
 import sd79.dto.response.ResponseData;
+import sd79.exception.InvalidDataException;
 import sd79.service.PromotionService;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,5 +123,37 @@ public class PromotionController {
 
         return new ResponseData<>(HttpStatus.OK.value(), "List promotion", response);
     }
+
+//    @PostMapping("/checkOverlap")
+//    public ResponseData<?> checkForOverlappingDiscount(@RequestParam("startDate") String startDateStr,
+//                                                       @RequestParam("endDate") String endDateStr,
+//                                                       @RequestParam("promotionId") Integer promotionId) {
+//        try {
+//            // Chuyển chuỗi ngày tháng thành LocalDateTime (nếu cần thiết)
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Chỉnh sửa định dạng nếu cần
+//            LocalDateTime startDate = LocalDateTime.parse(startDateStr, formatter);
+//            LocalDateTime endDate = LocalDateTime.parse(endDateStr, formatter);
+//
+//            // Chuyển từ LocalDateTime sang Date nếu cần (nếu bạn muốn làm việc với Date)
+//            ZoneId zoneId = ZoneId.systemDefault(); // Múi giờ mặc định của hệ thống
+//            Date startDateAsDate = Date.from(startDate.atZone(zoneId).toInstant());
+//            Date endDateAsDate = Date.from(endDate.atZone(zoneId).toInstant());
+//
+//            // Kiểm tra sự trùng lặp
+//            boolean isOverlapping = promotionService.checkForOverlappingDiscount(startDateAsDate, endDateAsDate, promotionId);
+//
+//            if (isOverlapping) {
+//                return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), "Khoảng thời gian khuyến mãi trùng lặp với một khuyến mãi khác.");
+//            }
+//
+//            return new ResponseData<>(HttpStatus.OK.value(), "Không có sự trùng lặp.");
+//        } catch (InvalidDataException e) {
+//            // Xử lý lỗi cụ thể nếu có exception
+//            return new ResponseData<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+//        } catch (Exception e) {
+//            // Xử lý các lỗi chung
+//            return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Có lỗi xảy ra khi kiểm tra trùng lặp.");
+//        }
+//    }
 
 }

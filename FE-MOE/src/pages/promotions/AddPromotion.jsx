@@ -15,7 +15,7 @@ export const AddPromotion = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [loading, setLoading] = useState(false); // Trạng thái loading
+    const [loading, setLoading] = useState(false); 
 
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
@@ -29,19 +29,22 @@ export const AddPromotion = () => {
     };
 
     const onSubmit = async (data) => {
+        const startDateFormatted = formatDate(data.startDate);
+        const endDateFormatted = formatDate(data.endDate);
+
         if (isEndDateInvalid) {
             Swal.fire("Lỗi", "Ngày kết thúc không được nhỏ hơn ngày bắt đầu!", "error");
             return;
         }
 
-        setLoading(true); // Bật trạng thái loading
+        setLoading(true);
         try {
             const response = await postDiscount({
                 name: data.name,
                 code: data.code,
                 percent: data.percent,
-                startDate: formatDate(data.startDate),
-                endDate: formatDate(data.endDate),
+                startDate: startDateFormatted,
+                endDate: endDateFormatted,
                 note: data.note,
                 userId: localStorage.getItem("userId"),
                 productIds: selectedProducts,
@@ -58,7 +61,7 @@ export const AddPromotion = () => {
             console.error("Error adding discount:", error);
             Swal.fire("Lỗi", "Có lỗi xảy ra khi thêm đợt giảm giá", "error");
         } finally {
-            setLoading(false); // Tắt trạng thái loading
+            setLoading(false);
         }
     };
 
@@ -111,18 +114,19 @@ export const AddPromotion = () => {
                             <Grid md={6}>
                                 <FormControl error={!!errors?.startDate}>
                                     <FormLabel>Ngày bắt đầu</FormLabel>
-                                    <Input type="date" {...register("startDate", { required: true })} />
+                                    <Input type="datetime-local" {...register("startDate", { required: true })} />
                                     {errors.startDate && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
                             </Grid>
                             <Grid xs={6}>
                                 <FormControl error={isEndDateInvalid || !!errors?.endDate}>
                                     <FormLabel>Ngày kết thúc</FormLabel>
-                                    <Input type="date" {...register("endDate", { required: true })} />
+                                    <Input type="datetime-local" {...register("endDate", { required: true })} />
                                     {isEndDateInvalid && <FormHelperText>Ngày kết thúc không được nhỏ hơn ngày bắt đầu!</FormHelperText>}
                                     {errors.endDate && !isEndDateInvalid && <FormHelperText>Vui lòng không bỏ trống!</FormHelperText>}
                                 </FormControl>
                             </Grid>
+
                             <Grid xs={12}>
                                 <FormControl error={!!errors?.note}>
                                     <FormLabel>Mô tả</FormLabel>

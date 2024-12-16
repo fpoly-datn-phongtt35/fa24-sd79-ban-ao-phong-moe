@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sd79.model.Promotion;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Repository
@@ -42,9 +43,18 @@ public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
                                          Pageable pageable);
 
     boolean existsByName(String name);
+
     boolean existsByCode(String code);
+
     boolean existsByNameAndIdNot(String name, Integer id);
+
     boolean existsByCodeAndIdNot(String code, Integer id);
 
+//    @Query("SELECT COUNT(p) > 0 FROM Promotion p " +
+//            "WHERE (p.startDate < :endDate AND p.endDate > :startDate) " +
+//            "AND p.id != :promotionId")
+//    boolean existsOverlappingDiscount(@Param("startDate") Date startDate,
+//                                      @Param("endDate") Date endDate,
+//                                      @Param("promotionId") Integer promotionId);
 
 }
