@@ -37,7 +37,7 @@ export const Promotion = () => {
       setDiscounts(response.data.content || []);
       setTotalPages(response.data.totalPages || 1);
     } catch (error) {
-      console.error("Failed to fetch discounts", error);
+      console.error("Không thể lấy đợt giảm giá", error);
       setDiscounts([]);
     }
   };
@@ -46,7 +46,7 @@ export const Promotion = () => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === "page" ? value : 1, // Reset to first page if changing search filters
+      page: key === "page" ? value : 1, // Đặt lại về trang đầu tiên nếu thay đổi bộ lọc tìm kiếm
     }));
   };
 
