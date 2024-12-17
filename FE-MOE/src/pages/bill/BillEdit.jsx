@@ -14,6 +14,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import { addPay, deleteCoupon, deleteProduct, fetchCoupon, fetchProduct, postCoupon, postProduct } from '~/apis/billsApi';
 import CouponModal from '~/components/bill/CouponModal';
 import { toast } from 'react-toastify';
+import { MoeAlert } from '~/components/other/MoeAlert';
 
 export default function BillEdit() {
     //bill edit
@@ -38,6 +39,8 @@ export default function BillEdit() {
     const customerId = billData?.[0]?.customer?.id;
     const [orderData, setOrderData] = useState({});
     const [selectedCoupon, setSelectedCoupon] = useState(null);
+
+    const [loading, setLoading] = useState(false);
 
     // ---------------------- khai báo hóa đơn edit -------------------------------//
     useEffect(() => {
@@ -310,6 +313,20 @@ export default function BillEdit() {
         }
     };
 
+    const checkAndRemoveCoupon = () => {
+        if (!billData || !billData[0]) return;
+
+        const { discountAmount } = calculateTotals();
+        if (discountAmount === 0 && billData[0]?.coupon) {
+            handleRemoveCoupon();
+        }
+    };
+
+    // Gọi hàm checkAndRemoveCoupon khi cần thiết
+    useEffect(() => {
+        checkAndRemoveCoupon();
+    }, [billData]);
+
     return (
         <Container maxWidth="max-Width" style={{ backgroundColor: '#f7f8fa', minHeight: '100vh', marginTop: '15px' }}>
 
@@ -474,7 +491,7 @@ export default function BillEdit() {
                                                         }}
                                                     />
                                                 </Grid>
-                                            )}
+                                            )}                                         
 
                                             {/* Price and Delete Button */}
                                             <Grid
@@ -518,8 +535,7 @@ export default function BillEdit() {
                                 );
                             })
                     )}
-                </List>;
-
+                </List>
 
             </div>
 
@@ -624,19 +640,31 @@ export default function BillEdit() {
 
                         <Divider sx={{ my: 2, backgroundColor: '#b0bec5' }} />
 
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={async () => {
+                        <MoeAlert
+                            title="Cảnh báo"
+                            message="Bạn có muốn sửa sản phẩm này ở giỏ hàng không?"
+                            event={async () => {
                                 const isSuccess = await onPay();
                                 if (isSuccess) {
                                     navigate(`/bill/detail/${id}`, { state: { refresh: true } });
                                 }
                             }}
-                            sx={{ mt: 3, width: '100%', fontWeight: 'bold' }}
-                        >
-                            Sửa sản phẩm
-                        </Button>
+                            button={
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    sx={{
+                                        mt: 3,
+                                        width: '100%',
+                                        fontWeight: 'bold',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px'
+                                    }}
+                                >
+                                    Sửa sản phẩm
+                                </Button>
+                            }
+                        />
 
                     </Grid>
                 </Paper>
