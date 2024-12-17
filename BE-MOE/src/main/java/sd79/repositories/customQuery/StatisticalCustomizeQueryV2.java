@@ -274,7 +274,7 @@ public class StatisticalCustomizeQueryV2 {
 
         // Pagination
         int pageNo = filter.getPageNo() != null ? filter.getPageNo() : 0;
-        int pageSize = filter.getPageSize() != null ? filter.getPageSize() : 10;
+        int pageSize = filter.getPageSize() != null ? filter.getPageSize() : 5;
         query.setFirstResult(pageNo * pageSize);
         query.setMaxResults(pageSize);
 
@@ -319,7 +319,7 @@ public class StatisticalCustomizeQueryV2 {
 
         // Pagination
         int pageNo = filter.getPageNo() != null ? filter.getPageNo() : 0;
-        int pageSize = filter.getPageSize() != null ? filter.getPageSize() : 10;
+        int pageSize = filter.getPageSize() != null ? filter.getPageSize() : 5;
         query.setFirstResult(pageNo * pageSize);
         query.setMaxResults(pageSize);
 

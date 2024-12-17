@@ -615,10 +615,7 @@ const AddCustomerModal = ({ open, setOpenModal }) => {
                             <Grid item xs={6} sx={{ marginTop: 1 }}>
                                 <Button loading={isLoading} variant="soft" type="submit" color="primary" sx={{ marginRight: 1 }}>
                                     Thêm Người Dùng
-                                </Button>
-                                <Button variant="soft" type="submit" color="danger" onClick={() => navigate("/customer")}>
-                                    Hủy
-                                </Button>
+                                </Button>                            
                             </Grid>
                         </Grid>
                     </Grid>
