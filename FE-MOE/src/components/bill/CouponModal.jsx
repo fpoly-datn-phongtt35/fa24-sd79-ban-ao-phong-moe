@@ -34,7 +34,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
             const size = allCoupons ? 1000 : pageSize; // Số lượng item mỗi trang
             const res = await fetchAllCouponCustomer(validCustomerId, page, keyword, size);
             setCoupons(res.data.content || []); // Cập nhật danh sách coupon
-            setTotalPages(res.data.totalPages || 0); // Cập nhật số trang
+            setTotalPages(res.data.totalPages || 0); // Cập nhật số trang         
         } catch (error) {
             console.error('Failed to fetch coupons:', error);
         }
@@ -44,7 +44,7 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
         try {
             // Lấy tất cả các phiếu giảm giá từ API
             const res = await fetchAllCouponCustomer(validCustomerId, 1, keyword, 1000); // Lấy toàn bộ phiếu giảm giá
-            let allCoupons = res.data.content || [];
+            const allCoupons = res.data.content || [];
     
             // Lọc các phiếu giảm giá đủ điều kiện
             const eligibleCoupons = allCoupons.filter(coupon => subtotal >= coupon.conditions);
@@ -54,32 +54,40 @@ export default function CouponModal({ open, onClose, onSelectCoupon, customerId,
                 return; // Không có phiếu giảm giá nào đủ điều kiện
             }
     
-            // Tìm phiếu giảm giá tốt nhất từ danh sách (bao gồm cả phiếu hiện tại)
-            const bestCoupon = eligibleCoupons.reduce((prev, current) => {
-                const prevDiscount =
-                    prev.discountType === 'FIXED_AMOUNT'
-                        ? prev.discountValue
-                        : subtotal * (prev.discountValue / 100);
-                const currentDiscount =
-                    current.discountType === 'FIXED_AMOUNT'
-                        ? current.discountValue
-                        : subtotal * (current.discountValue / 100);
+            // Hàm tính giá trị giảm thực tế của phiếu giảm giá
+            const calculateDiscount = (coupon) => {
+                const rawDiscount = coupon.discountType === 'FIXED_AMOUNT'
+                    ? coupon.discountValue
+                    : subtotal * (coupon.discountValue / 100); // Giá trị giảm thô
+                return coupon.maxValue
+                    ? Math.min(rawDiscount, coupon.maxValue) // Áp dụng giới hạn tối đa
+                    : rawDiscount;
+            };
     
-                return prevDiscount > currentDiscount ? prev : current;
+            // Tìm phiếu giảm giá tốt nhất từ danh sách
+            const bestCoupon = eligibleCoupons.reduce((prev, current) => {
+                const prevDiscount = calculateDiscount(prev);
+                const currentDiscount = calculateDiscount(current);
+    
+                // So sánh giá trị giảm thực tế
+                if (prevDiscount !== currentDiscount) {
+                    return prevDiscount > currentDiscount ? prev : current;
+                }
+    
+                // Nếu giá trị giảm bằng nhau, ưu tiên phiếu có maxDiscountValue lớn hơn
+                if ((prev.maxValue || Infinity) !== (current.maxValue || Infinity)) {
+                    return (prev.maxValue || Infinity) > (current.maxValue || Infinity) ? prev : current;
+                }
+    
+                // Nếu tất cả các điều kiện bằng nhau, giữ phiếu trước (hoặc logic khác nếu cần)
+                return prev;
             });
     
-            // Tính giá trị giảm giá của phiếu giảm giá tốt nhất
-            const bestDiscount =
-                bestCoupon.discountType === 'FIXED_AMOUNT'
-                    ? bestCoupon.discountValue
-                    : subtotal * (bestCoupon.discountValue / 100);
+            // Tính giá trị giảm của phiếu giảm giá tốt nhất
+            const bestDiscount = calculateDiscount(bestCoupon);
     
-            // Tính giá trị giảm giá của phiếu hiện tại (nếu có)
-            const currentDiscount = selectedCoupon
-                ? selectedCoupon.discountType === 'FIXED_AMOUNT'
-                    ? selectedCoupon.discountValue
-                    : subtotal * (selectedCoupon.discountValue / 100)
-                : 0;
+            // Tính giá trị giảm của phiếu hiện tại (nếu có)
+            const currentDiscount = selectedCoupon ? calculateDiscount(selectedCoupon) : 0;
     
             // So sánh phiếu giảm giá hiện tại và phiếu giảm giá tốt nhất
             if (currentDiscount >= bestDiscount) {
