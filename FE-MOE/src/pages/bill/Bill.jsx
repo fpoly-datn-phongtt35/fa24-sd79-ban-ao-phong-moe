@@ -732,7 +732,7 @@ function Bill() {
                             >
                                 <MoeAlert
                                     title="Cảnh báo"
-                                    message="Bạn có muốn xóa phiếu giảm giá này?"
+                                    message="Bạn có muốn xóa hóa đơn này không?"
                                     event={() => deleteOrder(order.id)}
                                     button={<span role="button" aria-label="delete" style={{ cursor: 'pointer' }}><DeleteIcon /></span>}
                                 />
