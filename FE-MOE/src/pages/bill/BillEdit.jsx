@@ -642,7 +642,7 @@ export default function BillEdit() {
 
                         <MoeAlert
                             title="Cảnh báo"
-                            message="Bạn có muốn sửa sản phẩm này ở giỏ hàng không?"
+                            message="Bạn có muốn sửa giỏ hàng này không?"
                             event={async () => {
                                 const isSuccess = await onPay();
                                 if (isSuccess) {
