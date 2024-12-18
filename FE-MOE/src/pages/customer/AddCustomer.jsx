@@ -29,15 +29,15 @@ export const AddCustomer = () => {
     gender: '',
     dateOfBirth: '',
     email: '',
-    password: '',
-    username: '',
+    // password: '',
+    // username: '',
   });
 
   const validateForm = () => {
     const specialCharRegex = /^[a-zA-ZÀ-ỹ]+( [a-zA-ZÀ-ỹ]+)*$/;
     const phoneRegex = /^0\d{9,11}$/;
-    const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
-    const passwordRegex = /^[^\s]{6,50}$/;
+    // const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+    // const passwordRegex = /^[^\s]{6,50}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const minAge = 16;
   
@@ -89,17 +89,17 @@ export const AddCustomer = () => {
           : "Email không đúng định dạng"
         : "Email không được để trống",
   
-      username: customerData.username
-        ? usernameRegex.test(customerData.username)
-          ? ""
-          : "Tên tài khoản phải từ 3-20 ký tự và không chứa ký tự đặc biệt"
-        : "Tên tài khoản không được để trống",
+      // username: customerData.username
+      //   ? usernameRegex.test(customerData.username)
+      //     ? ""
+      //     : "Tên tài khoản phải từ 3-20 ký tự và không chứa ký tự đặc biệt"
+      //   : "Tên tài khoản không được để trống",
   
-      password: customerData.password
-        ? passwordRegex.test(customerData.password)
-          ? ""
-          : "Mật khẩu phải từ 6 đến 50 ký tự và không chứa khoảng trắng"
-        : "Mật khẩu không được để trống",
+      // password: customerData.password
+      //   ? passwordRegex.test(customerData.password)
+      //     ? ""
+      //     : "Mật khẩu phải từ 6 đến 50 ký tự và không chứa khoảng trắng"
+      //   : "Mật khẩu không được để trống",
     };
   
     setErrors(newErrors);
@@ -169,8 +169,8 @@ export const AddCustomer = () => {
     }],
     user: [{
       email: '',
-      password: '',
-      username: ''
+      // password: '',
+      // username: ''
     }],
     createdAt: new Date(),
     updatedAt: new Date()
@@ -378,7 +378,7 @@ export const AddCustomer = () => {
                         )}
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    {/* <Grid item xs={12} sm={6}>
                       <FormControl>
                         <FormLabel required>Tên tài khoản</FormLabel>
                         <Input
@@ -424,7 +424,7 @@ export const AddCustomer = () => {
                           <Typography color="error" variant="body2">{errors.password}</Typography>
                         )}
                       </FormControl>
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={12} sm={6}>
                       <FormControl >
                         <FormLabel required>Email</FormLabel>

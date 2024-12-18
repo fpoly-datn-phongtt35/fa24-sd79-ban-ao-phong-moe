@@ -32,9 +32,16 @@ export default function BillList() {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [minTotal, setMinTotal] = useState(0);
-    const [maxTotal, setMaxTotal] = useState(999999999999);
+    const [minTotal, setMinTotal] = useState('');
+    const [maxTotal, setMaxTotal] = useState('');
     const employeeId = localStorage.getItem("userId");
+
+    const [filters, setFilters] = useState({
+        startDate: '',
+        endDate: '',
+        minTotal: '',
+        maxTotal: '',
+    });
 
     const formatDate = (dateTimeString) => {
         const date = new Date(dateTimeString);
@@ -84,19 +91,15 @@ export default function BillList() {
         setLoading(true);
         try {
             const res = await getBillList(
-                pageNo,
-                pageSize,
-                searchKeyword,
-                status,
+                pageNo, pageSize, searchKeyword, status,
                 startDate ? formatDate(startDate) : "",
                 endDate ? formatDate(endDate) : "",
-                minTotal || null,
-                maxTotal || null,
-                employeeId || ""
+                minTotal || null, maxTotal || null, employeeId || ""
             );
             setBillList(res?.data?.content || []);
             setTotalPages(res?.data?.totalPages || 0);
         } catch (error) {
+            toast.error("Lỗi khi tải danh sách hóa đơn!");
             console.error("Failed to fetch bills", error);
         }
         setLoading(false);
@@ -115,7 +118,7 @@ export default function BillList() {
 
     useEffect(() => {
         fetchBillList();
-    }, [status, pageNo, employeeId, searchKeyword, startDate, endDate, minTotal, maxTotal]);
+    }, [status, pageNo, searchKeyword, employeeId, filters]);
 
     const handleDelete = async (id) => {
         await deleteBillList(id);
@@ -127,49 +130,24 @@ export default function BillList() {
         setPageNo(1);
     }, 1000);
 
-    const debouncedSetMinTotal = useCallback(
-        debounce((newValue) => {
-            setMinTotal(newValue);
-        }, 2000),
-        []
-    );
-
-    const debouncedSetMaxTotal = useCallback(
-        debounce((newValue) => {
-            setMaxTotal(newValue);
-        }, 2000),
-        []
-    );
-
-    // Input Handlers
-    const handleInputChangeMin = (e) => {
-        let value = Number(e.target.value.replace(/[^0-9]/g, ""));
-        if (isNaN(value)) value = 0;
-        if (value < 0) value = 0;
-        if (value > 999999999999) value = 999999999999;
-        debouncedSetMinTotal(value);
-    };
-
-    const handleInputChangeMax = (e) => {
-        let value = Number(e.target.value.replace(/[^0-9]/g, ""));
-        if (isNaN(value)) value = 0;
-        if (value < 0) value = 0;
-        if (value > 999999999999) value = 999999999999;
-        debouncedSetMaxTotal(value);
-    };
-
-    // Clear Filters
-    const handleClearFilters = useCallback(() => {
-        setSearchKeyword('');
+    const handleClearFilters = () => {
         setStartDate('');
         setEndDate('');
-        setMinTotal(0);
-        setMaxTotal(999999999999);
-        debouncedSetMinTotal.cancel();
-        debouncedSetMaxTotal.cancel();
+        setMinTotal('');
+        setMaxTotal('');
+        setFilters({ startDate: '', endDate: '', minTotal: '', maxTotal: '' });
         setPageNo(1);
-        fetchBillList();
-    }, [fetchBillList, setSearchKeyword, setStartDate, setEndDate, setMinTotal, setMaxTotal, setPageNo]);
+    };
+
+    const handleFilterClick = () => {
+        setFilters({
+            startDate: startDate || '',
+            endDate: endDate || '',
+            minTotal: minTotal || '',
+            maxTotal: maxTotal || '',
+        });
+        setPageNo(1);
+    };
 
     return (
         <Container maxWidth="max-Width" className="bg-white" style={{ marginTop: "15px" }}>
@@ -207,40 +185,43 @@ export default function BillList() {
                 ))}
             </Tabs>
 
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 3, p: 2, border: '1px solid #ddd', borderRadius: '8px' }}>
                 <Grid container spacing={2} alignItems="center">
-                    {/* Ô tìm kiếm */}
-                    <Grid item xs={12} sm={9}>
+                    {/* Hàng 1: Tìm kiếm và Nút */}
+                    <Grid item xs={12} sm={8} md={8}>
                         <TextField
                             placeholder="Tìm kiếm hóa đơn..."
                             fullWidth
                             onChange={handleSearchChange}
                             size="small"
+                            variant="outlined"
                         />
                     </Grid>
-
-                    {/* Nút Clear Filters */}
-                    <Grid item xs={12} sm={3}>
+                    <Grid item xs={12} sm={4} md={4} display="flex" justifyContent="flex-end" gap={1}>
                         <Button
                             variant="outlined"
-                            color="info"
+                            color="error"
                             onClick={handleClearFilters}
-                            fullWidth
-                            size="large"
+                            size="medium"
                             startIcon={<ClearIcon />}
                         >
-                            Clear Filters
+                            Xóa bộ lọc
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleFilterClick}
+                            size="medium"
+                        >
+                            Lọc dữ liệu
                         </Button>
                     </Grid>
-                </Grid>
 
-                <Grid container spacing={2} alignItems="center" mt={2}>               
-                    {/* Bộ lọc ngày */}
-                    <Grid item xs={12} sm={3}>
+                    {/* Hàng 2: Bộ lọc ngày và giá */}
+                    <Grid item xs={6} sm={3} md={3}>
                         <TextField
                             label="Từ ngày"
                             type="date"
-                            variant="outlined"
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                             value={startDate}
@@ -248,11 +229,10 @@ export default function BillList() {
                             size="small"
                         />
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid item xs={6} sm={3} md={3}>
                         <TextField
                             label="Đến ngày"
                             type="date"
-                            variant="outlined"
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                             value={endDate}
@@ -260,38 +240,29 @@ export default function BillList() {
                             size="small"
                         />
                     </Grid>
-
-                    {/* Bộ lọc giá */}
-                    <Grid item xs={12} sm={2}>
+                    <Grid item xs={6} sm={3} md={3}>
                         <TextField
-                            placeholder="Từ giá"
+                            label="Từ giá"
+                            placeholder="Nhập giá tối thiểu"
                             fullWidth
-                            defaultValue={minTotal.toLocaleString()}
-                            onChange={handleInputChangeMin}
-                            variant="outlined"
+                            value={minTotal}
+                            onChange={(e) => setMinTotal(e.target.value.replace(/[^0-9]/g, ''))}
                             size="small"
-                            inputProps={{
-                                type: "text",
-                                inputMode: "numeric",
-                            }}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={2}>
+                    <Grid item xs={6} sm={3} md={3}>
                         <TextField
-                            placeholder="Đến giá"
+                            label="Đến giá"
+                            placeholder="Nhập giá tối đa"
                             fullWidth
-                            defaultValue={maxTotal.toLocaleString()}
-                            onChange={handleInputChangeMax}
-                            variant="outlined"
+                            value={maxTotal}
+                            onChange={(e) => setMaxTotal(e.target.value.replace(/[^0-9]/g, ''))}
                             size="small"
-                            inputProps={{
-                                type: "text",
-                                inputMode: "numeric",
-                            }}
                         />
                     </Grid>
                 </Grid>
             </Box>
+
 
             <TableContainer component={Paper} sx={{ borderRadius: '8px' }}>
                 <Table>
@@ -326,11 +297,11 @@ export default function BillList() {
                                     </TableCell>
                                     <TableCell>{statusMap[bill.billStatus] || 'N/A'}</TableCell>
                                     <TableCell>{bill.createAt}</TableCell>
-                                    <TableCell>
+                                    <TableCell className='text-center'>
                                         <IconButton onClick={() => navigate(`/bill/detail/${bill.id}`)} color='success'>
                                             <Edit />
                                         </IconButton>
-                                        <MoeAlert
+                                        {/* <MoeAlert
                                             title="Cảnh báo"
                                             message={'Bạn có muốn xóa hóa đơn này không?'}
                                             event={() => handleDelete(bill.id)}
@@ -341,7 +312,7 @@ export default function BillList() {
                                                     </IconButton>
                                                 </Tooltip>
                                             }
-                                        />
+                                        /> */}
                                     </TableCell>
                                 </TableRow>
                             ))

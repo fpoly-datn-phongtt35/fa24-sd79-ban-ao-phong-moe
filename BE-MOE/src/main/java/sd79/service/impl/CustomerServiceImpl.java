@@ -88,9 +88,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public long createCustomer(CustomerReq customerReq) {
 
-        if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
-            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
-        } else if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
+//        if (this.customerRepository.existsByUsername(customerReq.getUsername())) {
+//            throw new EntityExistsException("Tên tài khoản đã tồn tại.");
+//        } else
+            if (this.customerRepository.existsByEmail(customerReq.getEmail())) {
             throw new EntityExistsException("Email đã tồn tại.");
         } else if (this.customerRepository.existsByPhoneNumber(customerReq.getPhoneNumber())) {
             throw new EntityExistsException("Số điện thoại đã tồn tại.");
@@ -109,9 +110,9 @@ public class CustomerServiceImpl implements CustomerService {
             address = this.customerAddressRepository.save(address);
 
             User user = User.builder()
-                    .username(customerReq.getUsername())
+//                    .username(customerReq.getUsername())
                     .email(customerReq.getEmail())
-                    .password(passwordEncoder.encode(customerReq.getPassword()))
+//                    .password(passwordEncoder.encode(customerReq.getPassword()))
                     .isLocked(false)
                     .isEnabled(false)
                     .createdAt(new Date())

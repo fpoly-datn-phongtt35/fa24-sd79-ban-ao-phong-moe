@@ -58,9 +58,9 @@ public class CustomerReq {
     @NotEmpty(message = "Email không được để trống")
     private String email;
 
-    @NotEmpty(message = "Tên tài khoản không được để trống")
-    private String username;
-
-    @NotEmpty(message = "Mật khẩu không được để trống")
-    private String password;
+//    @NotEmpty(message = "Tên tài khoản không được để trống")
+//    private String username;
+//
+//    @NotEmpty(message = "Mật khẩu không được để trống")
+//    private String password;
 }

@@ -424,27 +424,30 @@ export default function StatisticalBill() {
                   Sản phẩm bán chạy nhất
                 </Typography>
               </Box>
-              <List>
-                {topSellingProducts.map((product, index) => (
-                  <ListItem key={index} sx={{ display: 'flex', alignItems: 'center', padding: 1 }}>
-                    <Avatar
-                      src={product[3]}
-                      alt={product[1]}
-                      sx={{
-                        width: 64,
-                        height: 64,
-                        marginRight: 2,
-                      }}
-                    />
-                    <Box>
-                      <Typography sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                        {product[1]}
-                      </Typography>
-                      <Typography>Số lượng mua: {product[2]}</Typography>
-                    </Box>
-                  </ListItem>
-                ))}
-              </List>
+              {/* Thanh cuộn */}
+              <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                <List>
+                  {topSellingProducts.map((product, index) => (
+                    <ListItem key={index} sx={{ display: 'flex', alignItems: 'center', padding: 1 }}>
+                      <Avatar
+                        src={product[3]}
+                        alt={product[1]}
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          marginRight: 2,
+                        }}
+                      />
+                      <Box>
+                        <Typography sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                          {product[1]}
+                        </Typography>
+                        <Typography>Số lượng mua: {product[2]}</Typography>
+                      </Box>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -459,46 +462,49 @@ export default function StatisticalBill() {
                   Khách hàng mua nhiều nhất
                 </Typography>
               </Box>
-              <List>
-                {Object.values(
-                  topCustomers.reduce((acc, customer) => {
-                    const key = `${customer[1]}_${customer[2]}`; // Key based on customer name and phone number
-                    if (!acc[key]) {
-                      acc[key] = {
-                        customerId: customer[0],
-                        customerName: customer[1],
-                        phoneNumber: customer[2],
-                        totalSpent: 0, // Initialize totalSpent
-                        periods: [], // Store the periods (monthly data)
-                      };
-                    }
-                    acc[key].totalSpent += customer[4]; // Accumulate the totalSpent
-                    acc[key].periods.push({
-                      period: customer[5], // Add period (e.g., "2024-12")
-                      amount: customer[4], // Amount spent in this period
-                    });
-                    return acc;
-                  }, {})
-                ).map((customerData, index) => (
-                  <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      {customerData.customerName} ({customerData.phoneNumber})
-                    </Typography>
-                    <Typography sx={{ fontWeight: 'bold', color: '#333' }}>
-                      Tổng chi tiêu: {customerData.totalSpent.toLocaleString()} VND
-                    </Typography>
-                    <List>
-                      {customerData.periods.map((periodData, periodIndex) => (
-                        <ListItem key={periodIndex} sx={{ padding: 0 }}>
-                          <Typography variant="body2" sx={{ color: '#555' }}>
-                            {periodData.period}: {periodData.amount.toLocaleString()} VND
-                          </Typography>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </ListItem>
-                ))}
-              </List>
+              {/* Thanh cuộn */}
+              <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                <List>
+                  {Object.values(
+                    topCustomers.reduce((acc, customer) => {
+                      const key = `${customer[1]}_${customer[2]}`;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          customerId: customer[0],
+                          customerName: customer[1],
+                          phoneNumber: customer[2],
+                          totalSpent: 0,
+                          periods: [],
+                        };
+                      }
+                      acc[key].totalSpent += customer[4];
+                      acc[key].periods.push({
+                        period: customer[5],
+                        amount: customer[4],
+                      });
+                      return acc;
+                    }, {})
+                  ).map((customerData, index) => (
+                    <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        {customerData.customerName} ({customerData.phoneNumber})
+                      </Typography>
+                      <Typography sx={{ fontWeight: 'bold', color: '#333' }}>
+                        Tổng chi tiêu: {customerData.totalSpent.toLocaleString()} VND
+                      </Typography>
+                      <List>
+                        {customerData.periods.map((periodData, periodIndex) => (
+                          <ListItem key={periodIndex} sx={{ padding: 0 }}>
+                            <Typography variant="body2" sx={{ color: '#555' }}>
+                              {periodData.period}: {periodData.amount.toLocaleString()} VND
+                            </Typography>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -513,20 +519,24 @@ export default function StatisticalBill() {
                   Phiếu giảm giá dùng nhiều nhất
                 </Typography>
               </Box>
-              <List>
-                {topCoupons.map((coupon, index) => (
-                  <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      {coupon[1]} - {coupon[2]}
-                    </Typography>
-                    <Typography variant="body2">Discount: {coupon[3]} VND</Typography>
-                  </ListItem>
-                ))}
-              </List>
+              {/* Thanh cuộn */}
+              <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                <List>
+                  {topCoupons.map((coupon, index) => (
+                    <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: 1 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        {coupon[1]} - {coupon[2]}
+                      </Typography>
+                      <Typography variant="body2">Discount: {coupon[3]} VND</Typography>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
 
       <div>
         <Button
@@ -569,8 +579,6 @@ export default function StatisticalBill() {
           </Box>
         )}
       </div>
-
-
 
     </Box>
   );
