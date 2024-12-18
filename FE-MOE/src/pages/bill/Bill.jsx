@@ -208,7 +208,13 @@ function Bill() {
     };
 
     const handleQuantityChange = (productId, newQuantity) => {
-        const maxQuantity = products.find(p => p.id === productId)?.productDetail.quantity + 1 || 0;
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const maxQuantity = product.productDetail.quantity + 1 || 0;
+
+        console.log('Max Quantity:', maxQuantity);
+
         let errorMessage = "";
 
         if (newQuantity === '') {
@@ -216,7 +222,7 @@ function Bill() {
         } else if (newQuantity < 1) {
             errorMessage = "Số lượng phải lớn hơn hoặc bằng 1";
         } else if (newQuantity > maxQuantity) {
-            newQuantity = maxQuantity; // Giới hạn số lượng về tối đa
+            newQuantity = maxQuantity;
             errorMessage = `Số lượng không được vượt quá ${maxQuantity}`;
         }
 
@@ -228,8 +234,8 @@ function Bill() {
         if (errorMessage) return;
 
         setProducts(prevProducts =>
-            prevProducts.map(product =>
-                product.id === productId ? { ...product, quantity: newQuantity } : product
+            prevProducts.map(p =>
+                p.id === productId ? { ...p, quantity: newQuantity } : p
             )
         );
 
@@ -330,6 +336,8 @@ function Bill() {
         await postCoupon(couponData);
         await handleSetBill();
         await handleSetCoupon(selectedOrder);
+
+        localStorage.setItem('discountAmount', discountAmount);
     };
 
     const handleSetCoupon = async (orderId) => {
@@ -387,19 +395,17 @@ function Bill() {
             const calculatedDiscount = (subtotal * discountValue) / 100;
             return Math.min(calculatedDiscount, maxValue);
         }
-
         return 0;
     })();
-
-    if (discountAmount === 0 && currentOrder && currentOrder.coupon && typeof handleRemoveCoupon === 'function') {
-        handleRemoveCoupon();
-    }
 
     const totalAfterDiscount = subtotal - discountAmount;
     const changeAmount = customerAmount > totalAfterDiscount ? customerAmount - totalAfterDiscount : 0;
 
     const shippingCost = isDeliveryEnabled && subtotal < 100000 ? 24000 : 0;
 
+    if (discountAmount === 0 && currentOrder && currentOrder.coupon && typeof handleRemoveCoupon === 'function') {
+        handleRemoveCoupon();
+    }
 
     //----------------------------------------------------------Them lan cuoi----------------------------------//
     const PaymentMethod = {
@@ -435,7 +441,7 @@ function Bill() {
 
     const onPay = async () => {
         if (!currentOrder || products.length === 0) {
-            toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
+            toast.error("Không thể thanh toán, vui lòng chọn hóa đơn và thêm sản phẩm.");
             return;
         }
 
@@ -467,7 +473,7 @@ function Bill() {
                 discountAmount: product.discountAmount,
             })),
         };
-      
+
         try {
             await addPay(billStoreRequest);
             if (isDeliveryEnabled && currentOrder.customerId !== null) {
@@ -732,7 +738,7 @@ function Bill() {
                             >
                                 <MoeAlert
                                     title="Cảnh báo"
-                                    message="Bạn có muốn xóa phiếu giảm giá này?"
+                                    message="Bạn có muốn xóa hóa đơn này không?"
                                     event={() => deleteOrder(order.id)}
                                     button={<span role="button" aria-label="delete" style={{ cursor: 'pointer' }}><DeleteIcon /></span>}
                                 />
@@ -744,7 +750,7 @@ function Bill() {
 
             {/* Product */}
             <div>
-                <Paper sx={{ padding: 2, marginTop: 3, borderRadius: 2, boxShadow: 1, marginBottom: 5}}>
+                <Paper sx={{ padding: 2, marginTop: 3, borderRadius: 2, boxShadow: 1, marginBottom: 5 }}>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'end', justifyContent: 'space-between' }}>
                         <Typography sx={{ fontWeight: 'bold', color: 'textSecondary', fontSize: '1.5rem' }}>
                             Giỏ hàng
@@ -821,9 +827,10 @@ function Bill() {
                                                 type="number"
                                                 value={product.quantity}
                                                 onChange={(e) => {
-                                                    let inputQuantity = parseInt(e.target.value, 10) || '';
-                                                    const maxQuantity = product.productDetail.quantity + 1;
+                                                    let inputQuantity = parseInt(e.target.value, 10) || '';                                                  
+                                                    const maxQuantity = product.productDetail.quantity + 1 || 0;
 
+                                                    // Ensure inputQuantity doesn't exceed maxQuantity
                                                     if (inputQuantity > maxQuantity) {
                                                         inputQuantity = maxQuantity;
                                                     }
@@ -839,10 +846,11 @@ function Bill() {
                                                 slotProps={{
                                                     input: {
                                                         min: 1,
-                                                        max: product.productDetail.quantity + 1,
+                                                        max: product.productDetail.quantity + 1 || 0, 
                                                     }
                                                 }}
                                             />
+
                                         </Grid>
 
                                         <Grid item xs={4} sm={2} md={2} display="flex" justifyContent="flex-end" alignItems="center">
@@ -887,7 +895,7 @@ function Bill() {
 
             {/* Coupon and Tính toán */}
             <div>
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"}}>
+                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, mb: 4, boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)" }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                         <Typography variant="h5" fontWeight="bold" color="textPrimary">
                             Thông tin thanh toán
