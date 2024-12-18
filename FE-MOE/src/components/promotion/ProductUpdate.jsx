@@ -28,7 +28,7 @@ export const ProductUpdate = ({ selectedProducts, setSelectedProducts }) => {
             setAllProducts(allRes.data.content);
         }
 
-        // Sort products to show selected products at the top
+        // Sắp xếp sản phẩm để hiển thị các sản phẩm đã chọn ở trên cùng
         const sortedProducts = fetchedProducts.sort((a, b) => {
             const isASelected = selectedProducts.includes(a.id);
             const isBSelected = selectedProducts.includes(b.id);
@@ -39,7 +39,7 @@ export const ProductUpdate = ({ selectedProducts, setSelectedProducts }) => {
     };
 
     useEffect(() => {
-        // Update `checked` of checkbox whenever `selectedProducts` changes
+        // Cập nhật `checked` của hộp kiểm bất cứ khi nào `selectedProducts` thay đổi
         setProducts((prevProducts) =>
             prevProducts.map((product) => ({
                 ...product,
@@ -67,10 +67,10 @@ export const ProductUpdate = ({ selectedProducts, setSelectedProducts }) => {
         });
     };
 
-    // Debounced search function to minimize API calls
+    // Chức năng tìm kiếm bị trả lại để giảm thiểu các cuộc gọi API
     const debouncedSearch = debounce((value) => {
-        setKeyword(value); // Update keyword for API search
-        setCurrentPage(1); // Reset to first page on new search
+        setKeyword(value); // Cập nhật từ khóa cho tìm kiếm API
+        setCurrentPage(1); // Đặt lại trang đầu tiên trên tìm kiếm mới
     }, 500); // 500ms delay
 
     const handleSearchInputChange = (e) => {
