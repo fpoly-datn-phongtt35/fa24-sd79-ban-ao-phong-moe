@@ -435,7 +435,7 @@ function Bill() {
 
     const onPay = async () => {
         if (!currentOrder || products.length === 0) {
-            toast.error("Không thể tạo hóa đơn, vui lòng chọn đơn hàng và thêm sản phẩm.");
+            toast.error("Không thể thanh toán, vui lòng chọn hóa đơn và thêm sản phẩm.");
             return;
         }
 
