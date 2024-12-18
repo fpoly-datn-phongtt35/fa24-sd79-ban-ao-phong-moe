@@ -137,34 +137,34 @@ export const Customer = () => {
   const onSetLocked = async (id, currentLockedState) => {
     const actionText = currentLockedState ? 'mở khóa' : 'khóa';
     const confirm = await swal({
-      title: `Xác nhận ${actionText}`,
-      text: `Bạn có chắc chắn muốn ${actionText} khách hàng này?`,
-      icon: 'warning',
-      buttons: true,
-      dangerMode: true,
+        title: `Xác nhận ${actionText}`,
+        text: `Bạn có chắc chắn muốn ${actionText} khách hàng này?`,
+        icon: 'warning',
+        buttons: true,
+        dangerMode: true,
     });
 
     if (!confirm) {
-      return;
+        return;
     }
 
     const updatedLockedState = !currentLockedState;
 
     try {
-      await setLocked(id, updatedLockedState);
+        await setLocked(id, updatedLockedState);
 
-      setLockedStates((prevStates) => ({
-        ...prevStates,
-        [id]: updatedLockedState,
-      }));
+        setLockedStates((prevStates) => ({
+            ...prevStates,
+            [id]: updatedLockedState,
+        }));
 
-      toast.success(`Tài khoản khách hàng đã được ${actionText}`);
-      console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
+        toast.success(`Tài khoản khách hàng đã được ${actionText}`);
+        console.log(`Customer ${id} isLocked: ${updatedLockedState}`);
     } catch (error) {
-      console.error("Failed to update lock status:", error);
-      toast.error(`Không thể ${actionText} khách hàng`);
+        console.error("Failed to update lock status:", error);
+        toast.error(`Không thể ${actionText} khách hàng`);
     }
-  };
+};
 
 
   const onDetailsClick = (customer) => {
@@ -255,9 +255,7 @@ export const Customer = () => {
               customers.map((customer, index) => (
                 <TableRow key={customer.id}>
                   <TableCell><Avatar src={customer?.image} variant="solid" /></TableCell>
-                  <TableCell>
-                    {customer.username || <span style={{ color: 'blue' }}>Trống</span>}
-                  </TableCell>
+                  <TableCell>{customer.username}</TableCell>
                   <TableCell>{capitalizeFirstLetter(customer.fullName)}</TableCell>
                   <TableCell>{customer.phoneNumber}</TableCell>
                   <TableCell>{mapGender(customer.gender)} </TableCell>
@@ -320,14 +318,7 @@ export const Customer = () => {
           {selectedCustomer && (
             <>
               <Typography id="modal-desc" textColor="text.tertiary">
-                <strong>Tên tài khoản:</strong>{' '}
-                {selectedCustomer.username || (
-                  <Typography color="primary" component="span">
-                    Trống
-                  </Typography>
-                )}
-                <br />
-
+                <strong>Tên tài khoản:</strong> {selectedCustomer.username}<br />
                 <strong>Họ và tên:</strong> {selectedCustomer.fullName}<br />
                 <strong>Email:</strong> {selectedCustomer.email}<br />
                 <strong>Số điện thoại:</strong> {selectedCustomer.phoneNumber}<br />
