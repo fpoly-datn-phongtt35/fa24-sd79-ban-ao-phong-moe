@@ -306,7 +306,7 @@ public class BillServiceImpl implements BillService {
 
         // Set the new coupon to the bill and save
         bill.setCoupon(newCoupon);
-        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+//        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
 
         couponRepository.save(newCoupon);
         billRepository.save(bill);
@@ -329,7 +329,7 @@ public class BillServiceImpl implements BillService {
         }
 
         bill.setCoupon(null);
-        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
+//        bill.setUpdatedBy(getUserById(bill.getUpdatedBy().getId()));
         billRepository.save(bill);
 
         return bill.getId();
