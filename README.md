@@ -1,5 +1,4 @@
 [![MasterHead](https://i.pinimg.com/originals/f1/ed/a4/f1eda4768df8d8135c779772f2833e88.gif)](https://github.com/JavaTech04)
-<h1 align="center" style="color: #333;">Lại Phải Qua Môn (Passed)</h1>
 <h1 align="center" style="color: #333;">DEMO</h1>
 
 <p align="center" style="font-size: 1.2em; color: #555;">
